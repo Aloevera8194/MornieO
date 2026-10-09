@@ -184,6 +184,7 @@ class MornyeGlass extends ConsumerWidget {
         clarity > 0 &&
         !MediaQuery.highContrastOf(context);
     final dark = scheme.brightness == Brightness.dark;
+    final outlines = MornyeTheme.glassOutlinesOf(context);
     final shape = BorderRadius.vertical(
       top: firstInGroup ? Radius.circular(radius) : Radius.zero,
       bottom: lastInGroup ? Radius.circular(radius) : Radius.zero,
@@ -280,13 +281,18 @@ class MornyeGlass extends ConsumerWidget {
             : null,
       ),
       child: CustomPaint(
-        foregroundPainter: _MornyeGlassRim(
-          shape: shape,
-          firstInGroup: firstInGroup,
-          lastInGroup: lastInGroup,
-          illuminated: translucent && (!useLens || highlightBorder),
-          emphasized: highlightBorder,
-        ),
+        // The optical lens already draws its own rim. Avoid a second dark
+        // contact stroke on top, particularly visible against light pages.
+        foregroundPainter: outlines && (!useLens || highlightBorder)
+            ? _MornyeGlassRim(
+                shape: shape,
+                firstInGroup: firstInGroup,
+                lastInGroup: lastInGroup,
+                illuminated: translucent && (!useLens || highlightBorder),
+                emphasized: highlightBorder,
+                dark: dark,
+              )
+            : null,
         child: ClipRRect(
           borderRadius: shape,
           child: useLens
@@ -324,6 +330,7 @@ class _MornyeGlassRim extends CustomPainter {
     required this.lastInGroup,
     required this.illuminated,
     required this.emphasized,
+    required this.dark,
   });
 
   final BorderRadius shape;
@@ -331,6 +338,7 @@ class _MornyeGlassRim extends CustomPainter {
   final bool lastInGroup;
   final bool illuminated;
   final bool emphasized;
+  final bool dark;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -352,7 +360,7 @@ class _MornyeGlassRim extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.5
         // A thin contact edge must not paint a shadow under the whole glass.
-        ..color = Colors.black.withValues(alpha: 0.5),
+        ..color = Colors.black.withValues(alpha: dark ? 0.5 : 0.16),
     );
     if (illuminated) {
       canvas.drawRRect(
@@ -387,7 +395,8 @@ class _MornyeGlassRim extends CustomPainter {
       firstInGroup != oldDelegate.firstInGroup ||
       lastInGroup != oldDelegate.lastInGroup ||
       illuminated != oldDelegate.illuminated ||
-      emphasized != oldDelegate.emphasized;
+      emphasized != oldDelegate.emphasized ||
+      dark != oldDelegate.dark;
 }
 
 /// A searchable category uses the same material as the navigation capsule.

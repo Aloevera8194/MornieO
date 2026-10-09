@@ -19,6 +19,7 @@ ThemeSettings loadBootstrapThemeSettings(SharedPreferences prefs) {
     mornyeGlassClarity: normalizeMornyeGlassClarity(
       prefs.getDouble(kMornyeGlassClarityKey),
     ),
+    mornyeGlassOutlines: prefs.getBool(kMornyeGlassOutlinesKey) ?? true,
   );
 }
 
@@ -80,6 +81,10 @@ class ThemeNotifier extends Notifier<ThemeSettings> {
         kMornyeGlassClarityKey,
         snapshot.mornyeGlassClarity,
       );
+      await prefs.setBool(
+        kMornyeGlassOutlinesKey,
+        snapshot.mornyeGlassOutlines,
+      );
     } catch (e) {
       debugPrint('Error saving theme settings: $e');
     }
@@ -126,5 +131,10 @@ class ThemeNotifier extends Notifier<ThemeSettings> {
   }) async {
     _editState((current) => current.copyWith(mornyeGlassClarity: value));
     if (persist) await _saveToStorage();
+  }
+
+  Future<void> setMornyeGlassOutlines(bool value) async {
+    _editState((current) => current.copyWith(mornyeGlassOutlines: value));
+    await _saveToStorage();
   }
 }

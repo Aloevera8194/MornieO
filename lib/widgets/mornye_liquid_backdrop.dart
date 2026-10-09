@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
+import 'package:spotiflac_android/theme/mornye_theme.dart';
 
 /// A bounded package lens without a captured-screen view or a touch ticker.
 class MornyeLiquidBackdrop extends StatelessWidget {
@@ -28,14 +29,16 @@ class MornyeLiquidBackdrop extends StatelessWidget {
   Widget build(BuildContext context) {
     if (interaction && progress <= 0) return child;
     final effect = interaction ? progress : 1.0;
+    final outlines = MornyeTheme.glassOutlinesOf(context);
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return LiquidGlassLens(
       style: LiquidGlassStyle(
         shape: LiquidGlassShape.roundedRectangle(
           cornerRadius: borderRadius.topLeft.x,
-          borderWidth: 0.75,
+          borderWidth: outlines ? 0.75 : 0,
           lightDirection: 0,
-          lightIntensity: 0.25 * effect,
-          lightColor: Colors.white,
+          lightIntensity: outlines ? (dark ? 0.25 : 0.12) * effect : 0,
+          lightColor: dark ? Colors.white : const Color(0x88ffffff),
           borderType: const OpticalBorder(
             ambientIntensity: 0.05,
             lightSpread: 0.2,

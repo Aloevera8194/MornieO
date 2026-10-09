@@ -90,6 +90,18 @@ class SettingsSearchCatalog {
       ],
       appearance = [
         SettingsSearchEntry(
+          icon: Icons.rounded_corner,
+          title: l10n.appearanceGlassOutlines,
+          subtitle: l10n.appearanceGlassOutlinesSubtitle,
+          keywords: const [
+            'mornye',
+            'liquid glass',
+            'border',
+            'rim',
+            'outline',
+          ],
+        ),
+        SettingsSearchEntry(
           icon: Icons.wallpaper,
           title: l10n.appearanceDynamicColor,
           subtitle: l10n.appearanceDynamicColorSubtitle,

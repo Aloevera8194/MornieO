@@ -8,6 +8,7 @@ const String kThemeStyleKey = 'theme_style';
 const String kMornyeAccentKey = 'mornye_accent';
 const String kUseSystemFontKey = 'use_system_font';
 const String kMornyeGlassClarityKey = 'mornye_glass_clarity';
+const String kMornyeGlassOutlinesKey = 'mornye_glass_outlines';
 const double kDefaultMornyeGlassClarity = 0.75;
 
 double normalizeMornyeGlassClarity(num? value) =>
@@ -43,6 +44,7 @@ class ThemeSettings {
   final MornyeAccent mornyeAccent;
   final bool useSystemFont;
   final double mornyeGlassClarity;
+  final bool mornyeGlassOutlines;
 
   const ThemeSettings({
     this.themeMode = ThemeMode.system,
@@ -53,6 +55,7 @@ class ThemeSettings {
     this.mornyeAccent = MornyeAccent.red,
     this.useSystemFont = false,
     this.mornyeGlassClarity = kDefaultMornyeGlassClarity,
+    this.mornyeGlassOutlines = true,
   });
 
   Color get seedColor => Color(seedColorValue);
@@ -66,6 +69,7 @@ class ThemeSettings {
     MornyeAccent? mornyeAccent,
     bool? useSystemFont,
     double? mornyeGlassClarity,
+    bool? mornyeGlassOutlines,
   }) {
     return ThemeSettings(
       themeMode: themeMode ?? this.themeMode,
@@ -78,6 +82,7 @@ class ThemeSettings {
       mornyeGlassClarity: normalizeMornyeGlassClarity(
         mornyeGlassClarity ?? this.mornyeGlassClarity,
       ),
+      mornyeGlassOutlines: mornyeGlassOutlines ?? this.mornyeGlassOutlines,
     );
   }
 
@@ -90,6 +95,7 @@ class ThemeSettings {
     kMornyeAccentKey: mornyeAccent.name,
     kUseSystemFontKey: useSystemFont,
     kMornyeGlassClarityKey: mornyeGlassClarity,
+    kMornyeGlassOutlinesKey: mornyeGlassOutlines,
   };
 
   factory ThemeSettings.fromJson(Map<String, dynamic> json) {
@@ -104,6 +110,7 @@ class ThemeSettings {
       mornyeGlassClarity: normalizeMornyeGlassClarity(
         json[kMornyeGlassClarityKey] as num?,
       ),
+      mornyeGlassOutlines: json[kMornyeGlassOutlinesKey] as bool? ?? true,
     );
   }
 
@@ -118,7 +125,8 @@ class ThemeSettings {
         other.style == style &&
         other.mornyeAccent == mornyeAccent &&
         other.useSystemFont == useSystemFont &&
-        other.mornyeGlassClarity == mornyeGlassClarity;
+        other.mornyeGlassClarity == mornyeGlassClarity &&
+        other.mornyeGlassOutlines == mornyeGlassOutlines;
   }
 
   @override
@@ -130,7 +138,8 @@ class ThemeSettings {
       style.hashCode ^
       mornyeAccent.hashCode ^
       useSystemFont.hashCode ^
-      mornyeGlassClarity.hashCode;
+      mornyeGlassClarity.hashCode ^
+      mornyeGlassOutlines.hashCode;
 }
 
 ThemeMode themeModeFromString(String? value) {

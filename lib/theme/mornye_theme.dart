@@ -14,16 +14,21 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     this.accent = MornyeAccent.red,
     this.useSystemFont = false,
     this.glassClarity = kDefaultMornyeGlassClarity,
+    this.glassOutlines = true,
   });
 
   final Color? chromeSurface;
   final MornyeAccent accent;
   final bool useSystemFont;
   final double glassClarity;
+  final bool glassOutlines;
 
   static double glassClarityOf(BuildContext context) =>
       Theme.of(context).extension<MornyeTheme>()?.glassClarity ??
       kDefaultMornyeGlassClarity;
+
+  static bool glassOutlinesOf(BuildContext context) =>
+      Theme.of(context).extension<MornyeTheme>()?.glassOutlines ?? true;
 
   /// A single translucent fill for controls inside an existing glass surface.
   static Color controlFill(BuildContext context, {bool enabled = true}) {
@@ -121,6 +126,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     MornyeAccent accent = MornyeAccent.red,
     bool useSystemFont = false,
     double glassClarity = kDefaultMornyeGlassClarity,
+    bool glassOutlines = true,
   }) {
     final key = (
       defaultTargetPlatform,
@@ -132,7 +138,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     final cached = _themeCache.remove(key);
     if (cached != null) {
       _themeCache[key] = cached;
-      return _withGlassClarity(cached, glassClarity);
+      return _withGlassPreferences(cached, glassClarity, glassOutlines);
     }
     final theme = _build(
       brightness,
@@ -144,19 +150,27 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
       _themeCache.remove(_themeCache.keys.first);
     }
     _themeCache[key] = theme;
-    return _withGlassClarity(theme, glassClarity);
+    return _withGlassPreferences(theme, glassClarity, glassOutlines);
   }
 
   // Moving the clarity slider only changes the material, not typography or
   // seeded colors. Keep the expensive base theme cached independently.
-  static ThemeData _withGlassClarity(ThemeData theme, double value) {
+  static ThemeData _withGlassPreferences(
+    ThemeData theme,
+    double value,
+    bool outlines,
+  ) {
     final clarity = normalizeMornyeGlassClarity(value);
-    if (theme.extension<MornyeTheme>()!.glassClarity == clarity) return theme;
+    final preferences = theme.extension<MornyeTheme>()!;
+    if (preferences.glassClarity == clarity &&
+        preferences.glassOutlines == outlines) {
+      return theme;
+    }
     return theme.copyWith(
       extensions: [
         for (final extension in theme.extensions.values)
           if (extension is MornyeTheme)
-            extension.copyWith(glassClarity: clarity)
+            extension.copyWith(glassClarity: clarity, glassOutlines: outlines)
           else
             extension,
       ],
@@ -177,6 +191,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
       accent: preferences?.accent ?? MornyeAccent.red,
       useSystemFont: preferences?.useSystemFont ?? false,
       glassClarity: preferences?.glassClarity ?? kDefaultMornyeGlassClarity,
+      glassOutlines: preferences?.glassOutlines ?? true,
     );
   }
 
@@ -394,11 +409,13 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     MornyeAccent? accent,
     bool? useSystemFont,
     double? glassClarity,
+    bool? glassOutlines,
   }) => MornyeTheme(
     chromeSurface: chromeSurface ?? this.chromeSurface,
     accent: accent ?? this.accent,
     useSystemFont: useSystemFont ?? this.useSystemFont,
     glassClarity: glassClarity ?? this.glassClarity,
+    glassOutlines: glassOutlines ?? this.glassOutlines,
   );
 
   @override
@@ -411,6 +428,9 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     glassClarity:
         glassClarity +
         ((other?.glassClarity ?? glassClarity) - glassClarity) * t,
+    glassOutlines: t < 0.5
+        ? glassOutlines
+        : other?.glassOutlines ?? glassOutlines,
   );
 }
 

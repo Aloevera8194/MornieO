@@ -146,7 +146,13 @@ void main() {
       await tester.pump();
     }
 
-    for (final clarity in [0.6, 1.0]) {
+    for (final (brightness, clarity, outlines) in [
+      (Brightness.dark, 0.6, true),
+      (Brightness.dark, 1.0, true),
+      (Brightness.light, 0.75, true),
+      (Brightness.light, 0.75, false),
+      (Brightness.dark, 0.75, false),
+    ]) {
       chrome.expand();
       await tester.pumpWidget(
         ProviderScope(
@@ -162,16 +168,22 @@ void main() {
             mornyeGlassLevelProvider.overrideWithValue(MornyeGlassLevel.liquid),
           ],
           child: MaterialApp(
-            theme: MornyeTheme.build(Brightness.dark, glassClarity: clarity),
+            theme: MornyeTheme.build(
+              brightness,
+              glassClarity: clarity,
+              glassOutlines: outlines,
+            ),
             locale: const Locale('en'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               extendBody: true,
               body: flatBackdrop
-                  ? const ColoredBox(
-                      color: Colors.black,
-                      child: SizedBox.expand(),
+                  ? ColoredBox(
+                      color: brightness == Brightness.dark
+                          ? Colors.black
+                          : Colors.white,
+                      child: const SizedBox.expand(),
                     )
                   : const CustomPaint(
                       painter: _Pattern(),
@@ -229,7 +241,15 @@ void main() {
       }
       expect(find.byType(MiniPlayer), findsOneWidget);
       final player = tester.state(find.byType(MiniPlayer));
-      final prefix = 'clarity_${(clarity * 100).round()}';
+      final prefix =
+          '${brightness.name}_clarity_${(clarity * 100).round()}_outlines_$outlines';
+      final lenses = tester.widgetList<LiquidGlassLens>(
+        find.byType(LiquidGlassLens),
+      );
+      expect(lenses, isNotEmpty);
+      for (final lens in lenses) {
+        expect(lens.style.shape?.borderWidth, outlines ? 0.75 : 0);
+      }
       await capture('${prefix}_expanded');
       await halfway(true);
       await capture('${prefix}_folding_half');
@@ -331,6 +351,15 @@ void main() {
         await touch.cancel();
       }
       await wait(300);
+      // Live emulator frames can lag behind the release animation's duration.
+      for (
+        var attempt = 0;
+        capsule() != restingCapsule && attempt < 20;
+        attempt++
+      ) {
+        await wait(100);
+        await tester.pump();
+      }
       expect(capsule(), restingCapsule);
       expect(foreground(), restingForeground);
       expect(tester.state(find.byType(MiniPlayer)), same(player));
@@ -339,7 +368,7 @@ void main() {
     binding.reportData!['mornye_glass_visual'] = {
       'scope':
           'Production MornyeBottomBar/MiniPlayer over '
-          '${flatBackdrop ? 'flat black' : 'generated stripes/grid'}; '
+          '${flatBackdrop ? 'flat light/dark surfaces' : 'generated stripes/grid'}; '
           'paused in-memory playback and settings, no persistent data or network.',
       'captureSurface':
           '${Platform.isAndroid ? 'Android converted Flutter image view' : 'iOS window'}; '

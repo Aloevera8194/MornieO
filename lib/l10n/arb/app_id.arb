@@ -198,6 +198,8 @@
   "appearanceAccentPurple": "Ungu",
   "appearanceAccentPink": "Merah muda",
   "appearanceGlassClarity": "Kebeningan kaca",
+  "appearanceGlassOutlines": "Garis tepi kaca",
+  "appearanceGlassOutlinesSubtitle": "Tampilkan garis dekoratif di tepi kaca Mornye. Mematikannya tetap mempertahankan blur dan pembiasan.",
   "appearanceGlassClaritySubtitle": "Atur kebeningan kaca menu dan navigasi Mornye. Kontras teks tetap terjaga.",
   "appearanceGlassTinted": "Berwarna",
   "appearanceGlassClear": "Bening",

@@ -114,6 +114,8 @@
   "appearanceAccentPurple": "Purple",
   "appearanceAccentPink": "Pink",
   "appearanceGlassClarity": "Glass clarity",
+  "appearanceGlassOutlines": "Glass outlines",
+  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
   "appearanceGlassClaritySubtitle": "Adjust transparency in Mornye menus and navigation. Text contrast is preserved.",
   "appearanceGlassTinted": "Tinted",
   "appearanceGlassClear": "Clear",

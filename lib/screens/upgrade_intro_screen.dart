@@ -330,6 +330,7 @@ class _ThemePicker extends ConsumerWidget {
                       accent: settings.mornyeAccent,
                       useSystemFont: settings.useSystemFont,
                       glassClarity: settings.mornyeGlassClarity,
+                      glassOutlines: settings.mornyeGlassOutlines,
                     )
                   : brightness == Brightness.dark
                   ? AppTheme.dark(

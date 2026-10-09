@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
+import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/mornye_liquid_backdrop.dart';
 
 Future<ui.FragmentProgram>? _selectionMaskProgram;
@@ -247,10 +248,14 @@ class _MornyeSelectionPillState extends State<MornyeSelectionPill>
                                     : 0.08,
                               ),
                               borderRadius: BorderRadius.circular(_pillRadius),
-                              border: Border.all(
-                                color: scheme.onSurface.withValues(alpha: 0.05),
-                                width: 0.5,
-                              ),
+                              border: MornyeTheme.glassOutlinesOf(context)
+                                  ? Border.all(
+                                      color: scheme.onSurface.withValues(
+                                        alpha: 0.05,
+                                      ),
+                                      width: 0.5,
+                                    )
+                                  : null,
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.08),
@@ -408,10 +413,14 @@ class _MornyeSelectionPillState extends State<MornyeSelectionPill>
                                 ? 0.24
                                 : 0.08),
                       ),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.6 * progress),
-                        width: 0.75,
-                      ),
+                      border: MornyeTheme.glassOutlinesOf(context)
+                          ? Border.all(
+                              color: Colors.white.withValues(
+                                alpha: 0.6 * progress,
+                              ),
+                              width: 0.75,
+                            )
+                          : null,
                     ),
                     child: const SizedBox.expand(),
                   ),

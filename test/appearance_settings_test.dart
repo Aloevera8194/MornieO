@@ -11,6 +11,19 @@ import 'package:spotiflac_android/theme/dynamic_color_wrapper.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 
 void main() {
+  test(
+    'old themes retain outlines and new themes serialize the preference',
+    () {
+      expect(ThemeSettings.fromJson({}).mornyeGlassOutlines, isTrue);
+      const settings = ThemeSettings(mornyeGlassOutlines: false);
+      expect(ThemeSettings.fromJson(settings.toJson()), settings);
+      expect(
+        settings.copyWith(mornyeGlassClarity: 1).mornyeGlassOutlines,
+        isFalse,
+      );
+      expect(settings, isNot(const ThemeSettings()));
+    },
+  );
   test('glass clarity restores safely from old and invalid settings', () {
     expect(
       ThemeSettings.fromJson({}).mornyeGlassClarity,
@@ -90,6 +103,44 @@ void main() {
   }
 
   for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets(
+      'glass outlines toggle survives restart and local themes ($mode)',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({
+          kThemeStyleKey: 'mornye',
+          kThemeModeKey: mode.name,
+        });
+        final prefs = await SharedPreferences.getInstance();
+        await openSettings(tester, prefs);
+        final toggle = find.byKey(const ValueKey('mornye-glass-outlines'));
+        await tester.ensureVisible(toggle);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Glass outlines'));
+        await tester.pumpAndSettle();
+        expect(prefs.getBool(kMornyeGlassOutlinesKey), isFalse);
+        final context = tester.element(toggle);
+        expect(MornyeTheme.glassOutlinesOf(context), isFalse);
+        final local = MornyeTheme.fromContext(
+          context,
+          brightness: Brightness.dark,
+        );
+        expect(local.extension<MornyeTheme>()!.glassOutlines, isFalse);
+        expect(
+          local.extension<MornyeTheme>()!.glassClarity,
+          kDefaultMornyeGlassClarity,
+        );
+        await tester.pumpWidget(const SizedBox());
+        await openSettings(tester, prefs);
+        expect(MornyeTheme.glassOutlinesOf(tester.element(toggle)), isFalse);
+        await tester.ensureVisible(toggle);
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Glass outlines'));
+        await tester.pumpAndSettle();
+        expect(prefs.getBool(kMornyeGlassOutlinesKey), isTrue);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
     testWidgets('glass clarity previews live and survives restart ($mode)', (
       tester,
     ) async {

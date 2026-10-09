@@ -113,6 +113,17 @@ class AppearanceSettingsPage extends ConsumerWidget {
                           .setMornyeAccent,
                     ),
                     const _MornyeGlassClaritySlider(),
+                    SettingsSwitchItem(
+                      key: const ValueKey('mornye-glass-outlines'),
+                      icon: Icons.rounded_corner,
+                      title: context.l10n.appearanceGlassOutlines,
+                      subtitle: context.l10n.appearanceGlassOutlinesSubtitle,
+                      value: themeSettings.mornyeGlassOutlines,
+                      onChanged: ref
+                          .read(themeProvider.notifier)
+                          .setMornyeGlassOutlines,
+                      showDivider: false,
+                    ),
                   ],
                 ),
               ),
