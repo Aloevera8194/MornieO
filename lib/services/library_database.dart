@@ -11,6 +11,7 @@ import 'package:spotiflac_android/services/library_queue_store.dart';
 import 'package:spotiflac_android/services/library_cleanup.dart';
 import 'package:spotiflac_android/services/library_search.dart';
 import 'package:spotiflac_android/services/library_database_models.dart';
+import 'package:spotiflac_android/services/library_duplicates.dart';
 import 'package:spotiflac_android/services/library_native_adapter.dart';
 import 'package:spotiflac_android/services/library_row_mapper.dart';
 import 'package:spotiflac_android/services/library_schema.dart';
@@ -1012,66 +1013,12 @@ class LibraryDatabase {
         .toList(growable: false);
   }
 
-  /// Groups of tracks sharing one ISRC across download history and the
-  /// local library. Library rows whose path key already appears in history
-  /// are excluded so a scanned copy of a download doesn't pair with itself.
-  /// Entries come back best-quality first.
+  /// Physical copies sharing one ISRC, excluding inactive NAS sources and
+  /// alternate index/URI references to the same file. Best quality comes first.
   Future<List<IsrcDuplicateGroup>> findIsrcDuplicateGroups() async {
     final db = await database;
-    final rows = await db.rawQuery('''
-      WITH merged AS (
-        SELECT h.id AS id, 'downloaded' AS source, h.track_name, h.artist_name,
-               h.album_name, h.file_path, UPPER(TRIM(h.isrc)) AS isrc_key,
-               h.bit_depth, h.sample_rate, h.bitrate, h.format
-        FROM history_db.history h
-        WHERE h.isrc IS NOT NULL AND TRIM(h.isrc) != ''
-        UNION ALL
-        SELECT l.id AS id, 'local' AS source, l.track_name, l.artist_name,
-               l.album_name, l.file_path, UPPER(TRIM(l.isrc)) AS isrc_key,
-               l.bit_depth, l.sample_rate, l.bitrate, l.format
-        FROM $visibleLibraryView l
-        WHERE l.isrc IS NOT NULL AND TRIM(l.isrc) != ''
-          AND NOT EXISTS (
-            SELECT 1
-            FROM library_path_keys lpk
-            JOIN history_db.history_path_keys hpk ON hpk.path_key = lpk.path_key
-            WHERE lpk.item_id = l.id
-          )
-      )
-      SELECT * FROM merged
-      WHERE isrc_key IN (
-        SELECT isrc_key FROM merged GROUP BY isrc_key HAVING COUNT(*) > 1
-      )
-      ORDER BY isrc_key, bit_depth DESC, sample_rate DESC, bitrate DESC
-    ''');
-
-    final groups = <String, List<IsrcDuplicateEntry>>{};
-    for (final row in rows) {
-      final isrc = row['isrc_key'] as String? ?? '';
-      final filePath = row['file_path'] as String? ?? '';
-      if (isrc.isEmpty || filePath.isEmpty) continue;
-      groups
-          .putIfAbsent(isrc, () => [])
-          .add(
-            IsrcDuplicateEntry(
-              id: row['id'] as String,
-              source: row['source'] as String,
-              trackName: row['track_name'] as String? ?? '',
-              artistName: row['artist_name'] as String? ?? '',
-              albumName: row['album_name'] as String? ?? '',
-              filePath: filePath,
-              bitDepth: (row['bit_depth'] as num?)?.toInt(),
-              sampleRate: (row['sample_rate'] as num?)?.toInt(),
-              bitrate: (row['bitrate'] as num?)?.toInt(),
-              format: row['format'] as String?,
-            ),
-          );
-    }
-    return [
-      for (final entry in groups.entries)
-        if (entry.value.length > 1)
-          IsrcDuplicateGroup(isrc: entry.key, entries: entry.value),
-    ];
+    await _ensureHistoryAttached(db);
+    return readIsrcDuplicateGroups(db);
   }
 
   Future<List<String>> getPhysicalFileIds(Iterable<String> filePaths) async =>
