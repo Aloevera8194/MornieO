@@ -381,17 +381,60 @@ Future<void> backfillPathKeys(
   String sourceTable,
   String keyTable,
 ) async {
-  final rows = await db.query(sourceTable, columns: ['id', 'file_path']);
-  final batch = db.batch();
-  for (final row in rows) {
-    putPathKeysInBatch(
-      batch,
-      keyTable,
-      row['id'] as String,
-      row['file_path'] as String?,
+  // One SAF path can expand into dozens of aliases. A library-wide batch
+  // duplicates all of them in Dart and the platform channel during upgrades.
+  // Keep reads/writes bounded and leave correct keys untouched to avoid
+  // rewriting the entire index (and its WAL) just to add a new alias.
+  const pageSize = 250;
+  String? lastId;
+  while (true) {
+    final rows = await db.query(
+      sourceTable,
+      columns: ['id', 'file_path'],
+      where: lastId == null ? null : 'id > ?',
+      whereArgs: lastId == null ? null : [lastId],
+      orderBy: 'id',
+      limit: pageSize,
     );
+    if (rows.isEmpty) break;
+    final missingKeys = {
+      for (final row in rows)
+        row['id'] as String: buildPathMatchKeys(
+          row['file_path'] as String?,
+        ).toSet(),
+    };
+    final ids = missingKeys.keys.toList(growable: false);
+    final existingKeys = await db.query(
+      keyTable,
+      columns: ['item_id', 'path_key'],
+      where: 'item_id IN (${List.filled(ids.length, '?').join(',')})',
+      whereArgs: ids,
+    );
+    Batch? batch;
+    for (final key in existingKeys) {
+      final id = key['item_id'] as String;
+      final pathKey = key['path_key'] as String;
+      if (!missingKeys[id]!.remove(pathKey)) {
+        (batch ??= db.batch()).delete(
+          keyTable,
+          where: 'item_id = ? AND path_key = ?',
+          whereArgs: [id, pathKey],
+        );
+      }
+    }
+    for (final entry in missingKeys.entries) {
+      for (final key in entry.value) {
+        (batch ??= db.batch()).insert(keyTable, {
+          'item_id': entry.key,
+          'path_key': key,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore);
+      }
+    }
+    // onUpgrade owns the transaction; page commits must not open an
+    // independent transaction or publish a partially migrated database.
+    await batch?.commit(noResult: true);
+    lastId = rows.last['id'] as String;
   }
-  await batch.commit(noResult: true);
 }
 
 /// [replaceExisting] may be false when the caller knows [table] holds no keys
