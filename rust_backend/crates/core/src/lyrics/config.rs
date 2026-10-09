@@ -2,7 +2,7 @@ use crate::matching::lowercase;
 use serde::Serialize;
 use std::collections::HashSet;
 
-pub const DEFAULT_PROVIDERS: &[&str] = &["lrclib", "apple_music"];
+pub const DEFAULT_PROVIDERS: &[&str] = &["apple_music", "lrclib"];
 pub const BUILTIN_PROVIDERS: &[&str] = &[
     "lrclib",
     "netease",

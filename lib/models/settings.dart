@@ -244,7 +244,7 @@ class AppSettings {
     this.localLibraryShowDuplicates = true,
     this.localLibraryAutoScan = 'off',
     this.hasCompletedTutorial = false,
-    this.lyricsProviders = const ['lrclib', 'apple_music'],
+    this.lyricsProviders = const ['apple_music', 'lrclib'],
     this.lyricsIncludeTranslationNetease = false,
     this.lyricsIncludeRomanizationNetease = false,
     this.lyricsMultiPersonWordByWord = true,

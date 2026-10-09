@@ -1070,7 +1070,7 @@ void main() {
       expect(settings.artistTagMode, artistTagModeJoined);
       expect(settings.embeddedCoverMaxDimension, 0);
       expect(settings.autoFallback, isTrue);
-      expect(settings.lyricsProviders, ['lrclib', 'apple_music']);
+      expect(settings.lyricsProviders, ['apple_music', 'lrclib']);
       expect(settings.playerMode, 'internal');
       expect(settings.lyricsMultiPersonWordByWord, isTrue);
       expect(settings.lyricsAppleElrcWordSync, isTrue);

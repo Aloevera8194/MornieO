@@ -121,7 +121,7 @@ AppSettings _$AppSettingsFromJson(Map<String, dynamic> json) => AppSettings(
       (json['lyricsProviders'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList() ??
-      const ['lrclib', 'apple_music'],
+      const ['apple_music', 'lrclib'],
   lyricsIncludeTranslationNetease:
       json['lyricsIncludeTranslationNetease'] as bool? ?? false,
   lyricsIncludeRomanizationNetease:
