@@ -151,7 +151,7 @@ class MusicPlaybackDeck {
     _source = null;
     _routeLost = false;
     _nativeStarted = false;
-    await _ordinary.setSource(UrlSource(url));
+    await _setOrdinarySource(UrlSource(url));
   }
 
   Future<void> setSource(
@@ -245,6 +245,14 @@ class MusicPlaybackDeck {
       usbAudioStatus.value = const UsbAudioStatus(reason: 'dsd_unsupported');
       throw UsbDsdUnavailable();
     }
+    await _setOrdinarySource(source);
+  }
+
+  Future<void> _setOrdinarySource(Source source) async {
+    // stop mode retains the native source. Android can reuse the same
+    // /proc/self/fd number for a different SAF file, so URL equality must not
+    // reuse the previous MediaPlayer or its pending preparation callbacks.
+    await _ordinary.release();
     await _ordinary.setSource(source);
   }
 

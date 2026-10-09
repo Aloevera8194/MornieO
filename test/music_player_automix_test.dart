@@ -66,6 +66,8 @@ class _AudioNative {
   final live = <String>{};
   final playing = <String>{};
   final sources = <String, String>{};
+  final sourceContents = <String, String>{};
+  final preparedContents = <String, String>{};
   final sourceGates = <String, Completer<void>>{};
   final resumedSources = <String>[];
   Completer<void>? resumeGate;
@@ -98,7 +100,11 @@ class _AudioNative {
           case 'setSourceUrl':
             final source = args['url']! as String;
             await sourceGates[source]?.future;
-            sources[id] = source;
+            // Android caches equal URLs, including recycled SAF descriptors.
+            if (sources[id] != source) {
+              sources[id] = source;
+              preparedContents[id] = sourceContents[source] ?? source;
+            }
             unawaited(event(id, 'audio.onPrepared', true));
             if (emitsDuration) unawaited(event(id, 'audio.onDuration', 60000));
           case 'seek':
@@ -110,6 +116,10 @@ class _AudioNative {
             resumedSources.add(sources[id]!);
           case 'pause' || 'stop':
             playing.remove(id);
+          case 'release':
+            playing.remove(id);
+            sources.remove(id);
+            preparedContents.remove(id);
           case 'dispose':
             playing.remove(id);
             live.remove(id);
@@ -936,6 +946,31 @@ void main() {
       expect(native.resumedSources, ['/three.flac']);
     },
   );
+
+  test('recycled SAF descriptor prepares the newly selected file', () async {
+    const descriptor = '/proc/self/fd/42';
+    native.sourceContents[descriptor] = 'first file';
+    await handler.setQueueAndPlay([
+      const PlayableMedia(
+        id: 'first',
+        source: descriptor,
+        title: 'First',
+        artist: 'Artist',
+      ),
+      const PlayableMedia(
+        id: 'second',
+        source: descriptor,
+        title: 'Second',
+        artist: 'Artist',
+      ),
+    ]);
+    expect(native.preparedContents['music-player'], 'first file');
+    native.sourceContents[descriptor] = 'second file';
+    await handler.skipToNext();
+    expect(handler.mediaItem.value?.title, 'Second');
+    expect(native.preparedContents['music-player'], 'second file');
+    expect(native.playing, contains('music-player'));
+  });
 
   test('replacing a queue during preparation drops the old request', () async {
     final gate = Completer<void>();
