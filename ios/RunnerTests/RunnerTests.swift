@@ -1,9 +1,79 @@
 import Foundation
 import Flutter
+import MediaPlayer
 import XCTest
+import audio_service
 @testable import Runner
 
 class RunnerTests: XCTestCase {
+    @MainActor
+    func testNowPlayingRecoveryPreservesTrackArtworkAndControlsWithoutSkipping() throws {
+        let plugin = AudioServicePlugin()
+        func call(_ method: String, _ arguments: [String: Any] = [:]) {
+            var replied = false
+            plugin.handle(FlutterMethodCall(methodName: method, arguments: arguments)) { result in
+                XCTAssertFalse(result is FlutterError)
+                replied = true
+            }
+            XCTAssertTrue(replied)
+        }
+        call("stopService")
+        defer { call("stopService") }
+
+        let artworkURL = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).png")
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 16, height: 16)).image { context in
+            UIColor.red.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 16, height: 16))
+        }
+        try XCTUnwrap(image.pngData()).write(to: artworkURL)
+        defer { try? FileManager.default.removeItem(at: artworkURL) }
+        call("setMediaItem", ["mediaItem": [
+            "id": "fixture", "title": "Same track", "artist": "Test artist", "album": "Test album",
+            "duration": 180_000, "isLive": false, "artUri": artworkURL.absoluteString,
+            "extras": ["artCacheFile": artworkURL.path],
+        ]])
+        func state(playing: Bool, position: Int, updateAge: Double) -> [String: Any] {
+            ["state": [
+                "processingState": 3, "playing": playing,
+                "updatePosition": position, "bufferedPosition": 180_000,
+                "updateTime": (Date().timeIntervalSince1970 - updateAge) * 1000,
+                "speed": 1.5, "repeatMode": 0, "shuffleMode": 0,
+                "controls": [["action": playing ? 1 : 2], ["action": 4], ["action": 5]],
+                "systemActions": [8],
+            ]]
+        }
+        call("setState", state(playing: true, position: 17_000, updateAge: 10))
+        let center = MPNowPlayingInfoCenter.default()
+        let artwork = try XCTUnwrap(center.nowPlayingInfo?[MPMediaItemPropertyArtwork] as? MPMediaItemArtwork)
+
+        // Simulate repeated loss of the OS card while the plugin retains the
+        // same item. Recovery must not depend on a new title or artwork event.
+        for _ in 0..<3 {
+            center.nowPlayingInfo = nil
+            call("refreshNowPlayingInfo")
+            let info = try XCTUnwrap(center.nowPlayingInfo)
+            XCTAssertEqual(info[MPMediaItemPropertyTitle] as? String, "Same track")
+            XCTAssertEqual(info[MPMediaItemPropertyArtist] as? String, "Test artist")
+            XCTAssertTrue(info[MPMediaItemPropertyArtwork] as? MPMediaItemArtwork === artwork)
+            let elapsed = try XCTUnwrap(info[MPNowPlayingInfoPropertyElapsedPlaybackTime] as? Double)
+            XCTAssertEqual(elapsed, 32, accuracy: 1)
+            XCTAssertEqual(info[MPNowPlayingInfoPropertyPlaybackRate] as? Double, 1.5)
+            XCTAssertTrue(MPRemoteCommandCenter.shared().pauseCommand.isEnabled)
+            XCTAssertTrue(MPRemoteCommandCenter.shared().nextTrackCommand.isEnabled)
+            XCTAssertTrue(MPRemoteCommandCenter.shared().changePlaybackPositionCommand.isEnabled)
+        }
+
+        call("setState", state(playing: false, position: 42_000, updateAge: 60))
+        center.nowPlayingInfo = nil
+        call("refreshNowPlayingInfo")
+        XCTAssertEqual(center.nowPlayingInfo?[MPNowPlayingInfoPropertyElapsedPlaybackTime] as? Double, 42)
+        XCTAssertEqual(center.nowPlayingInfo?[MPNowPlayingInfoPropertyPlaybackRate] as? Double, 0)
+        XCTAssertTrue(MPRemoteCommandCenter.shared().playCommand.isEnabled)
+        call("stopService")
+        call("refreshNowPlayingInfo")
+        XCTAssertNil(center.nowPlayingInfo)
+    }
+
     @MainActor
     func testPlayerWidgetSharesSceneEngineAndCompletesCommands() async throws {
         let delegate = try XCTUnwrap(UIApplication.shared.delegate as? AppDelegate)

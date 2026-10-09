@@ -4,6 +4,8 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart'
+    show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
 import 'package:spotiflac_android/services/playback_notification.dart';
 import 'package:audio_session/audio_session.dart'
     show
@@ -54,20 +56,10 @@ void configurePlaybackNotification({
   toggleFavorite: toggleFavorite,
 );
 
-/// Decorative video plugins share AVAudioSession with the music player and
-/// may enable mixing while creating a muted cover. Restore music ownership
-/// without activating a session when this app is not playing music.
-Future<void> restoreMusicAudioSessionAfterVideo() async {
-  if (!musicPlayerRuntime.dependencies.isIOS) return;
-  final handler = musicPlayerRuntime.handler;
-  if (handler == null || handler.mediaItem.value == null) return;
-  try {
-    final session = await musicPlayerRuntime.dependencies.audioSession();
-    await session.configure(const AudioSessionConfiguration.music());
-  } catch (error) {
-    _log.w('Could not restore music audio session after video: $error');
-  }
-}
+/// Muted artwork shares the music session. Recover its Now Playing ownership
+/// after video initialization, including failed or abandoned initialization.
+Future<void> restoreMusicAudioSessionAfterVideo() async =>
+    musicPlayerRuntime.handler?.restoreIosNowPlaying();
 
 /// Enables/disables ReplayGain volume normalization and re-applies it to the
 /// track currently playing.
@@ -304,7 +296,7 @@ Duration normalizedPlaybackResumePosition(
 }
 
 class MusicPlayerHandler extends BaseAudioHandler
-    with QueueHandler, SeekHandler {
+    with QueueHandler, SeekHandler, WidgetsBindingObserver {
   final MusicPlayerRuntime _runtime;
   PlaybackDependencies get _dependencies => _runtime.dependencies;
   AppSettings get _settings => _runtime.settings;
@@ -514,6 +506,42 @@ class MusicPlayerHandler extends BaseAudioHandler
     _refreshPlaybackAutomation();
 
     _listenToPlayer(_player);
+    if (_dependencies.isIOS) WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      unawaited(restoreIosNowPlaying());
+    }
+  }
+
+  /// Recover system controls without reloading, seeking or restarting audio.
+  /// Never reclaim audio focus for a paused/interrupted/stopped player.
+  Future<void> restoreIosNowPlaying() async {
+    final generation = _playRequestGeneration;
+    bool canRestore() =>
+        _dependencies.isIOS &&
+        !_disposed &&
+        generation == _playRequestGeneration &&
+        !_interruptionActive &&
+        !_userPaused &&
+        playbackState.value.playing &&
+        playbackState.value.processingState == AudioProcessingState.ready &&
+        mediaItem.value != null;
+    if (!canRestore()) return;
+    try {
+      final session = _audioSession ?? await _dependencies.audioSession();
+      if (!canRestore()) return;
+      await session.configure(const AudioSessionConfiguration.music());
+      if (!canRestore()) return;
+      if (!await session.setActive(true) || !canRestore()) return;
+      await AudioService.refreshNowPlayingInfo();
+    } catch (error) {
+      _log.w('Could not restore iOS playback controls: $error');
+    }
   }
 
   void _listenToPlayer(MusicPlaybackDeck player) {
@@ -2067,6 +2095,7 @@ class MusicPlayerHandler extends BaseAudioHandler
   Future<void> _dispose() async {
     _autoplay.reset();
     _disposed = true;
+    if (_dependencies.isIOS) WidgetsBinding.instance.removeObserver(this);
     if (identical(musicPlayerRuntime.handler, this)) {
       autoMixStatus.value = AutoMixStatus.idle;
     }

@@ -17,6 +17,10 @@ adding another playback engine or native SDK.
   `PinnedMetadataCache`. The active queue and current item stay pinned so
   notification, Android Auto and browser lookups survive recent-item eviction.
   Replacing the queue and clearing the service release their pinned metadata.
+- iOS: allow the active music handler to re-publish retained Now Playing
+  metadata after restoring its audio session on app lifecycle/video changes.
+  Refresh keeps artwork and extrapolates elapsed time without restarting audio;
+  it never activates the audio session or revives a stopped service.
 
 Android 13+ still chooses the positions and built-in transport icons in System
 UI. We preserve real play/pause/previous/next semantics for headsets, lock screen

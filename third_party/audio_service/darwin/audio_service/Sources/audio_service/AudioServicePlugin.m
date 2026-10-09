@@ -227,6 +227,15 @@ static NSMutableDictionary *nowPlayingInfo = nil;
         result(@{});
     } else if ([@"androidForceEnableMediaButtons" isEqualToString:call.method]) {
         result(@{});
+    } else if ([@"refreshNowPlayingInfo" isEqualToString:call.method]) {
+        // A foreground video/session change can remove the system card while
+        // our metadata cache stays unchanged. Re-publish the current snapshot,
+        // but never resurrect a stopped service or activate audio ourselves.
+        if (commandCenter && mediaItem && processingState != ApsIdle) {
+            [self updateControls];
+            [self updateNowPlayingInfoForce:YES];
+        }
+        result(@{});
     } else if ([@"stopService" isEqualToString:call.method]) {
         [commandCenter.changePlaybackRateCommand setEnabled:NO];
         [commandCenter.togglePlayPauseCommand setEnabled:NO];
@@ -269,6 +278,10 @@ static NSMutableDictionary *nowPlayingInfo = nil;
 }
 
 - (void) updateNowPlayingInfo {
+    [self updateNowPlayingInfoForce:NO];
+}
+
+- (void) updateNowPlayingInfoForce:(BOOL)force {
     BOOL updated = NO;
     if (mediaItem) {
         updated |= [self updateNowPlayingField:MPMediaItemPropertyTitle value:mediaItem[@"title"]];
@@ -287,7 +300,12 @@ static NSMutableDictionary *nowPlayingInfo = nil;
     }
     updated |= [self updateNowPlayingField:MPNowPlayingInfoPropertyPlaybackRate value:(playing ? speed : [NSNumber numberWithDouble: 0.0])];
     updated |= [self updateNowPlayingField:MPNowPlayingInfoPropertyDefaultPlaybackRate value:(playing ? speed : [NSNumber numberWithDouble: 0.0])];
-    updated |= [self updateNowPlayingField:MPNowPlayingInfoPropertyElapsedPlaybackTime value:[NSNumber numberWithDouble:([position doubleValue] / 1000)]];
+    double elapsed = [position doubleValue] / 1000;
+    if (force && playing && processingState == ApsReady) {
+        double now = [[NSDate date] timeIntervalSince1970];
+        elapsed += MAX(0, now - [updateTime doubleValue] / 1000) * [speed doubleValue];
+    }
+    updated |= [self updateNowPlayingField:MPNowPlayingInfoPropertyElapsedPlaybackTime value:@(elapsed)];
     MPNowPlayingInfoCenter *center = [MPNowPlayingInfoCenter defaultCenter];
 #if TARGET_OS_OSX
     if (@available(iOS 13.0, macOS 10.12.2, *)) {
@@ -297,7 +315,7 @@ static NSMutableDictionary *nowPlayingInfo = nil;
     if (@available(iOS 10.0, macOS 10.12.2, *)) {
         updated |= [self updateNowPlayingField:MPNowPlayingInfoPropertyIsLiveStream value:mediaItem[@"isLive"]];
     }
-    if (updated) {
+    if (updated || force) {
         //NSLog(@"### updating nowPlayingInfo");
         center.nowPlayingInfo = nowPlayingInfo;
     }

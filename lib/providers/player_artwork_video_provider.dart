@@ -26,10 +26,11 @@ final playerArtworkVideoProvider = FutureProvider.autoDispose
         await controller.setVolume(0);
         if (!ref.mounted) return controller;
         await controller.setLooping(true);
-        await restoreMusicAudioSessionAfterVideo();
         return controller;
       } catch (_) {
         unawaited(disposeController());
         rethrow;
+      } finally {
+        await restoreMusicAudioSessionAfterVideo();
       }
     });

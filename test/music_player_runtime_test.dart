@@ -5,6 +5,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart' show AppLifecycleState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/models/settings.dart';
@@ -91,8 +92,19 @@ class _Deck implements MusicPlaybackDeck {
 }
 
 class _Session implements AudioSession {
+  int configurations = 0;
+  final activations = <bool>[];
+  Completer<void>? configureBarrier;
+  final interruptions = StreamController<AudioInterruptionEvent>.broadcast();
+
+  Future<void> dispose() => interruptions.close();
+
   @override
-  Future<void> configure(AudioSessionConfiguration configuration) async {}
+  Future<void> configure(AudioSessionConfiguration configuration) async {
+    configurations++;
+    await configureBarrier?.future;
+  }
+
   @override
   Future<bool> setActive(
     bool active, {
@@ -102,10 +114,14 @@ class _Session implements AudioSession {
     bool? androidWillPauseWhenDucked,
     AudioSessionConfiguration fallbackConfiguration =
         const AudioSessionConfiguration.music(),
-  }) async => true;
+  }) async {
+    activations.add(active);
+    return true;
+  }
+
   @override
   Stream<AudioInterruptionEvent> get interruptionEventStream =>
-      const Stream.empty();
+      interruptions.stream;
   @override
   Stream<void> get becomingNoisyEventStream => const Stream.empty();
 
@@ -165,7 +181,11 @@ MusicPlayerRuntime _runtime({
   Stream<double> volumeChanges = const Stream.empty(),
   SourceDeletionEvents? sourceDeletionEvents,
   ListeningRecorder? recorder,
+  bool isIOS = false,
+  _Session? session,
 }) {
+  final audioSession = session ?? _Session();
+  addTearDown(audioSession.dispose);
   final runtime = MusicPlayerRuntime(
     settings: settings,
     dependencies: PlaybackDependencies(
@@ -176,7 +196,7 @@ MusicPlayerRuntime _runtime({
             decks?.add(deck);
             return deck;
           },
-      audioSession: () async => _Session(),
+      audioSession: () async => audioSession,
       initializeHandler: initialize ?? (builder) async => builder(),
       readMetadata: (_, {displayName}) async => {
         'replaygain_track_gain': '-6 dB',
@@ -192,7 +212,7 @@ MusicPlayerRuntime _runtime({
       volumeChanges: volumeChanges,
       sourceDeletionEvents: sourceDeletionEvents ?? SourceDeletionEvents(),
       isAndroid: false,
-      isIOS: false,
+      isIOS: isIOS,
     ),
   );
   addTearDown(runtime.dispose);
@@ -212,6 +232,116 @@ const _track = PlayableMedia(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test(
+    'iOS restores controls across unlock/background without changing track',
+    () async {
+      const channel = MethodChannel(
+        'com.ryanheise.audio_service.client.methods',
+      );
+      final calls = <MethodCall>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channel, (call) async => calls.add(call));
+      addTearDown(
+        () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channel, null),
+      );
+      final session = _Session();
+      final runtime = _runtime(isIOS: true, session: session);
+      final handler = await runtime.initialize();
+      await _settle();
+      handler.mediaItem.add(_item);
+      final state = PlaybackState(
+        playing: true,
+        processingState: AudioProcessingState.ready,
+        updatePosition: const Duration(seconds: 17),
+      );
+      handler.playbackState.add(state);
+      final configurations = session.configurations;
+      for (final lifecycle in [
+        AppLifecycleState.inactive,
+        AppLifecycleState.paused,
+        AppLifecycleState.resumed,
+        AppLifecycleState.inactive,
+        AppLifecycleState.paused,
+      ]) {
+        handler.didChangeAppLifecycleState(lifecycle);
+        await _settle();
+      }
+      expect(session.configurations, configurations + 5);
+      expect(session.activations, List.filled(5, true));
+      expect(
+        calls.map((call) => call.method),
+        List.filled(5, 'refreshNowPlayingInfo'),
+      );
+      expect(handler.mediaItem.value, same(_item));
+      expect(handler.playbackState.value, same(state));
+    },
+  );
+
+  test(
+    'iOS does not reclaim controls when paused, stopped or interrupted',
+    () async {
+      final session = _Session();
+      final runtime = _runtime(isIOS: true, session: session);
+      final handler = await runtime.initialize();
+      await _settle();
+      final configurations = session.configurations;
+      await handler.restoreIosNowPlaying();
+      handler.mediaItem.add(_item);
+      handler.playbackState.add(
+        PlaybackState(processingState: AudioProcessingState.ready),
+      );
+      await handler.restoreIosNowPlaying();
+      handler.playbackState.add(PlaybackState(playing: true));
+      await handler.restoreIosNowPlaying();
+      expect(session.configurations, configurations);
+      expect(session.activations, isEmpty);
+
+      handler.playbackState.add(
+        PlaybackState(
+          playing: true,
+          processingState: AudioProcessingState.ready,
+        ),
+      );
+      session.interruptions.add(
+        AudioInterruptionEvent(true, AudioInterruptionType.pause),
+      );
+      await _settle();
+      await handler.restoreIosNowPlaying();
+      expect(session.activations, isEmpty);
+      await handler.dispose();
+      await handler.restoreIosNowPlaying();
+      expect(session.activations, isEmpty);
+    },
+  );
+
+  test(
+    'iOS recovery cannot activate audio after a pause during configuration',
+    () async {
+      final session = _Session();
+      final handler = await _runtime(
+        isIOS: true,
+        session: session,
+      ).initialize();
+      await _settle();
+      handler.mediaItem.add(_item);
+      handler.playbackState.add(
+        PlaybackState(
+          playing: true,
+          processingState: AudioProcessingState.ready,
+        ),
+      );
+      session.configureBarrier = Completer<void>();
+      final restore = handler.restoreIosNowPlaying();
+      await _settle();
+      await handler.pause();
+      session.configureBarrier!.complete();
+      await restore;
+      expect(session.activations, isEmpty);
+      expect(handler.playbackState.value.playing, isFalse);
+    },
+  );
 
   test(
     'muted start pauses and warns; explicit resume survives source reload',

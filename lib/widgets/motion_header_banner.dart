@@ -153,7 +153,6 @@ class _MotionHeaderBannerState extends ConsumerState<MotionHeaderBanner>
       if (!mounted || !identical(controller, _controller)) return;
       await controller.setVolume(0);
       await controller.setLooping(true);
-      await restoreMusicAudioSessionAfterVideo();
       if (!mounted || !identical(controller, _controller)) return;
       setState(() => _ready = true);
       widget.onAspectRatioChanged?.call(controller.value.aspectRatio);
@@ -164,6 +163,8 @@ class _MotionHeaderBannerState extends ConsumerState<MotionHeaderBanner>
       _disposeController();
       setState(() => _failed = true);
       widget.onError?.call();
+    } finally {
+      await restoreMusicAudioSessionAfterVideo();
     }
   }
 

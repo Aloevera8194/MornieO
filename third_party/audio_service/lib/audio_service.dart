@@ -1228,6 +1228,13 @@ class AudioService {
     );
   }
 
+  /// Re-publishes the retained iOS metadata after the audio session is restored.
+  /// Does not reload artwork or change playback. Call only on iOS.
+  static Future<void> refreshNowPlayingInfo() async {
+    await const MethodChannel('com.ryanheise.audio_service.client.methods')
+        .invokeMethod<void>('refreshNowPlayingInfo');
+  }
+
   /// Stops the service.
   static Future<void> _stop() async {
     await _platform.stopService(const StopServiceRequest());
