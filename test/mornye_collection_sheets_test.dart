@@ -51,8 +51,9 @@ class _Collections extends LibraryCollectionsNotifier {
   @override
   Future<PlaylistAddBatchResult> addTracksToPlaylist(
     String playlistId,
-    Iterable<Track> tracks,
-  ) async {
+    Iterable<Track> tracks, {
+    bool preserveOccurrences = false,
+  }) async {
     additions.add(playlistId);
     if (pendingAdditions.isNotEmpty) {
       await pendingAdditions.removeAt(0).future;

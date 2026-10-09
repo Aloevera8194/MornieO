@@ -44,6 +44,7 @@ Future<PreparedCollectionTrackBatch> prepareCollectionTrackBatch({
   required Iterable<Track> tracks,
   required Set<String> existingKeys,
   required DateTime addedAt,
+  bool preserveOccurrences = false,
   bool? useNative,
   Directory? temporaryDirectory,
 }) async {
@@ -58,10 +59,22 @@ Future<PreparedCollectionTrackBatch> prepareCollectionTrackBatch({
   }
   try {
     if (snapshot.length < _workerThreshold) {
-      return _prepare(snapshot, existingKeys, addedAt, inputDirectory);
+      return _prepare(
+        snapshot,
+        existingKeys,
+        addedAt,
+        inputDirectory,
+        preserveOccurrences,
+      );
     }
     return await Isolate.run(
-      () => _prepare(snapshot, existingKeys, addedAt, inputDirectory),
+      () => _prepare(
+        snapshot,
+        existingKeys,
+        addedAt,
+        inputDirectory,
+        preserveOccurrences,
+      ),
     );
   } catch (_) {
     if (inputDirectory != null) await _removeDirectory(inputDirectory);
@@ -74,12 +87,17 @@ PreparedCollectionTrackBatch _prepare(
   Set<String> existingKeys,
   DateTime addedAt,
   String? inputDirectory,
+  bool preserveOccurrences,
 ) {
   final keys = <String>{};
   final entries = <CollectionTrackEntry>[];
   var duplicates = 0;
+  final importKeys = preserveOccurrences
+      ? playlistImportKeys(tracks).iterator
+      : null;
   for (final track in tracks) {
-    final key = trackCollectionKey(track);
+    importKeys?.moveNext();
+    final key = importKeys?.current ?? trackCollectionKey(track);
     if (existingKeys.contains(key) || !keys.add(key)) {
       duplicates++;
     } else {

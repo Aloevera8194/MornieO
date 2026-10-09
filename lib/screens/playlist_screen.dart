@@ -558,6 +558,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
               ref,
               _tracks,
               playlistNamePrefill: widget.playlistName,
+              preserveOccurrences: true,
             ),
     );
   }

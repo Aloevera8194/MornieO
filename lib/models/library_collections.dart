@@ -23,6 +23,22 @@ String trackCollectionKey(Track track) => libraryTrackCollectionKey(
   isrc: track.isrc,
 );
 
+/// Stable entry keys preserve repeated positions when importing a playlist.
+/// The first occurrence keeps the existing membership key, so re-importing
+/// fills missing occurrences without appending the entire playlist again.
+Iterable<String> playlistImportKeys(Iterable<Track> tracks) sync* {
+  final occurrences = <String, int>{};
+  for (final track in tracks) {
+    final key = trackCollectionKey(track);
+    final count = occurrences.update(
+      key,
+      (value) => value + 1,
+      ifAbsent: () => 1,
+    );
+    yield count == 1 ? key : 'occurrence:$count:$key';
+  }
+}
+
 String collectionArtistId(String value) {
   final colonIndex = value.indexOf(':');
   if (colonIndex <= 0 || colonIndex == value.length - 1) {
@@ -255,10 +271,14 @@ class PlaylistPickerSummaryRequest {
 
   PlaylistPickerSummaryRequest._(this.trackKeys);
 
-  factory PlaylistPickerSummaryRequest.fromTracks(Iterable<Track> tracks) {
+  factory PlaylistPickerSummaryRequest.fromTracks(
+    Iterable<Track> tracks, {
+    bool preserveOccurrences = false,
+  }) {
     final keys =
-        tracks
-            .map(trackCollectionKey)
+        (preserveOccurrences
+                ? playlistImportKeys(tracks)
+                : tracks.map(trackCollectionKey))
             .where((key) => key.trim().isNotEmpty)
             .toSet()
             .toList(growable: false)

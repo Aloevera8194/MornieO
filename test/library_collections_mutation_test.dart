@@ -249,6 +249,61 @@ ProviderContainer _container(_CollectionsDatabase db) {
 }
 
 void main() {
+  test(
+    'playlist import retains all 202 positions and re-import is idempotent',
+    () async {
+      final db = _CollectionsDatabase();
+      db.playlists['playlist'] = {
+        'id': 'playlist',
+        'name': 'Playlist',
+        'created_at': '2026-01-01T00:00:00Z',
+        'updated_at': '2026-01-01T00:00:00Z',
+      };
+      db.releasePlaylistRead.complete();
+      db.releaseWrite.complete();
+      final container = _container(db);
+      final notifier = container.read(libraryCollectionsProvider.notifier);
+      final tracks = [
+        for (var i = 0; i < 202; i++)
+          _track('$i').copyWith(isrc: 'RECORDING${i % 198}'),
+      ];
+      final first = await notifier.addTracksToPlaylist(
+        'playlist',
+        tracks,
+        preserveOccurrences: true,
+      );
+      expect(first.addedCount, 202);
+      final imported = container
+          .read(libraryCollectionsProvider)
+          .playlists
+          .single;
+      expect(imported.trackCount, 202);
+      expect(
+        imported.tracks.map((entry) => entry.track.id),
+        tracks.map((track) => track.id),
+      );
+      expect(db.playlistTracks['playlist'], hasLength(202));
+      final request = PlaylistPickerSummaryRequest.fromTracks(
+        tracks,
+        preserveOccurrences: true,
+      );
+      expect(request.trackKeys.toSet(), imported.trackKeys);
+      final second = await notifier.addTracksToPlaylist(
+        'playlist',
+        tracks,
+        preserveOccurrences: true,
+      );
+      expect(second.addedCount, 0);
+      expect(second.alreadyInPlaylistCount, 202);
+      // Legacy playlists with the original 198 keys receive the four missing entries.
+      final legacyKeys = tracks.map(trackCollectionKey).toSet();
+      expect(
+        request.trackKeys.where((key) => !legacyKeys.contains(key)),
+        hasLength(4),
+      );
+    },
+  );
+
   for (final failFirst in [false, true]) {
     test(
       'playlist bulk deletion snapshots IDs and serializes retries (fail: $failFirst)',

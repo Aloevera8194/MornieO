@@ -29,6 +29,7 @@ Future<void> showAddTracksToPlaylistSheet(
   WidgetRef ref,
   List<Track> tracks, {
   String? playlistNamePrefill,
+  bool preserveOccurrences = false,
 }) async {
   if (tracks.isEmpty) return;
 
@@ -44,6 +45,7 @@ Future<void> showAddTracksToPlaylistSheet(
       final content = _PlaylistPickerSheetContent(
         tracks: tracks,
         playlistNamePrefill: playlistNamePrefill,
+        preserveOccurrences: preserveOccurrences,
       );
       return sheetContext.isMornye
           ? MornyeGlassPanel(tintOpacity: 0.78, child: content)
@@ -55,10 +57,12 @@ Future<void> showAddTracksToPlaylistSheet(
 class _PlaylistPickerSheetContent extends ConsumerStatefulWidget {
   final List<Track> tracks;
   final String? playlistNamePrefill;
+  final bool preserveOccurrences;
 
   const _PlaylistPickerSheetContent({
     required this.tracks,
     this.playlistNamePrefill,
+    required this.preserveOccurrences,
   });
 
   @override
@@ -76,7 +80,10 @@ class _PlaylistPickerSheetContentState
   @override
   void initState() {
     super.initState();
-    _summaryRequest = PlaylistPickerSummaryRequest.fromTracks(widget.tracks);
+    _summaryRequest = PlaylistPickerSummaryRequest.fromTracks(
+      widget.tracks,
+      preserveOccurrences: widget.preserveOccurrences,
+    );
   }
 
   Future<void> _handleDone(List<PlaylistPickerSummary> playlists) async {
@@ -96,7 +103,11 @@ class _PlaylistPickerSheetContentState
 
     try {
       for (final playlistId in idsToAdd) {
-        await notifier.addTracksToPlaylist(playlistId, widget.tracks);
+        await notifier.addTracksToPlaylist(
+          playlistId,
+          widget.tracks,
+          preserveOccurrences: widget.preserveOccurrences,
+        );
         _committedPlaylistIds.add(playlistId);
         final playlistName = playlistNamesById[playlistId];
         if (playlistName != null && playlistName.isNotEmpty) {
@@ -217,7 +228,11 @@ class _PlaylistPickerSheetContentState
                 return;
               }
               final playlistId = await notifier.createPlaylist(name.trim());
-              await notifier.addTracksToPlaylist(playlistId, widget.tracks);
+              await notifier.addTracksToPlaylist(
+                playlistId,
+                widget.tracks,
+                preserveOccurrences: widget.preserveOccurrences,
+              );
               if (!mounted) return;
               setState(() {
                 _committedPlaylistIds.add(playlistId);

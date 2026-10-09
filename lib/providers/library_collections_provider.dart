@@ -519,8 +519,9 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
 
   Future<PlaylistAddBatchResult> addTracksToPlaylist(
     String playlistId,
-    Iterable<Track> tracks,
-  ) => _mutate(() async {
+    Iterable<Track> tracks, {
+    bool preserveOccurrences = false,
+  }) => _mutate(() async {
     await ensurePlaylistLoaded(playlistId);
     if (!ref.mounted) {
       return const PlaylistAddBatchResult(
@@ -541,6 +542,7 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
       tracks: tracks,
       existingKeys: playlist.trackKeys,
       addedAt: now,
+      preserveOccurrences: preserveOccurrences,
     );
     try {
       if (!ref.mounted || prepared.entries.isEmpty) {
