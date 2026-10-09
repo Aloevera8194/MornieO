@@ -40,9 +40,97 @@ class _Settings extends SettingsNotifier {
 
   @override
   AppSettings build() => const AppSettings();
+
+  @override
+  Future<void> ensureLoaded() async {}
 }
 
 void main() {
+  test(
+    'setup completes only after folder and completion flag are durable',
+    () async {
+      final preferences = _Preferences();
+      final container = ProviderContainer(
+        overrides: [
+          settingsProvider.overrideWith(() => _Settings(preferences)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(settingsProvider.notifier);
+      notifier.setStorageMode('saf');
+      await preferences.whenStarted(0);
+      notifier.setDownloadTreeUri(
+        'content://test/tree/music',
+        displayName: 'Music',
+      );
+      final finish = notifier.setFirstLaunchComplete();
+      expect(container.read(settingsProvider).isFirstLaunch, isTrue);
+      preferences.release(0).complete(true);
+      await preferences.whenStarted(1);
+      preferences.release(1).complete(true);
+      await preferences.whenStarted(2);
+      expect(preferences.writes.last['isFirstLaunch'], isFalse);
+      expect(
+        preferences.writes.last['downloadTreeUri'],
+        'content://test/tree/music',
+      );
+      expect(container.read(settingsProvider).isFirstLaunch, isTrue);
+      preferences.release(2).complete(true);
+      await finish;
+      expect(container.read(settingsProvider).isFirstLaunch, isFalse);
+    },
+  );
+
+  test('failed setup persistence keeps the user in setup', () async {
+    final preferences = _Preferences();
+    final container = ProviderContainer(
+      overrides: [settingsProvider.overrideWith(() => _Settings(preferences))],
+    );
+    addTearDown(container.dispose);
+    final notifier = container.read(settingsProvider.notifier);
+    final finish = notifier.setFirstLaunchComplete();
+    final failed = expectLater(finish, throwsStateError);
+    await preferences.whenStarted(0);
+    preferences.release(0).complete(false);
+    await failed;
+    expect(container.read(settingsProvider).isFirstLaunch, isTrue);
+  });
+
+  test(
+    'settings changed during setup completion cannot overwrite its flag',
+    () async {
+      final preferences = _Preferences();
+      final container = ProviderContainer(
+        overrides: [
+          settingsProvider.overrideWith(() => _Settings(preferences)),
+        ],
+      );
+      addTearDown(container.dispose);
+      final notifier = container.read(settingsProvider.notifier);
+      final finish = notifier.setFirstLaunchComplete();
+      await preferences.whenStarted(0);
+      notifier.setDownloadTreeUri(
+        'content://test/tree/latest',
+        displayName: 'Latest',
+      );
+      preferences.release(0).complete(true);
+      await preferences.whenStarted(1);
+      expect(container.read(settingsProvider).isFirstLaunch, isTrue);
+      expect(preferences.writes.last['isFirstLaunch'], isFalse);
+      expect(
+        preferences.writes.last['downloadTreeUri'],
+        'content://test/tree/latest',
+      );
+      preferences.release(1).complete(true);
+      await finish;
+      expect(container.read(settingsProvider).isFirstLaunch, isFalse);
+      expect(
+        container.read(settingsProvider).downloadTreeUri,
+        'content://test/tree/latest',
+      );
+    },
+  );
+
   test('queued save callers await the complete coalescing drain', () async {
     final preferences = _Preferences();
     final container = ProviderContainer(

@@ -755,9 +755,33 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _syncLyricsSettingsToBackend();
   }
 
-  void setFirstLaunchComplete() {
-    state = state.copyWith(isFirstLaunch: false);
-    _saveSettings();
+  Future<void> setFirstLaunchComplete() async {
+    // The router leaves setup as soon as this flag changes. Persist the final
+    // folder settings first so a restart cannot send the user back to setup.
+    await ensureLoaded();
+    final prefs = await _prefs;
+    while (_saveSettingsFuture != null) {
+      await _saveSettingsFuture;
+    }
+    final saved = Completer<void>();
+    _saveSettingsFuture = saved.future;
+    try {
+      do {
+        _saveQueued = false;
+        final completed = state.copyWith(isFirstLaunch: false);
+        if (!await prefs.setString(
+          _settingsKey,
+          jsonEncode(completed.toJson()),
+        )) {
+          throw StateError('Could not save completed setup');
+        }
+        // Include settings changed during the write before publishing the flag.
+        if (!_saveQueued && ref.mounted) state = completed;
+      } while (_saveQueued);
+    } finally {
+      _saveSettingsFuture = null;
+      saved.complete();
+    }
   }
 
   void setCheckForUpdates(bool enabled) {

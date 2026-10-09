@@ -320,6 +320,8 @@ class PlatformBridge {
       StreamController<void>.broadcast();
   static final StreamController<void> _verificationNotificationEvents =
       StreamController<void>.broadcast();
+  static final StreamController<void> _setupFolderSelectionEvents =
+      StreamController<void>.broadcast();
   static final StreamController<List<String>>
   _iosBackgroundDownloadExpirationEvents =
       StreamController<List<String>>.broadcast();
@@ -345,6 +347,11 @@ class PlatformBridge {
     return _verificationNotificationEvents.stream;
   }
 
+  static Stream<void> setupFolderSelectionEvents() {
+    _ensureBackendEventHandler();
+    return _setupFolderSelectionEvents.stream;
+  }
+
   static Future<String?> consumeVerificationNotification() =>
       _channel.invokeMethod<String>('consumeVerificationNotification');
 
@@ -358,6 +365,9 @@ class PlatformBridge {
     _backendEventHandlerInstalled = true;
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
+        case 'setupFolderSelectionChanged':
+          _setupFolderSelectionEvents.add(null);
+          return null;
         case 'libraryScanError':
           final args = call.arguments;
           if (args is Map) {
@@ -999,10 +1009,23 @@ class PlatformBridge {
     return result as String;
   }
 
-  static Future<Map<String, dynamic>?> pickSafTree() async {
-    final result = await _channel.invokeMethod('pickSafTree');
+  static Future<Map<String, dynamic>?> pickSafTree({
+    bool forSetup = false,
+  }) async {
+    final result = await _channel.invokeMethod(
+      'pickSafTree',
+      forSetup ? {'for_setup': true} : null,
+    );
     return _decodeNullableMapResult(result, 'pickSafTree');
   }
+
+  static Future<String?> readSetupFolderSelection() =>
+      _channel.invokeMethod<String>('readSetupFolderSelection');
+
+  static Future<void> acknowledgeSetupFolderSelection(String payload) =>
+      _channel.invokeMethod<void>('acknowledgeSetupFolderSelection', {
+        'payload': payload,
+      });
 
   static Future<bool> safExists(String uri) async {
     final result = await _channel.invokeMethod('safExists', {'uri': uri});

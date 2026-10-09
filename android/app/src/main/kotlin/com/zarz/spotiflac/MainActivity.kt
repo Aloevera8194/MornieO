@@ -103,6 +103,8 @@ class MainActivity: FlutterFragmentActivity() {
         "resumeLibraryScan",
         "parseCueSheet",
         "pickSafTree",
+        "readSetupFolderSelection",
+        "acknowledgeSetupFolderSelection",
         "safExists",
         "safExistsBatch",
         "isSafTreeAccessible",
@@ -153,7 +155,9 @@ class MainActivity: FlutterFragmentActivity() {
     private var libraryStorageReceiver: BroadcastReceiver? = null
     private val pendingSessionGrantEvents = mutableListOf<Map<String, Any>>()
     private var pendingVerificationNotification: String? = null
-    private var pendingSafTreeResult: MethodChannel.Result? = null
+    private val setupFolderPickerStore by lazy {
+        SetupFolderPickerStore(getSharedPreferences("setup_folder_picker", Context.MODE_PRIVATE))
+    }
     internal val safScanLock = Any()
     internal var safScanProgress = SafScanProgress()
     private var downloadProgressStreamJob: Job? = null
@@ -173,18 +177,33 @@ class MainActivity: FlutterFragmentActivity() {
     private val safTreeLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { activityResult ->
-        val result = pendingSafTreeResult ?: return@registerForActivityResult
+        val result = pendingSafTreeResult
         pendingSafTreeResult = null
 
+        fun deliver(payload: String?) {
+            // Android can return to a new process with no Dart method reply.
+            // Persist the grant/result anyway, then notify the restored setup.
+            try {
+                if (setupFolderPickerStore.complete(payload)) {
+                    backendChannel?.invokeMethod("setupFolderSelectionChanged", null)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("SpotiFLAC", "Could not retain setup folder selection", e)
+                result?.error("saf_save_failed", "Could not save selected folder", null)
+                return
+            }
+            result?.success(payload)
+        }
+
         if (activityResult.resultCode != Activity.RESULT_OK) {
-            result.success(null)
+            deliver(null)
             return@registerForActivityResult
         }
 
         val data = activityResult.data
         val uri = data?.data
         if (uri == null) {
-            result.success(null)
+            deliver(null)
             return@registerForActivityResult
         }
 
@@ -216,7 +235,7 @@ class MainActivity: FlutterFragmentActivity() {
                 storageId != null && storageId != "primary"
             },
         )
-        result.success(payload.toString())
+        deliver(payload.toString())
     }
 
     private fun resolveSafStorageId(treeUri: Uri): String? {
@@ -275,6 +294,9 @@ class MainActivity: FlutterFragmentActivity() {
     )
 
     companion object {
+        // audio_service keeps the engine across Activity recreation. Retain
+        // its outstanding picker reply for the same lifetime, not the Activity.
+        private var pendingSafTreeResult: MethodChannel.Result? = null
         private const val SAFE_API_FOR_IMPELLER = 29
 
         private val PROBLEMATIC_GPU_PATTERNS = listOf(
@@ -956,6 +978,11 @@ class MainActivity: FlutterFragmentActivity() {
     }
 
     override fun onDestroy() {
+        if (isFinishing) {
+            val pending = pendingSafTreeResult
+            pendingSafTreeResult = null
+            pending?.success(null)
+        }
         concertCalendarChannel?.setMethodCallHandler(null)
         concertCalendarChannel = null
         audioOutputChannel?.setMethodCallHandler(null)
@@ -1198,12 +1225,14 @@ class MainActivity: FlutterFragmentActivity() {
                                 result.error("saf_unavailable", "No folder picker available on this device", null)
                                 return@launch
                             }
+                            setupFolderPickerStore.begin(call.argument<Boolean>("for_setup") == true)
                             pendingSafTreeResult = result
                             try {
                                 android.util.Log.i("SpotiFLAC", "Launching SAF picker via $resolver")
                                 safTreeLauncher.launch(intent)
                             } catch (e: Exception) {
                                 pendingSafTreeResult = null
+                                setupFolderPickerStore.complete(null)
                                 android.util.Log.e("SpotiFLAC", "Failed to launch SAF picker: ${e.message}", e)
                                 result.error(
                                     "saf_launch_failed",
@@ -1211,6 +1240,13 @@ class MainActivity: FlutterFragmentActivity() {
                                     null
                                 )
                             }
+                        }
+                        "readSetupFolderSelection" -> {
+                            result.success(setupFolderPickerStore.read())
+                        }
+                        "acknowledgeSetupFolderSelection" -> {
+                            setupFolderPickerStore.acknowledge(call.argument<String>("payload") ?: "")
+                            result.success(null)
                         }
                         "safExists" -> {
                             val uriStr = call.argument<String>("uri") ?: ""
