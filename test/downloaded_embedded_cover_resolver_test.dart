@@ -584,6 +584,42 @@ void main() {
     },
   );
 
+  test('legacy SAF thumbnails are replaced without changing the audio', () async {
+    const source = 'content://covers/document/original-artwork.flac';
+    sourcePaths.add(source);
+    var extractions = 0;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(backendChannel, (call) async {
+          if (call.method == 'getSafFileModTimes') {
+            return jsonEncode({source: 1234});
+          }
+          expect(call.method, 'extractCoverToFile');
+          extractions++;
+          await File(
+            (call.arguments as Map)['output_path'] as String,
+          ).writeAsBytes([1, 2, 3]);
+          return jsonEncode({'success': true});
+        });
+    final preview = (await DownloadedEmbeddedCoverResolver.resolveOrExtract(
+      source,
+    ))!;
+    await DownloadedEmbeddedCoverResolver.resetMemoryStateForTesting();
+    final legacy = preview.replaceFirst('v2_', 'v1_');
+    expect(legacy, isNot(preview));
+    await File(preview).rename(legacy);
+    await File('$preview.source').rename('$legacy.source');
+    await File(legacy).writeAsBytes([8, 0, 0]);
+
+    final refreshed = await DownloadedEmbeddedCoverResolver.resolveOrExtract(
+      source,
+    );
+    expect(extractions, 2);
+    expect(await File(refreshed!).readAsBytes(), [1, 2, 3]);
+    await DownloadedEmbeddedCoverResolver.runPersistentCacheMaintenanceForTesting();
+    expect(await File(legacy).exists(), isFalse);
+    expect(await File('$legacy.source').exists(), isFalse);
+  });
+
   test('invalidate removes persistent variants after memory reset', () async {
     final sourcePath = await createAudioFixture('persistent-invalidate');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

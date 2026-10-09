@@ -107,6 +107,54 @@ class NativeDownloadContainerTest {
     }
 
     @Test
+    fun descriptorArtworkExportPreservesOriginalResolutionAndBytes() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val directory = File(context.cacheDir, "original-artwork-${System.nanoTime()}").apply { mkdirs() }
+        try {
+            for ((width, height, format) in listOf(
+                Triple(3000, 3000, android.graphics.Bitmap.CompressFormat.JPEG),
+                Triple(4500, 4500, android.graphics.Bitmap.CompressFormat.PNG),
+                Triple(3000, 1500, android.graphics.Bitmap.CompressFormat.PNG),
+            )) {
+                val artwork = File(directory, "cover-$width-$height.img")
+                val bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888)
+                try {
+                    bitmap.eraseColor(android.graphics.Color.GREEN)
+                    artwork.outputStream().use { assertTrue(bitmap.compress(format, 95, it)) }
+                } finally { bitmap.recycle() }
+                val original = artwork.readBytes()
+                val input = File(directory, "track-$width-$height.flac")
+                val fixture = NativeDownloadFinalizer.runFFmpegArguments(arrayOf(
+                    "-v", "error", "-f", "lavfi", "-i", "sine=frequency=997:sample_rate=48000",
+                    "-i", artwork.path, "-t", "0.1", "-map", "0:a", "-map", "1:v",
+                    "-c:a", "flac", "-c:v", "copy", "-disposition:v", "attached_pic", input.path,
+                ))
+                assertTrue(fixture.second, fixture.first)
+                val before = java.security.MessageDigest.getInstance("SHA-256").digest(input.readBytes())
+                val exported = File(directory, "export-$width-$height.img")
+                android.os.ParcelFileDescriptor.open(input, android.os.ParcelFileDescriptor.MODE_READ_ONLY).use { descriptor ->
+                    backend.extractCoverToFile("/proc/self/fd/${descriptor.fd}", exported.path, input.name)
+                    assertTrue("$width x $height artwork must remain byte-identical", exported.readBytes().contentEquals(original))
+                    val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                    android.graphics.BitmapFactory.decodeFile(exported.path, bounds)
+                    assertEquals(width, bounds.outWidth)
+                    assertEquals(height, bounds.outHeight)
+                    assertTrue(descriptor.statSize > 0)
+                    if (width == 3000) {
+                        val preview = com.spotiflac.backend.readLibraryMetadataFromDescriptor(
+                            descriptor.fd, input.name, "2026-10-09T00:00:00Z", true, null,
+                        ).coverBytes
+                        android.graphics.BitmapFactory.decodeByteArray(preview, 0, preview.size, bounds)
+                        assertEquals(800, bounds.outWidth)
+                        assertEquals(if (height == 3000) 800 else 400, bounds.outHeight)
+                    }
+                }
+                assertTrue(before.contentEquals(java.security.MessageDigest.getInstance("SHA-256").digest(input.readBytes())))
+            }
+        } finally { directory.deleteRecursively() }
+    }
+
+    @Test
     fun nativeFormatsPreserveTagsLyricsAndReplayGain() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val root = File(context.cacheDir, "finalizer-parity-${System.nanoTime()}").apply { mkdirs() }

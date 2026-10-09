@@ -13,6 +13,40 @@ pub struct DescriptorLibraryMetadata {
     pub cover_mime: String,
 }
 
+fn descriptor_path(descriptor: i32) -> Result<String, AudioTagsError> {
+    if descriptor < 0 {
+        return Err("invalid audio descriptor".to_owned().into());
+    }
+    let directory = if cfg!(any(target_os = "android", target_os = "linux")) {
+        "/proc/self/fd"
+    } else {
+        "/dev/fd"
+    };
+    Ok(format!("{directory}/{descriptor}"))
+}
+
+/// Read original embedded artwork for metadata, export and editing. Unlike the
+/// Library scan result, these bytes must never be resized or re-encoded.
+/// The native caller retains the descriptor until this synchronous call returns.
+#[uniffi::export]
+pub fn extract_cover_from_descriptor(
+    descriptor: i32,
+    hint: String,
+    lease: Option<Arc<RequestLease>>,
+) -> Result<Vec<u8>, AudioTagsError> {
+    let check = || check_lease(lease.as_deref());
+    check()?;
+    let path = descriptor_path(descriptor)?;
+    let mut file = open_audio_file(&path)?;
+    let format = tags::library_extension(&path, &hint);
+    let format = if matches!(format.as_str(), "mp4" | "aac") {
+        "m4a"
+    } else {
+        &format
+    };
+    Ok(tags::extract_cover(&mut file, format, &check)?.data)
+}
+
 /// The caller keeps the descriptor open until this synchronous read returns.
 /// Duplicating its descriptor preserves SAF access, including single-open
 /// AppFuse proxies, without resolving a protected path or copying the audio.
@@ -24,17 +58,9 @@ pub fn read_library_metadata_from_descriptor(
     include_cover: bool,
     lease: Option<Arc<RequestLease>>,
 ) -> Result<DescriptorLibraryMetadata, AudioTagsError> {
-    if descriptor < 0 {
-        return Err("invalid audio descriptor".to_owned().into());
-    }
+    let path = descriptor_path(descriptor)?;
     let check = || check_lease(lease.as_deref());
     check()?;
-    let directory = if cfg!(any(target_os = "android", target_os = "linux")) {
-        "/proc/self/fd"
-    } else {
-        "/dev/fd"
-    };
-    let path = format!("{directory}/{descriptor}");
     let mut file = open_audio_file(&path)?;
     let format = tags::library_extension(&path, &hint);
     let (metadata, mut artwork) = if include_cover && format == "flac" {
@@ -86,6 +112,49 @@ mod tests {
     use std::os::fd::AsRawFd;
 
     #[test]
+    fn original_artwork_is_copied_without_decoding_or_changing_the_source() {
+        // Extraction preserves even formats the thumbnail decoder cannot read.
+        let artwork = b"original embedded image bytes";
+        let mut picture = 3_u32.to_be_bytes().to_vec();
+        picture.extend(10_u32.to_be_bytes());
+        picture.extend(b"image/jpeg");
+        picture.extend(0_u32.to_be_bytes());
+        for value in [4500_u32, 4500, 24, 0, artwork.len() as u32] {
+            picture.extend(value.to_be_bytes());
+        }
+        picture.extend(artwork);
+        let mut flac = b"fLaC".to_vec();
+        flac.push(0x86);
+        flac.extend(&u32::try_from(picture.len()).unwrap().to_be_bytes()[1..]);
+        flac.extend(picture);
+        flac.extend([0xff, 0xf8]);
+        let mut source = tempfile::tempfile().unwrap();
+        source.write_all(&flac).unwrap();
+        let descriptor = source.as_raw_fd();
+        assert_eq!(
+            extract_cover_from_descriptor(descriptor, "Track.FLAC".into(), None).unwrap(),
+            artwork
+        );
+        assert_eq!(source.metadata().unwrap().len(), flac.len() as u64);
+        use std::io::{Read, Seek, SeekFrom};
+        source.seek(SeekFrom::Start(0)).unwrap();
+        let mut unchanged = Vec::new();
+        source.read_to_end(&mut unchanged).unwrap();
+        assert_eq!(unchanged, flac);
+
+        use crate::cancellation::{CancellationDomain, CancellationRegistry};
+        let registry = CancellationRegistry::new(CancellationDomain::ExtensionRequest);
+        let lease = registry.acquire("artwork".into()).unwrap();
+        registry.cancel("artwork".into()).unwrap();
+        assert!(
+            extract_cover_from_descriptor(descriptor, "Track.flac".into(), Some(lease)).is_err()
+        );
+        assert!(source.metadata().is_ok());
+        assert!(extract_cover_from_descriptor(-1, "Track.flac".into(), None).is_err());
+        assert!(extract_cover_from_descriptor(descriptor, "Track.xyz".into(), None).is_err());
+    }
+
+    #[test]
     fn descriptor_remains_open_and_audio_does_not_need_a_path_grant() {
         let path = std::env::temp_dir().join(format!("library-fd-{}.wav", std::process::id()));
         let mut file = OpenOptions::new()
@@ -124,6 +193,9 @@ mod tests {
         assert_eq!(json["bitDepth"], 16);
         assert!(metadata.cover_bytes.is_empty());
         assert!(source.metadata().unwrap().is_file());
+        assert!(
+            extract_cover_from_descriptor(source.as_raw_fd(), "Track.wav".into(), None).is_err()
+        );
         assert!(
             read_library_metadata_from_descriptor(-1, "x.flac".into(), "".into(), false, None)
                 .is_err()

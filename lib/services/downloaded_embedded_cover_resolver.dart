@@ -70,7 +70,9 @@ class DownloadedEmbeddedCoverResolver {
   static const int _maxConcurrentExtractions = 2;
   static const int _maxQueuedBackgroundExtractions = 24;
   static const String _persistentCacheDirectoryName = 'embedded_cover_previews';
-  static const String _persistentCacheVersion = 'v1';
+  // v1 SAF previews could contain the Library's 800px thumbnail instead of
+  // original embedded artwork. Re-extract even when the audio has not changed.
+  static const String _persistentCacheVersion = 'v2';
   static const int _maxPersistentCacheEntries = 384;
   static const int _maxPersistentCacheBytes = 160 << 20;
   static const int _persistentCacheSweepTargetBytes = 128 << 20;
@@ -902,6 +904,13 @@ class DownloadedEmbeddedCoverResolver {
       final name = p.basename(entity.path);
       try {
         final stat = await entity.stat();
+        if (name.startsWith('v1_') && name.endsWith('.jpg')) {
+          await entity.delete();
+          await _deleteFileIfPresent(
+            File(_persistentSourceSidecarPath(entity.path)),
+          );
+          continue;
+        }
         final isAbandonedImageStage =
             name.startsWith('.$_persistentCacheVersion') &&
             name.contains('.stage_');

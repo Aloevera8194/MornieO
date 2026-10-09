@@ -451,14 +451,14 @@ internal object RustCoreBackend : CoreBackend {
             audioPath.removePrefix("/proc/self/fd/").toIntOrNull()
         } else null
         if (descriptor != null) {
-            val result = com.spotiflac.backend.readLibraryMetadataFromDescriptor(
-                descriptor, hint, java.time.Instant.now().toString(), true, null,
+            val artwork = com.spotiflac.backend.extractCoverFromDescriptor(
+                descriptor, hint, null,
             )
-            check(result.coverBytes.isNotEmpty()) { "No embedded artwork" }
+            check(artwork.isNotEmpty()) { "No embedded artwork" }
             val output = File(outputPath)
             val staged = File.createTempFile("cover_", ".tmp", output.parentFile)
             try {
-                staged.writeBytes(result.coverBytes)
+                staged.writeBytes(artwork)
                 check(staged.renameTo(output)) { "Could not publish artwork" }
             } finally { staged.delete() }
             return
