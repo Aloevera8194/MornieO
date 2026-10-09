@@ -7,6 +7,7 @@ import 'package:spotiflac_android/models/download_item.dart';
 import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/download_queue_provider.dart';
+import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 
 class _Settings extends SettingsNotifier {
@@ -34,6 +35,20 @@ class _Queue extends DownloadQueueNotifier {
   );
 }
 
+class _Extensions extends ExtensionNotifier {
+  final _started = Completer<void>();
+  final _ready = Completer<void>();
+
+  @override
+  ExtensionState build() => const ExtensionState();
+
+  @override
+  Future<void> ensureInitialized() async {
+    if (!_started.isCompleted) _started.complete();
+    await _ready.future;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final messenger =
@@ -49,6 +64,7 @@ void main() {
   });
 
   test('a failed queue setup releases processing and permits retry', () async {
+    final extensions = _Extensions().._ready.complete();
     var pathAttempts = 0;
     messenger.setMockMethodCallHandler(paths, (_) async {
       pathAttempts++;
@@ -60,6 +76,7 @@ void main() {
       overrides: [
         downloadQueueProvider.overrideWith(() => queue),
         settingsProvider.overrideWith(_Settings.new),
+        extensionProvider.overrideWith(() => extensions),
       ],
     );
     addTearDown(container.dispose);
@@ -88,4 +105,41 @@ void main() {
     expect(pathAttempts, greaterThan(firstAttempts));
     expect(container.read(downloadQueueProvider).isProcessing, isFalse);
   });
+
+  test(
+    'restored downloads wait for extensions and remain queued if initialization fails',
+    () async {
+      var pathAttempts = 0;
+      messenger.setMockMethodCallHandler(paths, (_) async {
+        pathAttempts++;
+        throw PlatformException(code: 'folder_unavailable');
+      });
+      messenger.setMockMethodCallHandler(connectivity, (_) async => null);
+      final extensions = _Extensions();
+      final queue = _Queue();
+      final container = ProviderContainer(
+        overrides: [
+          downloadQueueProvider.overrideWith(() => queue),
+          settingsProvider.overrideWith(_Settings.new),
+          extensionProvider.overrideWith(() => extensions),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.read(downloadQueueProvider);
+      queue.resumePendingDownloadsOnForeground();
+      await extensions._started.future;
+      expect(pathAttempts, 0);
+      expect(
+        container.read(downloadQueueProvider).items.single.status,
+        DownloadStatus.queued,
+      );
+      extensions._ready.completeError(StateError('temporarily unavailable'));
+      await Future<void>.delayed(Duration.zero);
+      final recovered = container.read(downloadQueueProvider);
+      expect(recovered.items.single.status, DownloadStatus.queued);
+      expect(recovered.items.single.error, isNull);
+      expect(recovered.isProcessing, isFalse);
+      expect(pathAttempts, 0);
+    },
+  );
 }

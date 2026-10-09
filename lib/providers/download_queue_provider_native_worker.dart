@@ -1202,6 +1202,14 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
               reconciledIds.add(pendingId);
               updateItemStatus(pendingId, DownloadStatus.queued, progress: 0.0);
             }
+            if (_queueStartupPending) {
+              // This snapshot predates the browser return. Let startup finish
+              // exchanging its callback before retrying through the regular
+              // queue; opening another challenge here would race that grant
+              // and wait on our own queue-restoration barrier.
+              updateItemStatus(itemId, DownloadStatus.queued, progress: 0.0);
+              continue;
+            }
             await _handleVerificationRequiredDownload(
               current,
               errorMsg,

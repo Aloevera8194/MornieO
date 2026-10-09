@@ -486,7 +486,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
   /// the app is backgrounded: the OS may kill the process without a graceful
   /// teardown, and a pending debounce timer would silently drop the most
   /// recent queue mutations.
-  Future<void> flushQueuePersistence() async {
+  Future<void> flushQueuePersistence({bool requireDurable = false}) async {
     // Startup publishes restored items before completing this gate. Capturing
     // the initial empty state while hydration is in flight would delete the
     // restored rows when the persistence writer reaches that empty snapshot.
@@ -496,7 +496,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
     if (!_queueStorageReady) {
       throw StateError('Download queue restoration failed; retry the flush');
     }
-    await _queuePersistence.flush();
+    await _queuePersistence.flush(requireDurable: requireDurable);
   }
 
   void _persistUserPausedQueue(bool paused) {
@@ -1731,6 +1731,15 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
     final networkOnlyQueue = state.items
         .where((item) => item.status == DownloadStatus.queued)
         .every((item) => item.networkDownloadFolder.isNotEmpty);
+    if (!networkOnlyQueue && settings.useExtensionProviders) {
+      // Cold browser callbacks and restored downloads share initialization.
+      // An empty list while loading must not be treated as removed providers.
+      await ref.read(extensionProvider.notifier).ensureInitialized();
+      if (!ref.mounted || state.isPaused) return;
+      settings = ref.read(settingsProvider);
+      updateSettings(settings);
+      isSafMode = _isSafMode(settings);
+    }
     IosSecurityScopedAccess? iosDownloadBookmarkAccess;
 
     // Validate SAF before handing the batch to either queue implementation.

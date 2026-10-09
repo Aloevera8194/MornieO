@@ -21,8 +21,8 @@ extension _DownloadQueueVerificationGate on DownloadQueueNotifier {
         _verificationWaitCoordinator.hasActiveFlow(target.extensionId)) {
       return;
     }
-    // Failed items may not survive queue restoration. The notification still
-    // identifies the owning extension, but cannot restart a missing item.
+    // Older builds did not retain verification failures. The notification
+    // still identifies the extension if its queue item is already missing.
     final verified = await _openVerificationAndWait(
       item?.id ?? 'notification:${target.tapId}',
       target.extensionId,
@@ -93,6 +93,15 @@ extension _DownloadQueueVerificationGate on DownloadQueueNotifier {
       }
     }
 
+    // Finish the durable write before handing control to another app; a
+    // background lifecycle callback may not finish before Android kills us.
+    try {
+      await flushQueuePersistence(requireDurable: true);
+    } catch (error) {
+      _log.e('Could not save downloads before verification: $error');
+      return false;
+    }
+    if (!ref.mounted) return false;
     return openVerificationAndAwaitGrant(
       extensionId,
       browserMode: ref.read(settingsProvider).extensionVerificationBrowserMode,

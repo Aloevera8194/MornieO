@@ -322,6 +322,8 @@ class PlatformBridge {
       StreamController<void>.broadcast();
   static final StreamController<void> _setupFolderSelectionEvents =
       StreamController<void>.broadcast();
+  static final StreamController<void> _extensionAuthCallbackEvents =
+      StreamController<void>.broadcast();
   static final StreamController<List<String>>
   _iosBackgroundDownloadExpirationEvents =
       StreamController<List<String>>.broadcast();
@@ -352,6 +354,14 @@ class PlatformBridge {
     return _setupFolderSelectionEvents.stream;
   }
 
+  static Stream<void> extensionAuthCallbackEvents() {
+    _ensureBackendEventHandler();
+    return _extensionAuthCallbackEvents.stream;
+  }
+
+  static Future<void> processPendingExtensionCallbacks() =>
+      _channel.invokeMethod<void>('processPendingExtensionCallbacks');
+
   static Future<String?> consumeVerificationNotification() =>
       _channel.invokeMethod<String>('consumeVerificationNotification');
 
@@ -365,6 +375,9 @@ class PlatformBridge {
     _backendEventHandlerInstalled = true;
     _channel.setMethodCallHandler((call) async {
       switch (call.method) {
+        case 'extensionAuthCallbackReceived':
+          _extensionAuthCallbackEvents.add(null);
+          return null;
         case 'setupFolderSelectionChanged':
           _setupFolderSelectionEvents.add(null);
           return null;

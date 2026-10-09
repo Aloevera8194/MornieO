@@ -135,7 +135,7 @@ impl ExtensionEnvironment {
         let data_directory_alias =
             crate::files::clean(&std::path::absolute(data_directory).map_err(StorageError::from)?);
         let data_directory = fs::canonicalize(data_directory).map_err(StorageError::from)?;
-        let auth = Arc::new(AuthRegistry::default());
+        let auth = Arc::new(AuthRegistry::persistent(&data_directory, &master_key));
         let sessions = SignedRegistry::new(&data_directory, Arc::clone(&auth));
         Ok(Self {
             logs: Arc::new(crate::logging::LogBuffer::default()),

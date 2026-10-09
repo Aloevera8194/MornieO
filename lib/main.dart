@@ -381,6 +381,7 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
   bool _localLibraryWarmupScheduled = false;
   bool _autoScanTriggeredOnLaunch = false;
   StreamSubscription<void>? _verificationNotificationSubscription;
+  StreamSubscription<void>? _extensionAuthCallbackSubscription;
 
   @override
   void initState() {
@@ -391,6 +392,10 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
       _verificationNotificationSubscription =
           PlatformBridge.verificationNotificationEvents().listen(
             (_) => unawaited(_consumeVerificationNotification()),
+          );
+      _extensionAuthCallbackSubscription =
+          PlatformBridge.extensionAuthCallbackEvents().listen(
+            (_) => unawaited(_completeExtensionCallback()),
           );
       _initializeAppServices();
       _initializeExtensions();
@@ -406,6 +411,7 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
     _downloadHistoryWarmupTimer?.cancel();
     _localLibraryWarmupTimer?.cancel();
     _verificationNotificationSubscription?.cancel();
+    _extensionAuthCallbackSubscription?.cancel();
     NotificationService().verificationNotifications.setHandler(null);
     super.dispose();
   }
@@ -607,6 +613,15 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
       }
     } catch (error) {
       _log.w('Could not read pending verification notification: $error');
+    }
+  }
+
+  Future<void> _completeExtensionCallback() async {
+    try {
+      await ref.read(extensionProvider.notifier).ensureInitialized();
+      await PlatformBridge.processPendingExtensionCallbacks();
+    } catch (error) {
+      _log.w('Could not complete extension verification: $error');
     }
   }
 

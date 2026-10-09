@@ -93,14 +93,11 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
   }
 
   Future<void> _cleanupExtensions({required String reason}) async {
-    if (!PlatformBridge.supportsExtensionSystem) {
-      _cleanupInFlight = false;
-      return;
-    }
-
     try {
-      await PlatformBridge.cleanupExtensions();
-      _log.d('Extensions cleaned up ($reason)');
+      // Android may detach/recreate its Activity while the cached engine and
+      // browser verification remain alive. Keep the process-owned backend.
+      await PlatformBridge.releaseNativeMemory();
+      _log.d('Released idle extension resources ($reason)');
     } catch (e) {
       _log.w('Extension cleanup failed ($reason): $e');
     } finally {
@@ -208,6 +205,11 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
       }
       await loadProviderPriority();
       await loadMetadataProviderPriority();
+      if (Platform.isAndroid) {
+        // Exchange a cold-start browser callback before restored downloads can
+        // bootstrap a replacement challenge and invalidate its original state.
+        await PlatformBridge.processPendingExtensionCallbacks();
+      }
       state = state.copyWith(
         isInitialized: true,
         isLoading: false,

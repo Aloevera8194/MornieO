@@ -105,6 +105,7 @@ class MainActivity: FlutterFragmentActivity() {
         "pickSafTree",
         "readSetupFolderSelection",
         "acknowledgeSetupFolderSelection",
+        "processPendingExtensionCallbacks",
         "safExists",
         "safExistsBatch",
         "isSafTreeAccessible",
@@ -294,6 +295,7 @@ class MainActivity: FlutterFragmentActivity() {
     )
 
     companion object {
+        private val extensionAuthCallbacks = ExtensionAuthCallbacks()
         // audio_service keeps the engine across Activity recreation. Retain
         // its outstanding picker reply for the same lifetime, not the Activity.
         private var pendingSafTreeResult: MethodChannel.Result? = null
@@ -839,56 +841,34 @@ class MainActivity: FlutterFragmentActivity() {
      */
     private fun handleExtensionOAuthIntent(intent: Intent?) {
         val uri = intent?.data ?: return
-        if (!uri.scheme.equals("spotiflac", ignoreCase = true)) {
-            return
-        }
-        val host = (uri.host ?: "").lowercase(Locale.US)
-        val path = (uri.path ?: "").lowercase(Locale.US)
-        val isSessionGrant = host == "session-grant"
-        val isCallback =
-            isSessionGrant ||
-                host == "callback" ||
-                host == "spotify-callback" ||
-                path.contains("callback")
-        if (!isCallback) {
-            return
-        }
-        val code = (
-            if (isSessionGrant) {
-                uri.getQueryParameter("grant") ?: uri.getQueryParameter("code")
-            } else {
-                uri.getQueryParameter("code")
-            }
-        )?.trim().orEmpty()
-        if (code.isEmpty()) {
-            return
-        }
-        val callbackState = uri.getQueryParameter("state")?.trim().orEmpty()
-        if (callbackState.isEmpty()) {
-            android.util.Log.w("SpotiFLAC", "Extension callback missing state")
-            return
-        }
-        intent.data = null
-        var callbackExtensionId = ""
-        scope.launch(Dispatchers.IO) {
+        if (!extensionAuthCallbacks.offer(uri)) return
+        // Keep the Intent intact until the result is handled. A cold start has
+        // no extension owner yet; Dart drains this inbox after initialization.
+        backendChannel?.invokeMethod("extensionAuthCallbackReceived", null)
+    }
+
+    private suspend fun processPendingExtensionCallbacks() {
+        extensionAuthCallbacks.drain { callback ->
+            var callbackExtensionId = ""
             try {
-                coreBackend.completeAuthCallback(callbackState, code, isSessionGrant) {
-                    callbackExtensionId = it
+                withContext(Dispatchers.IO) {
+                    coreBackend.completeAuthCallback(callback.state, callback.code, callback.sessionGrant) {
+                        callbackExtensionId = it
+                    }
                 }
                 android.util.Log.i("SpotiFLAC", "Extension callback completed")
-                if (isSessionGrant) {
-                    withContext(Dispatchers.Main) {
-                        notifySessionGrantCompleted(callbackExtensionId, true)
-                    }
+                if (callback.sessionGrant) {
+                    notifySessionGrantCompleted(callbackExtensionId, true)
                 }
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 android.util.Log.w("SpotiFLAC", "Extension callback failed (${e.javaClass.simpleName})")
-                if (isSessionGrant && callbackExtensionId.isNotEmpty()) {
-                    withContext(Dispatchers.Main) {
-                        notifySessionGrantCompleted(callbackExtensionId, false)
-                    }
+                if (callback.sessionGrant && callbackExtensionId.isNotEmpty()) {
+                    notifySessionGrantCompleted(callbackExtensionId, false)
                 }
             }
+            val current = intent?.data
+            if (current?.getQueryParameter("state") == callback.state) intent.data = null
         }
     }
 
@@ -1126,6 +1106,10 @@ class MainActivity: FlutterFragmentActivity() {
                         return@launch
                     }
                     when (call.method) {
+                        "processPendingExtensionCallbacks" -> {
+                            processPendingExtensionCallbacks()
+                            result.success(null)
+                        }
                         "setScreenAwake" -> {
                             val flag = android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                             if (call.argument<Boolean>("enabled") == true) {

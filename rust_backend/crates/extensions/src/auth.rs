@@ -1,7 +1,7 @@
 //! Shared OAuth state and one-time callback ownership for managed runtimes.
 
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::collections::BTreeMap;
@@ -10,6 +10,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use zeroize::Zeroizing;
 
 mod client;
+mod persistence;
 pub use client::ExtensionAuth;
 
 const SECOND: i128 = 1_000_000_000;
@@ -29,7 +30,7 @@ impl AuthClock for SystemClock {
     }
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Deserialize)]
 pub struct PendingAuthRequest {
     pub extension_id: String,
     pub auth_url: String,
@@ -63,6 +64,7 @@ struct State {
 pub struct AuthRegistry {
     state: Mutex<State>,
     clock: Arc<dyn AuthClock>,
+    persistence: Option<persistence::PendingStore>,
 }
 
 impl Default for AuthRegistry {
@@ -76,7 +78,43 @@ impl AuthRegistry {
         Self {
             state: Mutex::default(),
             clock,
+            persistence: None,
         }
+    }
+
+    pub fn persistent(root: &std::path::Path, key: &crate::storage::StorageMasterKey) -> Self {
+        Self::persistent_with_clock(root, key, Arc::new(SystemClock))
+    }
+
+    fn persistent_with_clock(
+        root: &std::path::Path,
+        key: &crate::storage::StorageMasterKey,
+        clock: Arc<dyn AuthClock>,
+    ) -> Self {
+        let mut registry = Self::with_clock(clock);
+        let store = persistence::PendingStore::new(root, key);
+        // A corrupt/old-key journal invalidates only pending challenges, not
+        // installed extensions. Callback ownership is never inferred from URLs.
+        for saved in store.load(registry.now()).unwrap_or_default() {
+            let mut request = saved.request;
+            request.state = saved.nonce;
+            request.created_at = saved.created_at;
+            let id = request.extension_id.clone();
+            if registry.register_pending(request).is_ok() && !saved.verifier.is_empty() {
+                let _ = registry.edit(&id, |record| {
+                    record.challenge = pkce_challenge(&saved.verifier);
+                    record.verifier = Zeroizing::new(saved.verifier);
+                });
+            }
+        }
+        registry.persistence = Some(store);
+        registry
+    }
+
+    fn persist(&self, state: &State) -> Result<(), String> {
+        self.persistence
+            .as_ref()
+            .map_or(Ok(()), |store| store.save(state, self.now()))
     }
 
     pub fn now(&self) -> i128 {
@@ -141,6 +179,7 @@ impl AuthRegistry {
         let generation = state.generations.entry(id.to_owned()).or_default();
         *generation = generation.wrapping_add(1);
         Self::remove_pending(&mut state, id, self.now());
+        let _ = self.persist(&state);
     }
 
     pub fn register_pending(&self, mut request: PendingAuthRequest) -> Result<(), String> {
@@ -157,6 +196,8 @@ impl AuthRegistry {
         if state.closed {
             return Err("extension environment closed".into());
         }
+        let previous = state.pending.clone();
+        let previous_owners = state.owners.clone();
         if let Some(owner) = state
             .owners
             .get(&request.state)
@@ -184,6 +225,11 @@ impl AuthRegistry {
             .entry(request.state.clone())
             .or_insert_with(|| request.extension_id.clone());
         state.pending.insert(request.extension_id.clone(), request);
+        if let Err(error) = self.persist(&state) {
+            state.pending = previous;
+            state.owners = previous_owners;
+            return Err(error);
+        }
         Ok(())
     }
 
@@ -207,11 +253,9 @@ impl AuthRegistry {
     }
 
     pub fn clear_pending(&self, id: &str) {
-        Self::remove_pending(
-            &mut self.state.lock().expect("auth registry lock"),
-            id,
-            self.now(),
-        );
+        let mut state = self.state.lock().expect("auth registry lock");
+        Self::remove_pending(&mut state, id, self.now());
+        let _ = self.persist(&state);
     }
 
     pub fn pending(&self, id: &str) -> Option<PendingAuthRequest> {
@@ -245,11 +289,13 @@ impl AuthRegistry {
             .as_ref()
             .and_then(|owner| state.pending.get(owner))
             .is_some_and(|request| {
-                request.state == nonce && self.now() - request.created_at < PENDING_TTL
+                request.state == nonce
+                    && (0..PENDING_TTL).contains(&(self.now() - request.created_at))
             });
         if !valid || consume {
             state.owners.remove(nonce);
             state.pending.retain(|_, request| request.state != nonce);
+            self.persist(&state)?;
         }
         if valid {
             Ok(owner.expect("validated callback owner"))
@@ -290,6 +336,147 @@ pub fn pkce_challenge(verifier: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn key(byte: u8) -> crate::storage::StorageMasterKey {
+        crate::storage::StorageMasterKey::from_base64(
+            &base64::engine::general_purpose::STANDARD.encode([byte; 32]),
+        )
+        .unwrap()
+    }
+
+    fn challenge(nonce: &str, age_seconds: i128) -> PendingAuthRequest {
+        PendingAuthRequest {
+            extension_id: "example.auth".into(),
+            auth_url: "https://example.test/verify".into(),
+            callback_url: "spotiflac://session-grant".into(),
+            state: nonce.into(),
+            created_at: (1000 - age_seconds) * SECOND,
+        }
+    }
+
+    #[test]
+    fn encrypted_challenge_and_pkce_survive_restart_but_consumption_does_not_replay() {
+        let root = tempfile::tempdir().unwrap();
+        let key = key(7);
+        let auth = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        auth.edit("example.auth", |record| {
+            record.verifier = Zeroizing::new("private-pkce-verifier".into());
+        })
+        .unwrap();
+        auth.register_pending(challenge("private-browser-nonce", 0))
+            .unwrap();
+        let encrypted = std::fs::read(root.path().join(".pending-auth.enc")).unwrap();
+        for secret in ["private-pkce-verifier", "private-browser-nonce"] {
+            assert!(
+                !encrypted
+                    .windows(secret.len())
+                    .any(|window| window == secret.as_bytes())
+            );
+        }
+        auth.shutdown();
+        drop(auth);
+        let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        assert_eq!(
+            restored
+                .resolve_callback("private-browser-nonce", false)
+                .unwrap(),
+            "example.auth"
+        );
+        assert_eq!(
+            restored.state.lock().unwrap().records["example.auth"]
+                .verifier
+                .as_str(),
+            "private-pkce-verifier"
+        );
+        assert!(restored.resolve_callback("unregistered", false).is_err());
+        let public = serde_json::to_value(restored.pending("example.auth").unwrap()).unwrap();
+        assert!(public.get("state").is_none());
+        assert!(public.get("created_at").is_none());
+        restored
+            .resolve_callback("private-browser-nonce", true)
+            .unwrap();
+        drop(restored);
+        let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        assert!(
+            restored
+                .resolve_callback("private-browser-nonce", false)
+                .is_err()
+        );
+    }
+
+    #[test]
+    fn restart_rejects_expired_future_replaced_and_cleared_challenges() {
+        let root = tempfile::tempdir().unwrap();
+        let key = key(7);
+        for age in [-1, 180] {
+            let auth = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+            auth.register_pending(challenge("stale", age)).unwrap();
+            drop(auth);
+            let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+            assert!(restored.resolve_callback("stale", false).is_err());
+        }
+        let auth = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        auth.register_pending(challenge("old", 0)).unwrap();
+        auth.register_pending(challenge("new", 0)).unwrap();
+        drop(auth);
+        let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        assert!(restored.resolve_callback("old", false).is_err());
+        assert!(restored.resolve_callback("new", false).is_ok());
+        restored.clear_pending("example.auth");
+        drop(restored);
+        let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        assert!(restored.resolve_callback("new", false).is_err());
+    }
+
+    #[test]
+    fn shared_scope_callbacks_remain_one_time_after_restart() {
+        let root = tempfile::tempdir().unwrap();
+        let key = key(7);
+        let auth = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        auth.register_pending(challenge("shared", 0)).unwrap();
+        let mut alias = challenge("shared", 0);
+        alias.extension_id = "example.other".into();
+        auth.register_pending(alias).unwrap();
+        drop(auth);
+        let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        restored.clear_pending("example.auth");
+        assert_eq!(
+            restored.resolve_callback("shared", true).unwrap(),
+            "example.other"
+        );
+        drop(restored);
+        let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        assert!(restored.resolve_callback("shared", false).is_err());
+    }
+
+    #[test]
+    fn corrupt_or_changed_key_journal_never_restores_callback_ownership() {
+        let root = tempfile::tempdir().unwrap();
+        let key = key(7);
+        let auth = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        auth.register_pending(challenge("nonce", 0)).unwrap();
+        drop(auth);
+        let other_key = super::tests::key(8);
+        let restored =
+            AuthRegistry::persistent_with_clock(root.path(), &other_key, Arc::new(Clock));
+        assert!(restored.pending("example.auth").is_none());
+        std::fs::write(root.path().join(".pending-auth.enc"), b"corrupt").unwrap();
+        let restored = AuthRegistry::persistent_with_clock(root.path(), &key, Arc::new(Clock));
+        assert!(restored.pending("example.auth").is_none());
+        restored
+            .register_pending(challenge("replacement", 0))
+            .unwrap();
+        assert!(restored.resolve_callback("replacement", false).is_ok());
+    }
+
+    #[test]
+    fn failed_journal_write_does_not_publish_an_unsaved_challenge() {
+        let root = tempfile::tempdir().unwrap();
+        let auth = AuthRegistry::persistent_with_clock(root.path(), &key(7), Arc::new(Clock));
+        std::fs::create_dir(root.path().join(".pending-auth.enc")).unwrap();
+        assert!(auth.register_pending(challenge("unsaved", 0)).is_err());
+        assert!(auth.pending("example.auth").is_none());
+    }
 
     struct Clock;
     impl AuthClock for Clock {

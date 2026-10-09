@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,6 +112,29 @@ void main() {
     messenger.setMockMethodCallHandler(backend, null);
     await root.delete(recursive: true);
   });
+
+  testWidgets(
+    'activity detach releases idle memory without closing extensions',
+    (tester) async {
+      final methods = <String>[];
+      messenger.setMockMethodCallHandler(backend, (call) async {
+        methods.add(call.method);
+        return null;
+      });
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      container.read(extensionProvider);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.detached);
+      await tester.pump();
+      expect(methods, contains('releaseMemory'));
+      expect(methods, isNot(contains('cleanupExtensions')));
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+    },
+  );
 
   test(
     'storage preparation retries a transient failure and coalesces callers',

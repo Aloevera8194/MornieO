@@ -11,17 +11,25 @@ const _workerItemThreshold = 64;
 const _workerPayloadThreshold = 64 * 1024;
 const _workerChunkSize = 1024;
 
-DownloadStatus downloadQueuePersistenceStatus(DownloadStatus status) =>
-    switch (status) {
-      DownloadStatus.downloading ||
-      DownloadStatus.finalizing => DownloadStatus.queued,
-      _ => status,
-    };
+DownloadStatus downloadQueuePersistenceStatus(
+  DownloadStatus status, {
+  DownloadErrorType? errorType,
+}) => switch (status) {
+  DownloadStatus.failed
+      when errorType == DownloadErrorType.verificationRequired =>
+    DownloadStatus.queued,
+  DownloadStatus.downloading ||
+  DownloadStatus.finalizing => DownloadStatus.queued,
+  _ => status,
+};
 
 /// Transfer samples are transient; only restart-relevant state reaches SQLite.
 String encodeDownloadQueueItemForPersistence(DownloadItem item) => jsonEncode(
   item.toJson()
-    ..['status'] = downloadQueuePersistenceStatus(item.status).name
+    ..['status'] = downloadQueuePersistenceStatus(
+      item.status,
+      errorType: item.errorType,
+    ).name
     ..['progress'] = 0.0
     ..['speedMBps'] = 0.0
     ..['bytesReceived'] = 0
@@ -49,7 +57,10 @@ RestoredDownloadQueue _decodeRows(List<Map<String, dynamic>> rows) {
       final decoded = jsonDecode(payload);
       if (decoded is! Map) continue;
       var item = DownloadItem.fromJson(Map<String, dynamic>.from(decoded));
-      final status = downloadQueuePersistenceStatus(item.status);
+      final status = downloadQueuePersistenceStatus(
+        item.status,
+        errorType: item.errorType,
+      );
       saved[id] = (
         item: item,
         payload:
