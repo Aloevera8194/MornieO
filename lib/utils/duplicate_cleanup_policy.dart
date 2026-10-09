@@ -1,4 +1,31 @@
 import 'package:spotiflac_android/services/library_database.dart';
+import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
+import 'package:spotiflac_android/utils/path_match_keys.dart';
+
+/// Clear every index of a deleted file, but never delete a retained alias.
+Future<int> deleteReviewedDuplicateCopies({
+  required List<IsrcDuplicateEntry> entries,
+  required List<IsrcDuplicateEntry> retainedEntries,
+  required Future<bool> Function(String path) deleteFile,
+  required Future<void> Function(String path) removePhysicalFile,
+  required Future<void> Function(IsrcDuplicateEntry entry) removeIndexEntry,
+}) async {
+  var deleted = 0;
+  for (final entry in entries) {
+    final path = DownloadedEmbeddedCoverResolver.cleanFilePath(entry.filePath);
+    if (isPhysicalFileRetained(
+      path,
+      retainedEntries.map((entry) => entry.filePath),
+    )) {
+      await removeIndexEntry(entry);
+    } else {
+      if (!await deleteFile(path)) continue;
+      await removePhysicalFile(entry.filePath);
+    }
+    deleted++;
+  }
+  return deleted;
+}
 
 class DuplicateCleanupPlan {
   final List<IsrcDuplicateEntry> retainedEntries;

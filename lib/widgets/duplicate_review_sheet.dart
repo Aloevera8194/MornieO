@@ -12,7 +12,6 @@ import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.da
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/utils/duplicate_cleanup_policy.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
-import 'package:spotiflac_android/utils/path_match_keys.dart';
 import 'package:spotiflac_android/widgets/audio_quality_badges.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
@@ -92,6 +91,15 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
     return format;
   }
 
+  String _displayPath(String path) {
+    final cleaned = DownloadedEmbeddedCoverResolver.cleanFilePath(path);
+    try {
+      return Uri.decodeFull(cleaned);
+    } on FormatException {
+      return cleaned;
+    }
+  }
+
   Future<bool> _confirmDelete(String message) async {
     final confirmed = await showAppDialog<bool>(
       context: context,
@@ -123,31 +131,25 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
     required List<IsrcDuplicateEntry> retainedEntries,
   }) async {
     final historyNotifier = ref.read(downloadHistoryProvider.notifier);
-    var deleted = 0;
-    for (final entry in entries) {
-      final entryPath = DownloadedEmbeddedCoverResolver.cleanFilePath(
-        entry.filePath,
-      );
-      final sharesRetainedFile = isPhysicalFileRetained(
-        entryPath,
-        retainedEntries.map(
-          (retained) =>
-              DownloadedEmbeddedCoverResolver.cleanFilePath(retained.filePath),
-        ),
-      );
-      // Two database rows may describe one SAF file through different URI or
-      // raw-path aliases. Remove only the redundant row in that case; deleting
-      // the shared file would also destroy the copy the user chose to retain.
-      final fileDeleted = sharesRetainedFile || await deleteFile(entryPath);
-      if (!fileDeleted) continue;
-      if (entry.source == 'downloaded') {
-        historyNotifier.removeFromHistory(entry.id);
-      } else {
-        await LibraryDatabase.instance.deleteByPath(entry.filePath);
-        _deletedLocalRows = true;
-      }
-      deleted++;
-    }
+    final deleted = await deleteReviewedDuplicateCopies(
+      entries: entries,
+      retainedEntries: retainedEntries,
+      deleteFile: deleteFile,
+      removePhysicalFile: (path) async {
+        // A download may also be indexed by a scan. Clear both references so
+        // playlist resolution by ISRC finds the surviving file, not a ghost.
+        await historyNotifier.removePhysicalFiles([path]);
+        await _localLibraryNotifier.removePhysicalFiles([path]);
+      },
+      removeIndexEntry: (entry) async {
+        if (entry.source == 'downloaded') {
+          await historyNotifier.removeFromHistory(entry.id);
+        } else {
+          await LibraryDatabase.instance.deleteByPath(entry.filePath);
+          _deletedLocalRows = true;
+        }
+      },
+    );
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(context.l10n.snackbarDeletedTracks(deleted))),
@@ -166,6 +168,13 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
       final confirmed = await _confirmDelete(message);
       if (confirmed) {
         await _deleteEntries(entries, retainedEntries: retainedEntries);
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(context.friendlyError(error))));
+        _reload();
       }
     } finally {
       if (mounted) {
@@ -346,27 +355,21 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    p.basename(
-                      DownloadedEmbeddedCoverResolver.cleanFilePath(
-                        group.entries[i].filePath,
-                      ),
-                    ),
-                    maxLines: 1,
+                    _displayPath(group.entries[i].filePath),
+                    maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
               ],
             ),
-            trailing: i == 0
-                ? Icon(Icons.check_circle_outline, color: colorScheme.primary)
-                : IconButton(
-                    tooltip: context.l10n.dialogDelete,
-                    icon: Icon(Icons.delete_outline, color: colorScheme.error),
-                    onPressed: _deleteActionInProgress
-                        ? null
-                        : () => _deleteSingle(group, group.entries[i]),
-                  ),
+            trailing: IconButton(
+              tooltip: context.l10n.dialogDelete,
+              icon: Icon(Icons.delete_outline, color: colorScheme.error),
+              onPressed: _deleteActionInProgress
+                  ? null
+                  : () => _deleteSingle(group, group.entries[i]),
+            ),
           ),
       ],
     );
