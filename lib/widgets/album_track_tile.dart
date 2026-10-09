@@ -23,6 +23,7 @@ class AlbumTrackTile extends StatelessWidget {
     required this.onOpen,
     required this.onEnterSelectionMode,
     required this.onPlay,
+    this.isPlaying = false,
   });
 
   final int? trackNumber;
@@ -35,6 +36,7 @@ class AlbumTrackTile extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onEnterSelectionMode;
   final VoidCallback onPlay;
+  final bool isPlaying;
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +60,16 @@ class AlbumTrackTile extends StatelessWidget {
       title: trackName,
       subtitle: subtitle,
       trailing: IconButton(
-        tooltip: context.l10n.tooltipPlay,
+        tooltip: isPlaying
+            ? context.l10n.actionPause
+            : context.l10n.tooltipPlay,
         onPressed: onPlay,
         icon: Icon(
-          context.isMornye ? CupertinoIcons.play_fill : Icons.play_arrow,
+          context.isMornye
+              ? (isPlaying
+                    ? CupertinoIcons.pause_fill
+                    : CupertinoIcons.play_fill)
+              : (isPlaying ? Icons.pause : Icons.play_arrow),
           color: colorScheme.primary,
         ),
         style: IconButton.styleFrom(

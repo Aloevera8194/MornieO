@@ -531,12 +531,14 @@ class AlbumPlayActions extends StatelessWidget {
     required this.shuffleTooltip,
     required this.onPlay,
     required this.onShuffle,
+    this.isPlaying = false,
   });
 
   final String playLabel;
   final String shuffleTooltip;
   final VoidCallback onPlay;
   final VoidCallback onShuffle;
+  final bool isPlaying;
 
   @override
   Widget build(BuildContext context) {
@@ -547,7 +549,9 @@ class AlbumPlayActions extends StatelessWidget {
         children: [
           Expanded(
             child: HeaderFilledButton(
-              icon: CupertinoIcons.play_fill,
+              icon: isPlaying
+                  ? CupertinoIcons.pause_fill
+                  : CupertinoIcons.play_fill,
               label: playLabel,
               onPressed: onPlay,
             ),
@@ -569,7 +573,7 @@ class AlbumPlayActions extends StatelessWidget {
         Flexible(
           child: ExpressiveButton(
             onPressed: onPlay,
-            icon: const Icon(Icons.play_arrow, size: 20),
+            icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow, size: 20),
             style: FilledButton.styleFrom(
               backgroundColor: scheme.primary,
               foregroundColor: scheme.onPrimary,

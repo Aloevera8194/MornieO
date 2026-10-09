@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:audio_service/audio_service.dart' show MediaItem;
 import 'package:spotiflac_android/services/deleted_library_files.dart';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
@@ -199,6 +200,15 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
     );
   }
 
+  bool _isCurrentTrack(MediaItem? item, LocalLibraryItem track) {
+    if (item == null) return false;
+    // Playlist playback can use the file path rather than the Library row ID.
+    final source = item.extras?['source'];
+    return source is String && source.isNotEmpty
+        ? source == track.filePath
+        : item.id == track.id || item.id == track.filePath;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (context.isMornye) {
@@ -352,11 +362,30 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
         overflow: TextOverflow.ellipsis,
       ),
       meta: _buildLocalHeaderMeta(context, qualityLabelMode),
-      actions: AlbumPlayActions(
-        playLabel: context.l10n.tooltipPlay,
-        shuffleTooltip: context.l10n.actionShuffle,
-        onPlay: _playAll,
-        onShuffle: _shuffleAll,
+      actions: Consumer(
+        builder: (context, ref, _) {
+          final isCurrent = ref.watch(
+            currentMediaItemProvider.select(
+              (state) => _sortedTracksCache.any(
+                (track) => _isCurrentTrack(state.value, track),
+              ),
+            ),
+          );
+          final isPlaying = isCurrent && ref.watch(playbackPlayingProvider);
+          return AlbumPlayActions(
+            isPlaying: isPlaying,
+            playLabel: isPlaying
+                ? context.l10n.actionPause
+                : context.l10n.tooltipPlay,
+            shuffleTooltip: context.l10n.actionShuffle,
+            onPlay: isCurrent
+                ? () => ref
+                      .read(musicPlayerControllerProvider)
+                      .togglePlayPause(isPlaying)
+                : _playAll,
+            onShuffle: _shuffleAll,
+          );
+        },
       ),
     );
   }
@@ -469,44 +498,59 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
     ColorScheme colorScheme,
     LocalLibraryItem track,
   ) {
-    return AlbumTrackTile(
-      trackNumber: track.trackNumber,
-      trackName: track.trackName,
-      subtitle: Row(
-        children: [
-          Flexible(
-            child: Text(
-              track.artistName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: colorScheme.onSurfaceVariant),
-            ),
+    return Consumer(
+      builder: (context, ref, _) {
+        final isCurrent = ref.watch(
+          currentMediaItemProvider.select(
+            (state) => _isCurrentTrack(state.value, track),
           ),
-          if (track.format != null) ...[
-            Text(
-              ' • ',
-              style: TextStyle(
-                color: colorScheme.onSurfaceVariant,
-                fontSize: 12,
+        );
+        final isPlaying = isCurrent && ref.watch(playbackPlayingProvider);
+        return AlbumTrackTile(
+          isPlaying: isPlaying,
+          trackNumber: track.trackNumber,
+          trackName: track.trackName,
+          subtitle: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  track.artistName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: colorScheme.onSurfaceVariant),
+                ),
               ),
-            ),
-            Text(
-              track.format!.toUpperCase(),
-              style: TextStyle(
-                color: colorScheme.onSurfaceVariant,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ],
-      ),
-      isSelectionMode: isSelectionMode,
-      isSelected: selectedIds.contains(track.id),
-      colorScheme: colorScheme,
-      onToggleSelection: () => toggleSelection(track.id),
-      onOpen: () => _openMetadata(track),
-      onEnterSelectionMode: () => enterSelectionMode(track.id),
-      onPlay: () => _openFile(track),
+              if (track.format != null) ...[
+                Text(
+                  ' • ',
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  track.format!.toUpperCase(),
+                  style: TextStyle(
+                    color: colorScheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          isSelectionMode: isSelectionMode,
+          isSelected: selectedIds.contains(track.id),
+          colorScheme: colorScheme,
+          onToggleSelection: () => toggleSelection(track.id),
+          onOpen: () => _openMetadata(track),
+          onEnterSelectionMode: () => enterSelectionMode(track.id),
+          onPlay: isCurrent
+              ? () => ref
+                    .read(musicPlayerControllerProvider)
+                    .togglePlayPause(isPlaying)
+              : () => _openFile(track),
+        );
+      },
     );
   }
 
