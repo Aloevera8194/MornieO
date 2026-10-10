@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -35,6 +36,7 @@ class _Storage extends NetworkStorageService {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late Directory directory;
   setUp(
     () async =>
@@ -43,7 +45,7 @@ void main() {
   tearDown(() async => directory.delete(recursive: true));
 
   NetworkLibraryScanner scanner(
-    _Storage storage,
+    NetworkStorageService storage,
     Future<Map<String, dynamic>> Function(String) reader, {
     Future<RandomAccessFile> Function(File)? openOutput,
   }) => NetworkLibraryScanner(
@@ -67,6 +69,130 @@ void main() {
       isEmpty,
     );
   }
+
+  test('WebDAV traversal indexes 1806 tracks across encoded album folders', () async {
+    final overrides = HttpOverrides.current;
+    HttpOverrides.global = null;
+    addTearDown(() => HttpOverrides.global = overrides);
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(() => server.close(force: true));
+    final tree = <String, List<NetworkEntry>>{
+      '': [
+        const NetworkEntry('Music/', 'Music', directory: true),
+        const NetworkEntry('Other/', 'Other', directory: true),
+      ],
+      'Music/': [
+        const NetworkEntry('Music/lossless/', 'lossless', directory: true),
+      ],
+      'Music/lossless/': [
+        const NetworkEntry(
+          'Music/lossless/Ordinary/',
+          'Ordinary',
+          directory: true,
+        ),
+        const NetworkEntry(
+          'Music/lossless/Artist & Band/',
+          'Artist & Band',
+          directory: true,
+        ),
+      ],
+      'Music/lossless/Artist & Band/': [],
+    };
+    var trackIndex = 0;
+    void addTracks(String folder, int count) {
+      tree[folder] = List.generate(count, (_) {
+        final index = trackIndex++;
+        final extension = ['flac', 'mp3', 'ogg'][index % 3];
+        final name = index < 369
+            ? 'A & B $index.$extension'
+            : 'Song $index.$extension';
+        return NetworkEntry('$folder$name', name, size: 123);
+      });
+    }
+
+    addTracks('Music/lossless/Ordinary/', 1168);
+    addTracks('Other/', 37);
+    for (var album = 0; album < 20; album++) {
+      final name = 'Album + $album [Live]';
+      final folder = 'Music/lossless/Artist & Band/$name/';
+      tree['Music/lossless/Artist & Band/']!.add(
+        NetworkEntry(folder, name, directory: true),
+      );
+      addTracks(folder, album == 19 ? 31 : 30);
+    }
+    expect(trackIndex, 1806);
+    final listed = <String>[];
+    server.listen((request) async {
+      expect(request.method, 'PROPFIND');
+      expect(request.headers.value('Depth'), '1');
+      await request.drain<void>();
+      final folder = request.uri.pathSegments.skip(1).join('/');
+      listed.add(folder);
+      final entries = tree[folder];
+      if (entries == null) {
+        request.response.statusCode = HttpStatus.notFound;
+      } else {
+        request.response.statusCode = HttpStatus.multiStatus;
+        request.response.headers.contentType = ContentType(
+          'application',
+          'xml',
+        );
+        request.response.write('<d:multistatus xmlns:d="DAV:">');
+        for (final entry in entries) {
+          final href =
+              '/dav/${entry.path.split('/').map(Uri.encodeComponent).join('/')}';
+          request.response.write(
+            '<d:response><d:href>$href</d:href><d:propstat><d:prop>'
+            '${entry.directory ? '<d:resourcetype><d:collection/></d:resourcetype>' : '<d:getcontentlength>123</d:getcontentlength>'}'
+            '</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response>',
+          );
+        }
+        request.response.write('</d:multistatus>');
+      }
+      await request.response.close();
+    });
+    final connection = NetworkConnection(
+      id: 'nas',
+      name: 'NAS',
+      protocol: NetworkProtocol.webdav,
+      address: 'http://127.0.0.1:${server.port}/dav/',
+    );
+    final storage = NetworkStorageService(
+      read: () async => jsonEncode([connection.toJson()]),
+      write: (_) async {},
+    );
+    addTearDown(storage.dispose);
+    final scan =
+        await scanner(
+          storage,
+          (source) async => {
+            'title': Uri.parse(source).pathSegments.last,
+            'artist': 'Artist',
+            'album': 'Album',
+          },
+        ).scan(
+          NetworkStorageService.source('nas', ''),
+          checkpoint: () async {},
+          onProgress: (_, errors, _) => expect(errors, 0),
+        );
+    final rows = await scan.rows().toList();
+    expect(scan.expectedCount, 1806);
+    expect(scan.errorCount, 0);
+    expect(rows, hasLength(1806));
+    expect(rows.map((row) => row['id']).toSet(), hasLength(1806));
+    expect(
+      rows.where(
+        (row) =>
+            Uri.parse(row['filePath'] as String).pathSegments.first == 'Music',
+      ),
+      hasLength(1769),
+    );
+    expect(
+      rows.where((row) => (row['trackName'] as String).contains('&')),
+      hasLength(369),
+    );
+    expect(listed.toSet(), tree.keys.toSet());
+  });
 
   test(
     'bounded writes preserve all rows, Unicode, order and progress',

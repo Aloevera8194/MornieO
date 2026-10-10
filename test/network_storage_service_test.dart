@@ -107,6 +107,36 @@ void main() {
     expect(result.single.size, 123);
   });
 
+  test('WebDAV accepts equivalent encoding of parent folder names', () {
+    final server = connection(
+      'https://example.test/dav/',
+      protocol: NetworkProtocol.webdav,
+    );
+    for (final folder in [
+      'Rock & Roll',
+      'Artist + Band',
+      'Album [Deluxe]',
+      "Artist's Album",
+      'हिन्दी 音楽',
+    ]) {
+      final href = '/dav/${Uri.encodeComponent(folder)}/A%20%26%20B.flac';
+      final entries = NetworkStorageService.parseListing(
+        server,
+        '$folder/',
+        '<d:multistatus xmlns:d="DAV:"><d:response><d:href>$href</d:href>'
+            '<d:propstat><d:prop><d:getcontentlength>123</d:getcontentlength>'
+            '</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>'
+            '</d:response></d:multistatus>',
+      );
+      expect(
+        entries.map((entry) => entry.path),
+        ['$folder/A & B.flac'],
+        reason:
+            'Requested ${networkTarget(server, '$folder/')} but href was $href',
+      );
+    }
+  });
+
   test(
     'concurrent saves persist both connections and retain credentials privately',
     () async {

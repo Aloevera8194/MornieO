@@ -23,6 +23,7 @@ pub(crate) fn execute(request: &Value, bytes: Option<&[u8]>) -> Result<Value, St
     if !base.path().ends_with('/') {
         base.set_path(&format!("{}/", base.path()));
     }
+    let base_segments = decoded_segments(&base)?;
     let mut entries = Vec::<Value>::new();
     let mut positions = HashMap::<String, usize>::new();
     let mut add = |href: &str, directory: bool, size: Option<i64>| -> Result<(), String> {
@@ -32,17 +33,22 @@ pub(crate) fn execute(request: &Value, bytes: Option<&[u8]>) -> Result<Value, St
             || uri.fragment().is_some()
             || !uri.username().is_empty()
             || uri.password().is_some()
-            || !uri.path().starts_with(base.path())
         {
             return Ok(());
         }
-        let tail = decode_component(&uri.path()[base.path().len()..])?;
-        let name = tail.strip_suffix('/').unwrap_or(&tail);
-        if name.is_empty()
-            || name.contains('/')
-            || matches!(name, "." | "..")
-            || name.contains('\\')
+        // Match decoded components once. Equivalent URI spellings must not
+        // hide a whole album; encoded separators must not escape the folder.
+        let segments = decoded_segments(&uri)?;
+        if segments.len() != base_segments.len() + 1
+            || !segments.starts_with(&base_segments)
+            || segments.iter().any(|segment| {
+                segment.contains(['/', '\\', '\0']) || matches!(segment.as_str(), "." | "..")
+            })
         {
+            return Ok(());
+        }
+        let name = segments.last().expect("one child component");
+        if name.is_empty() {
             return Ok(());
         }
         let relative = format!("{path}{name}{}", if directory { "/" } else { "" });
@@ -153,6 +159,18 @@ fn inner_text(node: roxmltree::Node<'_, '_>) -> String {
         .filter(|node| node.is_text())
         .filter_map(|node| node.text())
         .collect()
+}
+
+fn decoded_segments(uri: &Url) -> Result<Vec<String>, String> {
+    let mut segments = uri
+        .path_segments()
+        .ok_or("Invalid listing path")?
+        .map(decode_component)
+        .collect::<Result<Vec<_>, _>>()?;
+    if segments.last().is_some_and(String::is_empty) {
+        segments.pop();
+    }
+    Ok(segments)
 }
 
 fn decode_component(value: &str) -> Result<String, String> {

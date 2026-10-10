@@ -110,6 +110,11 @@ class NetworkLibraryScanner {
           onProgress(processed, errors, folder);
           continue;
         }
+        _log.d(
+          'Network folder listed [$folder]: '
+          '${entries.where((entry) => entry.directory).length} folders, '
+          '${entries.where((entry) => entry.audio).length} audio files',
+        );
         for (final entry in entries) {
           await checkpoint();
           final path = networkPath(entry.path);
@@ -199,6 +204,10 @@ class NetworkLibraryScanner {
       output = null;
       // Cancellation can arrive during the final write or close too.
       await checkpoint();
+      _log.i(
+        'Network scan complete: ${visited.length} folders visited, '
+        '$processed audio files discovered, $written indexed, $errors errors',
+      );
       return LibraryScanNDJSONFile(
         file: file,
         expectedCount: written,

@@ -566,27 +566,40 @@ class NetworkStorageService {
     final base = target.path.endsWith('/')
         ? target
         : target.replace(path: '${target.path}/');
+    final baseSegments = [...base.pathSegments];
+    if (baseSegments.isNotEmpty && baseSegments.last.isEmpty) {
+      baseSegments.removeLast();
+    }
     final found = <String, NetworkEntry>{};
     void add(String href, bool directory, int? size) {
       final uri = base.resolve(href);
       if (uri.origin != base.origin ||
           uri.hasQuery ||
           uri.hasFragment ||
-          uri.userInfo.isNotEmpty ||
-          !uri.path.startsWith(base.path)) {
+          uri.userInfo.isNotEmpty) {
         return;
       }
-      final tail = Uri.decodeComponent(uri.path.substring(base.path.length));
-      final name = tail.endsWith('/')
-          ? tail.substring(0, tail.length - 1)
-          : tail;
-      if (name.isEmpty ||
-          name.contains('/') ||
-          name == '..' ||
-          name == '.' ||
-          name.contains('\\')) {
+      // Servers may encode '&', '+', brackets or percent escapes differently
+      // from the request. Compare decoded components once, never a raw prefix
+      // or a fully decoded path that could turn an encoded '/' into a folder.
+      final segments = [...uri.pathSegments];
+      if (segments.isNotEmpty && segments.last.isEmpty) segments.removeLast();
+      if (segments.length != baseSegments.length + 1 ||
+          segments.any(
+            (segment) =>
+                segment.contains('/') ||
+                segment.contains('\\') ||
+                segment.contains('\u0000') ||
+                segment == '.' ||
+                segment == '..',
+          )) {
         return;
       }
+      for (var index = 0; index < baseSegments.length; index++) {
+        if (segments[index] != baseSegments[index]) return;
+      }
+      final name = segments.last;
+      if (name.isEmpty) return;
       final relative = '$path$name${directory ? '/' : ''}';
       found[relative] = NetworkEntry(
         relative,

@@ -55,6 +55,26 @@
       "path": "",
       "body": "<a href='a%2fb.flac'>nested</a><a href='https://user@nas.test/music/private.flac'>credentials</a><a href='ok.flac#part'>fragment</a>",
       "entries": []
+    },
+    {
+      "protocol": "webdav",
+      "address": "https://nas.test/dav/",
+      "base_url": "https://nas.test/dav/Rock%20&%20Roll/",
+      "path": "Rock & Roll/",
+      "body": "<d:multistatus xmlns:d='DAV:'><d:response><d:href>/dav/Rock%20%26%20Roll/A%20%26%20B.flac</d:href><d:propstat><d:prop><d:getcontentlength>123</d:getcontentlength></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response><d:response><d:href>/dav/Rock%20&amp;%20Roll/A%20%26%20B.flac</d:href><d:propstat><d:prop><d:getcontentlength>123</d:getcontentlength></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response><d:response><d:href>/dav/Rock%20%26%20Roll/a%2Fb.flac</d:href><d:propstat><d:prop/><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response><d:response><d:href>/dav/Rock%20%26%20Roll%2FOutside/secret.flac</d:href><d:propstat><d:prop/><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response><d:response><d:href>/dav/Rock%20%26%20Roller/secret.flac</d:href><d:propstat><d:prop/><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>",
+      "entries": [
+        {"path": "Rock & Roll/A & B.flac", "name": "A & B.flac", "directory": false, "size": 123}
+      ]
+    },
+    {
+      "protocol": "webdav",
+      "address": "https://nas.test/dav/Rock%20%26%20Roll/",
+      "base_url": "https://nas.test/dav/Rock%20%26%20Roll/",
+      "path": "",
+      "body": "<d:multistatus xmlns:d='DAV:'><d:response><d:href>/dav/Rock%20&amp;%20Roll/A%20%26%20B.flac</d:href><d:propstat><d:prop><d:getcontentlength>123</d:getcontentlength></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>",
+      "entries": [
+        {"path": "A & B.flac", "name": "A & B.flac", "directory": false, "size": 123}
+      ]
     }
   ],
   "playlists": [
