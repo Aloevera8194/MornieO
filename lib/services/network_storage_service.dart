@@ -206,6 +206,17 @@ class NetworkStorageService {
   Future<HttpServer>? _server;
   Future<void> _mutation = Future.value();
   final _routes = <String, ({String id, String path})>{};
+  final _readClients =
+      <
+        ({
+          String id,
+          String address,
+          String username,
+          String password,
+          String? certificate,
+        }),
+        HttpClient
+      >{};
 
   static String newId() {
     final random = Random.secure();
@@ -249,6 +260,7 @@ class NetworkStorageService {
     next.add(connection);
     await _write(jsonEncode(next.map((c) => c.toJson()).toList()));
     _connections = List.unmodifiable(next);
+    _closeReadClients(connection.id);
   });
 
   Future<void> remove(String id) => _mutate(() async {
@@ -256,6 +268,7 @@ class NetworkStorageService {
     await _write(jsonEncode(next.map((c) => c.toJson()).toList()));
     _connections = List.unmodifiable(next);
     _routes.removeWhere((_, route) => route.id == id);
+    _closeReadClients(id);
   });
 
   Future<NetworkConnection> connection(String id) async =>
@@ -331,6 +344,35 @@ class NetworkStorageService {
     ..idleTimeout = timeout
     ..autoUncompress = false;
 
+  HttpClient _readClient(NetworkConnection connection) {
+    // Pool only read requests with the same credentials and certificate pin.
+    // Uploads retain their own scoped client and cancellation lifecycle.
+    final key = (
+      id: connection.id,
+      address: connection.address,
+      username: connection.username,
+      password: connection.password,
+      certificate: connection.trustedCertificateSha256,
+    );
+    final client =
+        _readClients.remove(key) ?? (_client()..maxConnectionsPerHost = 6);
+    while (_readClients.length >= 8) {
+      _readClients.remove(_readClients.keys.first)!.close();
+    }
+    _readClients[key] = client;
+    return client;
+  }
+
+  void _closeReadClients(String id) {
+    for (final key in _readClients.keys.where((key) => key.id == id).toList()) {
+      // Let in-flight reads finish; new requests use the updated configuration.
+      _readClients.remove(key)!.close();
+    }
+  }
+
+  Future<void> _discardResponse(HttpClientResponse response) =>
+      response.listen((_) {}).cancel();
+
   Future<HttpClientResponse> _request(
     HttpClient client,
     NetworkConnection c,
@@ -363,7 +405,18 @@ class NetworkStorageService {
     };
     final HttpClientRequest request;
     try {
-      request = await client.openUrl(method, uri).timeout(timeout);
+      var expired = false;
+      final opening = client.openUrl(method, uri).then((request) {
+        if (expired) request.abort();
+        return request;
+      });
+      request = await opening.timeout(
+        timeout,
+        onTimeout: () {
+          expired = true;
+          throw TimeoutException('Network connection timed out');
+        },
+      );
     } on HandshakeException {
       if (rejectedCertificate != null) throw rejectedCertificate!;
       rethrow;
@@ -408,7 +461,13 @@ class NetworkStorageService {
     }
     final HttpClientResponse response;
     try {
-      response = await request.close().timeout(timeout);
+      response = await request.close().timeout(
+        timeout,
+        onTimeout: () {
+          request.abort();
+          throw TimeoutException('Network response timed out');
+        },
+      );
     } on HandshakeException {
       if (rejectedCertificate != null) throw rejectedCertificate!;
       rethrow;
@@ -416,6 +475,7 @@ class NetworkStorageService {
     if ([301, 302, 307, 308].contains(response.statusCode)) {
       // Never replay a mutating request to an unselected path.
       if (!['GET', 'HEAD', 'PROPFIND'].contains(method)) {
+        await _discardResponse(response);
         throw const HttpException('Write destination redirected');
       }
       final location = response.headers.value(HttpHeaders.locationHeader);
@@ -429,6 +489,7 @@ class NetworkStorageService {
               next.path != uri.path &&
               next.path != '${uri.path}/') ||
           redirects >= 3) {
+        await _discardResponse(response);
         throw const HttpException('Unsupported server redirect');
       }
       await response.drain<void>().timeout(timeout);
@@ -479,44 +540,48 @@ class NetworkStorageService {
       }
       return prepareSmbEntries(files, path);
     }
-    final client = _client();
-    try {
-      if (c.protocol == NetworkProtocol.http &&
-          NetworkEntry('', target.pathSegments.lastOrNull ?? '').audio) {
-        final response = await _request(
-          client,
-          c,
-          'GET',
-          target,
-          range: 'bytes=0-0',
-        );
-        if (response.statusCode != 200 && response.statusCode != 206) {
-          throw HttpException('Server returned ${response.statusCode}');
-        }
-        return [NetworkEntry(path, target.pathSegments.last)];
-      }
+    final client = _readClient(c);
+    if (c.protocol == NetworkProtocol.http &&
+        NetworkEntry('', target.pathSegments.lastOrNull ?? '').audio) {
       final response = await _request(
         client,
         c,
-        c.protocol == NetworkProtocol.webdav ? 'PROPFIND' : 'GET',
+        'GET',
         target,
-        dav: c.protocol == NetworkProtocol.webdav,
-        directoryListing: true,
+        range: 'bytes=0-0',
       );
-      if (response.statusCode < 200 || response.statusCode >= 300) {
+      if (response.statusCode != 200 && response.statusCode != 206) {
+        await _discardResponse(response);
         throw HttpException('Server returned ${response.statusCode}');
       }
-      final bytes = BytesBuilder();
-      await for (final chunk in response.timeout(timeout)) {
-        if (bytes.length + chunk.length > 4 * 1024 * 1024) {
-          throw const HttpException('Directory listing is too large');
-        }
-        bytes.add(chunk);
+      // Do not download a whole track when a server ignores the range.
+      if (response.statusCode == 206 && response.contentLength == 1) {
+        await response.drain<void>().timeout(timeout);
+      } else {
+        await _discardResponse(response);
       }
-      return await parseListingInBackground(c, path, bytes.takeBytes());
-    } finally {
-      client.close(force: true);
+      return [NetworkEntry(path, target.pathSegments.last)];
     }
+    final response = await _request(
+      client,
+      c,
+      c.protocol == NetworkProtocol.webdav ? 'PROPFIND' : 'GET',
+      target,
+      dav: c.protocol == NetworkProtocol.webdav,
+      directoryListing: true,
+    );
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      await _discardResponse(response);
+      throw HttpException('Server returned ${response.statusCode}');
+    }
+    final bytes = BytesBuilder();
+    await for (final chunk in response.timeout(timeout)) {
+      if (bytes.length + chunk.length > 4 * 1024 * 1024) {
+        throw const HttpException('Directory listing is too large');
+      }
+      bytes.add(chunk);
+    }
+    return await parseListingInBackground(c, path, bytes.takeBytes());
   }
 
   /// Large SMB listings arrive from native I/O as plain stat objects. Transfer
@@ -689,7 +754,6 @@ class NetworkStorageService {
   }
 
   Future<void> _serve(HttpRequest request) async {
-    HttpClient? client;
     NetworkSmbClient? smb;
     try {
       final route = _routes[request.uri.path.replaceFirst('/', '')];
@@ -735,7 +799,7 @@ class NetworkStorageService {
           );
         }
       } else {
-        client = _client();
+        final client = _readClient(c);
         final response = await _request(
           client,
           c,
@@ -758,6 +822,8 @@ class NetworkStorageService {
         }
         if (request.method == 'GET') {
           await request.response.addStream(response.timeout(timeout));
+        } else {
+          await response.drain<void>().timeout(timeout);
         }
       }
     } catch (_) {
@@ -765,7 +831,6 @@ class NetworkStorageService {
         request.response.statusCode = HttpStatus.badGateway;
       } catch (_) {}
     } finally {
-      client?.close(force: true);
       try {
         await smb?.close();
       } catch (_) {}
@@ -779,6 +844,10 @@ class NetworkStorageService {
     final server = _server;
     _server = null;
     _routes.clear();
+    for (final client in _readClients.values) {
+      client.close(force: true);
+    }
+    _readClients.clear();
     if (server != null) await (await server).close(force: true);
   }
 }
