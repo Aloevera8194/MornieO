@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -54,6 +55,7 @@ void main() {
     supportDirectory: () async => directory,
     temporaryDirectory: () async => directory,
     openOutput: openOutput,
+    metadataConcurrency: 1,
   );
 
   _Storage tracks(int count) => _Storage({
@@ -69,6 +71,135 @@ void main() {
       isEmpty,
     );
   }
+
+  test(
+    'bounded prefetch retains listing order after out-of-order failures',
+    () async {
+      final gates = List.generate(6, (_) => Completer<Map<String, dynamic>>());
+      final started = Completer<void>();
+      final progress = <String>[];
+      var reads = 0;
+      var active = 0;
+      var maximum = 0;
+      final scan =
+          NetworkLibraryScanner(
+            storage: tracks(6),
+            metadataConcurrency: 3,
+            readMetadata: (source) async {
+              final index = int.parse(
+                Uri.parse(source).pathSegments.last.split('.').first,
+              );
+              reads++;
+              active++;
+              if (active > maximum) maximum = active;
+              if (reads == 3) started.complete();
+              try {
+                return await gates[index].future;
+              } finally {
+                active--;
+              }
+            },
+            supportDirectory: () async => directory,
+            temporaryDirectory: () async => directory,
+          ).scan(
+            NetworkStorageService.source('nas', ''),
+            checkpoint: () async {},
+            onProgress: (_, _, name) => progress.add(name),
+          );
+      await started.future;
+      gates[2].complete({'title': '2'});
+      gates[1].completeError(StateError('unreadable tags'));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      expect(progress, isEmpty);
+      expect(reads, 3);
+      for (final index in [0, 3, 4, 5]) {
+        gates[index].complete({'title': '$index'});
+      }
+      final result = await scan;
+      expect((await result.rows().toList()).map((row) => row['trackName']), [
+        '0',
+        '2',
+        '3',
+        '4',
+        '5',
+      ]);
+      expect(progress, List.generate(6, (index) => '$index.flac'));
+      expect(result.errorCount, 1);
+      expect(maximum, 3);
+      expect(active, 0);
+    },
+  );
+
+  test(
+    'pause stops prefetch dispatch and resumes without skipping tracks',
+    () async {
+      final paused = Completer<void>();
+      final resume = Completer<void>();
+      var shouldPause = false;
+      var reads = 0;
+      final scan =
+          NetworkLibraryScanner(
+            storage: tracks(8),
+            metadataConcurrency: 3,
+            readMetadata: (_) async => {'title': '${++reads}'},
+            supportDirectory: () async => directory,
+            temporaryDirectory: () async => directory,
+          ).scan(
+            NetworkStorageService.source('nas', ''),
+            checkpoint: () async {
+              if (shouldPause) {
+                if (!paused.isCompleted) paused.complete();
+                await resume.future;
+              }
+            },
+            onProgress: (processed, _, _) {
+              if (processed == 1) shouldPause = true;
+            },
+          );
+      await paused.future;
+      expect(reads, 3);
+      shouldPause = false;
+      resume.complete();
+      final result = await scan;
+      expect(result.expectedCount, 8);
+      expect(reads, 8);
+      expect(result.errorCount, 0);
+    },
+  );
+
+  test(
+    'prefetch cancellation drains pending errors and deletes staging',
+    () async {
+      final later = Completer<Map<String, dynamic>>();
+      var cancelled = false;
+      var reads = 0;
+      final scan =
+          NetworkLibraryScanner(
+            storage: tracks(10),
+            metadataConcurrency: 3,
+            readMetadata: (_) {
+              reads++;
+              return reads == 1
+                  ? Future.value({'title': 'first'})
+                  : later.future;
+            },
+            supportDirectory: () async => directory,
+            temporaryDirectory: () async => directory,
+          ).scan(
+            NetworkStorageService.source('nas', ''),
+            checkpoint: () async {
+              if (cancelled) throw StateError('cancelled');
+            },
+            onProgress: (_, _, _) {
+              cancelled = true;
+              later.completeError(StateError('stopped read'));
+            },
+          );
+      await expectLater(scan, throwsStateError);
+      expect(reads, 3);
+      await expectNoOutput();
+    },
+  );
 
   test('WebDAV traversal indexes 1806 tracks across encoded album folders', () async {
     final overrides = HttpOverrides.current;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
@@ -13,7 +14,7 @@ import 'package:spotiflac_android/utils/logger.dart';
 
 final _log = AppLogger('LocalLibrary');
 
-/// A single tag read at a time; only NDJSON and artwork are stored locally.
+/// Bounded tag prefetch; only NDJSON and artwork are stored locally.
 /// Failed listings never count as empty directories. Partial scans retain old
 /// rows through the same ingestion policy used for local/SAF scans.
 class NetworkLibraryScanner {
@@ -23,19 +24,19 @@ class NetworkLibraryScanner {
     Future<Directory> Function()? supportDirectory,
     Future<Directory> Function()? temporaryDirectory,
     Future<RandomAccessFile> Function(File)? openOutput,
+    int? metadataConcurrency,
   }) : _storage = storage ?? NetworkStorageService.instance,
-       _readMetadata =
-           readMetadata ??
-           ((source) => NetworkMetadataService.instance.read(
-             source,
-             forceRefresh: true,
-           )),
+       _readMetadata = readMetadata,
+       _metadataConcurrency = metadataConcurrency == null
+           ? null
+           : RangeError.checkValueInInterval(metadataConcurrency, 1, 4),
        _supportDirectory = supportDirectory ?? getApplicationSupportDirectory,
        _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory,
        _openOutput = openOutput ?? ((file) => file.open(mode: FileMode.write));
 
   final NetworkStorageService _storage;
-  final Future<Map<String, dynamic>> Function(String) _readMetadata;
+  final Future<Map<String, dynamic>> Function(String)? _readMetadata;
+  final int? _metadataConcurrency;
   final Future<Directory> Function() _supportDirectory, _temporaryDirectory;
   final Future<RandomAccessFile> Function(File) _openOutput;
 
@@ -76,6 +77,21 @@ class NetworkLibraryScanner {
     final pending = <String>[root];
     final visited = <String>{};
     final seenFiles = <String>{};
+    // Leave room for playback and avoid saturating a small NAS/router.
+    final concurrency =
+        _metadataConcurrency ??
+        (connection.protocol == NetworkProtocol.smb ? 2 : 3);
+    final metadata = _readMetadata == null
+        ? NetworkMetadataService(
+            storage: _storage,
+            maxConcurrentReads: concurrency,
+            cacheDirectory: _temporaryDirectory,
+          )
+        : null;
+    final read =
+        _readMetadata ??
+        ((String source) => metadata!.read(source, forceRefresh: true));
+    final prefetched = <_PendingNetworkTrack>[];
     try {
       final writer = await _openOutput(file);
       output = writer;
@@ -115,23 +131,51 @@ class NetworkLibraryScanner {
           '${entries.where((entry) => entry.directory).length} folders, '
           '${entries.where((entry) => entry.audio).length} audio files',
         );
-        for (final entry in entries) {
-          await checkpoint();
-          final path = networkPath(entry.path);
-          // Reject provider parent links and paths outside this folder.
-          if (!path.startsWith(folder) || path == folder) continue;
-          if (entry.directory) {
-            if (!path.endsWith('/')) {
-              throw const FormatException('Invalid folder entry');
+        final iterator = entries.iterator;
+        Future<void> fill() async {
+          while (prefetched.length < concurrency && iterator.moveNext()) {
+            await checkpoint();
+            final entry = iterator.current;
+            final path = networkPath(entry.path);
+            // Reject provider parent links and paths outside this folder.
+            if (!path.startsWith(folder) || path == folder) continue;
+            if (entry.directory) {
+              if (!path.endsWith('/')) {
+                throw const FormatException('Invalid folder entry');
+              }
+              pending.add(path);
+              continue;
             }
-            pending.add(path);
-            continue;
+            if (!entry.audio || !seenFiles.add(path)) continue;
+            final trackSource = NetworkStorageService.source(
+              connection.id,
+              path,
+            );
+            // Capture failures immediately: a later result can fail while the
+            // first read is still running. Consume results in listing order.
+            final result = Future.sync(() => read(trackSource))
+                .then<_NetworkTags>(
+                  (tags) => (tags: tags, error: null, stack: null),
+                  onError: (Object error, StackTrace stack) =>
+                      (tags: null, error: error, stack: stack),
+                );
+            prefetched.add((entry: entry, source: trackSource, result: result));
           }
-          if (!entry.audio || !seenFiles.add(path)) continue;
-          final trackSource = NetworkStorageService.source(connection.id, path);
+        }
+
+        await fill();
+        while (prefetched.isNotEmpty) {
+          await checkpoint();
+          final next = prefetched.removeAt(0);
+          final entry = next.entry;
+          final trackSource = next.source;
           String? encodedRow;
           try {
-            final tags = await _readMetadata(trackSource);
+            final result = await next.result;
+            if (result.error != null) {
+              Error.throwWithStackTrace(result.error!, result.stack!);
+            }
+            final tags = result.tags!;
             if (tags['error'] != null || tags['metadataFromFilename'] == true) {
               throw StateError(
                 tags['error']?.toString() ?? 'Network tags unavailable',
@@ -196,6 +240,7 @@ class NetworkLibraryScanner {
           }
           processed++;
           onProgress(processed, errors, entry.name);
+          await fill();
         }
       }
       await checkpoint();
@@ -214,6 +259,8 @@ class NetworkLibraryScanner {
         errorCount: errors,
       );
     } catch (_) {
+      await metadata?.cancelPending();
+      await Future.wait(prefetched.map((track) => track.result));
       try {
         await output?.close();
       } catch (error) {
@@ -228,6 +275,17 @@ class NetworkLibraryScanner {
     }
   }
 }
+
+typedef _NetworkTags = ({
+  Map<String, dynamic>? tags,
+  Object? error,
+  StackTrace? stack,
+});
+typedef _PendingNetworkTrack = ({
+  NetworkEntry entry,
+  String source,
+  Future<_NetworkTags> result,
+});
 
 // Keep the isolate closure outside scan's scope so it cannot capture an open
 // output handle or the buffering closures, which are not isolate-sendable.

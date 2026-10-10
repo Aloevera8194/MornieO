@@ -77,6 +77,73 @@ void main() {
   );
 
   test(
+    'scan cancellation stops only its native reads and queued work',
+    () async {
+      final jobs = <String, Completer<String>>{};
+      final started = Completer<void>();
+      final cancelled = <String>[];
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+            const MethodChannel('com.zarz.spotiflac/backend'),
+            (call) async {
+              final args = call.arguments as Map;
+              final id = args['request_id'] as String;
+              if (call.method == 'cancelNativeDataJob') {
+                cancelled.add(id);
+                jobs[id]!.completeError(PlatformException(code: 'CANCELLED'));
+                return null;
+              }
+              final gate = Completer<String>();
+              jobs[id] = gate;
+              if (jobs.length == 3) started.complete();
+              return gate.future;
+            },
+          );
+      final scan = NetworkMetadataService(
+        storage: storage,
+        cacheDirectory: () async => directory,
+        maxConcurrentReads: 2,
+      );
+      final playback = NetworkMetadataService(
+        storage: storage,
+        cacheDirectory: () async => directory,
+      );
+      final futures = [
+        for (var i = 0; i < 4; i++)
+          scan.read(NetworkStorageService.source('nas', '$i.flac')),
+      ];
+      final settled = Future.wait(
+        futures.map(
+          (future) => future.then<Object>(
+            (value) => value,
+            onError: (Object error) => error,
+          ),
+        ),
+      );
+      final playing = playback.read(
+        NetworkStorageService.source('nas', 'playing.flac'),
+      );
+      await started.future;
+      await scan.cancelPending();
+      expect(cancelled, hasLength(2));
+      expect(await settled, everyElement(isNot(isA<Map<String, dynamic>>())));
+      expect(jobs, hasLength(3));
+      final survivor = jobs.keys.singleWhere((id) => !cancelled.contains(id));
+      jobs[survivor]!.complete(
+        jsonEncode({
+          'metadata': {'title': 'playing'},
+          'cacheable': true,
+        }),
+      );
+      expect((await playing)['title'], 'playing');
+      await expectLater(
+        scan.read(NetworkStorageService.source('nas', 'new.flac')),
+        throwsStateError,
+      );
+    },
+  );
+
+  test(
     'playback and Lyrics share one read and embedded cover is cached as a file',
     () async {
       var calls = 0;
