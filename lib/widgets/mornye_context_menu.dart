@@ -29,7 +29,7 @@ Future<T?> showMornyeContextMenu<T>({
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
       transitionDuration: MediaQuery.disableAnimationsOf(context)
           ? Duration.zero
-          : const Duration(milliseconds: 220),
+          : const Duration(milliseconds: 320),
       // Opacity layers isolate a BackdropFilter from the underlying artwork.
       transitionBuilder: (_, _, _, child) => child,
       pageBuilder: (context, animation, _) {
@@ -39,27 +39,46 @@ Future<T?> showMornyeContextMenu<T>({
           namesRoute: true,
           label: MaterialLocalizations.of(context).popupMenuLabel,
           explicitChildNodes: true,
-          child: CustomSingleChildLayout(
-            delegate: _MenuLayout(
-              anchor: target,
-              preferAbove: preferAbove,
-              maxWidth: maxWidth,
-              padding: media.padding.copyWith(
-                bottom: math.max(media.padding.bottom, media.viewInsets.bottom),
-              ),
-            ),
-            child: ScaleTransition(
-              alignment: preferAbove
-                  ? Alignment.bottomRight
-                  : Alignment.topRight,
-              scale: animation.drive(
-                Tween<double>(
-                  begin: 0.94,
-                  end: 1,
-                ).chain(CurveTween(curve: Curves.easeOutCubic)),
-              ),
-              child: themes.wrap(Builder(builder: builder)),
-            ),
+          child: AnimatedBuilder(
+            animation: animation,
+            child: themes.wrap(Builder(builder: builder)),
+            builder: (context, child) {
+              // Finish geometry first: no backdrop read while the panel flies
+              // out of its control. On close, glass fades before it moves.
+              final motion = const Interval(
+                0,
+                0.62,
+                curve: Curves.easeOutCubic,
+              ).transform(animation.value);
+              final glass = const Interval(
+                0.62,
+                1,
+                curve: Curves.easeInOut,
+              ).transform(animation.value);
+              return CustomSingleChildLayout(
+                delegate: _MenuLayout(
+                  anchor: target,
+                  preferAbove: preferAbove,
+                  maxWidth: maxWidth,
+                  padding: media.padding.copyWith(
+                    bottom: math.max(
+                      media.padding.bottom,
+                      media.viewInsets.bottom,
+                    ),
+                  ),
+                  progress: motion,
+                ),
+                child: Transform.scale(
+                  scale: 0.16 + 0.84 * motion,
+                  child: IgnorePointer(
+                    ignoring:
+                        motion < 1 ||
+                        animation.status == AnimationStatus.reverse,
+                    child: _MenuGlassReveal(progress: glass, child: child!),
+                  ),
+                ),
+              );
+            },
           ),
         );
       },
@@ -73,12 +92,14 @@ class _MenuLayout extends SingleChildLayoutDelegate {
     required this.padding,
     required this.preferAbove,
     required this.maxWidth,
+    required this.progress,
   });
 
   final Rect? anchor;
   final EdgeInsets padding;
   final bool preferAbove;
   final double maxWidth;
+  final double progress;
   static const double _margin = 16;
 
   @override
@@ -129,7 +150,15 @@ class _MenuLayout extends SingleChildLayoutDelegate {
             : bottom;
       }
     }
-    return Offset(x.clamp(left, right), y.clamp(top, bottom));
+    final resting = Offset(x.clamp(left, right), y.clamp(top, bottom));
+    final origin = anchor?.center;
+    return origin == null
+        ? resting
+        : Offset.lerp(
+            origin - childSize.center(Offset.zero),
+            resting,
+            progress,
+          )!;
   }
 
   @override
@@ -137,7 +166,52 @@ class _MenuLayout extends SingleChildLayoutDelegate {
       anchor != oldDelegate.anchor ||
       padding != oldDelegate.padding ||
       maxWidth != oldDelegate.maxWidth ||
+      progress != oldDelegate.progress ||
       preferAbove != oldDelegate.preferAbove;
+}
+
+class _MenuGlassReveal extends InheritedWidget {
+  const _MenuGlassReveal({required this.progress, required super.child});
+
+  final double progress;
+
+  @override
+  bool updateShouldNotify(_MenuGlassReveal oldWidget) =>
+      progress != oldWidget.progress;
+}
+
+/// Only this surface rebuilds during the glass reveal; menu rows stay stable.
+class _MenuSurface extends StatelessWidget {
+  const _MenuSurface({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final dark = theme.brightness == Brightness.dark;
+    final progress =
+        context
+            .dependOnInheritedWidgetOfExactType<_MenuGlassReveal>()
+            ?.progress ??
+        1;
+    return MornyeGlassPanel.overlay(
+      radius: 28,
+      smoothCorners: true,
+      highlightBorder: true,
+      highlightIntensity: 0.4,
+      glassProgress: progress,
+      tintColor: theme.extension<MornyeTheme>()?.chromeSurface != null
+          ? null
+          : dark
+          ? const Color(0xff414141)
+          : Colors.white,
+      tintOpacity: dark
+          ? 0.80 - 0.20 * (theme.extension<MornyeTheme>()?.glassClarity ?? 0)
+          : 0.80,
+      child: child,
+    );
+  }
 }
 
 class MornyeMenuAction {
@@ -183,10 +257,7 @@ class MornyeContextMenu extends StatelessWidget {
     final shortcuts = quickActions.isEmpty
         ? null
         : Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: dense ? 4 : 8,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -196,7 +267,7 @@ class MornyeContextMenu extends StatelessWidget {
             ),
           );
     final actions = Padding(
-      padding: EdgeInsets.symmetric(vertical: dense ? 4 : 8),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -213,8 +284,8 @@ class MornyeContextMenu extends StatelessWidget {
                 child: Divider(
                   height: 0.5,
                   thickness: 0.5,
-                  indent: 20,
-                  endIndent: 20,
+                  indent: 16,
+                  endIndent: 16,
                   color: theme.colorScheme.onSurface.withValues(
                     alpha: dark ? 0.18 : 0.12,
                   ),
@@ -227,19 +298,7 @@ class MornyeContextMenu extends StatelessWidget {
     );
     return Theme(
       data: theme,
-      child: MornyeGlassPanel.overlay(
-        radius: dense ? 24 : 28,
-        highlightBorder: true,
-        // Player menus carry the cover's hue. The overlay fill still protects
-        // text contrast over bright artwork at the clear end of the slider.
-        tintColor: theme.extension<MornyeTheme>()?.chromeSurface != null
-            ? null
-            : dark
-            ? const Color(0xff414141)
-            : Colors.white,
-        tintOpacity: dark
-            ? 0.80 - 0.20 * (theme.extension<MornyeTheme>()?.glassClarity ?? 0)
-            : 0.80,
+      child: _MenuSurface(
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Let the entire menu scroll when pinning the shortcuts would
@@ -296,10 +355,7 @@ class MornyeContextMenu extends StatelessWidget {
         minimumSize: const Size(48, 48),
         padding: compact
             ? EdgeInsets.symmetric(horizontal: 4, vertical: dense ? 6 : 10)
-            : EdgeInsets.symmetric(
-                horizontal: dense ? 16 : 20,
-                vertical: dense ? 8 : 13,
-              ),
+            : EdgeInsets.symmetric(horizontal: 16, vertical: dense ? 8 : 14),
         onPressed: action.onPressed,
         child: compact
             ? Column(

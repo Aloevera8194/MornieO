@@ -14,6 +14,8 @@ class MornyeLiquidBackdrop extends StatelessWidget {
     this.progress = 1,
     this.refractionDepth = 0.30,
     this.refractionWidth = 20,
+    this.smoothCorners = false,
+    this.highlightIntensity = 1,
   });
 
   final BorderRadius borderRadius;
@@ -24,6 +26,8 @@ class MornyeLiquidBackdrop extends StatelessWidget {
   final double progress;
   final double refractionDepth;
   final double refractionWidth;
+  final bool smoothCorners;
+  final double highlightIntensity;
 
   @override
   Widget build(BuildContext context) {
@@ -33,14 +37,22 @@ class MornyeLiquidBackdrop extends StatelessWidget {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return LiquidGlassLens(
       style: LiquidGlassStyle(
-        shape: LiquidGlassShape.roundedRectangle(
+        shape: LiquidGlassShape(
+          cornerStyle: smoothCorners
+              ? LiquidGlassCornerStyle.squircle
+              : LiquidGlassCornerStyle.roundedRectangle,
+          clipQuality: smoothCorners
+              ? LiquidGlassClipQuality.exact
+              : LiquidGlassClipQuality.roundedRectangle,
           cornerRadius: borderRadius.topLeft.x,
           borderWidth: outlines ? 0.75 : 0,
           lightDirection: 0,
-          lightIntensity: outlines ? (dark ? 0.25 : 0.12) * effect : 0,
+          lightIntensity: outlines
+              ? (dark ? 0.25 : 0.12) * effect * highlightIntensity
+              : 0,
           lightColor: dark ? Colors.white : const Color(0x88ffffff),
-          borderType: const OpticalBorder(
-            ambientIntensity: 0.05,
+          borderType: OpticalBorder(
+            ambientIntensity: 0.05 * highlightIntensity,
             lightSpread: 0.2,
           ),
         ),

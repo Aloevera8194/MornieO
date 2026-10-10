@@ -7,6 +7,7 @@ import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/mornye_selection_pill.dart';
 import 'package:spotiflac_android/widgets/mornye_liquid_backdrop.dart';
+import 'package:spotiflac_android/widgets/mornye_squircle_border.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 
 class MornyeSegmentedControl extends ConsumerWidget {
@@ -70,6 +71,9 @@ class MornyeGlassPanel extends ConsumerWidget {
     this.tintColor,
     this.blurEnabled = true,
     this.highlightBorder = false,
+    this.smoothCorners = false,
+    this.highlightIntensity = 1,
+    this.glassProgress = 1,
   }) : _composedBackdrop = false;
 
   const MornyeGlassPanel.overlay({
@@ -82,6 +86,9 @@ class MornyeGlassPanel extends ConsumerWidget {
     this.tintColor,
     this.blurEnabled = true,
     this.highlightBorder = false,
+    this.smoothCorners = false,
+    this.highlightIntensity = 1,
+    this.glassProgress = 1,
   }) : strongTint = true,
        _composedBackdrop = true;
 
@@ -94,6 +101,9 @@ class MornyeGlassPanel extends ConsumerWidget {
   final Color? tintColor;
   final bool blurEnabled;
   final bool highlightBorder;
+  final bool smoothCorners;
+  final double highlightIntensity;
+  final double glassProgress;
   final bool _composedBackdrop;
 
   @override
@@ -107,6 +117,9 @@ class MornyeGlassPanel extends ConsumerWidget {
       tintColor: tintColor,
       blurEnabled: blurEnabled && ref.watch(mornyeBlurEnabledProvider),
       highlightBorder: highlightBorder,
+      smoothCorners: smoothCorners,
+      highlightIntensity: highlightIntensity,
+      glassProgress: glassProgress,
       // Tile ink must paint above the glass tint rather than beneath it.
       child: Material(type: MaterialType.transparency, child: child),
     );
@@ -130,6 +143,9 @@ class MornyeGlass extends ConsumerWidget {
     this.tintColor,
     this.highlightBorder = false,
     this.refractionDepth = 0.30,
+    this.smoothCorners = false,
+    this.highlightIntensity = 1,
+    this.glassProgress = 1,
   }) : firstInGroup = true,
        lastInGroup = true,
        samplesBackdrop = true;
@@ -147,6 +163,9 @@ class MornyeGlass extends ConsumerWidget {
     this.samplesBackdrop = true,
     this.highlightBorder = false,
     this.refractionDepth = 0.30,
+    this.smoothCorners = false,
+    this.highlightIntensity = 1,
+    this.glassProgress = 1,
   });
 
   // Quantized and shared across surfaces. Avoid composed color filters and
@@ -169,6 +188,11 @@ class MornyeGlass extends ConsumerWidget {
   /// Paint the edge above the fill so tinted popovers retain a visible rim.
   final bool highlightBorder;
   final double refractionDepth;
+  final bool smoothCorners;
+  final double highlightIntensity;
+
+  /// Reveal glass through its tint, without isolating the backdrop in opacity.
+  final double glassProgress;
 
   /// Plain-page surfaces keep their tint without filtering a uniform backdrop.
   final bool samplesBackdrop;
@@ -178,7 +202,9 @@ class MornyeGlass extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
     final clarity = MornyeTheme.glassClarityOf(context);
     final level = ref.watch(mornyeGlassLevelProvider);
+    final reveal = glassProgress.clamp(0.0, 1.0);
     final translucent =
+        reveal > 0 &&
         blurEnabled &&
         level != MornyeGlassLevel.flat &&
         clarity > 0 &&
@@ -256,30 +282,51 @@ class MornyeGlass extends ConsumerWidget {
         : 3;
     final clearFill = (dark ? const Color(0xff999999) : Colors.white)
         .withValues(alpha: dark ? 0.17 : 0.46);
+    final fill = Color.lerp(
+      scheme.surfaceContainerHigh,
+      useLens && !strongTint
+          ? Color.lerp(tint, clearFill, ((clarity - 0.2) / 0.8).clamp(0, 1))
+          : tint,
+      reveal,
+    );
+    final squircle = smoothCorners && firstInGroup && lastInGroup;
     final surface = DecoratedBox(
-      decoration: BoxDecoration(
-        color: useLens && !strongTint
-            ? Color.lerp(tint, clearFill, ((clarity - 0.2) / 0.8).clamp(0, 1))
-            : tint,
-        borderRadius: shape,
-      ),
+      decoration: squircle
+          ? ShapeDecoration(color: fill, shape: MornyeSquircleBorder(radius))
+          : BoxDecoration(color: fill, borderRadius: shape),
       // Child controls paint on this surface; never re-blur their parent.
       child: _GlassBackdropScope(child: child),
     );
+    final shadows = firstInGroup && lastInGroup
+        ? [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: dark ? 0.14 : 0.08),
+              blurRadius: 8,
+              blurStyle: BlurStyle.outer,
+              offset: const Offset(0, 2),
+            ),
+          ]
+        : null;
+    final backdrop = useLens
+        ? MornyeLiquidBackdrop(
+            borderRadius: shape,
+            clarity: clarity,
+            blurSigma: _blurSigmas[filterIndex],
+            refractionDepth: refractionDepth * reveal,
+            smoothCorners: squircle,
+            highlightIntensity: highlightIntensity * reveal,
+            child: surface,
+          )
+        : sampleBackdrop
+        ? BackdropFilter.grouped(filter: _blurs[filterIndex], child: surface)
+        : surface;
     return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: shape,
-        boxShadow: firstInGroup && lastInGroup
-            ? [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: dark ? 0.14 : 0.08),
-                  blurRadius: 8,
-                  blurStyle: BlurStyle.outer,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : null,
-      ),
+      decoration: squircle
+          ? ShapeDecoration(
+              shape: MornyeSquircleBorder(radius),
+              shadows: shadows,
+            )
+          : BoxDecoration(borderRadius: shape, boxShadow: shadows),
       child: CustomPaint(
         // The optical lens already draws its own rim. Avoid a second dark
         // contact stroke on top, particularly visible against light pages.
@@ -291,25 +338,16 @@ class MornyeGlass extends ConsumerWidget {
                 illuminated: translucent && (!useLens || highlightBorder),
                 emphasized: highlightBorder,
                 dark: dark,
+                smoothCorners: squircle,
+                highlightIntensity: highlightIntensity * reveal,
               )
             : null,
-        child: ClipRRect(
-          borderRadius: shape,
-          child: useLens
-              ? MornyeLiquidBackdrop(
-                  borderRadius: shape,
-                  clarity: clarity,
-                  blurSigma: _blurSigmas[filterIndex],
-                  refractionDepth: refractionDepth,
-                  child: surface,
-                )
-              : sampleBackdrop
-              ? BackdropFilter.grouped(
-                  filter: _blurs[filterIndex],
-                  child: surface,
-                )
-              : surface,
-        ),
+        child: squircle
+            ? ClipPath.shape(
+                shape: MornyeSquircleBorder(radius),
+                child: backdrop,
+              )
+            : ClipRRect(borderRadius: shape, child: backdrop),
       ),
     );
   }
@@ -331,6 +369,8 @@ class _MornyeGlassRim extends CustomPainter {
     required this.illuminated,
     required this.emphasized,
     required this.dark,
+    required this.smoothCorners,
+    required this.highlightIntensity,
   });
 
   final BorderRadius shape;
@@ -339,6 +379,8 @@ class _MornyeGlassRim extends CustomPainter {
   final bool illuminated;
   final bool emphasized;
   final bool dark;
+  final bool smoothCorners;
+  final double highlightIntensity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -354,8 +396,21 @@ class _MornyeGlassRim extends CustomPainter {
     );
     canvas.save();
     canvas.clipRect(bounds);
-    canvas.drawRRect(
-      outline.deflate(0.25),
+    void stroke(double inset, Paint paint) {
+      if (smoothCorners) {
+        canvas.drawPath(
+          MornyeSquircleBorder(
+            (shape.topLeft.x - inset).clamp(0, double.infinity),
+          ).getOuterPath(bounds.deflate(inset)),
+          paint,
+        );
+      } else {
+        canvas.drawRRect(outline.deflate(inset), paint);
+      }
+    }
+
+    stroke(
+      0.25,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.5
@@ -363,8 +418,8 @@ class _MornyeGlassRim extends CustomPainter {
         ..color = Colors.black.withValues(alpha: dark ? 0.5 : 0.16),
     );
     if (illuminated) {
-      canvas.drawRRect(
-        outline.deflate(0.8),
+      stroke(
+        0.8,
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = emphasized ? 1 : 0.6
@@ -372,17 +427,23 @@ class _MornyeGlassRim extends CustomPainter {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             stops: const [0, 0.14, 0.5, 0.86, 1],
-            colors: [
-              firstInGroup
-                  ? Color(emphasized ? 0x88ffffff : 0x40ffffff)
-                  : Colors.transparent,
-              Color(emphasized ? 0x26ffffff : 0x0dffffff),
-              const Color(0x0a000000),
-              Color(emphasized ? 0x20ffffff : 0x0dffffff),
-              lastInGroup
-                  ? Color(emphasized ? 0x55ffffff : 0x26ffffff)
-                  : Colors.transparent,
-            ],
+            colors:
+                [
+                      firstInGroup
+                          ? Color(emphasized ? 0x88ffffff : 0x40ffffff)
+                          : Colors.transparent,
+                      Color(emphasized ? 0x26ffffff : 0x0dffffff),
+                      const Color(0x0a000000),
+                      Color(emphasized ? 0x20ffffff : 0x0dffffff),
+                      lastInGroup
+                          ? Color(emphasized ? 0x55ffffff : 0x26ffffff)
+                          : Colors.transparent,
+                    ]
+                    .map(
+                      (color) =>
+                          color.withValues(alpha: color.a * highlightIntensity),
+                    )
+                    .toList(),
           ).createShader(bounds),
       );
     }
@@ -396,6 +457,8 @@ class _MornyeGlassRim extends CustomPainter {
       lastInGroup != oldDelegate.lastInGroup ||
       illuminated != oldDelegate.illuminated ||
       emphasized != oldDelegate.emphasized ||
+      smoothCorners != oldDelegate.smoothCorners ||
+      highlightIntensity != oldDelegate.highlightIntensity ||
       dark != oldDelegate.dark;
 }
 
