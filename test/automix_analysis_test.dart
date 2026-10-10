@@ -107,7 +107,7 @@ void main() {
         bpm: 120,
         phase: 0.17,
         confidence: 0.9,
-        firstSound: 4,
+        firstSound: 14,
       ),
     )!;
     expect(late.fallbackReason, AutoMixFallbackReason.longIntro);
@@ -131,6 +131,26 @@ void main() {
       ),
       isNull,
     );
+  });
+
+  test('a silent lead-in does not prevent reliable beat matching', () {
+    final transition = AutoMixPlan.create(
+      outgoingDuration: const Duration(minutes: 3),
+      incomingDuration: const Duration(minutes: 3),
+      outro: grid(120),
+      intro: const AutoMixBeatGrid(
+        bpm: 124,
+        phase: 0.17,
+        confidence: 0.9,
+        firstSound: 5,
+      ),
+    )!;
+    expect(transition.beatMatched, isTrue);
+    expect(
+      transition.incomingStart.inMilliseconds,
+      inInclusiveRange(5000, 5500),
+    );
+    expect(transition.rate, closeTo(120 / 124, 0.00001));
   });
 
   test('equal-power overlap restores normal tempo smoothly', () {

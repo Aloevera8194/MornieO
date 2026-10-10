@@ -12,6 +12,7 @@ class _MusicAutoMix {
   final _mixPins = <String>{};
   MusicPlaybackDeck? _prepared;
   MusicPlaybackDeck? _outgoing;
+  MusicPlaybackDeck? _effectDry;
   MusicPlaybackDeck? _effectPrepared;
   RenderedMixTail? _effectTail;
   AutoMixPlan? _plan;
@@ -173,7 +174,7 @@ class _MusicAutoMix {
           try {
             await effectDeck.setReleaseMode(ReleaseMode.stop);
             await effectDeck.setAudioContext(_musicAudioContext);
-            await effectDeck.setVolume(handler._normalizationVolume);
+            await effectDeck.setVolume(0);
             await effectDeck.setSource(DeviceFileSource(effectTail.path));
           } catch (error) {
             _log.w('AutoMix effect preparation fallback: $error');
@@ -253,15 +254,11 @@ class _MusicAutoMix {
         try {
           await effectDeck.seek(delta.isNegative ? Duration.zero : delta);
           if (!_current(generation)) return;
-          await original.setVolume(0);
           await effectDeck.resume();
-          if (!_current(generation)) {
-            await original.setVolume(outgoingVolume);
-            return;
-          }
+          if (!_current(generation)) return;
           outgoing = effectDeck;
+          _effectDry = original;
         } catch (error) {
-          await original.setVolume(outgoingVolume);
           if (!_current(generation)) return;
           _log.w('AutoMix effect fallback: $error');
           await handler._disposeDeck(effectDeck);
@@ -277,9 +274,6 @@ class _MusicAutoMix {
       _setStatus(
         plan.beatMatched ? AutoMixStatus.mixing : AutoMixStatus.crossfading,
       );
-      if (!identical(outgoing, original)) {
-        unawaited(handler._disposeDeck(original));
-      }
       handler._index = _nextIndex;
       handler._playRequestGeneration++;
       handler._recordPlayHistory(_nextIndex);
@@ -305,10 +299,29 @@ class _MusicAutoMix {
         _fadeWrite = () async {
           try {
             final levels = autoMixEnvelope(clock.elapsed, plan);
+            final dry = _effectDry;
+            final progress = (clock.elapsedMicroseconds / 240000).clamp(
+              0.0,
+              1.0,
+            );
+            final handover = progress * progress * (3 - 2 * progress);
+            if (dry != null) {
+              await dry.setVolume(
+                outgoingVolume * levels.outgoing * (1 - handover),
+              );
+              if (generation != _generation) return;
+            }
             if (_outgoing != null) {
-              await outgoing.setVolume(outgoingVolume * levels.outgoing);
+              await outgoing.setVolume(
+                outgoingVolume * levels.outgoing * (dry == null ? 1 : handover),
+              );
             }
             if (generation != _generation) return;
+            if (dry != null && progress >= 1) {
+              _effectDry = null;
+              await handler._disposeDeck(dry);
+              if (generation != _generation) return;
+            }
             await incoming.setVolume(_incomingVolume * levels.incoming);
             if (generation != _generation) return;
             if ((levels.rate - rate).abs() > 0.001 || levels.complete) {
@@ -360,11 +373,13 @@ class _MusicAutoMix {
     _fadeTimer = null;
     final prepared = _prepared;
     final outgoing = _outgoing;
+    final effectDry = _effectDry;
     final effectPrepared = _effectPrepared;
     final effectTail = _effectTail;
     final restore = outgoing != null || rate != 1;
     _prepared = null;
     _outgoing = null;
+    _effectDry = null;
     _effectPrepared = null;
     _effectTail = null;
     _plan = null;
@@ -378,6 +393,7 @@ class _MusicAutoMix {
       await _fadeWrite;
       if (prepared != null) await handler._disposeDeck(prepared);
       if (outgoing != null) await handler._disposeDeck(outgoing);
+      if (effectDry != null) await handler._disposeDeck(effectDry);
       if (effectPrepared != null) await handler._disposeDeck(effectPrepared);
       await effectTail?.dispose();
       if (restore && !handler._disposed) {

@@ -113,7 +113,7 @@ void main() {
         const AutoMixOptions(effect: AutoMixEffect.pitch, pitchSemitones: 2),
       );
       var crossings = 0;
-      for (var i = 24001; i < 72000; i++) {
+      for (var i = 96001; i < 144000; i++) {
         if (pitched[i - 1] <= 0 && pitched[i] > 0) crossings++;
       }
       expect(crossings, closeTo(440 * pow(2, 2 / 12), 2));
@@ -121,24 +121,35 @@ void main() {
         'sine=frequency=5000:sample_rate=48000',
         const AutoMixOptions(effect: AutoMixEffect.muffled),
       );
-      final rms = sqrt(
-        filtered
-                .skip(24000)
-                .take(48000)
-                .fold<double>(0, (sum, value) => sum + value * value) /
-            48000,
-      );
-      expect(rms, lessThan(0.01));
+      double rms(double from, double to) {
+        final count = ((to - from) * 48000).round();
+        return sqrt(
+          filtered
+                  .skip((from * 48000).round())
+                  .take(count)
+                  .fold<double>(0, (sum, value) => sum + value * value) /
+              count,
+        );
+      }
+
+      // The handover starts with the original signal, then progressively
+      // removes highs rather than switching to a muffled signal at t=0.
+      final dry = rms(0.03, 0.15);
+      final easing = rms(0.6, 0.7);
+      final wet = rms(2, 3);
+      expect(dry, greaterThan(0.08));
+      expect(easing, inExclusiveRange(wet, dry));
+      expect(wet, lessThan(0.01));
       final echo = await signal(
-        "aevalsrc=if(between(t\\,0.1\\,0.101)\\,0.5\\,0):s=48000",
+        "aevalsrc=if(between(t\\,1.5\\,1.501)\\,0.5\\,0):s=48000",
         const AutoMixOptions(effect: AutoMixEffect.echo),
       );
       double peak(double time) => echo
           .skip((time * 48000).round())
           .take(100)
           .fold<double>(0, (p, value) => max(p, value.abs()));
-      expect(peak(0.28), greaterThan(0.05));
-      expect(peak(0.46), greaterThan(0.02));
+      expect(peak(1.68), greaterThan(0.05));
+      expect(peak(1.86), greaterThan(0.02));
       renderer.dispose();
     },
   );

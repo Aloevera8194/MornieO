@@ -235,10 +235,12 @@ class AutoMixPlan {
             ..sort((a, b) => (a - 1).abs().compareTo((b - 1).abs()));
       final candidate = candidates.first;
       final firstBeat = incoming.beatAtOrAfter(incoming.firstSound);
-      // Never stretch wildly or discard a long musical intro to force a mix.
+      // The detector measures leading silence, not the length of a musical
+      // intro. A quiet lead-in should not disable an otherwise reliable mix.
+      // Bound the trim so an uncertain/very late onset still uses crossfade.
       if ((candidate - 1).abs() > 0.08) {
         fallbackReason = AutoMixFallbackReason.incompatibleTempo;
-      } else if (firstBeat > 3) {
+      } else if (firstBeat > math.min(12, nextLength * 0.1)) {
         fallbackReason = AutoMixFallbackReason.longIntro;
       } else {
         rate = candidate;

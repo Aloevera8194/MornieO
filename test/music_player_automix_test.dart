@@ -71,6 +71,7 @@ class _AudioNative {
   final sourceGates = <String, Completer<void>>{};
   final resumedSources = <String>[];
   Completer<void>? resumeGate;
+  final resumeGates = <String, Completer<void>>{};
   bool emitsDuration = true;
 
   void install() {
@@ -112,6 +113,7 @@ class _AudioNative {
             unawaited(event(id, 'audio.onSeekComplete'));
           case 'resume':
             await resumeGate?.future;
+            await resumeGates[id]?.future;
             playing.add(id);
             resumedSources.add(sources[id]!);
           case 'pause' || 'stop':
@@ -1514,6 +1516,40 @@ void main() {
     expect(native.playing, {'music-player', incoming});
     expect(effectRenderer.tails, isEmpty);
   });
+
+  test(
+    'effect startup keeps dry audio audible and blends before disposal',
+    () async {
+      setAutoMixOptions(const AutoMixOptions(effect: AutoMixEffect.muffled));
+      await prepare();
+      await _until(
+        () => native.sources.values.any((path) => path.endsWith('/tail.wav')),
+      );
+      final effect = native.sources.entries
+          .singleWhere((entry) => entry.value.endsWith('/tail.wav'))
+          .key;
+      final ready = Completer<void>();
+      native.resumeGates[effect] = ready;
+      native.positions['music-player'] = 55000;
+      await _until(
+        () => native.calls.any(
+          (call) => call.$1 == effect && call.$2 == 'resume',
+        ),
+      );
+      expect(native.lastVolume('music-player'), 1);
+      expect(native.lastVolume(effect), 0);
+      expect(native.playing, contains('music-player'));
+      ready.complete();
+      await _until(() => (native.lastVolume(effect) ?? 0) > 0);
+      expect(native.lastVolume('music-player'), inExclusiveRange(0, 1));
+      expect(native.lastVolume(effect), inExclusiveRange(0, 1));
+      // Pausing during the handover must clean up both the dry and wet decks.
+      await handler.pause();
+      expect(native.live, hasLength(1));
+      expect(native.playing, isEmpty);
+      expect(await effectRenderer.tails.single.directory.exists(), isFalse);
+    },
+  );
 
   test(
     'turning AutoMix off releases the standby player without changing song',
