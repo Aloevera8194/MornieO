@@ -6,10 +6,21 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/models/theme_settings.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
+import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/mornye_context_menu.dart';
+
+class _Settings extends SettingsNotifier {
+  _Settings(this._forceBlur);
+
+  final bool _forceBlur;
+
+  @override
+  AppSettings build() => AppSettings(forceBackdropBlur: _forceBlur);
+}
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -24,6 +35,7 @@ void main() {
     bool reduceMotion = false,
     bool preferAbove = false,
     bool highContrast = false,
+    bool forceBlur = false,
     bool lowEnd = false,
     Color? backgroundColor,
     GlobalKey? capture,
@@ -37,6 +49,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          settingsProvider.overrideWith(() => _Settings(forceBlur)),
           lowEndDeviceProvider.overrideWithValue(lowEnd),
           backdropBlurEnabledProvider.overrideWithValue(false),
         ],
@@ -359,6 +372,24 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   }
+
+  testWidgets('glass override reaches context menu overlays', (tester) async {
+    await openMenu(
+      tester,
+      anchor: const Rect.fromLTWH(330, 144, 44, 44),
+      brightness: Brightness.dark,
+      highContrast: true,
+      forceBlur: true,
+      onResult: (_) {},
+    );
+    final menu = find.byType(MornyeContextMenu);
+    expect(find.byType(BackdropFilter), findsWidgets);
+    expect(MediaQuery.highContrastOf(tester.element(menu)), isTrue);
+    await tester.tap(find.text('Share'));
+    await tester.pumpAndSettle();
+    expect(menu, findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'large text in landscape keeps shortcuts and last action usable',

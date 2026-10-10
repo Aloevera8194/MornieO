@@ -83,9 +83,9 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Glass stays opaque while the system’s high contrast setting is on.",
+  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request and the explicit glass-only override."
   },
   "appearanceUseSystemFont": "Sistem yazı tipini kullan",
   "appearanceUseSystemFontSubtitle": "Use your device’s default typeface for app text.",

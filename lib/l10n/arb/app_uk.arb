@@ -106,9 +106,9 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Скло залишається непрозорим, доки в системі ввімкнено режим високої контрастності.",
+  "appearanceGlassClarityHighContrast": "Система запитує підвищену контрастність, тому скло залишається непрозорим. Увімкніть «{setting}», щоб усе одно використовувати ефект скла; контрастність тексту зберігається.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request and the explicit glass-only override."
   },
   "appearanceUseSystemFont": "Використовувати системний шрифт",
   "appearanceUseSystemFontSubtitle": "Використовуйте стандартний шрифт вашого пристрою для тексту в додатку.",

@@ -22,6 +22,15 @@ final backdropBlurEnabledProvider = Provider<bool>((ref) {
       ref.watch(settingsProvider.select((s) => s.forceBackdropBlur));
 });
 
+/// Flutter also reports Android's medium contrast as high contrast. Respect
+/// that request unless the user explicitly forces glass; this only controls
+/// decorative surfaces, never the inherited text or reduced-motion settings.
+final mornyeGlassContrastBlockedProvider = Provider.family<bool, bool>(
+  (ref, highContrast) =>
+      highContrast &&
+      !ref.watch(settingsProvider.select((s) => s.forceBackdropBlur)),
+);
+
 /// How much of Mornye's glass the device renders.
 enum MornyeGlassLevel {
   /// Opaque surfaces; no backdrop sampling.

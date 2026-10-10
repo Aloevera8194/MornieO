@@ -145,6 +145,9 @@ class _MornyeBottomBarState extends ConsumerState<MornyeBottomBar>
       context,
       blurEnabled: blurEnabled,
       liquidGlass: liquidGlass,
+      contrastBlocked: ref.watch(
+        mornyeGlassContrastBlockedProvider(MediaQuery.highContrastOf(context)),
+      ),
     );
     final tabGap = glassTabs ? 0.0 : 8.0;
     // These contents do not depend on animation progress. Retain their widget

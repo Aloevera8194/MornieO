@@ -83,9 +83,9 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Le verre reste opaque lorsque le réglage « contraste élevé » du système est activé.",
+  "appearanceGlassClarityHighContrast": "Le système demande un contraste accru, ce qui rend le verre opaque. Activez « {setting} » pour utiliser tout de même l’effet de verre ; le contraste du texte est préservé.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request and the explicit glass-only override."
   },
   "appearanceUseSystemFont": "Utiliser la police système",
   "appearanceUseSystemFontSubtitle": "Utilisez la police par défaut de votre appareil pour le texte de l'application.",

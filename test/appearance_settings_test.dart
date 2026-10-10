@@ -222,6 +222,7 @@ void main() {
         200,
         scrollable: find.byType(Scrollable).first,
       );
+      await tester.pumpAndSettle();
       await tester.tap(forceBlur);
       await tester.pumpAndSettle();
       // The lazily built slider scrolled away; bring it back.
@@ -239,7 +240,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('glass clarity explains high contrast ($mode)', (tester) async {
+    testWidgets('glass clarity can override system contrast ($mode)', (
+      tester,
+    ) async {
       tester.platformDispatcher.accessibilityFeaturesTestValue =
           const FakeAccessibilityFeatures(highContrast: true);
       addTearDown(
@@ -261,8 +264,43 @@ void main() {
               find.byKey(const ValueKey('mornye-glass-clarity-unavailable')),
             )
             .data,
-        'Glass stays opaque while the system’s high contrast setting is on.',
+        'Your system requests increased contrast, so glass stays opaque. '
+        'Turn on “Always use blur effects” to use glass anyway; '
+        'text contrast is preserved.',
       );
+      final forceBlur = find.text('Always use blur effects');
+      await tester.scrollUntilVisible(
+        forceBlur,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(forceBlur);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        slider,
+        -200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<Slider>(slider).onChanged, isNotNull);
+      expect(
+        find.byKey(const ValueKey('mornye-glass-clarity-unavailable')),
+        findsNothing,
+      );
+      expect(MediaQuery.highContrastOf(tester.element(slider)), isTrue);
+      expect(find.byType(BackdropFilter), findsWidgets);
+      await tester.drag(slider, const Offset(160, 0));
+      await tester.pumpAndSettle();
+      expect(prefs.getDouble(kMornyeGlassClarityKey), 1);
+
+      // The override and chosen clarity survive reopening settings.
+      await tester.pumpWidget(const SizedBox());
+      await openSettings(tester, prefs);
+      await tester.ensureVisible(slider);
+      await tester.pumpAndSettle();
+      expect(tester.widget<Slider>(slider).onChanged, isNotNull);
+      expect(tester.widget<Slider>(slider).value, 1);
       expect(tester.takeException(), isNull);
     });
 

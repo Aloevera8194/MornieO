@@ -212,9 +212,9 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Efek kaca mati jika setelan kontras tinggi sistem dihidupkan.",
+  "appearanceGlassClarityHighContrast": "Sistem meminta peningkatan kontras, sehingga kaca menjadi buram penuh. Aktifkan “{setting}” untuk tetap menggunakan efek kaca; kontras teks tetap dipertahankan.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request and the explicit glass-only override."
   },
   "appearanceUseSystemFont": "Gunakan font sistem",
   "appearanceUseSystemFontSubtitle": "Menggunakan font default perangkat untuk aplikasi.",

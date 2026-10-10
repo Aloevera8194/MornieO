@@ -507,10 +507,11 @@ class _MornyeGlassClaritySlider extends ConsumerWidget {
     final notifier = ref.read(themeProvider.notifier);
     final theme = Theme.of(context);
     final l10n = context.l10n;
-    // Flat devices and high contrast draw every glass surface opaque, so the
-    // slider would change nothing visible. Keep the stored value untouched.
-    final highContrast = MediaQuery.highContrastOf(context);
-    final adjustable = !highContrast && ref.watch(mornyeBlurEnabledProvider);
+    // Match the renderer's policy without changing the stored clarity value.
+    final contrastBlocked = ref.watch(
+      mornyeGlassContrastBlockedProvider(MediaQuery.highContrastOf(context)),
+    );
+    final adjustable = !contrastBlocked && ref.watch(mornyeBlurEnabledProvider);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
       child: Column(
@@ -525,8 +526,10 @@ class _MornyeGlassClaritySlider extends ConsumerWidget {
           if (!adjustable) ...[
             const SizedBox(height: 8),
             Text(
-              highContrast
-                  ? l10n.appearanceGlassClarityHighContrast
+              contrastBlocked
+                  ? l10n.appearanceGlassClarityHighContrast(
+                      l10n.appearanceForceBlur,
+                    )
                   : l10n.appearanceGlassClarityBlurOff(
                       l10n.appearanceForceBlur,
                     ),

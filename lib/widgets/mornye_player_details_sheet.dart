@@ -27,11 +27,8 @@ class MornyePlayerDetailsSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final item = mediaItem;
-    final blur =
-        !MediaQuery.highContrastOf(context) &&
-        ref.watch(mornyeBlurEnabledProvider);
     return MornyeGlass.navigation(
-      blurEnabled: blur,
+      blurEnabled: ref.watch(mornyeBlurEnabledProvider),
       child: SafeArea(
         top: false,
         child: Column(

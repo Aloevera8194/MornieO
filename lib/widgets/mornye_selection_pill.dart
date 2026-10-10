@@ -24,6 +24,7 @@ class MornyeSelectionPill extends StatefulWidget {
     required this.itemBuilder,
     this.padding = const EdgeInsets.all(4),
     this.liquidInteraction = false,
+    this.contrastBlocked,
     this.selectionColor,
     this.maskItemForeground = true,
     this.interactionBuilder,
@@ -36,6 +37,10 @@ class MornyeSelectionPill extends StatefulWidget {
   itemBuilder;
   final EdgeInsets padding;
   final bool liquidInteraction;
+
+  /// The parent's glass contrast policy, including an explicit user override.
+  /// Standalone controls respect the system contrast request by default.
+  final bool? contrastBlocked;
 
   /// Recolors the foreground under the moving pill instead of switching an
   /// entire item at a tab boundary. Builders receive `selected: false` in this
@@ -147,7 +152,7 @@ class _MornyeSelectionPillState extends State<MornyeSelectionPill>
         widget.liquidInteraction &&
         ui.ImageFilter.isShaderFilterSupported &&
         !MediaQuery.disableAnimationsOf(context) &&
-        !MediaQuery.highContrastOf(context);
+        !(widget.contrastBlocked ?? MediaQuery.highContrastOf(context));
     final pressProgress = lensEnabled ? _pressAnimation.value : 0.0;
     final content = Listener(
       // An accepted drag can end with a PointerCancelEvent. Do not navigate

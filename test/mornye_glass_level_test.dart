@@ -3,13 +3,25 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/models/theme_settings.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
+import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/extension_repo_card.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/mornye_selection_pill.dart';
+
+class _Settings extends SettingsNotifier {
+  @override
+  AppSettings build() => const AppSettings();
+
+  @override
+  void setForceBackdropBlur(bool enabled) {
+    state = state.copyWith(forceBackdropBlur: enabled);
+  }
+}
 
 MornyeGlassLevel _levelFor({
   required bool lowEnd,
@@ -29,6 +41,106 @@ MornyeGlassLevel _levelFor({
 }
 
 void main() {
+  for (final brightness in Brightness.values) {
+    for (final reduceMotion in [false, true]) {
+      testWidgets(
+        'glass override preserves accessibility ($brightness, motion: $reduceMotion)',
+        (tester) async {
+          tester.platformDispatcher.accessibilityFeaturesTestValue =
+              FakeAccessibilityFeatures(
+                highContrast: true,
+                disableAnimations: reduceMotion,
+              );
+          addTearDown(
+            tester.platformDispatcher.clearAccessibilityFeaturesTestValue,
+          );
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                settingsProvider.overrideWith(_Settings.new),
+                // A capable GPU must not implicitly override contrast.
+                deviceSupportsBackdropBlurProvider.overrideWithValue(true),
+              ],
+              child: MaterialApp(
+                theme: MornyeTheme.build(brightness, glassClarity: 1),
+                home: Scaffold(
+                  body: Column(
+                    children: [
+                      const MornyeGlass.navigation(
+                        blurEnabled: true,
+                        child: SizedBox(width: 200, height: 50),
+                      ),
+                      MornyeSegmentedControl(
+                        labels: const ['One', 'Two'],
+                        selectedIndex: 0,
+                        onChanged: (_) {},
+                      ),
+                      MornyeTabBar(
+                        destinations: const [
+                          NavigationDestination(
+                            icon: Icon(Icons.home),
+                            label: 'Home',
+                          ),
+                          NavigationDestination(
+                            icon: Icon(Icons.music_note),
+                            label: 'Library',
+                          ),
+                        ],
+                        selectedIndex: 0,
+                        onSelected: (_) {},
+                        blurEnabled: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
+          final context = tester.element(find.byType(MornyeTabBar));
+          final container = ProviderScope.containerOf(context);
+          // Turn the override on and off while the system request stays on.
+          for (final forceBlur in [false, true, false]) {
+            container
+                .read(settingsProvider.notifier)
+                .setForceBackdropBlur(forceBlur);
+            await tester.pumpAndSettle();
+            expect(
+              find.byType(BackdropFilter),
+              findsNWidgets(forceBlur ? 3 : 0),
+            );
+            final pills = tester.widgetList<MornyeSelectionPill>(
+              find.byType(MornyeSelectionPill),
+            );
+            expect(
+              pills.every((pill) => pill.contrastBlocked == !forceBlur),
+              isTrue,
+            );
+            expect(pills.last.liquidInteraction, forceBlur && !reduceMotion);
+            expect(MediaQuery.highContrastOf(context), isTrue);
+            expect(MediaQuery.disableAnimationsOf(context), reduceMotion);
+            expect(
+              MornyeTabBar.usesLiquidGlass(
+                context,
+                blurEnabled: true,
+                liquidGlass: true,
+                contrastBlocked: container.read(
+                  mornyeGlassContrastBlockedProvider(true),
+                ),
+              ),
+              forceBlur && !reduceMotion,
+            );
+          }
+          // A live system-contrast change restores normal glass automatically.
+          tester.platformDispatcher.accessibilityFeaturesTestValue =
+              FakeAccessibilityFeatures(disableAnimations: reduceMotion);
+          await tester.pumpAndSettle();
+          expect(find.byType(BackdropFilter), findsNWidgets(3));
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
+  }
+
   test('runtime tiers map to Mornye glass levels', () {
     // Low tier: arm32-only or low-RAM Android.
     expect(
@@ -217,6 +329,7 @@ void main() {
           context,
           blurEnabled: true,
           liquidGlass: true,
+          contrastBlocked: false,
         ),
         liquid,
       );

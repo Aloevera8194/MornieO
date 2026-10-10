@@ -26,6 +26,9 @@ class MornyeSegmentedControl extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final height = MediaQuery.textScalerOf(context).scale(15) + 36;
+    final contrastBlocked = ref.watch(
+      mornyeGlassContrastBlockedProvider(MediaQuery.highContrastOf(context)),
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: SizedBox(
@@ -34,6 +37,7 @@ class MornyeSegmentedControl extends ConsumerWidget {
           blurEnabled: ref.watch(mornyeBlurEnabledProvider),
           radius: height / 2,
           child: MornyeSelectionPill(
+            contrastBlocked: contrastBlocked,
             liquidInteraction:
                 ref.watch(mornyeLiquidGlassProvider) &&
                 MornyeTheme.glassClarityOf(context) > 0.2,
@@ -208,7 +212,11 @@ class MornyeGlass extends ConsumerWidget {
         blurEnabled &&
         level != MornyeGlassLevel.flat &&
         clarity > 0 &&
-        !MediaQuery.highContrastOf(context);
+        !ref.watch(
+          mornyeGlassContrastBlockedProvider(
+            MediaQuery.highContrastOf(context),
+          ),
+        );
     final dark = scheme.brightness == Brightness.dark;
     final outlines = MornyeTheme.glassOutlinesOf(context);
     final shape = BorderRadius.vertical(
@@ -554,7 +562,7 @@ class MornyeNavigationIcon extends StatelessWidget {
   );
 }
 
-class MornyeTabBar extends StatelessWidget {
+class MornyeTabBar extends ConsumerWidget {
   const MornyeTabBar({
     super.key,
     required this.destinations,
@@ -581,24 +589,30 @@ class MornyeTabBar extends StatelessWidget {
     BuildContext context, {
     required bool blurEnabled,
     required bool liquidGlass,
+    required bool contrastBlocked,
   }) =>
       blurEnabled &&
       liquidGlass &&
       MornyeTheme.glassClarityOf(context) > 0 &&
       !MediaQuery.disableAnimationsOf(context) &&
-      !MediaQuery.highContrastOf(context);
+      !contrastBlocked;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final contrastBlocked = ref.watch(
+      mornyeGlassContrastBlockedProvider(MediaQuery.highContrastOf(context)),
+    );
     final floating = usesLiquidGlass(
       context,
       blurEnabled: blurEnabled,
       liquidGlass: liquidGlass,
+      contrastBlocked: contrastBlocked,
     );
     return Padding(
       padding: EdgeInsets.symmetric(vertical: floating ? 8 : 0),
       child: MornyeSelectionPill(
+        contrastBlocked: contrastBlocked,
         selectionColor: scheme.primary,
         maskItemForeground: false,
         liquidInteraction:
