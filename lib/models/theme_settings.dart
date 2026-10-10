@@ -9,6 +9,10 @@ const String kMornyeAccentKey = 'mornye_accent';
 const String kUseSystemFontKey = 'use_system_font';
 const String kCustomFontIdKey = 'custom_font_id';
 const String kCustomFontNameKey = 'custom_font_name';
+const String kLyricsTextScaleKey = 'lyrics_text_scale';
+
+double normalizeLyricsTextScale(num? value) =>
+    value != null && value.isFinite ? value.toDouble().clamp(0.8, 1.4) : 1.0;
 const String kMornyeGlassClarityKey = 'mornye_glass_clarity';
 const String kMornyeGlassOutlinesKey = 'mornye_glass_outlines';
 const double kDefaultMornyeGlassClarity = 0.75;
@@ -47,6 +51,7 @@ class ThemeSettings {
   final bool useSystemFont;
   final String customFontId;
   final String customFontName;
+  final double lyricsTextScale;
   final double mornyeGlassClarity;
   final bool mornyeGlassOutlines;
 
@@ -60,6 +65,7 @@ class ThemeSettings {
     this.useSystemFont = false,
     this.customFontId = '',
     this.customFontName = '',
+    this.lyricsTextScale = 1,
     this.mornyeGlassClarity = kDefaultMornyeGlassClarity,
     this.mornyeGlassOutlines = true,
   });
@@ -76,6 +82,7 @@ class ThemeSettings {
     bool? useSystemFont,
     String? customFontId,
     String? customFontName,
+    double? lyricsTextScale,
     double? mornyeGlassClarity,
     bool? mornyeGlassOutlines,
   }) {
@@ -89,6 +96,9 @@ class ThemeSettings {
       useSystemFont: useSystemFont ?? this.useSystemFont,
       customFontId: customFontId ?? this.customFontId,
       customFontName: customFontName ?? this.customFontName,
+      lyricsTextScale: normalizeLyricsTextScale(
+        lyricsTextScale ?? this.lyricsTextScale,
+      ),
       mornyeGlassClarity: normalizeMornyeGlassClarity(
         mornyeGlassClarity ?? this.mornyeGlassClarity,
       ),
@@ -106,6 +116,7 @@ class ThemeSettings {
     kUseSystemFontKey: useSystemFont,
     kCustomFontIdKey: customFontId,
     kCustomFontNameKey: customFontName,
+    kLyricsTextScaleKey: lyricsTextScale,
     kMornyeGlassClarityKey: mornyeGlassClarity,
     kMornyeGlassOutlinesKey: mornyeGlassOutlines,
   };
@@ -121,6 +132,9 @@ class ThemeSettings {
       useSystemFont: json[kUseSystemFontKey] as bool? ?? false,
       customFontId: json[kCustomFontIdKey] as String? ?? '',
       customFontName: json[kCustomFontNameKey] as String? ?? '',
+      lyricsTextScale: normalizeLyricsTextScale(
+        json[kLyricsTextScaleKey] as num?,
+      ),
       mornyeGlassClarity: normalizeMornyeGlassClarity(
         json[kMornyeGlassClarityKey] as num?,
       ),
@@ -141,6 +155,7 @@ class ThemeSettings {
         other.useSystemFont == useSystemFont &&
         other.customFontId == customFontId &&
         other.customFontName == customFontName &&
+        other.lyricsTextScale == lyricsTextScale &&
         other.mornyeGlassClarity == mornyeGlassClarity &&
         other.mornyeGlassOutlines == mornyeGlassOutlines;
   }
@@ -156,6 +171,7 @@ class ThemeSettings {
       useSystemFont.hashCode ^
       customFontId.hashCode ^
       customFontName.hashCode ^
+      lyricsTextScale.hashCode ^
       mornyeGlassClarity.hashCode ^
       mornyeGlassOutlines.hashCode;
 }

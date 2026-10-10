@@ -9,6 +9,7 @@ import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/lyrics_size_setting.dart';
 
 class LyricsSettingsPage extends ConsumerWidget {
   const LyricsSettingsPage({super.key});
@@ -34,6 +35,7 @@ class LyricsSettingsPage extends ConsumerWidget {
             SliverToBoxAdapter(
               child: SettingsGroup(
                 children: [
+                  const LyricsSizeSetting(),
                   SettingsSwitchItem(
                     icon: Icons.light_mode_outlined,
                     title: context.l10n.lyricsKeepScreenOn,

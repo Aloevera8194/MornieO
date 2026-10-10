@@ -7,6 +7,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/player_lyrics.dart';
+import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
 
 class PlayerLyricsSection extends ConsumerWidget {
   const PlayerLyricsSection({
@@ -90,13 +91,15 @@ class PlayerLyricsSection extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            metadata.lyrics.plainText,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              height: 1.6,
-              color: colorScheme.onSurface,
+          LyricsTextScale(
+            child: Text(
+              metadata.lyrics.plainText,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                height: 1.6,
+                color: colorScheme.onSurface,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           ?_lyricsCredits(),
         ],

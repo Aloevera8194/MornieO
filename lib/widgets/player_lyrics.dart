@@ -20,6 +20,7 @@ import 'package:spotiflac_android/widgets/lyric_supplement_transition.dart';
 import 'package:spotiflac_android/widgets/lyric_scroll_motion.dart';
 import 'package:spotiflac_android/widgets/lyric_gap_indicator.dart';
 import 'package:spotiflac_android/widgets/mornye_player_slider.dart';
+import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
 
 const _mornyeLyricFontSize = 34.0;
 const mornyeLyricsContentInset = 28.0 + MornyePlayerSlider.horizontalInset;
@@ -389,7 +390,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     super.dispose();
   }
 
-  void _measureMornyeLines(double width) {
+  void _measureMornyeLines(BuildContext context, double width) {
     final style = _mornyeLyricStyle(context);
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
@@ -557,18 +558,20 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
   }
 
   @override
-  Widget build(BuildContext context) => TweenAnimationBuilder<Offset>(
-    tween: Tween(
-      end: Offset(
-        widget.showPronunciation ? 1 : 0,
-        widget.showTranslation ? 1 : 0,
+  Widget build(BuildContext context) => LyricsTextScale(
+    child: TweenAnimationBuilder<Offset>(
+      tween: Tween(
+        end: Offset(
+          widget.showPronunciation ? 1 : 0,
+          widget.showTranslation ? 1 : 0,
+        ),
       ),
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 420),
+      curve: Curves.easeInOutCubic,
+      builder: (context, visibility, _) => _buildLyrics(context, visibility),
     ),
-    duration: MediaQuery.disableAnimationsOf(context)
-        ? Duration.zero
-        : const Duration(milliseconds: 420),
-    curve: Curves.easeInOutCubic,
-    builder: (context, visibility, _) => _buildLyrics(context, visibility),
   );
 
   Widget _buildLyrics(BuildContext context, Offset visibility) {
@@ -636,7 +639,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
               : 1.0;
           if (mornye) {
             final previousExtents = _lineExtents;
-            _measureMornyeLines(layoutWidth);
+            _measureMornyeLines(context, layoutWidth);
             // Reuse text measurements; only interpolate row heights as the
             // supplements fade. Scrolling follows the same animation clock.
             final fullExtents = List.generate(_lineMeasurements.length, (row) {
@@ -897,15 +900,19 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                     onTap: () =>
                         ref.read(musicPlayerControllerProvider).seek(line.time),
                     child: AnimatedScale(
-                      scale: mornye || isActive ? 1.0 : 0.96,
-                      alignment: Alignment.center,
-                      duration: const Duration(milliseconds: 280),
+                      scale: isActive ? 1.0 : 0.96,
+                      alignment: !mornye
+                          ? Alignment.center
+                          : textAlign == TextAlign.right
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      duration: motion,
                       curve: Curves.easeOutCubic,
                       child: AnimatedOpacity(
                         opacity: mornye
                             ? (isActive || highContrast ? 1 : 0.48)
                             : (isActive ? 1.0 : (isPast ? 0.55 : 0.85)),
-                        duration: const Duration(milliseconds: 280),
+                        duration: motion,
                         child: content,
                       ),
                     ),

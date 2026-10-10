@@ -18,6 +18,9 @@ ThemeSettings loadBootstrapThemeSettings(SharedPreferences prefs) {
     useSystemFont: prefs.getBool(kUseSystemFontKey) ?? false,
     customFontId: prefs.getString(kCustomFontIdKey) ?? '',
     customFontName: prefs.getString(kCustomFontNameKey) ?? '',
+    lyricsTextScale: normalizeLyricsTextScale(
+      prefs.getDouble(kLyricsTextScaleKey),
+    ),
     mornyeGlassClarity: normalizeMornyeGlassClarity(
       prefs.getDouble(kMornyeGlassClarityKey),
     ),
@@ -81,6 +84,7 @@ class ThemeNotifier extends Notifier<ThemeSettings> {
       await prefs.setBool(kUseSystemFontKey, snapshot.useSystemFont);
       await prefs.setString(kCustomFontIdKey, snapshot.customFontId);
       await prefs.setString(kCustomFontNameKey, snapshot.customFontName);
+      await prefs.setDouble(kLyricsTextScaleKey, snapshot.lyricsTextScale);
       await prefs.setDouble(
         kMornyeGlassClarityKey,
         snapshot.mornyeGlassClarity,
@@ -134,6 +138,11 @@ class ThemeNotifier extends Notifier<ThemeSettings> {
       (current) => current.copyWith(customFontId: id, customFontName: name),
     );
     await _saveToStorage();
+  }
+
+  Future<void> setLyricsTextScale(double value, {bool persist = true}) async {
+    _editState((current) => current.copyWith(lyricsTextScale: value));
+    if (persist) await _saveToStorage();
   }
 
   Future<void> setMornyeGlassClarity(

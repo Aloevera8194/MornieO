@@ -7156,6 +7156,8 @@
   "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
   "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
   "appearanceCustomFontReset": "Use theme font",
+  "lyricsTextSize": "Lyrics text size",
+  "lyricsTextPreview": "Follow every line of your favorite song",
   "optionsEmbeddedCoverSizeOriginal": "Original resolution",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
