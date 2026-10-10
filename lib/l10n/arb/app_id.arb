@@ -1,47 +1,47 @@
 {
-  "networkDownloadDestination": "Network download destination",
-  "networkUseForDownloads": "Download to this folder",
-  "networkDownloadSelected": "Selected download destination",
-  "networkUseLocalDownloads": "Use local download folder",
-  "networkDownloadAccessFailed": "Could not write to this folder.",
-  "networkUploading": "Uploading to network storage",
-  "networkDownloadDescription": "Prepare songs on this device, then upload them to your NAS. Keep the app open until the upload finishes. Retry reuses prepared audio. Existing files are kept; new downloads with the same name get a numbered suffix.",
-  "networkAddToLibrary": "Add folder to Library",
-  "networkLibraryAdded": "Folder added to Library",
-  "networkLibraryDescription": "Scan this folder and its subfolders. Music stays on your server; metadata and artwork are saved on this device. Manage or rescan it in Local Library settings.",
-  "networkStorage": "Network storage",
-  "networkErrorUnreachable": "The server could not be reached. Check that this phone can access its network and that the file-sharing service is running. For SMB, port 445 must be reachable.",
-  "networkErrorTimeout": "The server did not respond in time. Check the connection and try again.",
-  "networkErrorAuthentication": "The server rejected the sign-in. Check the username, password and domain. Leave the domain blank unless your server requires one.",
-  "networkErrorPermission": "This account is not allowed to open this share or folder. Check its read permissions on the server.",
-  "networkErrorShare": "The share or folder was not found. For SMB, use the server's shared folder name after its address, such as smb://server/Music/.",
-  "networkErrorProtocol": "The server and this SMB client could not agree on a supported protocol. Enable SMB2 or SMB3 on the server. SMB1 is not supported.",
-  "networkErrorAddress": "Check the server address. Use smb://server/share/ for SMB, or an http:// or https:// address for WebDAV and HTTP.",
-  "networkConnections": "Saved connections",
+  "networkDownloadDestination": "Tujuan download jaringan",
+  "networkUseForDownloads": "Download ke folder ini",
+  "networkDownloadSelected": "Tujuan download terpilih",
+  "networkUseLocalDownloads": "Gunakan folder download lokal",
+  "networkDownloadAccessFailed": "Tak dapat mengakses folder ini",
+  "networkUploading": "Mengupload ke penyimpanan jaringan",
+  "networkDownloadDescription": "Siapkan lagu di perangkat ini, lalu upload ke NAS Anda. Pastikan aplikasi terbuka sampai upload selesai. Mencoba lagi menggunakan lagu yang disiapkan. File yang sudah ada tak akan dimodifikasi; download baru dengan nama sama akan diberi akhiran angka.",
+  "networkAddToLibrary": "Tambah folder ke Koleksi",
+  "networkLibraryAdded": "Folder ditambah ke Koleksi",
+  "networkLibraryDescription": "Pindai folder ini dan subfoldernya. Lagu tetap berada di server Anda; metadata dan cover tetap tersimpan di perangkat. Kelola atau pindai ulang lewat setelan Koleksi Lokal.",
+  "networkStorage": "Penyimpanan Jaringan",
+  "networkErrorUnreachable": "Server tak dapat dijangkau. Pastikan ponsel ini dapat mengakses jaringan dan layanan berbagi filenya berjalan. Untuk SMB, pastikan dapat menjangkau port 445.",
+  "networkErrorTimeout": "Server tidak merespons. Periksa koneksi dan coba lagi.",
+  "networkErrorAuthentication": "Server menolak info login. Periksa nama pengguna, sandi, dan domain. Biarkan domain kosong kecuali server Anda membutuhkannya.",
+  "networkErrorPermission": "Akun ini tidak diperbolehkan membuka file atau folder ini. Periksa izin aksesnya di server.",
+  "networkErrorShare": "File atau folder tak ditemukan. Untuk SMB, tambahkan nama folder berbagi server setelah alamatnya, seperti smb://server/Music/.",
+  "networkErrorProtocol": "Server dan client SMB ini tak menyetujui penggunaan protokol terdukung. Hidupkan SMB2 atau SMB3 di server. SMB1 tak didukung.",
+  "networkErrorAddress": "Periksa alamat server. Gunakan smb://server/share/ untuk SMB, http:// atau https:// alamat untuk WebDAV dan HTTP.",
+  "networkConnections": "Koneksi tersimpan",
   "networkServer": "Server",
-  "networkCredentials": "Sign in (optional)",
-  "networkRefresh": "Refresh",
-  "networkStorageDescription": "Connect to your NAS or music server and browse its folders. Your sign-in details are stored securely on this device.",
-  "networkAddConnection": "Add connection",
-  "networkEditConnection": "Edit connection",
-  "networkConnectionName": "Name",
-  "networkAddress": "Server or audio URL",
-  "networkProtocol": "Protocol",
-  "networkUsername": "Username (optional)",
-  "networkPassword": "Password (optional)",
-  "networkDomain": "Domain (optional)",
-  "networkConnectSave": "Connect and save",
-  "networkErrorCertificate": "The server's HTTPS certificate could not be verified. Edit this connection to review and trust its certificate, or check the server's HTTPS configuration.",
-  "networkCertificatePrompt": "This server uses an untrusted HTTPS certificate. Routers and NAS devices often use self-signed certificates. Verify the server address and SHA-256 fingerprint before trusting it. Trust applies only to this certificate on this server; a changed certificate requires approval again.",
-  "networkTrustCertificate": "Trust certificate and retry",
-  "networkRemoveConnection": "Remove connection",
-  "networkNoFiles": "No supported music files or folders found.",
-  "networkConnectionError": "Could not access the network source. Check the server address, credentials, and connection, then retry.",
-  "extensionAccountTitle": "Extension account",
-  "extensionAccountInvalidForm": "The extension returned an invalid account form.",
-  "extensionAccountRestartLogin": "Restart account login to continue.",
-  "extensionAccountRequiredValue": "Enter a value.",
-  "extensionAccountInvalidNumber": "Enter a valid number.",
+  "networkCredentials": "Login (opsional)",
+  "networkRefresh": "Muat Ulang",
+  "networkStorageDescription": "Hubungkan ke NAS atau server musik Anda dan jelajahi foldernya. Detail login Anda akan tersimpan aman di perangkat ini.",
+  "networkAddConnection": "Tambah koneksi",
+  "networkEditConnection": "Edit koneksi",
+  "networkConnectionName": "Nama",
+  "networkAddress": "URL server atau audio",
+  "networkProtocol": "Protokol",
+  "networkUsername": "Nama pengguna (opsional)",
+  "networkPassword": "Sandi (opsional)",
+  "networkDomain": "Domain (opsional)",
+  "networkConnectSave": "Hubungkan dan simpan",
+  "networkErrorCertificate": "Sertifikat HTTPS server tidak dapat diverifikasi. Edit koneksi untuk meninjau dan mempercayai sertifikatnya, atau periksa konfigurasi HTTPS server.",
+  "networkCertificatePrompt": "Server ini menggunakan sertifikat HTTPS yang tidak dipercaya. Biasanya router dan perangkat NAS menggunakan sertifikatnya sendiri. Verifikasi alamat server dan sidik jari SHA-256 sebelum mempercayainya. Hanya mempercayai sertifikat server ini; bila berubah harus disetujui lagi.",
+  "networkTrustCertificate": "Percayai sertifikat dan coba lagi",
+  "networkRemoveConnection": "Hapus koneksi",
+  "networkNoFiles": "Tak menemukan file lagu atau folder terdukung.",
+  "networkConnectionError": "Tak dapat mengakses sumber jaringan. Periksa alamat server, kredensial, dan koneksi, lalu coba lagi.",
+  "extensionAccountTitle": "Akun ekstensi",
+  "extensionAccountInvalidForm": "Ekstensi mengembalikan bentuk akun yang tak valid",
+  "extensionAccountRestartLogin": "Mulai ulang akun login untuk lanjut.",
+  "extensionAccountRequiredValue": "Harap diisi.",
+  "extensionAccountInvalidNumber": "Beri angka yang valid.",
   "settingsPlaybackSubtitle": "Pemutar, volume, AutoMix, dan output audio",
   "sectionPlayer": "Pemutar",
   "sectionVolumeAndTransitions": "Volume dan transisi",
@@ -117,7 +117,7 @@
   "appearanceGlassClaritySubtitle": "Atur kebeningan kaca menu dan navigasi Mornye. Kontras teks tetap terjaga.",
   "appearanceGlassTinted": "Berwarna",
   "appearanceGlassClear": "Bening",
-  "appearanceGlassClearPerformance": "Very clear glass may use more power and feel less smooth on older devices. Lower clarity if needed.",
+  "appearanceGlassClearPerformance": "Kaca yang terlalu bening dapat memperlambat performa perangkat lama. Buramkan jika perlu.",
   "appearanceGlassClarityBlurOff": "Efek kaca mati di perangkat ini. Hidupkan \"{setting}\" untuk atur kebeningan kaca.",
   "@appearanceGlassClarityBlurOff": {
     "description": "Shown under the disabled glass clarity slider when the device renders Mornye glass without blur. The placeholder is the name of the force-blur toggle.",
@@ -1737,7 +1737,7 @@
   "@trackFileNotFound": {
     "description": "Error - file doesn't exist"
   },
-  "trackFileUnavailable": "File is currently unavailable. Check storage access and try again.",
+  "trackFileUnavailable": "File tidak tersedia. Periksa akses penyimpanan dan coba lagi.",
   "@trackFileUnavailable": {
     "description": "File access failed; this does not mean the file was deleted"
   },
@@ -3285,7 +3285,7 @@
   "@cacheExploreFeed": {
     "description": "Cache item title for explore home feed cache"
   },
-  "cacheExploreFeedDesc": "Cache dari konten termuat (rilis baru, trending). Akan direfresh setiap dibuka.",
+  "cacheExploreFeedDesc": "Cache dari konten termuat (rilis baru, trending). Akan dimuat ulangsetiap dibuka.",
   "@cacheExploreFeedDesc": {
     "description": "Description of what explore feed cache contains"
   },
@@ -3389,7 +3389,7 @@
       }
     }
   },
-  "cacheRefreshStats": "Refresh",
+  "cacheRefreshStats": "Muat Ulang",
   "@cacheRefreshStats": {
     "description": "Button label to refresh cache statistics"
   },
@@ -3517,7 +3517,7 @@
   "@trackReEnrichApplyChanges": {
     "description": "Confirmation button in the batch metadata review sheet"
   },
-  "trackReEnrichRefreshOnline": "Refresh dari internet",
+  "trackReEnrichRefreshOnline": "Muat ulang dari internet",
   "@trackReEnrichRefreshOnline": {
     "description": "Proposed value when lyrics will be refreshed during re-enrich"
   },
@@ -6259,7 +6259,7 @@
       }
     }
   },
-  "extensionRefreshStatus": "Refresh status",
+  "extensionRefreshStatus": "Muat ulang status",
   "@extensionRefreshStatus": {
     "description": "Tooltip for refreshing extension service health status"
   },
@@ -7017,19 +7017,19 @@
   "@libraryFilterMetadataMissingReplayGain": {
     "description": "Filter option for scanned tracks without ReplayGain gain tags"
   },
-  "libraryFilterMetadataHasReplayGain": "Has ReplayGain",
+  "libraryFilterMetadataHasReplayGain": "Ada ReplayGain",
   "@libraryFilterMetadataHasReplayGain": {
     "description": "Filter option for tracks with indexed ReplayGain track or album gain tags"
   },
-  "libraryFilterIncompleteAlbums": "Incomplete albums",
+  "libraryFilterIncompleteAlbums": "Album tak lengkap",
   "@libraryFilterIncompleteAlbums": {
     "description": "Library filter for albums with confirmed missing track positions"
   },
-  "libraryAlbumCompletenessUnknown": "Album completeness unknown",
+  "libraryAlbumCompletenessUnknown": "Kelengkapan album tak tahu",
   "@libraryAlbumCompletenessUnknown": {
     "description": "Library filter and status for missing, conflicting or ambiguous album track counts"
   },
-  "libraryAlbumMissingTracks": "{present}/{expected} tracks · {missing} missing",
+  "libraryAlbumMissingTracks": "{present}/{expected} lagu · {missing} hilang",
   "@libraryAlbumMissingTracks": {
     "description": "Album completeness badge tooltip",
     "placeholders": {
@@ -7107,12 +7107,12 @@
   "artistUpcomingConcerts": "Konser Mendatang",
   "artistAllUpcomingConcerts": "Semua Konser Mendatang",
   "artistNoUpcomingConcerts": "Tiada konser mendatang.",
-  "motionArtwork": "Animated artwork",
-  "listeningStats": "Listening statistics",
-  "listeningStatsRecord": "Record listening",
-  "listeningStatsDescription": "Stored only on this device, starting now. Records the built-in player only; pauses, buffering and seeking add no listening time. A play counts after 30 seconds.",
-  "listeningStatsEmpty": "Play music with the built-in player to start your listening recap. Earlier listening cannot be recovered.",
-  "listeningStatsDays": "{days} days",
+  "motionArtwork": "Cover animasi",
+  "listeningStats": "Statistik mendengar",
+  "listeningStatsRecord": "Catat mendengar",
+  "listeningStatsDescription": "Hanya disimpan di perangkat. Hanya mencatat pemutar built-in; jeda, buffer, dan melewati tak akan menambah waktu mendengar. Pemutaran dihitung setelah 30 detik.",
+  "listeningStatsEmpty": "Putar musik dengan pemutar built-in untuk memulai rekap mendengar Anda. Mendengarkan sebelumnya tak tercatat.",
+  "listeningStatsDays": "{days} hari",
   "@listeningStatsDays": {
     "placeholders": {
       "days": {
@@ -7120,7 +7120,7 @@
       }
     }
   },
-  "listeningStatsMinutes": "{minutes} min",
+  "listeningStatsMinutes": "{minutes} mnt",
   "@listeningStatsMinutes": {
     "placeholders": {
       "minutes": {
@@ -7128,7 +7128,7 @@
       }
     }
   },
-  "listeningStatsTotals": "{plays, plural, =1{1 play} other{{plays} plays}} · {tracks, plural, =1{1 track} other{{tracks} tracks}} · {days, plural, =1{1 active day} other{{days} active days}}",
+  "listeningStatsTotals": "{plays, plural, =1{1 pemutaran} other{{plays} pemutaran}} · {tracks, plural, =1{1 lagu} other{{tracks} lagu}} · {days, plural, =1{1 total hari} other{{days} total hari}}",
   "@listeningStatsTotals": {
     "placeholders": {
       "plays": {
@@ -7142,60 +7142,60 @@
       }
     }
   },
-  "listeningStatsPreviousYear": "Previous year",
-  "listeningStatsNextYear": "Next year",
-  "listeningStatsActivity": "Recent listening days · minutes",
-  "listeningStatsTopArtists": "Top artists",
-  "listeningStatsTopTracks": "Top tracks",
-  "listeningStatsLoadError": "Could not load listening statistics",
-  "listeningStatsClear": "Clear listening statistics",
-  "listeningStatsClearError": "Could not clear listening statistics. Please try again.",
-  "listeningStatsClearDescription": "Delete all listening statistics on this device? Your music and playlists will be kept.",
-  "weeklyReleases": "New releases",
-  "weeklyReleasesDescription": "Recent albums and singles from your favorite artists, supplied by installed metadata extensions.",
-  "weeklyReleasesEmpty": "No dated releases found in this period. Add favorite artists or try a longer period.",
-  "weeklyReleasesUnavailable": "Some artists could not be checked. Their saved results are kept. Providers may not supply artist catalogs or exact release dates.",
-  "weeklyReleasesLoadError": "Could not check new releases. Pull to refresh.",
-  "motionArtworkDescription": "Loop video covers supplied by metadata providers. Turn off to use still artwork and reduce battery use.",
-  "libraryLoading": "Loading Library…",
-  "libraryLoadFailed": "Library could not be loaded. Retry to load the saved folders and track index.",
-  "discordPresenceDescription": "Share the title, artist, album and progress of music played in the built-in player on your Discord profile. Local audio and artwork files are never uploaded. Clears when playback pauses or stops.",
-  "discordPresenceDisabled": "Disabled",
-  "discordPresenceLink": "Link Discord account",
-  "discordPresenceConnecting": "Connecting to Discord…",
-  "discordPresenceReady": "Ready when music plays",
-  "discordPresenceActive": "Sharing current track",
-  "discordPresenceUnavailable": "Discord is unavailable. Retrying during playback.",
-  "discordPresenceBuildUnavailable": "Discord SDK is not available in this build.",
-  "discordPresenceAndroidHelp": "Install Discord and sign in on this phone. Allow activity sharing in Discord. External players are not supported.",
-  "discordPresenceIosHelp": "Link your account through Discord and allow activity sharing. Tap to link again if authorization fails.",
-  "discordPresenceDisconnect": "Disconnect and forget account",
-  "autoMixSettingsTitle": "Mix transitions",
-  "autoMixAutomaticDuration": "Automatic duration",
-  "autoMixDuration": "Mix duration",
-  "autoMixEffect": "Transition effect",
-  "autoMixEffectAuto": "Auto",
+  "listeningStatsPreviousYear": "Tahun kemarin",
+  "listeningStatsNextYear": "Tahun depan",
+  "listeningStatsActivity": "Hari terakhir mendengar · menit",
+  "listeningStatsTopArtists": "Artis teratas",
+  "listeningStatsTopTracks": "Lagu teratas",
+  "listeningStatsLoadError": "Tak dapat memuat statistik mendengar",
+  "listeningStatsClear": "Hapus statistik mendengar",
+  "listeningStatsClearError": "Tak dapat menghapus statistik mendengar. Coba lagi",
+  "listeningStatsClearDescription": "Hapus semua statistik mendengar perangkat ini? Musik dan playlist Anda akan tetap ada.",
+  "weeklyReleases": "Rilisan baru",
+  "weeklyReleasesDescription": "Album dan single terbaru dari artis favorit Anda, info disediakan oleh ekstensi metadata terinstal.",
+  "weeklyReleasesEmpty": "Tak ada rilisan terjadwal di waktu ini. Tambah artis favorit atau periksa waktu lain.",
+  "weeklyReleasesUnavailable": "Beberapa artis tak dapat diperiksa. Hasil tersimpan tak dihapus. Mungkin provider tak sediakan info artis Anda atau tanggal rilis tepatnya.",
+  "weeklyReleasesLoadError": "Tak dapat periksa rilisan baru. Tarik untuk muat ulang.",
+  "motionArtworkDescription": "Cover animasi disediakan oleh provider metadata. Matikan untuk menggunakan cover diam dan menghemat baterai.",
+  "libraryLoading": "Memuat Koleksi...",
+  "libraryLoadFailed": "Koleksi tak dapat dimuat. Coba lagi untuk memuat folder tersimpan dan indeks lagu.",
+  "discordPresenceDescription": "Beri tahu apa yang sedang Anda dengarkan kepada teman-teman Discord Anda. Lagu lokal dan file cover tidak akan pernah diupload. Ini akan hilang saat Anda menghentikan pemutaran atau menjedanya.",
+  "discordPresenceDisabled": "Mati",
+  "discordPresenceLink": "Tautkan akun Discord",
+  "discordPresenceConnecting": "Menghubungkan ke Discord…",
+  "discordPresenceReady": "Siap begitu musik diputar",
+  "discordPresenceActive": "Membagi info pemutaran",
+  "discordPresenceUnavailable": "Discord tak tersedia. Mencoba lagi saat memutar.",
+  "discordPresenceBuildUnavailable": "Discord SDK tak tersedia di build ini.",
+  "discordPresenceAndroidHelp": "Instal & login Discord di perangkat. Hidupkan Share my activity di Settings > Content & Social. Pemutar eksternal tak didukung.",
+  "discordPresenceIosHelp": "Tautkan akun Anda ke Discord dan hidupkan Share my activity. Ketuk untuk tautkan lagi jika otorisasi gagal.",
+  "discordPresenceDisconnect": "Putuskan dan lupakan akun",
+  "autoMixSettingsTitle": "Transisi AutoMix",
+  "autoMixAutomaticDuration": "Durasi otomatis",
+  "autoMixDuration": "Durasi AutoMix",
+  "autoMixEffect": "Efek transisi",
+  "autoMixEffectAuto": "Otomatis",
   "autoMixEffectCrossfade": "Crossfade",
-  "autoMixEffectMuffled": "Muffled",
-  "autoMixEffectEcho": "Echo",
+  "autoMixEffectMuffled": "Meredam",
+  "autoMixEffectEcho": "Gema",
   "autoMixEffectPitch": "Pitch",
-  "autoMixEffectCustom": "Custom",
-  "autoMixEffectsHelp": "Effects apply to the end of the outgoing song during the mix. Short songs use a shorter overlap.",
-  "autoMixSpeed": "Speed",
-  "autoMixPitch": "Pitch (semitones)",
-  "autoMixEcho": "Echo",
-  "autoMixLowPass": "Muffled filter",
+  "autoMixEffectCustom": "Kustom",
+  "autoMixEffectsHelp": "Efek diterapkan di akhir lagu saat AutoMix hidup. Lagu singkat akan transisi lebih singkat.",
+  "autoMixSpeed": "Kecepatan",
+  "autoMixPitch": "Pitch (semitone)",
+  "autoMixEcho": "Gema",
+  "autoMixLowPass": "Filter meredam",
   "autoMixMixing": "Mixing",
   "autoMixCrossfading": "Crossfade",
-  "playbackAutomation": "Automatic playback",
-  "playbackPauseOnMute": "Pause when muted",
-  "snackbarPlaybackMuted": "Media volume is zero. Playback paused. Press play again to continue.",
+  "playbackAutomation": "Pemutaran otomatis",
+  "playbackPauseOnMute": "Jeda saat membisu",
+  "snackbarPlaybackMuted": "Volume Anda dibisukan. Pemutaran dijeda. Ketuk putar untuk lanjut.",
   "@snackbarPlaybackMuted": {
     "description": "Shown after mute automation pauses playback; another explicit play request can override the pause."
   },
-  "playbackPauseOnMuteDescription": "Pause at zero media volume and resume when raised. Manual pauses stay paused. Standard audio output only.",
-  "playbackOnHeadphonesConnected": "Play when headphones connect",
-  "playbackOnHeadphonesConnectedDescription": "Resume the current song when wired or Bluetooth headphones connect. Disconnecting pauses playback. Built-in player only.",
+  "playbackPauseOnMuteDescription": "Menjeda musik jika volume media dibisukan dan dilanjut saat dinaikkan. Jeda manual akan tetap terjeda. Hanya untuk output audio standar.",
+  "playbackOnHeadphonesConnected": "Putar saat headphone terhubung",
+  "playbackOnHeadphonesConnectedDescription": "Lanjut putar lagi saat headphone kabel/bluetooth terhubung. Pemutaran dijeda saat terputus. Hanya untuk pemutar built-in.",
   "optionsEmbeddedCoverSizeOriginal": "Resolusi asli",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
