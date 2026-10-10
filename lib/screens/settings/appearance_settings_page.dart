@@ -12,6 +12,7 @@ import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
+import 'package:spotiflac_android/widgets/custom_font_setting.dart';
 
 class AppearanceSettingsPage extends ConsumerWidget {
   const AppearanceSettingsPage({super.key});
@@ -208,6 +209,7 @@ class AppearanceSettingsPage extends ConsumerWidget {
                         .read(settingsProvider.notifier)
                         .setHeroAnimationsEnabled(value),
                   ),
+                  const CustomFontSetting(),
                   SettingsSwitchItem(
                     icon: Icons.blur_on,
                     title: context.l10n.appearanceForceBlur,

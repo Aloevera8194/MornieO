@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:material_ui/material_ui.dart' as material_ui;
 import 'package:spotiflac_android/providers/theme_provider.dart';
+import 'package:spotiflac_android/providers/custom_font_provider.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/models/theme_settings.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -16,6 +17,7 @@ class DynamicColorWrapper extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeSettings = ref.watch(themeProvider);
+    final fontFamily = ref.watch(customFontFamilyProvider).asData?.value;
 
     if (themeSettings.style == AppThemeStyle.mornye) {
       return builder(
@@ -23,6 +25,7 @@ class DynamicColorWrapper extends ConsumerWidget {
           Brightness.light,
           accent: themeSettings.mornyeAccent,
           useSystemFont: themeSettings.useSystemFont,
+          fontFamily: fontFamily,
           glassClarity: themeSettings.mornyeGlassClarity,
           glassOutlines: themeSettings.mornyeGlassOutlines,
         ),
@@ -30,6 +33,7 @@ class DynamicColorWrapper extends ConsumerWidget {
           Brightness.dark,
           accent: themeSettings.mornyeAccent,
           useSystemFont: themeSettings.useSystemFont,
+          fontFamily: fontFamily,
           glassClarity: themeSettings.mornyeGlassClarity,
           glassOutlines: themeSettings.mornyeGlassOutlines,
         ),
@@ -66,11 +70,13 @@ class DynamicColorWrapper extends ConsumerWidget {
         final lightTheme = AppTheme.light(
           dynamicScheme: lightScheme,
           useSystemFont: themeSettings.useSystemFont,
+          fontFamily: fontFamily,
         );
         final darkTheme = AppTheme.dark(
           dynamicScheme: darkScheme,
           isAmoled: themeSettings.useAmoled,
           useSystemFont: themeSettings.useSystemFont,
+          fontFamily: fontFamily,
         );
 
         return builder(lightTheme, darkTheme, themeSettings.themeMode);

@@ -31,6 +31,7 @@ class AppTheme {
     ColorScheme? dynamicScheme,
     Color? seedColor,
     bool useSystemFont = false,
+    String? fontFamily,
   }) {
     final scheme =
         dynamicScheme ??
@@ -61,7 +62,7 @@ class AppTheme {
       chipTheme: _chipTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
       extensions: const <ThemeExtension<dynamic>>[AppTokens.standard],
-      fontFamily: useSystemFont ? null : 'Google Sans Flex',
+      fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
     );
   }
 
@@ -70,6 +71,7 @@ class AppTheme {
     Color? seedColor,
     bool isAmoled = false,
     bool useSystemFont = false,
+    String? fontFamily,
   }) {
     final scheme =
         dynamicScheme ??
@@ -101,7 +103,7 @@ class AppTheme {
       chipTheme: _chipTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
       extensions: const <ThemeExtension<dynamic>>[AppTokens.standard],
-      fontFamily: useSystemFont ? null : 'Google Sans Flex',
+      fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
     );
   }
 

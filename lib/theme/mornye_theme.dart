@@ -13,6 +13,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     this.chromeSurface,
     this.accent = MornyeAccent.red,
     this.useSystemFont = false,
+    this.fontFamily,
     this.glassClarity = kDefaultMornyeGlassClarity,
     this.glassOutlines = true,
   });
@@ -20,6 +21,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
   final Color? chromeSurface;
   final MornyeAccent accent;
   final bool useSystemFont;
+  final String? fontFamily;
   final double glassClarity;
   final bool glassOutlines;
 
@@ -118,13 +120,17 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
   // many artists cannot grow the cache indefinitely. Platform is part of the
   // key because it controls fonts and route transitions.
   static final _themeCache =
-      <(TargetPlatform, Brightness, Color?, MornyeAccent, bool), ThemeData>{};
+      <
+        (TargetPlatform, Brightness, Color?, MornyeAccent, bool, String?),
+        ThemeData
+      >{};
 
   static ThemeData build(
     Brightness brightness, {
     Color? chromeSurface,
     MornyeAccent accent = MornyeAccent.red,
     bool useSystemFont = false,
+    String? fontFamily,
     double glassClarity = kDefaultMornyeGlassClarity,
     bool glassOutlines = true,
   }) {
@@ -134,6 +140,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
       chromeSurface,
       accent,
       useSystemFont,
+      fontFamily,
     );
     final cached = _themeCache.remove(key);
     if (cached != null) {
@@ -145,6 +152,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
       chromeSurface: chromeSurface,
       selectedAccent: accent,
       useSystemFont: useSystemFont,
+      fontFamily: fontFamily,
     );
     if (_themeCache.length >= 16) {
       _themeCache.remove(_themeCache.keys.first);
@@ -190,6 +198,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
       chromeSurface: chromeSurface,
       accent: preferences?.accent ?? MornyeAccent.red,
       useSystemFont: preferences?.useSystemFont ?? false,
+      fontFamily: preferences?.fontFamily,
       glassClarity: preferences?.glassClarity ?? kDefaultMornyeGlassClarity,
       glassOutlines: preferences?.glassOutlines ?? true,
     );
@@ -200,6 +209,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     Color? chromeSurface,
     required MornyeAccent selectedAccent,
     required bool useSystemFont,
+    String? fontFamily,
   }) {
     final dark = brightness == Brightness.dark;
     final accent = accentColor(selectedAccent, brightness);
@@ -251,14 +261,18 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     final text = type.textStyle.copyWith(
       inherit: true,
       color: foreground,
-      fontFamily: apple || useSystemFont ? type.textStyle.fontFamily : 'Inter',
+      fontFamily:
+          fontFamily ??
+          (apple || useSystemFont ? type.textStyle.fontFamily : 'Inter'),
     );
     final display = type.navLargeTitleTextStyle.copyWith(
       inherit: true,
       color: foreground,
-      fontFamily: apple || useSystemFont
-          ? type.navLargeTitleTextStyle.fontFamily
-          : 'Inter',
+      fontFamily:
+          fontFamily ??
+          (apple || useSystemFont
+              ? type.navLargeTitleTextStyle.fontFamily
+              : 'Inter'),
     );
     // Supply complete styles: replacing a Material role with a bare TextStyle
     // loses its system family and retains Material tracking in other roles.
@@ -312,6 +326,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
           chromeSurface: chromeSurface,
           accent: selectedAccent,
           useSystemFont: useSystemFont,
+          fontFamily: fontFamily,
         ),
         tokens,
       ],
@@ -408,12 +423,14 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
     Color? chromeSurface,
     MornyeAccent? accent,
     bool? useSystemFont,
+    String? fontFamily,
     double? glassClarity,
     bool? glassOutlines,
   }) => MornyeTheme(
     chromeSurface: chromeSurface ?? this.chromeSurface,
     accent: accent ?? this.accent,
     useSystemFont: useSystemFont ?? this.useSystemFont,
+    fontFamily: fontFamily ?? this.fontFamily,
     glassClarity: glassClarity ?? this.glassClarity,
     glassOutlines: glassOutlines ?? this.glassOutlines,
   );
@@ -422,6 +439,7 @@ class MornyeTheme extends ThemeExtension<MornyeTheme> {
   MornyeTheme lerp(covariant MornyeTheme? other, double t) => MornyeTheme(
     chromeSurface: Color.lerp(chromeSurface, other?.chromeSurface, t),
     accent: t < 0.5 ? accent : other?.accent ?? accent,
+    fontFamily: t < 0.5 ? fontFamily : other?.fontFamily,
     useSystemFont: t < 0.5
         ? useSystemFont
         : other?.useSystemFont ?? useSystemFont,

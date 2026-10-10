@@ -16,6 +16,8 @@ ThemeSettings loadBootstrapThemeSettings(SharedPreferences prefs) {
     style: themeStyleFromString(prefs.getString(kThemeStyleKey)),
     mornyeAccent: mornyeAccentFromString(prefs.getString(kMornyeAccentKey)),
     useSystemFont: prefs.getBool(kUseSystemFontKey) ?? false,
+    customFontId: prefs.getString(kCustomFontIdKey) ?? '',
+    customFontName: prefs.getString(kCustomFontNameKey) ?? '',
     mornyeGlassClarity: normalizeMornyeGlassClarity(
       prefs.getDouble(kMornyeGlassClarityKey),
     ),
@@ -77,6 +79,8 @@ class ThemeNotifier extends Notifier<ThemeSettings> {
       await prefs.setString(kThemeStyleKey, snapshot.style.name);
       await prefs.setString(kMornyeAccentKey, snapshot.mornyeAccent.name);
       await prefs.setBool(kUseSystemFontKey, snapshot.useSystemFont);
+      await prefs.setString(kCustomFontIdKey, snapshot.customFontId);
+      await prefs.setString(kCustomFontNameKey, snapshot.customFontName);
       await prefs.setDouble(
         kMornyeGlassClarityKey,
         snapshot.mornyeGlassClarity,
@@ -122,6 +126,13 @@ class ThemeNotifier extends Notifier<ThemeSettings> {
 
   Future<void> setUseSystemFont(bool value) async {
     _editState((current) => current.copyWith(useSystemFont: value));
+    await _saveToStorage();
+  }
+
+  Future<void> setCustomFont(String id, String name) async {
+    _editState(
+      (current) => current.copyWith(customFontId: id, customFontName: name),
+    );
     await _saveToStorage();
   }
 
