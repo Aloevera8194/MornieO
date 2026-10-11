@@ -114,6 +114,8 @@
   "appearanceAccentPurple": "Фіолетовий",
   "appearanceAccentPink": "Рожевий",
   "appearanceGlassClarity": "Прозорість скла",
+  "appearanceGlassOutlines": "Glass outlines",
+  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
   "appearanceGlassClaritySubtitle": "Налаштуйте прозорість меню та навігації Mornye. Контрастність тексту зберігається.",
   "appearanceGlassTinted": "Тонований",
   "appearanceGlassClear": "Очистити",
@@ -127,9 +129,14 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Скло залишається непрозорим, доки в системі ввімкнено режим високої контрастності.",
+  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request (which can include medium contrast) and the explicit glass-only override.",
+    "placeholders": {
+      "setting": {
+        "type": "String"
+      }
+    }
   },
   "appearanceUseSystemFont": "Використовувати системний шрифт",
   "appearanceUseSystemFontSubtitle": "Використовуйте стандартний шрифт вашого пристрою для тексту в додатку.",
@@ -7094,6 +7101,10 @@
   "autoplayOn": "Автовідтворення увімкнено",
   "autoplayOff": "Автовідтворення вимкнено",
   "autoplayFromLibrary": "Автовідтворення з вашої бібліотеки",
+  "autoplayDescription": "Continue with related songs from your Library when the queue ends.",
+  "autoplayPersonalization": "Personalized autoplay",
+  "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
+  "autoplayResetLearning": "Reset recommendation learning",
   "profileTitle": "Профіль",
   "profileSetUp": "Налаштуйте свій профіль",
   "profileEdit": "Редагувати ім'я та фотографію",
@@ -7196,6 +7207,12 @@
   "playbackPauseOnMuteDescription": "Призупиняти при нульовій гучності медіа та відновлювати при її збільшенні. Ручні паузи зберігаються. Тільки стандартний аудіовихід.",
   "playbackOnHeadphonesConnected": "Відтворювати після підключення навушників",
   "playbackOnHeadphonesConnectedDescription": "Відновлювати відтворення поточної пісні під час підключення дротових або Bluetooth-навушників. Відключення призупиняє відтворення. Тільки для вбудованого програвача.",
+  "appearanceCustomFont": "Custom font",
+  "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
+  "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
+  "appearanceCustomFontReset": "Use theme font",
+  "lyricsTextSize": "Lyrics text size",
+  "lyricsTextPreview": "Follow every line of your favorite song",
   "optionsEmbeddedCoverSizeOriginal": "Вихідна роздільна здатність",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
