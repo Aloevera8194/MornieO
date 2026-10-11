@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/services/hires_check_service.dart';
+import 'package:spotiflac_android/services/audio_analysis_jobs.dart';
+import 'package:spotiflac_android/services/network_audio_analysis_input.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
@@ -32,16 +34,25 @@ class _HiResCheckCardState extends State<HiResCheckCard> {
   bool _checking = false;
   String? _error;
   int _requestId = 0;
+  final _networkInput = NetworkAudioAnalysisInput();
 
   @override
   void didUpdateWidget(covariant HiResCheckCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.filePath != widget.filePath) {
       _requestId++;
+      _networkInput.cancel();
       _result = null;
       _error = null;
       _checking = false;
     }
+  }
+
+  @override
+  void dispose() {
+    _requestId++;
+    _networkInput.cancel();
+    super.dispose();
   }
 
   Future<void> _check() async {
@@ -53,7 +64,12 @@ class _HiResCheckCardState extends State<HiResCheckCard> {
     String? error;
     HiResCheckResult? result;
     try {
-      result = await HiResCheckService.check(widget.filePath);
+      result = await HiResCheckService.check(
+        widget.filePath,
+        networkInput: _networkInput,
+      );
+    } on AudioAnalysisCancelled {
+      return;
     } on StateError catch (e) {
       error = e.message;
     } catch (e) {
