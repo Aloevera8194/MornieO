@@ -208,7 +208,7 @@ jobs:
           flutter build ios --release --no-codesign --target lib/main.dart
           if [[ "$SPOTIFLAC_DISCORD_SDK" == "1" ]]; then
             test -f build/ios/iphoneos/Runner.app/Frameworks/discord_partner_sdk.framework/discord_partner_sdk
-            test -f build/ios/iphoneos/Runner.app/Discord-License-Notices.txt
+            test -f build/ios/iphoneos/Runner.app/Frameworks/spotiflac_discord.framework/Discord-License-Notices.txt
           fi
           python3 scripts/check_backend_ios.py build/ios/iphoneos/Runner.app \
             --backend rust --archs arm64 --platform ios --release
