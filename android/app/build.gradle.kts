@@ -38,7 +38,7 @@ require(rustAndroidAbis.all { it in supportedRustAndroidAbis }) {
 android {
     namespace = "com.zarz.spotiflac"
     compileSdk = 37
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "30.0.16248370"
 
     buildFeatures {
         buildConfig = true
@@ -50,7 +50,7 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
+            version = "4.1.2"
         }
     }
 
@@ -98,7 +98,13 @@ android {
         versionName = flutter.versionName
         multiDexEnabled = true
         externalNativeBuild {
-            cmake { arguments += "-DANDROID_STL=c++_static" }
+            cmake {
+                arguments += listOf(
+                    "-DANDROID_STL=c++_static",
+                    // Oboe's minimum predates the policies removed in CMake 4.
+                    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+                )
+            }
         }
 
         ndk {
@@ -160,7 +166,7 @@ val buildRustBackend = tasks.register<Exec>("buildRustBackend") {
     environment(
         "ANDROID_NDK_HOME",
         System.getenv("ANDROID_NDK_HOME")
-            ?: android.sdkDirectory.resolve("ndk/29.0.14206865").absolutePath,
+            ?: android.sdkDirectory.resolve("ndk/30.0.16248370").absolutePath,
     )
     inputs.files(fileTree(rustBackendDir) {
         include("**/*.rs", "**/*.toml", "**/*.lock", "**/*.js", "**/*.tsv", "**/*.pem")
@@ -202,7 +208,7 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.13.0")
     // NativeDownloadFinalizer imports FFmpegKit APIs directly. The Flutter
     // plugin owns the runtime AAR; compileOnly avoids packaging it twice here.
-    compileOnly("com.antonkarpenko:ffmpeg-kit-audio:2.2.2")
+    compileOnly("com.antonkarpenko:ffmpeg-kit-audio:2.2.3")
 
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20260814")

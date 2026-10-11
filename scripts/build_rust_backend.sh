@@ -54,7 +54,7 @@ done
 
 if [[ "$PLATFORM" == "android" ]]; then
   if [[ -z "${ANDROID_NDK_HOME:-}" ]]; then
-    echo "Error: set ANDROID_NDK_HOME to Android NDK 29.0.14206865." >&2
+    echo "Error: set ANDROID_NDK_HOME to Android NDK 30.0.16248370." >&2
     exit 1
   fi
   case "$(uname -s)" in

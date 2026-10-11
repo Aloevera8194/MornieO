@@ -9,6 +9,7 @@ def discordSdkEnabled = System.getenv('SPOTIFLAC_DISCORD_SDK') != '0'
 android {
     namespace 'com.zarz.spotiflac.discord'
     compileSdk 37
+    ndkVersion '30.0.16248370'
     defaultConfig {
         minSdk 24
         externalNativeBuild {
@@ -25,6 +26,6 @@ android {
     kotlinOptions { jvmTarget = '25' }
     if (discordSdkEnabled) sourceSets.main.assets.srcDir('../sdk/notices')
     externalNativeBuild {
-        cmake { path 'CMakeLists.txt'; version '3.22.1' }
+        cmake { path 'CMakeLists.txt'; version '4.1.2' }
     }
 }
