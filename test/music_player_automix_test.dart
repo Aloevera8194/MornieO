@@ -949,7 +949,43 @@ void main() {
     },
   );
 
-  test('recycled SAF descriptor prepares the newly selected file', () async {
+  for (final shuffle in [false, true]) {
+    test('Previous changes both title and audio (shuffle: $shuffle)', () async {
+      if (shuffle) await handler.setShuffleMode(AudioServiceShuffleMode.all);
+      await handler.setQueueAndPlay(_tracks);
+      final ordered = handler.queue.value.map((item) => item.id).toList();
+      await handler.skipToNext();
+      await handler.skipToNext();
+      expect(native.sources['music-player'], '/${ordered[2]}.flac');
+
+      // Repeat-one affects automatic completion, not an explicit Previous.
+      await handler.setRepeatMode(AudioServiceRepeatMode.one);
+      for (final id in ordered.take(2).toList().reversed) {
+        await handler.skipToPrevious();
+        expect(handler.mediaItem.value?.id, id);
+        expect(native.preparedContents['music-player'], '/$id.flac');
+        expect(native.resumedSources.last, '/$id.flac');
+        expect(native.playing, {'music-player'});
+      }
+    });
+  }
+
+  test('rapid Previous discards a later track still preparing', () async {
+    final gate = Completer<void>();
+    native.sourceGates['/three.flac'] = gate;
+    final last = handler.setQueueAndPlay(_tracks, initialIndex: 2);
+    await _until(() => native.calls.any((c) => c.$2 == 'setSourceUrl'));
+    final second = handler.skipToPrevious();
+    final first = handler.skipToPrevious();
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    gate.complete();
+    await Future.wait([last, second, first]);
+    expect(handler.mediaItem.value?.id, 'one');
+    expect(native.preparedContents['music-player'], '/one.flac');
+    expect(native.resumedSources, ['/one.flac']);
+  });
+
+  test('Next and Previous reload a recycled SAF descriptor', () async {
     const descriptor = '/proc/self/fd/42';
     native.sourceContents[descriptor] = 'first file';
     await handler.setQueueAndPlay([
@@ -972,6 +1008,12 @@ void main() {
     expect(handler.mediaItem.value?.title, 'Second');
     expect(native.preparedContents['music-player'], 'second file');
     expect(native.playing, contains('music-player'));
+
+    native.sourceContents[descriptor] = 'first file';
+    await handler.skipToPrevious();
+    expect(handler.mediaItem.value?.title, 'First');
+    expect(native.preparedContents['music-player'], 'first file');
+    expect(native.playing, {'music-player'});
   });
 
   test('replacing a queue during preparation drops the old request', () async {
@@ -1396,6 +1438,16 @@ void main() {
     return incoming;
   }
 
+  test('Previous after AutoMix handoff reloads the preceding audio', () async {
+    final active = await startMix();
+    await handler.seek(Duration.zero);
+    await handler.skipToPrevious();
+    expect(handler.mediaItem.value?.id, 'one');
+    expect(native.preparedContents[active], '/one.flac');
+    expect(native.resumedSources.last, '/one.flac');
+    expect(native.playing, {active});
+  });
+
   test(
     'AutoMix prepares and plays the next entry in the shuffled queue',
     () async {
@@ -1608,6 +1660,14 @@ void main() {
       expect(
         native.calls.lastWhere((c) => c.$2 == 'setSourceUrl').$3['isLocal'],
         true,
+      );
+      await handler.skipToPrevious();
+      expect(handler.mediaItem.value?.id, remote.id);
+      expect(native.preparedContents['music-player'], remote.source);
+      expect(native.resumedSources.last, remote.source);
+      expect(
+        native.calls.lastWhere((c) => c.$2 == 'setSourceUrl').$3['isLocal'],
+        false,
       );
     },
   );
