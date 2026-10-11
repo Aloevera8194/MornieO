@@ -101,13 +101,20 @@ void main() {
           expect(find.text('Download'), findsOneWidget);
           expect(find.text('Go to Album'), findsOneWidget);
           final menu = tester.getRect(find.byType(MornyeContextMenu));
-          expect(
-            menu.top,
-            anyOf(
-              closeTo(anchor.bottom + 8, 1),
-              closeTo(anchor.top - menu.height - 8, 1),
-            ),
-          );
+          if (anchor.bottom + 8 + menu.height > size.height - 16 &&
+              anchor.top - menu.height - 8 < 16) {
+            // A tall featured card can leave no room on either side. The menu
+            // stays at the bottom safe margin instead of covering the viewport.
+            expect(menu.bottom, closeTo(size.height - 16, 1));
+          } else {
+            expect(
+              menu.top,
+              anyOf(
+                closeTo(anchor.bottom + 8, 1),
+                closeTo(anchor.top - menu.height - 8, 1),
+              ),
+            );
+          }
           expect(menu.left, greaterThanOrEqualTo(16));
           expect(menu.right, lessThanOrEqualTo(size.width - 16));
           expect(menu.top, greaterThanOrEqualTo(16));

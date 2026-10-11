@@ -3323,9 +3323,14 @@ void main() {
           );
           expect(backing.textAlign, TextAlign.right);
           if (mornye) {
+            // Inactive vocals shrink around their center. Check the row gap
+            // before that paint transform, rather than the scaled text bounds.
+            Finder lyricScale(Finder content) => find
+                .ancestor(of: content, matching: find.byType(AnimatedScale))
+                .first;
             expect(
-              tester.getTopLeft(find.text('Echo')).dy -
-                  tester.getBottomLeft(timed('Lead')).dy,
+              tester.getTopLeft(lyricScale(find.text('Echo'))).dy -
+                  tester.getBottomLeft(lyricScale(timed('Lead'))).dy,
               closeTo(6, 0.1),
             );
           }
