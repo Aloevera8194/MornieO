@@ -114,6 +114,8 @@
   "appearanceAccentPurple": "Ungu",
   "appearanceAccentPink": "Pink",
   "appearanceGlassClarity": "Kebeningan kaca",
+  "appearanceGlassOutlines": "Glass outlines",
+  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
   "appearanceGlassClaritySubtitle": "Atur kebeningan kaca menu dan navigasi Mornye. Kontras teks tetap terjaga.",
   "appearanceGlassTinted": "Berwarna",
   "appearanceGlassClear": "Bening",
@@ -127,9 +129,14 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Efek kaca mati jika setelan kontras tinggi sistem dihidupkan.",
+  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request (which can include medium contrast) and the explicit glass-only override.",
+    "placeholders": {
+      "setting": {
+        "type": "String"
+      }
+    }
   },
   "appearanceUseSystemFont": "Gunakan font sistem",
   "appearanceUseSystemFontSubtitle": "Menggunakan font default perangkat untuk aplikasi.",
@@ -7094,6 +7101,10 @@
   "autoplayOn": "Autoplay hidup",
   "autoplayOff": "Autoplay mati",
   "autoplayFromLibrary": "Autoplay dari Koleksi Anda",
+  "autoplayDescription": "Continue with related songs from your Library when the queue ends.",
+  "autoplayPersonalization": "Personalized autoplay",
+  "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
+  "autoplayResetLearning": "Reset recommendation learning",
   "profileTitle": "Profil",
   "profileSetUp": "Atur profil Anda",
   "profileEdit": "Edit nama dan foto",
@@ -7196,6 +7207,12 @@
   "playbackPauseOnMuteDescription": "Menjeda musik jika volume media dibisukan dan dilanjut saat dinaikkan. Jeda manual akan tetap terjeda. Hanya untuk output audio standar.",
   "playbackOnHeadphonesConnected": "Putar saat headphone terhubung",
   "playbackOnHeadphonesConnectedDescription": "Lanjut putar lagi saat headphone kabel/bluetooth terhubung. Pemutaran dijeda saat terputus. Hanya untuk pemutar built-in.",
+  "appearanceCustomFont": "Custom font",
+  "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
+  "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
+  "appearanceCustomFontReset": "Use theme font",
+  "lyricsTextSize": "Lyrics text size",
+  "lyricsTextPreview": "Follow every line of your favorite song",
   "optionsEmbeddedCoverSizeOriginal": "Resolusi asli",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
