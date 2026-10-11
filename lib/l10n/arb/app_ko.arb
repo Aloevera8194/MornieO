@@ -1881,7 +1881,7 @@
   "@trackDeleteConfirmTitle": {
     "description": "Delete confirmation title"
   },
-  "trackDeleteNetworkConfirmMessage": "This will permanently delete the file from your network storage and remove it from your library and history.",
+  "trackDeleteNetworkConfirmMessage": "이렇게 하면 네트워크 저장소에서 파일이 영구적으로 삭제되고 라이브러리와 기록에서도 제거됩니다",
   "snackbarDeleteTracksFailed": "{count} 개의 {count, plural, =1{트랙} other{트랙}}을 삭제할 수 없습니다. 저장소 접근 권한을 확인하고 다시 시도하세요",
   "@snackbarDeleteTracksFailed": {
     "placeholders": {
@@ -5419,7 +5419,7 @@
       }
     }
   },
-  "notifLibraryScanProgressNoTotal": "{scanned} files scanned",
+  "notifLibraryScanProgressNoTotal": "{scanned} 개의 파일이 스캔됨",
   "@notifLibraryScanProgressNoTotal": {
     "description": "Notification body for library scan progress when total is unknown",
     "placeholders": {
