@@ -417,9 +417,10 @@ class _MornyeSelectionPillState extends State<MornyeSelectionPill>
                   interaction: true,
                   progress: progress,
                   blurSigma: 0,
-                  // Bend only the bevel; the middle of each glyph stays clear.
-                  refractionDepth: 0.10,
-                  refractionWidth: 12,
+                  // A broader bevel makes the held lens visible as it crosses
+                  // the icons, while leaving its center undistorted.
+                  refractionDepth: 0.18,
+                  refractionWidth: 18,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(_pillRadius),
