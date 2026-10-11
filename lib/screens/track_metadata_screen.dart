@@ -12,6 +12,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/services/conversion_library_service.dart';
 import 'package:spotiflac_android/services/deleted_library_files.dart';
 import 'package:spotiflac_android/services/file_access_check.dart';
+import 'package:spotiflac_android/services/network_storage_service.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/re_enrich_result.dart';
@@ -156,6 +157,9 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
   FileAccessCheck? _fileAccess;
   bool get _fileExists => _fileAccess is FileAccessFound;
   bool get _isNetworkItem => cleanFilePath.startsWith('network://');
+  bool _networkFileDeletable = false;
+  bool get _canDeleteFile => !_isNetworkItem || _networkFileDeletable;
+  bool _isDeleting = false;
   int? get _fileSize => switch (_fileAccess) {
     FileAccessFound(:final stat) => stat.size,
     _ => null,
@@ -223,6 +227,9 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
     final filePath = cleanFilePath;
 
     final check = await checkFileAccess(filePath);
+    final networkFileDeletable =
+        filePath.startsWith('network://') &&
+        await NetworkStorageService.instance.canDeleteFile(filePath);
     if (!mounted ||
         generation != _metadataLoadGeneration ||
         filePath != cleanFilePath) {
@@ -231,7 +238,10 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
     if (check case FileAccessUnavailable(:final error, :final stack)) {
       _log.e('Unable to inspect track file: $filePath', error, stack);
     }
-    setState(() => _fileAccess = check);
+    setState(() {
+      _fileAccess = check;
+      _networkFileDeletable = networkFileDeletable;
+    });
     if (!_fileExists) return;
 
     if (_lyrics == null && !_lyricsLoading) {
@@ -641,6 +651,7 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
           _currentLocalLibraryItem = widget.localNavigationItems![targetIndex];
         }
         _fileAccess = null;
+        _networkFileDeletable = false;
         _lyrics = null;
         _rawLyrics = null;
         _lyricsLoading = false;
@@ -826,7 +837,7 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
                   : null,
             ),
           ),
-          if (!_isNetworkItem) ...[
+          if (_canDeleteFile) ...[
             const SizedBox(width: 12),
             Expanded(
               child: HeaderFilledButton(
@@ -857,7 +868,7 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
             ),
           ),
         ),
-        if (!_isNetworkItem) ...[
+        if (_canDeleteFile) ...[
           const SizedBox(width: 12),
           Expanded(
             child: OutlinedButton.icon(

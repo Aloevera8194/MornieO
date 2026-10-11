@@ -136,6 +136,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
   }
 
   Future<void> _deleteSelected(List<LocalLibraryItem> currentTracks) async {
+    final container = ProviderScope.containerOf(context, listen: false);
     final libraryNotifier = ref.read(localLibraryProvider.notifier);
     final tracksById = {for (final track in currentTracks) track.id: track};
 
@@ -154,7 +155,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
       persistDeletedItems: (ids) async {
         final items = ids.map((id) => tracksById[id]!);
         await removeDeletedLibraryFileEntries(
-          ref,
+          container,
           items
               .where((item) => !isCueVirtualPath(item.filePath))
               .map((item) => item.filePath),

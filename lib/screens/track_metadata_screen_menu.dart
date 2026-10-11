@@ -116,10 +116,12 @@ extension _TrackMetadataMenu on _TrackMetadataScreenState {
             dividerAbove: _spotifyId == null && !(isrc?.isNotEmpty ?? false),
             onTap: () => _shareFile(screenContext),
           ),
-        if (!_isNetworkItem)
+        if (_canDeleteFile)
           _MetadataOption(
             icon: Icons.delete_outline,
-            label: l10n.trackRemoveFromDevice,
+            label: _isNetworkItem
+                ? l10n.trackMetadataDelete
+                : l10n.trackRemoveFromDevice,
             destructive: true,
             onTap: () => _confirmDelete(screenContext, ref, colorScheme),
           ),

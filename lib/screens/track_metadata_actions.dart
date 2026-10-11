@@ -118,68 +118,65 @@ extension _TrackMetadataFileActions on _TrackMetadataScreenState {
     }
   }
 
-  void _confirmDelete(
+  Future<void> _confirmDelete(
     BuildContext screenContext,
     WidgetRef ref,
     ColorScheme colorScheme,
-  ) {
-    showAppDialog<void>(
+  ) async {
+    if (_isDeleting) return;
+    final filePath = cleanFilePath;
+    final cueItem = _isCueVirtualTrack ? _localLibraryItem : null;
+    final confirmed = await showAppDialog<bool>(
       context: screenContext,
       builder: (dialogContext) => AppAlertDialog(
         title: Text(dialogContext.l10n.trackDeleteConfirmTitle),
-        content: Text(dialogContext.l10n.trackDeleteConfirmMessage),
+        content: Text(
+          _isNetworkItem
+              ? dialogContext.l10n.trackDeleteNetworkConfirmMessage
+              : dialogContext.l10n.trackDeleteConfirmMessage,
+        ),
         actions: [
           AppDialogAction(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(dialogContext.l10n.dialogCancel),
           ),
           AppDialogAction(
             isDestructive: true,
-            onPressed: () async {
-              var fileDeleted = true;
-              if (_isCueVirtualTrack && _localLibraryItem != null) {
-                await ref
-                    .read(localLibraryProvider.notifier)
-                    .removeItem(_localLibraryItem!.id);
-              } else {
-                fileDeleted = await deleteFile(cleanFilePath);
-                if (fileDeleted) {
-                  await removeDeletedLibraryFileEntries(ref, [cleanFilePath]);
-                }
-              }
-
-              if (!fileDeleted) {
-                if (screenContext.mounted) {
-                  ScaffoldMessenger.of(screenContext).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        screenContext.l10n.snackbarError(
-                          screenContext.l10n.snackbarFailedToWriteStorage,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return;
-              }
-
-              if (dialogContext.mounted) {
-                Navigator.pop(dialogContext);
-              }
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                final navigator = Navigator.of(context);
-                if (navigator.canPop()) {
-                  navigator.pop(true);
-                }
-              });
-            },
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: TextButton.styleFrom(foregroundColor: colorScheme.error),
             child: Text(dialogContext.l10n.dialogDelete),
           ),
         ],
       ),
     );
+    if (confirmed != true || !mounted || filePath != cleanFilePath) return;
+    _isDeleting = true;
+    final container = ProviderScope.containerOf(context, listen: false);
+    try {
+      if (cueItem != null) {
+        await container
+            .read(localLibraryProvider.notifier)
+            .removeItem(cueItem.id);
+      } else {
+        if (!await deleteFile(filePath)) {
+          if (screenContext.mounted) {
+            ScaffoldMessenger.of(screenContext).showSnackBar(
+              SnackBar(
+                content: Text(screenContext.l10n.snackbarDeleteTracksFailed(1)),
+              ),
+            );
+          }
+          return;
+        }
+        await removeDeletedLibraryFileEntries(container, [filePath]);
+      }
+      if (!mounted || filePath != cleanFilePath) return;
+      if (ModalRoute.of(context)?.isCurrent != true) return;
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) navigator.pop(true);
+    } finally {
+      _isDeleting = false;
+    }
   }
 
   void _closeOptionsMenuAndRun(BuildContext sheetContext, VoidCallback action) {

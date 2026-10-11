@@ -9,7 +9,7 @@ import 'package:spotiflac_android/services/network_storage_service.dart';
 
 void main() {
   test(
-    'SMB3 uploads and atomically publishes bounded audio, then reconciles retries',
+    'SMB uploads, reconciles retries and deletes only the selected file',
     () async {
       debugLibSmb2PathOverride = Platform.environment['TEST_SMB_LIBRARY'];
       final storage = NetworkStorageService(
@@ -79,6 +79,11 @@ void main() {
         Uri.parse(collision).pathSegments.last,
         name.replaceFirst('.flac', ' (2).flac'),
       );
+      // A path without a trailing slash still must not delete a directory.
+      expect(await storage.deleteFile('network://nas/$parent'), isFalse);
+      expect(await storage.deleteFile(target), isTrue);
+      expect(await storage.list(c, '$parent/'), isEmpty);
+      expect(await storage.deleteFile(target), isTrue);
     },
     skip: Platform.environment['TEST_SMB_UPLOAD'] != '1',
   );

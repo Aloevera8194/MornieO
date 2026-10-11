@@ -17,6 +17,7 @@ import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/services/local_track_redownload_service.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/ffmpeg_reenrich.dart';
+import 'package:spotiflac_android/utils/confirm_and_delete_tracks.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/int_utils.dart';
 import 'package:spotiflac_android/utils/lyrics_metadata_helper.dart';
@@ -582,6 +583,7 @@ Future<void> deleteLibraryTracks(
   );
   if (confirmed != true || !isActive() || !context.mounted) return;
 
+  final container = ProviderScope.containerOf(context, listen: false);
   final messenger = ScaffoldMessenger.of(context);
   final l10n = context.l10n;
   final deletedPaths = <String>{};
@@ -594,9 +596,18 @@ Future<void> deleteLibraryTracks(
     deletedPaths.add(cleanPath);
     deletedCount++;
   }
-  await removeDeletedLibraryFileEntries(ref, deletedPaths);
+  await removeDeletedLibraryFileEntries(container, deletedPaths);
+  if (!isActive() || !context.mounted) return;
   onComplete();
   messenger.showSnackBar(
-    SnackBar(content: Text(l10n.snackbarDeletedTracks(deletedCount))),
+    SnackBar(
+      content: Text(
+        trackDeletionResultMessage(
+          l10n,
+          deleted: deletedCount,
+          requested: selected.length,
+        ),
+      ),
+    ),
   );
 }

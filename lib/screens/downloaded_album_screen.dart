@@ -127,6 +127,7 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
   }
 
   Future<void> _deleteSelected(List<DownloadHistoryItem> currentTracks) async {
+    final container = ProviderScope.containerOf(context, listen: false);
     final tracksById = {for (final track in currentTracks) track.id: track};
 
     await confirmAndDeleteTracks(
@@ -138,7 +139,7 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
         return deleteFile(item.filePath);
       },
       persistDeletedItems: (ids) => removeDeletedLibraryFileEntries(
-        ref,
+        container,
         ids.map((id) => tracksById[id]!.filePath),
       ),
       onExitSelectionMode: exitSelectionMode,

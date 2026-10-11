@@ -2,10 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 
+String trackDeletionResultMessage(
+  AppLocalizations l10n, {
+  required int deleted,
+  required int requested,
+}) => [
+  if (deleted > 0 || requested == 0) l10n.snackbarDeletedTracks(deleted),
+  if (deleted < requested) l10n.snackbarDeleteTracksFailed(requested - deleted),
+].join('\n');
+
 /// Shows a delete-confirmation dialog, deletes the given [ids] one by one via
 /// [deleteItem], then shows a "deleted N tracks" snackbar.
-/// [onExitSelectionMode] runs right after the delete loop, matching the
-/// screens' original ordering.
+/// [onExitSelectionMode] runs after persistence if the screen is still open.
 ///
 /// Returns the number of items [deleteItem] reported deleted, or null if the
 /// user cancelled the dialog.
@@ -56,11 +64,18 @@ Future<int?> confirmAndDeleteTracks({
   }
   final deletedCount = deletedIds.length;
 
-  onExitSelectionMode();
-
   if (context.mounted) {
+    onExitSelectionMode();
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.l10n.snackbarDeletedTracks(deletedCount))),
+      SnackBar(
+        content: Text(
+          trackDeletionResultMessage(
+            context.l10n,
+            deleted: deletedCount,
+            requested: ids.length,
+          ),
+        ),
+      ),
     );
   }
 

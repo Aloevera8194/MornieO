@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:spotiflac_android/services/network_storage_service.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/services/source_deletion_events.dart';
 import 'package:spotiflac_android/utils/ios_container_paths.dart';
@@ -357,20 +358,23 @@ Future<Map<String, bool?>> fileExistenceByPath(List<String> paths) async {
 Future<bool> deleteFile(
   String? path, {
   SourceDeletionEvents? deletionEvents,
+  NetworkStorageService? networkStorage,
 }) async {
   if (path == null || path.isEmpty) return false;
   if (path.startsWith('EXISTS:')) {
     path = path.substring(7).trim();
     if (path.isEmpty) return false;
   }
-  if (path.startsWith('network://')) return false;
   // CUE virtual paths should NOT be deleted through this function —
   // deleting album.cue would remove ALL tracks. Callers should handle
   // CUE deletion specially (e.g. only delete when all tracks are removed).
   if (isCueVirtualPath(path)) return false;
   bool confirmedAbsent;
   try {
-    if (isContentUri(path)) {
+    if (path.startsWith('network://')) {
+      confirmedAbsent = await (networkStorage ?? NetworkStorageService.instance)
+          .deleteFile(path);
+    } else if (isContentUri(path)) {
       final deleted = await PlatformBridge.safDelete(path);
       confirmedAbsent = deleted || !await PlatformBridge.safExists(path);
     } else {

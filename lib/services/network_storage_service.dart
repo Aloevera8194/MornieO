@@ -4,7 +4,8 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
-import 'package:dart_smb2/dart_smb2.dart' show Smb2DirEntry;
+import 'package:dart_smb2/dart_smb2.dart'
+    show Smb2DirEntry, Smb2Exception, Smb2ErrorType;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -17,6 +18,7 @@ import 'package:spotiflac_android/services/secure_storage_options.dart';
 import 'package:xml/xml.dart';
 
 part 'network_storage_upload.dart';
+part 'network_storage_delete.dart';
 
 typedef _SmbListingInput = ({
   List<({String name, bool directory, int size})> files,
@@ -380,6 +382,7 @@ class NetworkStorageService {
     Uri uri, {
     String? range,
     bool dav = false,
+    int davDepth = 1,
     bool directoryListing = false,
     int redirects = 0,
     Map<String, String> headers = const {},
@@ -448,7 +451,7 @@ class NetworkStorageService {
       }
     }
     if (dav) {
-      request.headers.set('Depth', '1');
+      request.headers.set('Depth', davDepth.toString());
       request.headers.contentType = ContentType(
         'application',
         'xml',
@@ -500,6 +503,7 @@ class NetworkStorageService {
         next,
         range: range,
         dav: dav,
+        davDepth: davDepth,
         directoryListing: directoryListing,
         redirects: redirects + 1,
       );
@@ -625,8 +629,9 @@ class NetworkStorageService {
   static List<NetworkEntry> parseListing(
     NetworkConnection c,
     String path,
-    String body,
-  ) {
+    String body, {
+    bool requireResourceType = false,
+  }) {
     final target = networkTarget(c, path);
     final base = target.path.endsWith('/')
         ? target
@@ -695,6 +700,10 @@ class NetworkStorageService {
         final values = props.expand(
           (p) => p.descendants.whereType<XmlElement>(),
         );
+        if (requireResourceType &&
+            !values.any((e) => e.name.local == 'resourcetype')) {
+          continue;
+        }
         if (href != null && props.isNotEmpty) {
           add(
             href,

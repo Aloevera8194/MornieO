@@ -1955,6 +1955,15 @@
   "@trackDeleteConfirmTitle": {
     "description": "Delete confirmation title"
   },
+  "trackDeleteNetworkConfirmMessage": "Ini akan menghapus file secara permanen dari penyimpanan jaringan serta menghapusnya dari perpustakaan dan riwayat Anda.",
+  "snackbarDeleteTracksFailed": "Gagal menghapus {count} lagu. Periksa izin akses penyimpanan dan coba lagi.",
+  "@snackbarDeleteTracksFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "trackDeleteConfirmMessage": "Ini akan menghapus file unduhan secara permanen dan menghapusnya dari riwayat Anda.",
   "@trackDeleteConfirmMessage": {
     "description": "Delete confirmation message"

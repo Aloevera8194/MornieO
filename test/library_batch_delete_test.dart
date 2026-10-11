@@ -90,7 +90,7 @@ void main() {
     expect(db.pathKeys, {'retained'});
   });
 
-  for (final mode in ['partial', 'cancel', 'throw', 'none']) {
+  for (final mode in ['partial', 'cancel', 'throw', 'none', 'leave']) {
     testWidgets('batch confirmation persists successful IDs: $mode', (
       tester,
     ) async {
@@ -151,6 +151,7 @@ void main() {
         ]);
         expect(events, isNot(contains('exit')));
       }
+      if (mode == 'leave') await tester.pumpWidget(const SizedBox());
       commit.complete();
       await tester.pumpAndSettle();
       if (mode == 'throw') {
@@ -162,8 +163,30 @@ void main() {
         expect(result, mode == 'cancel' ? null : (mode == 'none' ? 0 : 2));
         if (mode == 'cancel') {
           expect(events, isEmpty);
+        } else if (mode == 'leave') {
+          expect(events.last, 'committed');
+          expect(events, isNot(contains('exit')));
         } else {
           expect(events.last, 'exit');
+          final message = tester
+              .widget<Text>(
+                find
+                    .descendant(
+                      of: find.byType(SnackBar),
+                      matching: find.byType(Text),
+                    )
+                    .first,
+              )
+              .data!;
+          expect(
+            message,
+            contains(
+              mode == 'none'
+                  ? 'Could not delete 3 tracks'
+                  : 'Could not delete 1 track',
+            ),
+          );
+          expect(message, isNot(contains('Deleted 0')));
         }
       }
       expect(tester.takeException(), isNull);
