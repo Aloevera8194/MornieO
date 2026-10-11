@@ -13,6 +13,37 @@ void main() {
         .setMockMethodCallHandler(backendChannel, null);
   });
 
+  test(
+    'iOS folder picker distinguishes cancellation from invalid replies',
+    () async {
+      final messenger =
+          TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+      messenger.setMockMethodCallHandler(backendChannel, (_) async => null);
+      expect(await PlatformBridge.pickIosDirectory(), isNull);
+
+      for (final reply in [
+        <String, String>{},
+        {'path': '/external/Music'},
+        {'path': 'relative/Music', 'bookmark': 'grant'},
+        {'path': '/external/Music', 'bookmark': '   '},
+      ]) {
+        messenger.setMockMethodCallHandler(backendChannel, (_) async => reply);
+        await expectLater(
+          PlatformBridge.pickIosDirectory(),
+          throwsA(isA<FormatException>()),
+        );
+      }
+
+      messenger.setMockMethodCallHandler(backendChannel, (call) async {
+        expect(call.method, 'pickIosDirectory');
+        return {'path': '/external/Music', 'bookmark': 'grant'};
+      });
+      final selected = await PlatformBridge.pickIosDirectory();
+      expect(selected?.path, '/external/Music');
+      expect(selected?.bookmark, 'grant');
+    },
+  );
+
   test('complete metadata forwards descriptor format hint', () async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(backendChannel, (call) async {

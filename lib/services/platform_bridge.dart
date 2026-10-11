@@ -2780,13 +2780,25 @@ class PlatformBridge {
   /// active; creating it later from a bare path loses the grant.
   /// Returns null when the user cancels; throws on picker/bookmark failure.
   static Future<IosPickedDirectory?> pickIosDirectory() async {
-    final result = await _channel.invokeMethod('pickIosDirectory');
-    final map = _decodeNullableMapResult(result, 'pickIosDirectory');
-    if (map == null) return null;
-    final path = map['path'] as String? ?? '';
-    final bookmark = map['bookmark'] as String? ?? '';
-    if (path.isEmpty || bookmark.isEmpty) return null;
-    return IosPickedDirectory(path: path, bookmark: bookmark);
+    _log.i('Opening iOS folder picker');
+    try {
+      final result = await _channel.invokeMethod('pickIosDirectory');
+      final map = _decodeNullableMapResult(result, 'pickIosDirectory');
+      if (map == null) {
+        _log.i('iOS folder selection cancelled');
+        return null;
+      }
+      final path = map['path'] as String? ?? '';
+      final bookmark = map['bookmark'] as String? ?? '';
+      if (!path.startsWith('/') || bookmark.trim().isEmpty) {
+        throw const FormatException('Invalid iOS folder selection');
+      }
+      _log.i('iOS folder selected with an access bookmark');
+      return IosPickedDirectory(path: path, bookmark: bookmark);
+    } catch (error, stack) {
+      _log.e('iOS folder selection failed', error, stack);
+      rethrow;
+    }
   }
 
   /// Resolve a base64-encoded iOS security-scoped bookmark and start accessing

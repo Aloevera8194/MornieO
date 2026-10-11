@@ -1990,8 +1990,11 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         }
         return false;
       }
-      if (picked == null) return false;
-      final validation = validateIosPath(picked.path);
+      if (picked == null || !mounted) return false;
+      final validation = validateIosPath(
+        picked.path,
+        bookmark: picked.bookmark,
+      );
       if (!validation.isValid) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

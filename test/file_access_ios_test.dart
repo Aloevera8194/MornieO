@@ -2,6 +2,35 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 
 void main() {
+  group('validateIosPath', () {
+    const cloud =
+        '/private/var/mobile/Library/Mobile Documents/com~apple~CloudDocs/Music';
+
+    test('a Files grant takes precedence over the legacy path restriction', () {
+      expect(validateIosPath(cloud).isValid, isFalse);
+      expect(
+        validateIosPath(cloud, bookmark: 'native-access-bookmark').isValid,
+        isTrue,
+      );
+      expect(validateIosPath(cloud, bookmark: '   ').isValid, isFalse);
+    });
+
+    test('a bookmark still requires an absolute nonempty path', () {
+      for (final path in ['', 'relative/Music']) {
+        expect(
+          validateIosPath(path, bookmark: 'native-access-bookmark').isValid,
+          isFalse,
+        );
+      }
+    });
+
+    test('unbookmarked local folders retain their path validation', () {
+      const container = '/private/var/mobile/Containers/Data/Application/ABC';
+      expect(validateIosPath(container).isValid, isFalse);
+      expect(validateIosPath('$container/Documents/Music').isValid, isTrue);
+    });
+  });
+
   group('shouldValidateIosOutputDir', () {
     test('validates a non-empty app-folder path on iOS', () {
       expect(

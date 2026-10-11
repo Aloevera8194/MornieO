@@ -505,8 +505,10 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
                   return;
                 }
 
-                // Validate the selected path is writable
-                final validation = validateIosPath(picked.path);
+                final validation = validateIosPath(
+                  picked.path,
+                  bookmark: picked.bookmark,
+                );
                 if (!validation.isValid) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(

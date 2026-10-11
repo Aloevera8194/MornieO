@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
@@ -476,9 +477,9 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
   }
 
   Future<void> _pickDirectory(BuildContext context, WidgetRef ref) async {
-    if (Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
       _showIOSDirectoryOptions(context, ref);
-    } else if (Platform.isAndroid) {
+    } else if (defaultTargetPlatform == TargetPlatform.android) {
       _showAndroidDirectoryOptions(context, ref);
     }
   }
@@ -632,33 +633,36 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 try {
                   picked = await PlatformBridge.pickIosDirectory();
                 } catch (e) {
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          ctx.l10n.snackbarFolderPickerFailed(
-                            ctx.friendlyError(e),
+                          context.l10n.snackbarFolderPickerFailed(
+                            context.friendlyError(e),
                           ),
                         ),
-                        backgroundColor: Theme.of(ctx).colorScheme.error,
+                        backgroundColor: Theme.of(context).colorScheme.error,
                         duration: const Duration(seconds: 4),
                       ),
                     );
                   }
                   return;
                 }
-                if (picked == null) return;
+                if (picked == null || !context.mounted) return;
 
-                final validation = validateIosPath(picked.path);
+                final validation = validateIosPath(
+                  picked.path,
+                  bookmark: picked.bookmark,
+                );
                 if (!validation.isValid) {
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
                           validation.errorReason ??
                               context.l10n.setupIcloudNotSupported,
                         ),
-                        backgroundColor: Theme.of(ctx).colorScheme.error,
+                        backgroundColor: Theme.of(context).colorScheme.error,
                         duration: const Duration(seconds: 4),
                       ),
                     );

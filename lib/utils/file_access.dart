@@ -174,11 +174,9 @@ class IosPathValidationResult {
 }
 
 /// Validates an iOS path and returns detailed information about the result.
-IosPathValidationResult validateIosPath(String path) {
-  if (!Platform.isIOS) {
-    return const IosPathValidationResult(isValid: true);
-  }
-
+/// A bookmark supplied by the native picker grants access independently of
+/// the folder's path shape. Actual access is checked when resolving that grant.
+IosPathValidationResult validateIosPath(String path, {String bookmark = ''}) {
   if (path.isEmpty) {
     return const IosPathValidationResult(
       isValid: false,
@@ -192,6 +190,10 @@ IosPathValidationResult validateIosPath(String path) {
       errorReason:
           'Invalid path format. Please choose a local folder from Files.',
     );
+  }
+
+  if (bookmark.trim().isNotEmpty) {
+    return const IosPathValidationResult(isValid: true);
   }
 
   if (_iosContainerRootPattern.hasMatch(path)) {
