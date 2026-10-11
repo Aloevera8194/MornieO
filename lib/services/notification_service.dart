@@ -240,7 +240,8 @@ class NotificationService {
   }
 
   /// Builds [NotificationDetails]. A non-null [progress] switches to the
-  /// low-importance ongoing progress style; otherwise a dismissible alert.
+  /// low-importance ongoing progress style; a negative value is indeterminate.
+  /// Otherwise builds a dismissible alert.
   NotificationDetails _details({
     bool library = false,
     int? progress,
@@ -276,7 +277,8 @@ class NotificationService {
         priority: inProgress ? Priority.low : Priority.defaultPriority,
         showProgress: inProgress,
         maxProgress: inProgress ? 100 : 0,
-        progress: progress ?? 0,
+        progress: progress?.clamp(0, 100) ?? 0,
+        indeterminate: (progress ?? 0) < 0,
         ongoing: inProgress,
         autoCancel: !inProgress,
         playSound: playSound,
@@ -455,17 +457,20 @@ class NotificationService {
   }) async {
     if (!_isInitialized) await initialize();
 
-    final clampedProgress = progress.clamp(0.0, 100.0);
-    final percentage = clampedProgress.round();
-    final progressBody = totalFiles > 0
+    // Network scans read tags while discovering folders, so their total is
+    // unknown. Zero percent would falsely imply that no files were processed.
+    // Use the same indeterminate value for the foreground service and plugin.
+    final hasTotal = totalFiles > 0;
+    final percentage = hasTotal ? progress.clamp(0.0, 100.0).round() : -1;
+    final progressBody = hasTotal
         ? (_l10n?.notifLibraryScanProgressWithTotal(
                 scannedFiles,
                 totalFiles,
                 percentage,
               ) ??
               '$scannedFiles/$totalFiles files • $percentage%')
-        : (_l10n?.notifLibraryScanProgressNoTotal(scannedFiles, percentage) ??
-              '$scannedFiles files scanned • $percentage%');
+        : (_l10n?.notifLibraryScanProgressNoTotal(scannedFiles) ??
+              '$scannedFiles files scanned');
     final body = (currentFile != null && currentFile.isNotEmpty)
         ? '$progressBody\n$currentFile'
         : progressBody;

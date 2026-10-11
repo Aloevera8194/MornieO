@@ -5355,14 +5355,11 @@
       }
     }
   },
-  "notifLibraryScanProgressNoTotal": "{scanned} fichiers analysés • {percentage} %",
+  "notifLibraryScanProgressNoTotal": "{scanned} fichiers analysés",
   "@notifLibraryScanProgressNoTotal": {
     "description": "Notification body for library scan progress when total is unknown",
     "placeholders": {
       "scanned": {
-        "type": "int"
-      },
-      "percentage": {
         "type": "int"
       }
     }

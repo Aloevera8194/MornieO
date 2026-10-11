@@ -5355,14 +5355,11 @@
       }
     }
   },
-  "notifLibraryScanProgressNoTotal": "{scanned} 게의 파일이 스캔됨 • {percentage}%",
+  "notifLibraryScanProgressNoTotal": "{scanned} 게의 파일이 스캔됨",
   "@notifLibraryScanProgressNoTotal": {
     "description": "Notification body for library scan progress when total is unknown",
     "placeholders": {
       "scanned": {
-        "type": "int"
-      },
-      "percentage": {
         "type": "int"
       }
     }

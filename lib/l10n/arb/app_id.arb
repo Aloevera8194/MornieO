@@ -5484,14 +5484,11 @@
       }
     }
   },
-  "notifLibraryScanProgressNoTotal": "{scanned} file terpindai • {percentage}%",
+  "notifLibraryScanProgressNoTotal": "{scanned} file terpindai",
   "@notifLibraryScanProgressNoTotal": {
     "description": "Notification body for library scan progress when total is unknown",
     "placeholders": {
       "scanned": {
-        "type": "int"
-      },
-      "percentage": {
         "type": "int"
       }
     }
