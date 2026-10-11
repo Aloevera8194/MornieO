@@ -114,6 +114,7 @@ void main() {
     () {
       expect(
         shouldRetainCompletionBridge(
+          queueItemExists: true,
           isRequeued: false,
           hasActiveDownloads: false,
           libraryRowLanded: false,
@@ -124,6 +125,7 @@ void main() {
       );
       expect(
         shouldRetainCompletionBridge(
+          queueItemExists: true,
           isRequeued: false,
           hasActiveDownloads: false,
           libraryRowLanded: true,
@@ -138,6 +140,7 @@ void main() {
   test('unpersisted completion bridge retains only its short grace period', () {
     expect(
       shouldRetainCompletionBridge(
+        queueItemExists: true,
         isRequeued: false,
         hasActiveDownloads: false,
         libraryRowLanded: false,
@@ -148,6 +151,7 @@ void main() {
     );
     expect(
       shouldRetainCompletionBridge(
+        queueItemExists: true,
         isRequeued: false,
         hasActiveDownloads: false,
         libraryRowLanded: false,
@@ -156,6 +160,24 @@ void main() {
       ),
       isFalse,
     );
+  });
+
+  test('removed completion cannot reappear during another download', () {
+    for (final expired in [false, true]) {
+      for (final hasHistoryItem in [false, true]) {
+        expect(
+          shouldRetainCompletionBridge(
+            queueItemExists: false,
+            isRequeued: false,
+            hasActiveDownloads: true,
+            libraryRowLanded: false,
+            hasHistoryItem: hasHistoryItem,
+            expired: expired,
+          ),
+          isFalse,
+        );
+      }
+    }
   });
 
   test('completion bridge fallback follows the current label mode', () {

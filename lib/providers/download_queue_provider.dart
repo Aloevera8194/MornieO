@@ -28,6 +28,7 @@ import 'package:spotiflac_android/services/download_metadata_embedding.dart';
 import 'package:spotiflac_android/services/download_saf_file_replacer.dart';
 import 'package:spotiflac_android/services/download_connectivity_policy.dart';
 import 'package:spotiflac_android/services/download_scheduler.dart';
+import 'package:spotiflac_android/services/source_deletion_events.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/services/download_request_payload.dart';
 import 'package:spotiflac_android/services/download_motion_artwork_source.dart';
@@ -43,6 +44,7 @@ import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/utils/artist_utils.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
 import 'package:spotiflac_android/utils/int_utils.dart';
+import 'package:spotiflac_android/utils/path_match_keys.dart';
 import 'package:spotiflac_android/utils/extension_auth_launcher.dart';
 import 'package:spotiflac_android/utils/download_error_type.dart';
 import 'package:spotiflac_android/utils/lyrics_metadata_helper.dart';
@@ -401,6 +403,11 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
 
   @override
   DownloadQueueState build() {
+    ref.onDispose(
+      SourceDeletionEvents.instance.subscribe((source) async {
+        _removeDeletedFile(source);
+      }),
+    );
     if (Platform.isIOS) {
       _iosBackgroundExpirationSubscription ??=
           PlatformBridge.iosBackgroundDownloadExpirationEvents().listen(
@@ -1567,6 +1574,29 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
       // Removing a failed/skipped item may unblock album RG for the album.
       _retriggerAlbumRgChecks();
     }
+  }
+
+  void _removeDeletedFile(String filePath) {
+    final deletedKeys = buildPhysicalPathMatchKeys(filePath);
+    if (deletedKeys.isEmpty) return;
+    final removedIds = <String>{
+      for (final item in state.items)
+        if (item.status == DownloadStatus.completed &&
+            buildPhysicalPathMatchKeys(item.filePath).any(deletedKeys.contains))
+          item.id,
+    };
+    if (removedIds.isEmpty) return;
+    // Match the deleted file, not the song: another provider or format may
+    // be downloading the same track and must keep its independent request.
+    state = state.copyWith(
+      items: state.items
+          .where((item) => !removedIds.contains(item.id))
+          .toList(growable: false),
+      currentDownload: removedIds.contains(state.currentDownload?.id)
+          ? null
+          : state.currentDownload,
+    );
+    _saveQueueToStorage();
   }
 
   Future<String?> exportFailedDownloads() async {

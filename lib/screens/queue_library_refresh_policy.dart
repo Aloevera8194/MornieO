@@ -37,14 +37,16 @@ bool shouldRetainQueueLibraryPageSnapshot({
 /// actually landed. A completed item with an in-memory History row must not
 /// expire merely because the rest of its album batch was cancelled: the
 /// paged Library query can still be one refresh behind that persisted row.
+/// Removed requests must never be revived by another active download.
 bool shouldRetainCompletionBridge({
+  required bool queueItemExists,
   required bool isRequeued,
   required bool hasActiveDownloads,
   required bool libraryRowLanded,
   required bool hasHistoryItem,
   required bool expired,
 }) {
-  if (isRequeued || libraryRowLanded) return false;
+  if (!queueItemExists || isRequeued || libraryRowLanded) return false;
   if (hasActiveDownloads || hasHistoryItem) return true;
   return !expired;
 }

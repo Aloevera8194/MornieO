@@ -80,6 +80,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
       final stale = <String>[];
       final pending = <String>[];
       final hasActiveDownloads = activeDownloadIds.isNotEmpty;
+      final queueItems = ref.read(downloadQueueLookupProvider).byItemId;
       _completionBridge.forEach((id, _) {
         final historyItem = bridgeHistoryById[id];
         final historyId = historyItem?.id ?? id;
@@ -88,6 +89,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         final expired =
             addedAt == null || now.difference(addedAt).inSeconds >= 6;
         if (shouldRetainCompletionBridge(
+          queueItemExists: queueItems.containsKey(id),
           isRequeued: activeDownloadIds.contains(id),
           hasActiveDownloads: hasActiveDownloads,
           libraryRowLanded: landed,

@@ -1248,6 +1248,19 @@ class _QueueTabState extends ConsumerState<QueueTab> {
 
     ref.listen(downloadQueueLookupProvider, (previous, next) {
       if (previous == null) return;
+      if (_completionBridge.keys.any((id) => !next.byItemId.containsKey(id))) {
+        setState(() {
+          _completionBridge.removeWhere(
+            (id, _) => !next.byItemId.containsKey(id),
+          );
+          _completionBridgeAt.removeWhere(
+            (id, _) => !next.byItemId.containsKey(id),
+          );
+          _bridgePrecacheStarted.removeWhere(
+            (id) => !next.byItemId.containsKey(id),
+          );
+        });
+      }
       if (identical(previous.notCompletedItemIds, next.notCompletedItemIds)) {
         return;
       }
