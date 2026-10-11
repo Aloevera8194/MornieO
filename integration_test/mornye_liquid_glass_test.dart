@@ -308,14 +308,6 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byType(LiquidGlassLens), findsOneWidget);
-    final gesture = await tester.startGesture(
-      tester.getCenter(find.text('Home')),
-    );
-    await tester.pumpAndSettle();
-    expect(tester.widget<MornyeLiquidBackdrop>(lens).progress, 1);
-    expect(find.byType(LiquidGlassLens), findsNWidgets(2));
-    final home = tester.getCenter(find.text('Home'));
-    final library = tester.getCenter(find.text('Library'));
     final pill = find.descendant(
       of: find
           .descendant(
@@ -325,6 +317,39 @@ void main() {
           .first,
       matching: find.byType(FractionallySizedBox),
     );
+    final restingSurface = find.descendant(
+      of: pill,
+      matching: find.byType(DecoratedBox),
+    );
+    final icons = find.descendant(
+      of: find.byType(MornyeSelectionPill),
+      matching: find.byType(Icon),
+    );
+    final iconSizes = [for (final icon in icons.evaluate()) icon.size];
+    void expectSingleContour() {
+      // Both surfaces must share one silhouette throughout the transition;
+      // the fixed smaller pill must never show through the growing lens.
+      expect(tester.getRect(restingSurface), tester.getRect(lens));
+      expect([for (final icon in icons.evaluate()) icon.size], iconSizes);
+    }
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.text('Home')),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expectSingleContour();
+    await tester.pumpAndSettle();
+    expect(tester.widget<MornyeLiquidBackdrop>(lens).progress, 1);
+    expect(find.byType(LiquidGlassLens), findsNWidgets(2));
+    expectSingleContour();
+    final heldRestingDecoration =
+        tester.widget<DecoratedBox>(restingSurface).decoration as BoxDecoration;
+    expect(heldRestingDecoration.color!.a, 0);
+    expect((heldRestingDecoration.border! as Border).top.color.a, 0);
+    expect(heldRestingDecoration.boxShadow!.single.color.a, 0);
+    final home = tester.getCenter(find.text('Home'));
+    final library = tester.getCenter(find.text('Library'));
     final heldWidth =
         tester.getBottomRight(lens).dx - tester.getTopLeft(lens).dx;
     expect(heldWidth, greaterThan(tester.getSize(pill).width * 1.2));
@@ -340,6 +365,7 @@ void main() {
       await tester.pump();
       expect(tester.getCenter(pill).dx, closeTo(position.dx, 0.1));
       expect(tester.getCenter(lens).dx, closeTo(position.dx, 0.1));
+      expectSingleContour();
       expect(changes, isEmpty);
     }
     if (const bool.fromEnvironment('GLASS_PREVIEW')) {
@@ -356,9 +382,13 @@ void main() {
       closeTo(tester.getCenter(find.text('Search')).dx, 0.1),
     );
     await gesture.up();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 60));
+    expectSingleContour();
     await tester.pumpAndSettle();
     expect(changes, [2]);
     expect(tester.widget<MornyeLiquidBackdrop>(lens).progress, 0);
+    expectSingleContour();
     expect(find.byType(LiquidGlassLens), findsOneWidget);
     final cancel = await tester.startGesture(
       tester.getCenter(find.text('Search')),

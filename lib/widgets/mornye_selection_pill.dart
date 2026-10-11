@@ -154,6 +154,7 @@ class _MornyeSelectionPillState extends State<MornyeSelectionPill>
         !MediaQuery.disableAnimationsOf(context) &&
         !(widget.contrastBlocked ?? MediaQuery.highContrastOf(context));
     final pressProgress = lensEnabled ? _pressAnimation.value : 0.0;
+    final restingOpacity = 1 - pressProgress;
     final content = Listener(
       // An accepted drag can end with a PointerCancelEvent. Do not navigate
       // when the OS interrupts the gesture (e.g. opening system controls).
@@ -243,31 +244,42 @@ class _MornyeSelectionPillState extends State<MornyeSelectionPill>
                         child: FractionallySizedBox(
                           widthFactor: 1 / count,
                           heightFactor: 1,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: scheme.onSurface.withValues(
-                                alpha: lensEnabled && _pressed
-                                    ? 0.025
-                                    : scheme.brightness == Brightness.dark
-                                    ? 0.12
-                                    : 0.08,
-                              ),
-                              borderRadius: BorderRadius.circular(_pillRadius),
-                              border: MornyeTheme.glassOutlinesOf(context)
-                                  ? Border.all(
-                                      color: scheme.onSurface.withValues(
-                                        alpha: 0.05,
-                                      ),
-                                      width: 0.5,
-                                    )
-                                  : null,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 1,
-                                  offset: const Offset(0, 0.5),
+                          // Share the lens outline while fading into it. A
+                          // fixed resting pill leaves a second capsule inside
+                          // the held glass, especially during release.
+                          child: Transform.scale(
+                            scaleX: 1 + _heldWidthGrowth * pressProgress,
+                            scaleY: 1 + _heldHeightGrowth * pressProgress,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: scheme.onSurface.withValues(
+                                  alpha:
+                                      restingOpacity *
+                                      (scheme.brightness == Brightness.dark
+                                          ? 0.12
+                                          : 0.08),
                                 ),
-                              ],
+                                borderRadius: BorderRadius.circular(
+                                  _pillRadius,
+                                ),
+                                border: MornyeTheme.glassOutlinesOf(context)
+                                    ? Border.all(
+                                        color: scheme.onSurface.withValues(
+                                          alpha: 0.05 * restingOpacity,
+                                        ),
+                                        width: 0.5,
+                                      )
+                                    : null,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(
+                                      alpha: 0.08 * restingOpacity,
+                                    ),
+                                    blurRadius: 1,
+                                    offset: const Offset(0, 0.5),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
