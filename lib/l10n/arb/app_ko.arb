@@ -114,6 +114,8 @@
   "appearanceAccentPurple": "보라색",
   "appearanceAccentPink": "분홍색",
   "appearanceGlassClarity": "글래스 투명도",
+  "appearanceGlassOutlines": "Glass outlines",
+  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
   "appearanceGlassClaritySubtitle": "Mornye 메뉴와 하단바의 투명도를 조절할 수 있습니다. 텍스트 대비는 유지됩니다",
   "appearanceGlassTinted": "색조",
   "appearanceGlassClear": "투명",
@@ -127,9 +129,14 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "시스템의 고대비 설정이 켜져 있는 동안에는 글래스 효과가 불투명하게 표시됩니다",
+  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request (which can include medium contrast) and the explicit glass-only override.",
+    "placeholders": {
+      "setting": {
+        "type": "String"
+      }
+    }
   },
   "appearanceUseSystemFont": "시스템 글꼴 사용",
   "appearanceUseSystemFontSubtitle": "앱 텍스트에 기기 기본 글꼴을 사용합니다",
@@ -7094,6 +7101,10 @@
   "autoplayOn": "자동재생 켜기",
   "autoplayOff": "자동재생 끄기",
   "autoplayFromLibrary": "라이브러리에서 자동재생",
+  "autoplayDescription": "Continue with related songs from your Library when the queue ends.",
+  "autoplayPersonalization": "Personalized autoplay",
+  "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
+  "autoplayResetLearning": "Reset recommendation learning",
   "profileTitle": "프로필",
   "profileSetUp": "프로필 설정",
   "profileEdit": "이름 및 사진 편집",
@@ -7196,6 +7207,12 @@
   "playbackPauseOnMuteDescription": "미디어 음량이 0이 되면 일시 정지하고, 음량을 높이면 재생을 다시 시작합니다. 수동으로 일시 정지한 경우에는 일시 정지 상태를 유지합니다. 일반 오디오 출력에서만 작동합니다",
   "playbackOnHeadphonesConnected": "헤드폰 연결 시 재생",
   "playbackOnHeadphonesConnectedDescription": "유선 또는 Bluetooth 헤드폰이 연결되면 현재 재생 중인 곡을 이어서 재생합니다. 연결이 해제되면 재생이 일시 정지됩니다. 내부 플레이어에서만 작동합니다",
+  "appearanceCustomFont": "Custom font",
+  "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
+  "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
+  "appearanceCustomFontReset": "Use theme font",
+  "lyricsTextSize": "Lyrics text size",
+  "lyricsTextPreview": "Follow every line of your favorite song",
   "optionsEmbeddedCoverSizeOriginal": "원본 해상도",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
