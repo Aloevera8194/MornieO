@@ -114,6 +114,8 @@
   "appearanceAccentPurple": "Lila",
   "appearanceAccentPink": "Pink",
   "appearanceGlassClarity": "Glastransparenz",
+  "appearanceGlassOutlines": "Glass outlines",
+  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
   "appearanceGlassClaritySubtitle": "Adjust transparency in Mornye menus and navigation. Text contrast is preserved.",
   "appearanceGlassTinted": "Eingefärbt",
   "appearanceGlassClear": "klar",
@@ -127,9 +129,14 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Glass stays opaque while the system’s high contrast setting is on.",
+  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
   "@appearanceGlassClarityHighContrast": {
-    "description": "Shown under the disabled glass clarity slider while the OS high contrast accessibility setting is on"
+    "description": "Explains the system contrast request (which can include medium contrast) and the explicit glass-only override.",
+    "placeholders": {
+      "setting": {
+        "type": "String"
+      }
+    }
   },
   "appearanceUseSystemFont": "Use system font",
   "appearanceUseSystemFontSubtitle": "Use your device’s default typeface for app text.",
@@ -7094,6 +7101,10 @@
   "autoplayOn": "Autoplay an",
   "autoplayOff": "Autoplay aus",
   "autoplayFromLibrary": "Autoplay from your Library",
+  "autoplayDescription": "Continue with related songs from your Library when the queue ends.",
+  "autoplayPersonalization": "Personalized autoplay",
+  "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
+  "autoplayResetLearning": "Reset recommendation learning",
   "profileTitle": "Profil",
   "profileSetUp": "Set up your profile",
   "profileEdit": "Edit name and photo",
@@ -7196,6 +7207,12 @@
   "playbackPauseOnMuteDescription": "Pause at zero media volume and resume when raised. Manual pauses stay paused. Standard audio output only.",
   "playbackOnHeadphonesConnected": "Play when headphones connect",
   "playbackOnHeadphonesConnectedDescription": "Resume the current song when wired or Bluetooth headphones connect. Disconnecting pauses playback. Built-in player only.",
+  "appearanceCustomFont": "Custom font",
+  "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
+  "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
+  "appearanceCustomFontReset": "Use theme font",
+  "lyricsTextSize": "Lyrics text size",
+  "lyricsTextPreview": "Follow every line of your favorite song",
   "optionsEmbeddedCoverSizeOriginal": "Original resolution",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
