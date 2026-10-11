@@ -1,17 +1,18 @@
 [workspace]
 members = ["crates/core", "crates/network", "crates/providers", "crates/extensions", "crates/mobile", "crates/bindgen"]
-exclude = ["vendor/rustix-1.1.4"]
+exclude = ["vendor/rustix-1.1.5", "vendor/libusb1-sys-0.7.0"]
 resolver = "3"
 
 [patch.crates-io]
 # Android < 30 may kill processes that probe statx directly (SIGSYS).
 # Keep all direct and transitive users on the same compatibility fix.
-rustix = { path = "vendor/rustix-1.1.4" }
+rustix = { path = "vendor/rustix-1.1.5" }
+libusb1-sys = { path = "vendor/libusb1-sys-0.7.0" }
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.98.1"
+rust-version = "1.99.0"
 license = "MIT"
 publish = false
 
@@ -33,13 +34,13 @@ blowfish = { version = "=0.10.0", features = ["zeroize"] }
 zeroize = "1.8"
 getrandom = "0.4"
 tempfile = "3.27"
-zip = { version = "=8.6.0", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+zip = { version = "=9.0.1", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = { version = "1.0", features = ["float_roundtrip", "raw_value"] }
 thiserror = "2.0"
 uniffi = { version = "=0.32.2", default-features = false }
-tokio = { version = "=1.53.1", features = ["rt-multi-thread", "net", "time", "sync", "io-util", "macros"] }
-hyper = { version = "=1.11.1", features = ["client", "http1", "http2"] }
+tokio = { version = "=1.53.2", features = ["rt-multi-thread", "net", "time", "sync", "io-util", "macros"] }
+hyper = { version = "=1.12.0", features = ["client", "http1", "http2"] }
 hyper-util = { version = "=0.1.21", features = ["client-legacy", "http1", "http2", "tokio"] }
 hyper-rustls = { version = "=0.27.10", default-features = false, features = ["http1", "http2", "ring", "tls12"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
@@ -70,7 +71,7 @@ chrono = { version = "=0.4.45", default-features = false, features = ["clock"] }
 tz-rs = "=0.7.3"
 httpdate = "=1.0.3"
 cap-std = "=4.0.3"
-rustix = { version = "=1.1.4", features = ["fs"] }
+rustix = { version = "=1.1.5", features = ["fs"] }
 
 [workspace.lints.rust]
 unsafe_code = "deny"

@@ -132,7 +132,7 @@ impl ResolverHttp {
                 self.timeout,
                 check,
             )
-            .map_err(&failure)?;
+            .map_err(failure)?;
         let status = stream.response.status;
         if language.is_none() && status != 200 && !(post && status == 201) {
             return Err(ResolverError::Failed(format!("HTTP {status}")));
@@ -172,7 +172,7 @@ impl ResolverHttp {
             let capacity = buffer.len().min(limit + 1 - body.len());
             let read = stream
                 .read(&mut buffer[..capacity], check)
-                .map_err(&failure)?;
+                .map_err(failure)?;
             if read == 0 {
                 break;
             }

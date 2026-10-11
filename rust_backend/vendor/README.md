@@ -1,10 +1,10 @@
 # Rustix Android compatibility patch
 
-`rustix-1.1.4` is vendored from the pinned crates.io package using `cargo vendor`.
+`rustix-1.1.5` is vendored from the pinned crates.io package using `cargo vendor`.
 Its upstream license files are retained. Cargo's workspace patch applies to both
 direct users and transitive dependencies such as `cap-std`.
 The original package checksum is
-`b6fe4565b9518b83ef4f91bb47ce29620ca828bd32cb7e408f0062e9930ba190`.
+`891efababe418670775f199f0d233d84843c227a0949a883ce15b37c78d6629d`.
 
 The sole upstream source change is in `src/backend/libc/fs/syscalls.rs`: Android
 uses `weakcall!` for `statx`, rather than `weak_or_syscall!`. Bionic exports this
@@ -28,3 +28,19 @@ symbol and blocks the raw syscall to exercise the legacy fallback. A final probe
 deliberately exits with `SIGSYS` to verify that the filter is active. Neither the
 symbol wrapper nor the filter is included in the application. This simulated
 sandbox check complements testing the APK on an actual older ARM32 device.
+
+# libusb native source update
+
+`libusb1-sys-0.7.0` is the latest stable Rust binding. Its upstream bundle is
+libusb 1.0.27, so the workspace patch replaces the C source directory and MSVC
+configuration with the official libusb 1.0.30 release. The Rust API and bindings
+are unchanged; `build.rs` reports 1.0.30 when compiling the vendored C library.
+The Android dependency keeps its `vendored` feature, so both APK ABIs use these
+sources instead of an arbitrary host installation. Upstream licenses are retained.
+
+Source: https://github.com/libusb/libusb/releases/download/v1.0.30/libusb-1.0.30.tar.bz2
+SHA-256: `fea36f34f9156400209595e300840767ab1a385ede1dc7ee893015aea9c6dbaf`
+
+The `.cargo-checksum.json` file lists the updated local source hashes while
+retaining the original registry package checksum as provenance. The same applies
+to the Rustix compatibility patch above.
