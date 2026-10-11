@@ -114,8 +114,8 @@
   "appearanceAccentPurple": "Фіолетовий",
   "appearanceAccentPink": "Рожевий",
   "appearanceGlassClarity": "Прозорість скла",
-  "appearanceGlassOutlines": "Glass outlines",
-  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
+  "appearanceGlassOutlines": "Скляні обводи",
+  "appearanceGlassOutlinesSubtitle": "Показувати декоративні краї навколо скла Mornye. Вимкнення цієї функції зберігає розмиття та заломлення.",
   "appearanceGlassClaritySubtitle": "Налаштуйте прозорість меню та навігації Mornye. Контрастність тексту зберігається.",
   "appearanceGlassTinted": "Тонований",
   "appearanceGlassClear": "Очистити",
@@ -129,7 +129,7 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
+  "appearanceGlassClarityHighContrast": "Система потребує підвищеного контрасту, тому ефект скла залишається непрозорим. Увімкніть “{setting}”, щоб усе одно використовувати ефект скла; контрастність тексту буде збережено.",
   "@appearanceGlassClarityHighContrast": {
     "description": "Explains the system contrast request (which can include medium contrast) and the explicit glass-only override.",
     "placeholders": {
@@ -1881,8 +1881,8 @@
   "@trackDeleteConfirmTitle": {
     "description": "Delete confirmation title"
   },
-  "trackDeleteNetworkConfirmMessage": "This will permanently delete the file from your network storage and remove it from your library and history.",
-  "snackbarDeleteTracksFailed": "Could not delete {count} {count, plural, =1{track} other{tracks}}. Check storage access and try again.",
+  "trackDeleteNetworkConfirmMessage": "Це безповоротно видалить файл із мережевого сховища та вилучить його з бібліотеки й історії.",
+  "snackbarDeleteTracksFailed": "Не вдалося видалити {count} {count, plural, =1{трек} one{трек} few{треки} other{треків}}. Перевірте доступ до сховища та спробуйте ще раз.",
   "@snackbarDeleteTracksFailed": {
     "placeholders": {
       "count": {
@@ -5093,7 +5093,7 @@
   "@hiResCheckActiveBits": {
     "description": "Active integer bit depth versus the container depth in the sampled segment"
   },
-  "hiResCheckBandwidthExplanation": "Нижча межа відсікання може бути обумовлена освоєнням. Саме по собі це не доводить наявність підвищеної частоти дискретизації.",
+  "hiResCheckBandwidthExplanation": "Нижня межа зрізу часто є результатом фінальним етапом обробки треку. Саме по собі це не доводить наявність підвищеної частоти дискретизації.",
   "@hiResCheckBandwidthExplanation": {
     "description": "Explains why the limited-bandwidth finding is neutral"
   },
@@ -5419,7 +5419,7 @@
       }
     }
   },
-  "notifLibraryScanProgressNoTotal": "{scanned} files scanned",
+  "notifLibraryScanProgressNoTotal": "{scanned} Проскановано файлів",
   "@notifLibraryScanProgressNoTotal": {
     "description": "Notification body for library scan progress when total is unknown",
     "placeholders": {
@@ -7107,10 +7107,10 @@
   "autoplayOn": "Автовідтворення увімкнено",
   "autoplayOff": "Автовідтворення вимкнено",
   "autoplayFromLibrary": "Автовідтворення з вашої бібліотеки",
-  "autoplayDescription": "Continue with related songs from your Library when the queue ends.",
-  "autoplayPersonalization": "Personalized autoplay",
-  "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
-  "autoplayResetLearning": "Reset recommendation learning",
+  "autoplayDescription": "Продовжувати відтворення схожих пісень із вашої бібліотеки, коли черга закінчиться.",
+  "autoplayPersonalization": "Персоналізований автозапуск",
+  "autoplayPersonalizationDescription": "Навчайтеся на основі пісень, які ви слухаєте та пропускаєте, приватно на цьому пристрої. Вимкнення цієї функції зупинить навчання та відновить звичайне автовідтворення.",
+  "autoplayResetLearning": "Скинути налаштування рекомендацій",
   "profileTitle": "Профіль",
   "profileSetUp": "Налаштуйте свій профіль",
   "profileEdit": "Редагувати ім'я та фотографію",
@@ -7213,7 +7213,7 @@
   "playbackPauseOnMuteDescription": "Призупиняти при нульовій гучності медіа та відновлювати при її збільшенні. Ручні паузи зберігаються. Тільки стандартний аудіовихід.",
   "playbackOnHeadphonesConnected": "Відтворювати після підключення навушників",
   "playbackOnHeadphonesConnectedDescription": "Відновлювати відтворення поточної пісні під час підключення дротових або Bluetooth-навушників. Відключення призупиняє відтворення. Тільки для вбудованого програвача.",
-  "appearanceCustomFont": "Custom font",
+  "appearanceCustomFont": "Користувацький шрифт",
   "appearanceCustomFontSubtitle": "Імпорт файлу TTF або OTF (до 10 МБ). Перевизначає шрифт теми та системи.",
   "appearanceCustomFontInvalid": "Не вдалося завантажити цей шрифт. Виберіть дійсний файл формату TTF або OTF розміром до 10 МБ.",
   "appearanceCustomFontReset": "Використовуйте шрифт теми",
