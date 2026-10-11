@@ -7214,11 +7214,11 @@
   "playbackOnHeadphonesConnected": "Відтворювати після підключення навушників",
   "playbackOnHeadphonesConnectedDescription": "Відновлювати відтворення поточної пісні під час підключення дротових або Bluetooth-навушників. Відключення призупиняє відтворення. Тільки для вбудованого програвача.",
   "appearanceCustomFont": "Custom font",
-  "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
-  "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
-  "appearanceCustomFontReset": "Use theme font",
-  "lyricsTextSize": "Lyrics text size",
-  "lyricsTextPreview": "Follow every line of your favorite song",
+  "appearanceCustomFontSubtitle": "Імпорт файлу TTF або OTF (до 10 МБ). Перевизначає шрифт теми та системи.",
+  "appearanceCustomFontInvalid": "Не вдалося завантажити цей шрифт. Виберіть дійсний файл формату TTF або OTF розміром до 10 МБ.",
+  "appearanceCustomFontReset": "Використовуйте шрифт теми",
+  "lyricsTextSize": "Розмір тексту пісні",
+  "lyricsTextPreview": "Слідкуйте за кожним рядком своєї улюбленої пісні",
   "optionsEmbeddedCoverSizeOriginal": "Вихідна роздільна здатність",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
