@@ -62,6 +62,7 @@ class AppSettings {
   final bool usbAllowFixedVolume;
   final bool dapExclusive;
   final bool autoplay;
+  final bool autoplayPersonalization;
   final bool isFirstLaunch;
   final bool checkForUpdates;
   final String updateChannel;
@@ -194,6 +195,7 @@ class AppSettings {
     this.usbAllowFixedVolume = false,
     this.dapExclusive = false,
     this.autoplay = false,
+    this.autoplayPersonalization = false,
     this.isFirstLaunch = true,
     this.checkForUpdates = true,
     this.updateChannel = 'stable',
@@ -301,6 +303,7 @@ class AppSettings {
     bool? usbAllowFixedVolume,
     bool? dapExclusive,
     bool? autoplay,
+    bool? autoplayPersonalization,
     bool? isFirstLaunch,
     bool? checkForUpdates,
     String? updateChannel,
@@ -407,6 +410,8 @@ class AppSettings {
       usbAllowFixedVolume: usbAllowFixedVolume ?? this.usbAllowFixedVolume,
       dapExclusive: dapExclusive ?? this.dapExclusive,
       autoplay: autoplay ?? this.autoplay,
+      autoplayPersonalization:
+          autoplayPersonalization ?? this.autoplayPersonalization,
       isFirstLaunch: isFirstLaunch ?? this.isFirstLaunch,
       checkForUpdates: checkForUpdates ?? this.checkForUpdates,
       updateChannel: updateChannel ?? this.updateChannel,

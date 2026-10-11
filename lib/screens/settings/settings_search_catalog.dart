@@ -239,6 +239,18 @@ class SettingsSearchCatalog {
       ],
       playback = [
         SettingsSearchEntry(
+          icon: Icons.playlist_play_rounded,
+          title: l10n.autoplayFromLibrary,
+          subtitle: l10n.autoplayDescription,
+          keywords: const ['autoplay', 'queue', 'recommendation'],
+        ),
+        SettingsSearchEntry(
+          icon: Icons.auto_awesome_outlined,
+          title: l10n.autoplayPersonalization,
+          subtitle: l10n.autoplayPersonalizationDescription,
+          keywords: const ['machine learning', 'recommendation', 'personal'],
+        ),
+        SettingsSearchEntry(
           icon: Icons.insights_outlined,
           title: l10n.listeningStats,
           subtitle: l10n.listeningStatsDescription,

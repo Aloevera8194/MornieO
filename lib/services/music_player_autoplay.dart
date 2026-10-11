@@ -3,6 +3,25 @@ part of 'music_player_service.dart';
 typedef AutoplayLibraryLoader =
     Future<List<PlayableMedia>> Function(PlayableMedia seed);
 
+Future<void> resetAutoplayLearning({MusicPlayerRuntime? runtime}) async {
+  final target = runtime ?? musicPlayerRuntime;
+  await target.personalization.reset();
+  final handler = target.handler;
+  if (handler == null || handler.isDisposed) return;
+  handler._configurePersonalization();
+  handler._autoplay.updateMode();
+}
+
+AutoplayLearningTrack _learningTrack(PlayableMedia media) =>
+    AutoplayLearningTrack(
+      source: media.source,
+      title: media.title,
+      artist: media.artist,
+      album: media.album,
+      genre: media.genre ?? '',
+      duration: media.duration,
+    );
+
 void setAutoplayEnabled(bool enabled, {bool includeLocal = true}) =>
     musicPlayerRuntime.configure(
       musicPlayerRuntime.settings.copyWith(
@@ -77,7 +96,7 @@ Future<List<PlayableMedia>> _loadAutoplayLibrary(
 
 /// Rank once per refill, so the visible queue is the actual playback order.
 /// Related songs score higher, while recent plays and repeated artists lose
-/// priority. No model, network lookup or audio analysis is needed.
+/// priority. Optional local learning adjusts this prior without audio analysis.
 List<PlayableMedia> selectAutoplayTracks({
   required PlayableMedia seed,
   required List<PlayableMedia> candidates,
@@ -86,6 +105,7 @@ List<PlayableMedia> selectAutoplayTracks({
   required Set<String> dismissedSources,
   required Random random,
   int limit = 6,
+  double Function(PlayableMedia)? preferenceAdjustment,
 }) {
   String normalized(String? value) => normalizeLookupText(value);
   String songKey(PlayableMedia item) =>
@@ -128,6 +148,7 @@ List<PlayableMedia> selectAutoplayTracks({
     if (seedGenre.isNotEmpty && seedGenre == normalized(item.genre)) {
       score += 4;
     }
+    if (preferenceAdjustment != null) score += preferenceAdjustment(item);
     // Match the latest source OR normalized song occurrence without walking
     // the entire listening history again for every candidate.
     final played = max(
@@ -232,18 +253,54 @@ class _MusicAutoplay {
       final current = handler._media[handler._index];
       final upcoming = handler._media.skip(handler._index + 1).toList();
       if (upcoming.length >= 3) return;
-      final selected = selectAutoplayTracks(
+      final recent = handler._playHistory
+          .where((i) => i >= 0 && i < handler._media.length)
+          .map((i) => handler._media[i])
+          .toList();
+      final model = handler._runtime.personalization.rankingSnapshot;
+      final revision = handler._sessionQueueRevision;
+      List<PlayableMedia> ordinaryRanking() => selectAutoplayTracks(
         seed: current,
         candidates: candidates,
         upcoming: upcoming,
-        recent: handler._playHistory
-            .where((i) => i >= 0 && i < handler._media.length)
-            .map((i) => handler._media[i])
-            .toList(),
+        recent: recent,
         dismissedSources: _dismissed,
         random: handler._random,
         limit: 6 - upcoming.length,
       );
+      List<PlayableMedia> selected;
+      if (model == null) {
+        selected = ordinaryRanking();
+      } else {
+        try {
+          selected = await compute(_rankPersonalizedAutoplay, (
+            current,
+            candidates,
+            upcoming,
+            recent,
+            Set<String>.of(_dismissed),
+            model,
+            handler._random.nextInt(1 << 31),
+            DateTime.now(),
+            6 - upcoming.length,
+          ), debugLabel: 'autoplay-ranking');
+        } catch (error) {
+          _log.w(
+            'Personalized ranking unavailable; using ordinary autoplay: $error',
+          );
+          selected = ordinaryRanking();
+        }
+      }
+      // The worker must not publish suggestions for an obsolete queue/seed.
+      if (!enabled ||
+          handler._disposed ||
+          generation != _generation ||
+          revision != handler._sessionQueueRevision ||
+          handler._index < 0 ||
+          handler._index >= handler._media.length ||
+          handler._media[handler._index].source != current.source) {
+        return;
+      }
       if (selected.isEmpty) return;
       final additions = [
         for (final item in selected)
@@ -262,4 +319,46 @@ class _MusicAutoplay {
       _log.w('Could not prepare Library Autoplay: $error');
     }
   }
+}
+
+typedef _AutoplayRankingInput = (
+  PlayableMedia,
+  List<PlayableMedia>,
+  List<PlayableMedia>,
+  List<PlayableMedia>,
+  Set<String>,
+  AutoplayPreferenceModel,
+  int,
+  DateTime,
+  int,
+);
+
+/// Pass metadata and a frozen 64 KiB model only, never the player/runtime.
+List<PlayableMedia> _rankPersonalizedAutoplay(_AutoplayRankingInput input) {
+  final (
+    seed,
+    candidates,
+    upcoming,
+    recent,
+    dismissed,
+    model,
+    randomSeed,
+    at,
+    limit,
+  ) = input;
+  final learningSeed = _learningTrack(seed);
+  return selectAutoplayTracks(
+    seed: seed,
+    candidates: candidates,
+    upcoming: upcoming,
+    recent: recent,
+    dismissedSources: dismissed,
+    random: Random(randomSeed),
+    limit: limit,
+    preferenceAdjustment: (track) => model.rankAdjustment(
+      _learningTrack(track),
+      previous: learningSeed,
+      at: at,
+    ),
+  );
 }

@@ -643,6 +643,11 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _saveSettings();
   }
 
+  void setAutoplayPersonalization(bool enabled) {
+    state = state.copyWith(autoplayPersonalization: enabled);
+    _saveSettings();
+  }
+
   void setUsbBitPerfect(bool enabled) {
     state = state.copyWith(usbBitPerfect: enabled);
     _saveSettings();

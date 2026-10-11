@@ -6,6 +6,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/services.dart';
 import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/services/app_state_database.dart';
+import 'package:spotiflac_android/services/autoplay_personalization.dart';
 import 'package:spotiflac_android/services/discord_presence_service.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/services/listening_statistics.dart';
@@ -32,6 +33,7 @@ class PlaybackDependencies {
     this.readNetworkMetadata = _readNetworkMetadata,
     this.resolveNetworkSource = _resolveNetworkSource,
     this.initializeHandler = _initializeAudioHandler,
+    this.createPersonalization = AutoplayPersonalization.new,
     AppStateDatabase? sessionDatabase,
     LibraryDatabase? libraryDatabase,
     ListeningRecorder? recorder,
@@ -59,6 +61,7 @@ class PlaybackDependencies {
   final Future<MusicPlayerHandler> Function(MusicPlayerHandler Function())
   initializeHandler;
   final MethodChannel notificationChannel;
+  final AutoplayPersonalization Function() createPersonalization;
   final AppStateDatabase? _sessionDatabase;
   final LibraryDatabase? _libraryDatabase;
   final ListeningRecorder? _recorder;
@@ -107,6 +110,9 @@ class MusicPlayerRuntime {
   }) : _settings = settings;
 
   final PlaybackDependencies dependencies;
+  AutoplayPersonalization? _personalization;
+  AutoplayPersonalization get personalization =>
+      _personalization ??= dependencies.createPersonalization();
   AppSettings _settings;
   MusicPlayerHandler? _handler;
   void Function()? _unsubscribeSourceDeletion;
@@ -273,6 +279,7 @@ class MusicPlayerRuntime {
     } catch (_) {
       // Initialization may have failed because its pending handler was closed.
     }
+    await _personalization?.dispose();
     await _handlers.close();
     await _mutedPlaybackEvents.close();
   }

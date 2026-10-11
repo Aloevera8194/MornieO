@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/music_playback_deck.dart';
+import 'package:spotiflac_android/services/music_player_service.dart'
+    show resetAutoplayLearning;
 import 'package:spotiflac_android/screens/listening_statistics_screen.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
@@ -123,6 +125,44 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
             ),
             const SliverToBoxAdapter(child: AutoMixSettings()),
           ],
+          SliverToBoxAdapter(
+            child: SettingsSectionHeader(
+              title: context.l10n.autoplayFromLibrary,
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: SettingsGroup(
+              children: [
+                SettingsSwitchItem(
+                  icon: Icons.playlist_play_rounded,
+                  title: context.l10n.autoplayFromLibrary,
+                  subtitle: context.l10n.autoplayDescription,
+                  value: settings.autoplay,
+                  enabled: settings.playerMode == 'internal',
+                  onChanged: (value) =>
+                      ref.read(settingsProvider.notifier).setAutoplay(value),
+                ),
+                SettingsSwitchItem(
+                  icon: Icons.auto_awesome_outlined,
+                  title: context.l10n.autoplayPersonalization,
+                  subtitle: context.l10n.autoplayPersonalizationDescription,
+                  value: settings.autoplayPersonalization,
+                  enabled: settings.playerMode == 'internal',
+                  onChanged: (value) => ref
+                      .read(settingsProvider.notifier)
+                      .setAutoplayPersonalization(value),
+                  showDivider: settings.autoplayPersonalization,
+                ),
+                if (settings.autoplayPersonalization)
+                  SettingsItem(
+                    icon: Icons.restart_alt,
+                    title: context.l10n.autoplayResetLearning,
+                    onTap: resetAutoplayLearning,
+                    showDivider: false,
+                  ),
+              ],
+            ),
+          ),
           SliverToBoxAdapter(
             child: SettingsSectionHeader(
               title: context.l10n.playbackAutomation,

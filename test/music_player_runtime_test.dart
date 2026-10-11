@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/services/app_state_database.dart';
+import 'package:spotiflac_android/services/autoplay_personalization.dart';
 import 'package:spotiflac_android/services/listening_statistics.dart';
 import 'package:spotiflac_android/services/music_playback_deck.dart';
 import 'package:spotiflac_android/services/music_player_service.dart';
@@ -181,6 +182,7 @@ MusicPlayerRuntime _runtime({
   Stream<double> volumeChanges = const Stream.empty(),
   SourceDeletionEvents? sourceDeletionEvents,
   ListeningRecorder? recorder,
+  AutoplayPersonalization Function()? createPersonalization,
   bool isIOS = false,
   _Session? session,
 }) {
@@ -189,6 +191,8 @@ MusicPlayerRuntime _runtime({
   final runtime = MusicPlayerRuntime(
     settings: settings,
     dependencies: PlaybackDependencies(
+      createPersonalization:
+          createPersonalization ?? AutoplayPersonalization.new,
       createDeck:
           createDeck ??
           (_) {
@@ -232,6 +236,164 @@ const _track = PlayableMedia(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test(
+    'trained personalized ranking runs through the real autoplay worker',
+    () async {
+      final model = AutoplayPreferenceModel();
+      const preferred = AutoplayLearningTrack(
+        source: '/jazz.flac',
+        title: 'Jazz',
+        artist: 'Jazz Artist',
+        genre: 'Jazz',
+        duration: Duration(seconds: 60),
+      );
+      const avoided = AutoplayLearningTrack(
+        source: '/rock.flac',
+        title: 'Rock',
+        artist: 'Rock Artist',
+        genre: 'Rock',
+        duration: Duration(seconds: 60),
+      );
+      const seed = AutoplayLearningTrack(
+        source: '/one.flac',
+        title: 'One',
+        artist: 'Artist',
+      );
+      for (var i = 0; i < 80; i++) {
+        model.learn(preferred, previous: seed, at: DateTime.now(), reward: 1);
+        model.learn(avoided, previous: seed, at: DateTime.now(), reward: 0);
+      }
+      final learning = AutoplayPersonalization(
+        load: () async => model.encode(),
+        save: (_) async {},
+      );
+      final runtime = _runtime(
+        settings: const AppSettings(
+          pauseOnMute: false,
+          autoplay: true,
+          autoplayPersonalization: true,
+        ),
+        createPersonalization: () => learning,
+      );
+      final handler = MusicPlayerHandler(
+        runtime: runtime,
+        autoplayLibraryLoader: (_) async => [
+          const PlayableMedia(
+            id: 'rock',
+            source: '/rock.flac',
+            title: 'Rock',
+            artist: 'Rock Artist',
+            genre: 'Rock',
+            duration: Duration(seconds: 60),
+          ),
+          const PlayableMedia(
+            id: 'jazz',
+            source: '/jazz.flac',
+            title: 'Jazz',
+            artist: 'Jazz Artist',
+            genre: 'Jazz',
+            duration: Duration(seconds: 60),
+          ),
+        ],
+      );
+      await learning.ensureLoaded();
+      await handler.setQueueAndPlay([_track]);
+      await handler.queue
+          .firstWhere((queue) => queue.length == 3)
+          .timeout(const Duration(seconds: 5));
+      expect(handler.queue.value.map((item) => item.id), [
+        'one',
+        'jazz',
+        'rock',
+      ]);
+      expect(handler.playbackState.value.playing, isTrue);
+      await resetAutoplayLearning(runtime: runtime);
+      expect(learning.observations, 0);
+      await handler.queue
+          .firstWhere((queue) => queue.length == 3)
+          .timeout(const Duration(seconds: 5));
+      expect(handler.queue.value.first.id, 'one');
+      runtime.configure(
+        runtime.settings.copyWith(autoplayPersonalization: false),
+      );
+      await handler.queue
+          .firstWhere((queue) => queue.length == 3)
+          .timeout(const Duration(seconds: 5));
+      expect(handler.queue.value.first.id, 'one');
+      expect(handler.playbackState.value.playing, isTrue);
+    },
+  );
+
+  test(
+    'player learns explicit skips, excludes pauses and obeys live opt-out',
+    () async {
+      var elapsed = Duration.zero;
+      final learning = AutoplayPersonalization(
+        load: () async => null,
+        save: (_) async {},
+        elapsed: () => elapsed,
+        now: () => DateTime(2026),
+      );
+      final runtime = _runtime(
+        settings: const AppSettings(
+          pauseOnMute: false,
+          autoplayPersonalization: true,
+        ),
+        createPersonalization: () => learning,
+      );
+      final handler = await runtime.initialize();
+      await learning.ensureLoaded();
+      const second = PlayableMedia(
+        id: 'two',
+        source: '/two.flac',
+        title: 'Two',
+        artist: 'Other',
+        duration: Duration(seconds: 60),
+      );
+      await handler.setQueueAndPlay([_track, second]);
+      await _settle();
+      elapsed += const Duration(seconds: 10);
+      await handler.pause();
+      elapsed += const Duration(hours: 1);
+      await handler.play();
+      await _settle();
+      await handler.skipToNext();
+      await _settle();
+      expect(learning.observations, 1);
+      expect(
+        learning.adjustment(
+          const AutoplayLearningTrack(
+            source: '/one.flac',
+            title: 'One',
+            artist: 'Artist',
+            duration: Duration(seconds: 60),
+          ),
+          const AutoplayLearningTrack(
+            source: '/two.flac',
+            title: 'Two',
+            artist: 'Other',
+          ),
+          DateTime(2026),
+        ),
+        lessThan(0),
+      );
+      elapsed += const Duration(seconds: 10);
+      await handler.skipToQueueItem(
+        1,
+      ); // Restarting is not rejecting this song.
+      await _settle();
+      expect(learning.observations, 1);
+      runtime.configure(
+        runtime.settings.copyWith(autoplayPersonalization: false),
+      );
+      elapsed += const Duration(seconds: 50);
+      await handler.skipToQueueItem(0);
+      expect(learning.observations, 1);
+      expect(handler.playbackState.value.playing, isTrue);
+      expect(handler.mediaItem.value?.id, 'one');
+    },
+  );
 
   test(
     'iOS restores controls across unlock/background without changing track',

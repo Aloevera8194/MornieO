@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/widgets.dart'
     show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
 import 'package:spotiflac_android/services/playback_notification.dart';
@@ -28,6 +29,7 @@ import 'package:spotiflac_android/services/content_uri_playback_cache.dart';
 import 'package:spotiflac_android/services/music_player_runtime.dart';
 import 'package:spotiflac_android/services/music_playback_deck.dart';
 import 'package:spotiflac_android/services/automix_analysis.dart';
+import 'package:spotiflac_android/services/autoplay_personalization.dart';
 import 'package:spotiflac_android/services/automix_analyzer.dart';
 import 'package:spotiflac_android/models/automix_options.dart';
 import 'package:spotiflac_android/models/settings.dart';
@@ -361,6 +363,10 @@ class MusicPlayerHandler extends BaseAudioHandler
   /// Reconcile only the playback fields affected by the new settings snapshot.
   void applySettings(AppSettings previous) {
     final settings = _settings;
+    if (previous.autoplayPersonalization != settings.autoplayPersonalization ||
+        previous.playerMode != settings.playerMode) {
+      _configurePersonalization();
+    }
     if (previous.playbackNormalization != settings.playbackNormalization) {
       reapplyNormalization();
     }
@@ -379,6 +385,7 @@ class MusicPlayerHandler extends BaseAudioHandler
       _refreshPlaybackAutomation();
     }
     if (previous.autoplay != settings.autoplay ||
+        previous.autoplayPersonalization != settings.autoplayPersonalization ||
         previous.localLibraryEnabled != settings.localLibraryEnabled) {
       _autoplay.updateMode();
     }
@@ -456,9 +463,17 @@ class MusicPlayerHandler extends BaseAudioHandler
   void _init() {
     if (_initialized) return;
     _initialized = true;
+    _configurePersonalization();
     void recordListening() {
       final item = mediaItem.value;
       final state = playbackState.value;
+      _runtime.personalization.updatePlayback(
+        source: item?.extras?['source'] as String?,
+        duration: item?.duration,
+        playing:
+            state.playing &&
+            state.processingState == AudioProcessingState.ready,
+      );
       _dependencies.recorder.update(
         item == null
             ? null
@@ -511,10 +526,31 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      unawaited(_runtime.personalization.flush());
+    }
     if (state == AppLifecycleState.resumed ||
         state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
       unawaited(restoreIosNowPlaying());
+    }
+  }
+
+  void _configurePersonalization() {
+    final enabled =
+        _settings.autoplayPersonalization && _settings.playerMode == 'internal';
+    _runtime.personalization.setEnabled(enabled);
+    if (enabled && _index >= 0 && _index < _media.length) {
+      _runtime.personalization.begin(_learningTrack(_media[_index]));
+      final state = playbackState.value;
+      _runtime.personalization.updatePlayback(
+        source: mediaItem.value?.extras?['source'] as String?,
+        duration: mediaItem.value?.duration,
+        playing:
+            state.playing &&
+            state.processingState == AudioProcessingState.ready,
+      );
     }
   }
 
@@ -1359,9 +1395,15 @@ class MusicPlayerHandler extends BaseAudioHandler
   Future<void> _playIndex(
     int index, {
     bool recordHistory = true,
+    bool userSkip = false,
     Duration startPosition = Duration.zero,
   }) async {
     if (_disposed || index < 0 || index >= _media.length) return;
+    _runtime.personalization.finish(
+      skipped:
+          userSkip &&
+          mediaItem.value?.extras?['source'] != _media[index].source,
+    );
     _playbackAutomation.cancelPendingActions();
     // A normal track change supersedes a pending restore. A restored start
     // keeps it until the source is actually ready so a transient failure can
@@ -1456,6 +1498,7 @@ class MusicPlayerHandler extends BaseAudioHandler
       startPosition,
       duration: media.duration,
     );
+    _runtime.personalization.begin(_learningTrack(media));
     mediaItem.add(_toMediaItem(media));
     _lastBroadcastPosition = Duration.zero;
     _lastPositionBroadcastAt = null;
@@ -1765,6 +1808,7 @@ class MusicPlayerHandler extends BaseAudioHandler
 
     _completing = true;
     try {
+      _runtime.personalization.finish();
       await _onComplete();
     } finally {
       _completing = false;
@@ -1865,6 +1909,11 @@ class MusicPlayerHandler extends BaseAudioHandler
   }
 
   Future<void> _pausePlayback() async {
+    _runtime.personalization.updatePlayback(
+      source: mediaItem.value?.extras?['source'] as String?,
+      playing: false,
+    );
+    unawaited(_runtime.personalization.flush());
     final generation = ++_playRequestGeneration;
     _switchingGeneration = 0;
     _userPaused = true;
@@ -1927,6 +1976,8 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   @override
   Future<void> stop() async {
+    _runtime.personalization.finish();
+    unawaited(_runtime.personalization.flush());
     _playbackAutomation.cancelPendingActions();
     _autoplay.reset();
     cancelSleepTimer();
@@ -1967,7 +2018,9 @@ class MusicPlayerHandler extends BaseAudioHandler
       await _autoplay.fill();
       if (_disposed || generation != _playRequestGeneration) return;
     }
-    if (_index < _media.length - 1) await _playIndex(_index + 1);
+    if (_index < _media.length - 1) {
+      await _playIndex(_index + 1, userSkip: true);
+    }
   }
 
   @override
@@ -1982,18 +2035,18 @@ class MusicPlayerHandler extends BaseAudioHandler
       if (_playHistory.length >= 2) {
         _playHistory.removeLast();
         final prev = _playHistory.last;
-        await _playIndex(prev, recordHistory: false);
+        await _playIndex(prev, recordHistory: false, userSkip: true);
       } else {
         await _player.seek(Duration.zero);
         _broadcastPosition(Duration.zero, force: true);
       }
       return;
     }
-    if (_index > 0) await _playIndex(_index - 1);
+    if (_index > 0) await _playIndex(_index - 1, userSkip: true);
   }
 
   @override
-  Future<void> skipToQueueItem(int index) => _playIndex(index);
+  Future<void> skipToQueueItem(int index) => _playIndex(index, userSkip: true);
 
   @override
   Future<List<MediaItem>> getChildren(
@@ -2095,6 +2148,8 @@ class MusicPlayerHandler extends BaseAudioHandler
   Future<void> _dispose() async {
     _autoplay.reset();
     _disposed = true;
+    _runtime.personalization.finish();
+    await _runtime.personalization.flush();
     if (_dependencies.isIOS) WidgetsBinding.instance.removeObserver(this);
     if (identical(musicPlayerRuntime.handler, this)) {
       autoMixStatus.value = AutoMixStatus.idle;

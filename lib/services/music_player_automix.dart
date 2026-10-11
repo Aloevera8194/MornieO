@@ -281,6 +281,7 @@ class _MusicAutoMix {
       handler._activeResolvedPath = next.isContentUri ? _nextPath : null;
       handler._pendingRestorePosition = null;
       rate = plan.rate;
+      handler._runtime.personalization.begin(_learningTrack(next));
       handler.mediaItem.add(
         handler
             ._toMediaItem(
