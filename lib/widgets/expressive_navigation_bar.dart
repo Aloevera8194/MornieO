@@ -48,7 +48,7 @@ class ExpressiveNavigationBar extends StatelessWidget {
             backgroundColor: Colors.transparent,
             destinations: [
               for (final destination in destinations)
-                _NavigationDestination(
+                M3ENavigationBarDestination(
                   icon: destination.icon,
                   selectedIcon: destination.selectedIcon,
                   label: destination.label,
@@ -59,17 +59,4 @@ class ExpressiveNavigationBar extends StatelessWidget {
       ),
     );
   }
-}
-
-class _NavigationDestination extends M3ENavigationBarDestination {
-  const _NavigationDestination({
-    required super.icon,
-    required super.selectedIcon,
-    required super.label,
-  });
-
-  // The package also merges its visible label into the button semantics.
-  // Let that text (and any badge) provide the name exactly once.
-  @override
-  String get resolvedSemanticLabel => '';
 }

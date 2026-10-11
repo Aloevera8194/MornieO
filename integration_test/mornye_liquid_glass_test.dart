@@ -21,7 +21,8 @@ void main() {
     final capture = GlobalKey();
     await tester.pumpWidget(
       MaterialApp(
-        theme: MornyeTheme.build(Brightness.dark),
+        // Measure the foreground mask independently of the rim's lighting.
+        theme: MornyeTheme.build(Brightness.dark, glassOutlines: false),
         home: Center(
           child: RepaintBoundary(
             key: capture,
@@ -98,10 +99,14 @@ void main() {
           image.dispose();
         }
       }))!;
-      expect(
-        pixels.map((color) => color.toARGB32()),
-        [Colors.red, Colors.red, Colors.white].map((color) => color.toARGB32()),
-      );
+      // The package's edge blur can soften RGB values. A clipped foreground
+      // would expose the white fixture instead of red on either curved edge.
+      for (final pixel in pixels.take(2)) {
+        expect(pixel.a, 1);
+        expect(pixel.r - pixel.g, greaterThan(0.55));
+        expect(pixel.r - pixel.b, greaterThan(0.55));
+      }
+      expect(pixels.last.toARGB32(), Colors.white.toARGB32());
     }
     await gesture.cancel();
     await tester.pumpAndSettle();

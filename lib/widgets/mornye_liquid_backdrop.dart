@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -35,6 +37,16 @@ class MornyeLiquidBackdrop extends StatelessWidget {
     final effect = interaction ? progress : 1.0;
     final outlines = MornyeTheme.glassOutlinesOf(context);
     final dark = Theme.of(context).brightness == Brightness.dark;
+    // Match the old optical lens's edge displacement. Version 5 fixes travel
+    // at 70 logical pixels and controls bending through the index alone.
+    final edgeBend =
+        math.sqrt(1 - 1 / (1.7 * 1.7)) *
+        refractionWidth *
+        refractionDepth *
+        effect *
+        5 /
+        70;
+    final index = 1 / math.sqrt(1 - math.pow(edgeBend.clamp(0, 0.95), 2));
     return LiquidGlassLens(
       style: LiquidGlassStyle(
         shape: LiquidGlassShape(
@@ -45,30 +57,25 @@ class MornyeLiquidBackdrop extends StatelessWidget {
               ? LiquidGlassClipQuality.exact
               : LiquidGlassClipQuality.roundedRectangle,
           cornerRadius: borderRadius.topLeft.x,
-          borderWidth: outlines ? 0.75 : 0,
-          lightDirection: 0,
-          lightIntensity: outlines
+        ),
+        specular: LiquidGlassLight.specular(
+          thickness: outlines ? 0.75 * 5.4 : 0,
+          angle: 0,
+          spread: 0.2,
+          intensity: outlines
               ? (dark ? 0.25 : 0.12) * effect * highlightIntensity
               : 0,
-          lightColor: dark ? Colors.white : const Color(0x88ffffff),
-          borderType: OpticalBorder(
-            ambientIntensity: 0.05 * highlightIntensity,
-            lightSpread: 0.2,
-          ),
+          color: dark ? Colors.white : const Color(0x88ffffff),
         ),
-        appearance: LiquidGlassAppearance(
-          blur: LiquidGlassBlur(sigmaX: blurSigma, sigmaY: blurSigma),
+        glow: LiquidGlassLight.glow(
+          thickness: outlines ? 0.75 * 29.4 : 0,
+          intensity: outlines ? 0.05 * highlightIntensity : 0,
         ),
-        // Translate Figma percentages into this package's optical controls.
-        // Keep color separation subtle instead of copying its contrast demo.
-        refraction: LiquidGlassRefraction(
-          refractionType: OpticalRefraction(
-            refraction: 1.7,
-            depth: refractionDepth * effect,
-            refractionWidth: refractionWidth,
-          ),
-          chromaticAberration: 0.002 * clarity * effect,
-        ),
+        blur: blurSigma,
+        refractionIndex: index,
+        refractionWidth: refractionWidth,
+        // Version 5 expresses the widest colour split in logical pixels.
+        dispersion: 1.32 * clarity * effect,
       ),
       child: child,
     );

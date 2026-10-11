@@ -81,6 +81,7 @@ void main() {
         ])
           key: 'test',
         'isPhysicalDevice': false,
+        'time': 0,
         'isLowRamDevice': false,
         'freeDiskSize': 1000,
         'totalDiskSize': 2000,

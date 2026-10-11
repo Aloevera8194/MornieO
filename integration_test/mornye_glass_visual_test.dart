@@ -248,7 +248,7 @@ void main() {
       );
       expect(lenses, isNotEmpty);
       for (final lens in lenses) {
-        expect(lens.style.shape?.borderWidth, outlines ? 0.75 : 0);
+        expect(lens.style.specular?.thickness, outlines ? 0.75 * 5.4 : 0);
       }
       await capture('${prefix}_expanded');
       await halfway(true);
