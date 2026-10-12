@@ -1437,7 +1437,7 @@
   "@updateRequiredTitle": {
     "description": "Title of the mandatory update dialog shown when the installed version is too old"
   },
-  "updateRequiredNotice": "Ця версія {count} релізів і більше не підтримується. Оновіть, щоб користуватися додатком.",
+  "updateRequiredNotice": "Ця версія застаріла на {count} версії і більше не підтримується. Оновіть застосунок, щоб продовжити користуватися ним.",
   "@updateRequiredNotice": {
     "description": "Subtitle of the mandatory update dialog; explains why the dialog cannot be dismissed",
     "placeholders": {
@@ -1554,7 +1554,7 @@
   "@logNoLogsYetSubtitle": {
     "description": "Empty state subtitle"
   },
-  "logEntriesFiltered": "Записи ({count} filtered)",
+  "logEntriesFiltered": "Записи ({count} відфільтровано)",
   "@logEntriesFiltered": {
     "description": "Log count with filter active",
     "placeholders": {
@@ -1707,7 +1707,7 @@
       }
     }
   },
-  "tracksCount": "{count, plural, =1{1 трек} other{{count} треків}}",
+  "tracksCount": "{count, plural, =1 {{count} трек} few {{count} треки} many {{count} треків} other {{count} треку}}",
   "@tracksCount": {
     "description": "Track count display",
     "placeholders": {
@@ -2069,7 +2069,7 @@
   "@extensionPostProcessing": {
     "description": "Capability - post-download processing"
   },
-  "extensionHooksAvailable": "{count} Доступних хуків()",
+  "extensionHooksAvailable": "Доступно зачіпок(): {count}",
   "@extensionHooksAvailable": {
     "description": "Post-processing hooks count",
     "placeholders": {
@@ -2124,7 +2124,7 @@
   "@extensionsInstalledSuccess": {
     "description": "Success message after install"
   },
-  "extensionsInstalledCount": "{count} Розширення успішно встановлено",
+  "extensionsInstalledCount": "Успішно встановлено {count} розширень",
   "@extensionsInstalledCount": {
     "description": "Success message after installing multiple extensions",
     "placeholders": {
@@ -2134,7 +2134,7 @@
       }
     }
   },
-  "extensionsInstallPartialSuccess": "Встановлено {installed} із {attempted} розширень",
+  "extensionsInstallPartialSuccess": "Установлено {installed} із {attempted} розширень",
   "@extensionsInstallPartialSuccess": {
     "description": "Message when installing multiple extensions partially succeeds",
     "placeholders": {
@@ -2212,7 +2212,7 @@
   "@qualityHiResFlac": {
     "description": "Quality option - high resolution FLAC"
   },
-  "qualityHiResFlacSubtitle": "24-bit / up to 96kHz",
+  "qualityHiResFlacSubtitle": "24-bit / до 96kHz",
   "@qualityHiResFlacSubtitle": {
     "description": "Technical spec for hi-res"
   },
@@ -2220,7 +2220,7 @@
   "@qualityHiResFlacMax": {
     "description": "Quality option - maximum resolution FLAC"
   },
-  "qualityHiResFlacMaxSubtitle": "24-bit / up to 192kHz",
+  "qualityHiResFlacMaxSubtitle": "24-bit / до 192kHz",
   "@qualityHiResFlacMaxSubtitle": {
     "description": "Technical spec for hi-res max"
   },
@@ -2268,7 +2268,7 @@
   "@downloadAutoConvertOpusSubtitle": {
     "description": "Opus automatic conversion option description"
   },
-  "downloadLossy320Format": "Формат із втратами 320 кбіт/с",
+  "downloadLossy320Format": "Формат із втратами 320kbps",
   "@downloadLossy320Format": {
     "description": "Title of the lossy format picker bottom sheet"
   },
@@ -2276,7 +2276,7 @@
   "@downloadLossy320FormatDesc": {
     "description": "Description in the lossy format picker"
   },
-  "downloadLossyMp3": "MP3 320 кбіт/с",
+  "downloadLossyMp3": "MP3 320kbps",
   "@downloadLossyMp3": {
     "description": "Lossy format option - MP3 320kbps"
   },
@@ -2292,7 +2292,7 @@
   "@downloadLossyAacSubtitle": {
     "description": "Subtitle for AAC/M4A 320kbps lossy option"
   },
-  "downloadLossyOpus256": "Opus 256 кбіт/с",
+  "downloadLossyOpus256": "Opus 256kbps",
   "@downloadLossyOpus256": {
     "description": "Lossy format option - Opus 256kbps"
   },
@@ -2304,7 +2304,7 @@
   "@downloadLossyOpus128": {
     "description": "Lossy format option - Opus 128kbps"
   },
-  "downloadLossyOpus128Subtitle": "Найменший розмір, ~4 Mb на доріжку",
+  "downloadLossyOpus128Subtitle": "Найменший розмір, ~4 Mb на трек",
   "@downloadLossyOpus128Subtitle": {
     "description": "Subtitle for Opus 128kbps lossy option"
   },
@@ -2481,7 +2481,7 @@
   "@downloadedAlbumDeleteSelected": {
     "description": "Button - delete selected tracks"
   },
-  "downloadedAlbumDeleteMessage": "Видалити {count} {count, plural, =1{трек} other{треків}} з цього альбому?\n\nЦе також призведе до видалення файлів зі сховища.",
+  "downloadedAlbumDeleteMessage": "Видалити {count} {count, plural, =1{трек} one{трек} few{треки} many{треків} other{треків}} з цього альбому?\n\nЦе також призведе до видалення файлів зі сховища.",
   "@downloadedAlbumDeleteMessage": {
     "description": "Delete confirmation with count",
     "placeholders": {
@@ -2503,7 +2503,7 @@
   "@downloadedAlbumTapToSelect": {
     "description": "Selection hint"
   },
-  "downloadedAlbumDeleteCount": "Видалити {count} {count, plural, =1{трек} other{треків}}",
+  "downloadedAlbumDeleteCount": "Delete {count} {count, plural, =1{track} one{трек} few{треки} many{треків} other{треку}}",
   "@downloadedAlbumDeleteCount": {
     "description": "Delete button text with count",
     "placeholders": {
@@ -2770,7 +2770,7 @@
   "@librarySourceDisabled": {
     "description": "Library source has been disabled by the user"
   },
-  "librarySourceScanCount": "{scanned} Of {total} файлів проскановано ({progress}%)",
+  "librarySourceScanCount": "Перевірено {scanned} з {total} файлів ({progress}%)",
   "@librarySourceScanCount": {
     "description": "Live progress for one library folder scan",
     "placeholders": {
@@ -2877,7 +2877,7 @@
   "@libraryAboutDescription": {
     "description": "Description of local library feature"
   },
-  "libraryTracksUnit": "{count, plural, =1{трек} other{треків}}",
+  "libraryTracksUnit": "{count, plural, =1{трек} few{треки} many{треків} other{треків}}",
   "@libraryTracksUnit": {
     "description": "Unit label for tracks count (without the number itself)",
     "placeholders": {
@@ -2886,7 +2886,7 @@
       }
     }
   },
-  "libraryFilesUnit": "{count, plural, =1{файл} other{файлів}}",
+  "libraryFilesUnit": "{count, plural, =1{файл} few {файли} many {файлів} other {файлу}}",
   "@libraryFilesUnit": {
     "description": "Unit label for files count during library scanning",
     "placeholders": {
@@ -3073,7 +3073,7 @@
   "@timeJustNow": {
     "description": "Relative time - less than a minute ago"
   },
-  "timeMinutesAgo": "{count, plural, =1{1 хвилину тому} other{{count} хвилин тому}}",
+  "timeMinutesAgo": "{count, plural, =1{1 хвилину тому} other{{count} хв. тому}}",
   "@timeMinutesAgo": {
     "description": "Relative time - minutes ago",
     "placeholders": {
@@ -3082,7 +3082,7 @@
       }
     }
   },
-  "timeHoursAgo": "{count, plural, =1{1 годину тому} other{{count} годин тому}}",
+  "timeHoursAgo": "{count, plural, =1{1 годину тому} other{{count} год. тому}}",
   "@timeHoursAgo": {
     "description": "Relative time - hours ago",
     "placeholders": {
@@ -3829,7 +3829,7 @@
   "@collectionNoPlaylistsYet": {
     "description": "Empty state title when user has no playlists"
   },
-  "collectionPlaylistTracks": "{count, plural, =1{1 трек} other{{count} треків}}",
+  "collectionPlaylistTracks": "{count, plural,  =1{{count} трек} few {{count} треки} many {{count} треків} other {{count} треку}}",
   "@collectionPlaylistTracks": {
     "description": "Track count label for custom playlists",
     "placeholders": {
@@ -3838,7 +3838,7 @@
       }
     }
   },
-  "collectionArtistCount": "{count, plural, =1{1 виконавець} other{{count} виконавці}}",
+  "collectionArtistCount": "{count, plural, =1{1 артист} other{{count} артистів}}",
   "@collectionArtistCount": {
     "description": "Artist count label for favorite artists",
     "placeholders": {
