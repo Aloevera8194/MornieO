@@ -7,6 +7,18 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NativeFinalizationPolicyTest {
+    @Test
+    fun metadataSeparatorsPreserveNamesAndSourceDefaults() {
+        assertEquals("A; B; C", NativeFinalizationPolicy.metadataTagValue(" A, B ; C ", "; "))
+        assertEquals(" A, B ", NativeFinalizationPolicy.metadataTagValue(" A, B ", ""))
+        for (name in listOf("AC/DC", "R&B", "Florence and the Machine", "Simon & Garfunkel", "Malcolm X")) {
+            assertEquals(name, NativeFinalizationPolicy.metadataTagValue(name, " / "))
+        }
+        for (invalid in listOf("\n", "\u0000", "abcdefghijklmnopq")) {
+            assertEquals("A, B", NativeFinalizationPolicy.metadataTagValue("A, B", invalid))
+        }
+    }
+
     // Shared with the Rust and Dart primary-artist tests; keep in sync.
     @Test
     fun primaryArtistModeKeepsTheFirstCreditedArtist() {

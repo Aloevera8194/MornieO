@@ -1186,6 +1186,13 @@ fn download_metadata_fields(
     response: &Value,
 ) -> BTreeMap<String, String> {
     let mut fields = BTreeMap::new();
+    if let Some(separators) = &request.metadata_separators {
+        for key in ["artist", "album_artist", "composer", "genre"] {
+            if let Some(value) = separators.get(key) {
+                fields.insert(format!("{key}_separator"), value.clone());
+            }
+        }
+    }
     for (tag, field, fallback) in [
         ("TITLE", "title", &request.track_name),
         ("ARTIST", "artist", &request.artist_name),

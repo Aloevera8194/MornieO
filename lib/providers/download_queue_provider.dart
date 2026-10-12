@@ -784,6 +784,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
       quality: quality,
       embedMetadata: settings.embedMetadata,
       artistTagMode: settings.artistTagMode,
+      metadataSeparators: settings.metadataSeparators,
       embedLyrics:
           settings.embedMetadata &&
           settings.embedLyrics &&

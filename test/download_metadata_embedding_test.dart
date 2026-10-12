@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/models/settings.dart';
+import 'package:spotiflac_android/models/metadata_separators.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/services/download_metadata_embedding.dart';
@@ -63,6 +64,46 @@ class EmbeddingHarness {
 }
 
 void main() {
+  test(
+    'download separators reach native tags and FFmpeg fallback without changing the track',
+    () async {
+      const track = Track(
+        id: 'example',
+        name: 'Title, unchanged',
+        artistName: 'A, B',
+        albumName: 'Album',
+        albumArtist: 'C, D',
+        duration: 100,
+        composer: 'E; F',
+        genre: 'Rock, Pop',
+      );
+      const settings = AppSettings(
+        embedLyrics: false,
+        metadataSeparators: MetadataSeparators(
+          artist: ' / ',
+          albumArtist: '; ',
+          composer: ' | ',
+          genre: '; ',
+        ),
+      );
+      final harness = EmbeddingHarness(nativeSuccess: false);
+      await harness.service.embed(
+        '/example/song.mp3',
+        track,
+        settings: settings,
+        extensionState: const ExtensionState(),
+        format: 'mp3',
+      );
+      expect(harness.nativeWrites.single['artist'], 'A, B');
+      expect(harness.nativeWrites.single['artist_separator'], ' / ');
+      expect(harness.fallbackWrites.single['ARTIST'], 'A / B');
+      expect(harness.fallbackWrites.single['ALBUMARTIST'], 'C; D');
+      expect(harness.fallbackWrites.single['COMPOSER'], 'E | F');
+      expect(harness.fallbackWrites.single['GENRE'], 'Rock; Pop');
+      expect(harness.fallbackWrites.single['TITLE'], 'Title, unchanged');
+      expect(track.artistName, 'A, B');
+    },
+  );
   TestWidgetsFlutterBinding.ensureInitialized();
   const channel = MethodChannel('com.zarz.spotiflac/backend');
   final messenger =

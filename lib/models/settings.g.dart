@@ -21,6 +21,11 @@ AppSettings _$AppSettingsFromJson(Map<String, dynamic> json) => AppSettings(
   embeddedCoverMaxDimension:
       (json['embeddedCoverMaxDimension'] as num?)?.toInt() ?? 0,
   artistTagMode: json['artistTagMode'] as String? ?? artistTagModeJoined,
+  metadataSeparators: json['metadataSeparators'] == null
+      ? const MetadataSeparators()
+      : MetadataSeparators.fromJson(
+          json['metadataSeparators'] as Map<String, dynamic>,
+        ),
   embedLyrics: json['embedLyrics'] as bool? ?? true,
   embedReplayGain: json['embedReplayGain'] as bool? ?? false,
   playbackNormalization: json['playbackNormalization'] as bool? ?? false,
@@ -156,6 +161,7 @@ Map<String, dynamic> _$AppSettingsToJson(
   'embedMetadata': instance.embedMetadata,
   'embeddedCoverMaxDimension': instance.embeddedCoverMaxDimension,
   'artistTagMode': instance.artistTagMode,
+  'metadataSeparators': instance.metadataSeparators.toJson(),
   'embedLyrics': instance.embedLyrics,
   'embedReplayGain': instance.embedReplayGain,
   'playbackNormalization': instance.playbackNormalization,

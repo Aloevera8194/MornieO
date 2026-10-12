@@ -7,6 +7,7 @@ import com.zarz.spotiflac.SafDownloadHandler.mimeTypeForExt
 import com.zarz.spotiflac.SafDownloadHandler.normalizeExt
 import com.zarz.spotiflac.NativeFinalizationPolicy.applyQualityVariantFilenameLabel
 import com.zarz.spotiflac.NativeFinalizationPolicy.artistTagValue
+import com.zarz.spotiflac.NativeFinalizationPolicy.metadataTagValue
 import com.zarz.spotiflac.NativeFinalizationPolicy.authoritativeAlbumArtist
 import com.zarz.spotiflac.NativeFinalizationPolicy.formatIndexTag
 import com.zarz.spotiflac.NativeFinalizationPolicy.logicalOutputFileName
@@ -296,6 +297,7 @@ internal fun NativeDownloadFinalizer.embedBasicMetadata(context: Context, path: 
         NativeFinalizationPolicy.hasUsableLyricsContent(lyrics) &&
         !lyrics.trim().equals("[instrumental:true]", ignoreCase = true)
     val artistTagMode = input.request.optString("artist_tag_mode", "")
+    val separators = input.request.optJSONObject("metadata_separators") ?: JSONObject()
     // FLAC, MP3, Opus, and M4A all have backend tag writers that edit the
     // tag block atomically without an ffmpeg remux (which drops foreign
     // frames and rewrites the whole container). The backend answers
@@ -316,6 +318,9 @@ internal fun NativeDownloadFinalizer.embedBasicMetadata(context: Context, path: 
                 .put("label", label)
                 .put("copyright", copyright)
                 .put("comment", comment)
+            for (key in listOf("artist", "album_artist", "composer", "genre")) {
+                fields.put("${key}_separator", separators.optString(key, ""))
+            }
             if (trackNumberValue > 0) fields.put("track_number", trackNumberValue.toString())
             if (totalTracksValue > 0) fields.put("track_total", totalTracksValue.toString())
             if (discNumberValue > 0) fields.put("disc_number", discNumberValue.toString())
@@ -354,15 +359,15 @@ internal fun NativeDownloadFinalizer.embedBasicMetadata(context: Context, path: 
     // must store the same primary artist when that mode is selected.
     val metadataPairs = mutableListOf(
         "title" to title,
-        "artist" to artistTagValue(artist, artistTagMode),
+        "artist" to metadataTagValue(artistTagValue(artist, artistTagMode), separators.optString("artist")),
         "album" to album,
-        "album_artist" to artistTagValue(albumArtist, artistTagMode),
+        "album_artist" to metadataTagValue(artistTagValue(albumArtist, artistTagMode), separators.optString("album_artist")),
         "date" to date,
         "track" to trackNumber,
         "disc" to discNumber,
         "isrc" to isrc,
-        "composer" to composer,
-        "genre" to genre,
+        "composer" to metadataTagValue(composer, separators.optString("composer")),
+        "genre" to metadataTagValue(genre, separators.optString("genre")),
         labelKey to label,
         "copyright" to copyright,
         "comment" to comment,

@@ -7,6 +7,7 @@ mod file;
 mod id3;
 mod library;
 mod mp4;
+mod separators;
 mod write;
 use crate::text::utf8;
 pub(crate) use containers::{ogg_packets, ogg_stream_is_opus};
@@ -15,6 +16,7 @@ pub use library::{
     library_extension, library_id, library_metadata, read_library_metadata,
     read_library_metadata_with_cover,
 };
+pub use separators::format_metadata_tag_value;
 use serde::Serialize;
 use std::io::{self, BufReader, Read, Seek, SeekFrom};
 pub use write::{

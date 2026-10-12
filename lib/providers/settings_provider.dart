@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:spotiflac_android/models/settings.dart';
+import 'package:spotiflac_android/models/metadata_separators.dart';
 import 'package:spotiflac_android/models/automix_options.dart';
 import 'package:spotiflac_android/constants/app_info.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
@@ -698,6 +699,17 @@ class SettingsNotifier extends Notifier<AppSettings> {
       state = state.copyWith(artistTagMode: mode);
       _saveSettings();
     }
+  }
+
+  void setMetadataSeparator(String field, String separator) {
+    if (!MetadataSeparators.fields.contains(field) ||
+        MetadataSeparators.validSeparator(separator) != separator) {
+      return;
+    }
+    state = state.copyWith(
+      metadataSeparators: state.metadataSeparators.withField(field, separator),
+    );
+    _saveSettings();
   }
 
   void setKeepScreenOnLyrics(bool enabled) {

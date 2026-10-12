@@ -509,6 +509,15 @@
     }
   },
   "optionsArtistTagMode": "Mode Tag Artis",
+  "metadataSeparators": "Pemisah metadata",
+  "metadataSeparatorsDescription": "Pilih pemisah untuk daftar yang memakai koma atau titik koma pada unduhan berikutnya. Pemisah artis custom menggunakan satu tag gabungan; mode Artis utama saja tetap berlaku. Karakter & dan / pada nama dipertahankan.",
+  "metadataSeparatorSource": "Ikuti format sumber",
+  "metadataSeparatorComma": "Koma (,)",
+  "metadataSeparatorSemicolon": "Titik koma (;)",
+  "metadataSeparatorSlash": "Garis miring (/)",
+  "metadataSeparatorCustom": "Pemisah custom",
+  "metadataSeparatorPreview": "Preview",
+  "metadataSeparatorInvalid": "Gunakan 1–16 karakter tanpa baris baru atau karakter kontrol.",
   "@optionsArtistTagMode": {
     "description": "Setting title for how artist metadata is written into files"
   },

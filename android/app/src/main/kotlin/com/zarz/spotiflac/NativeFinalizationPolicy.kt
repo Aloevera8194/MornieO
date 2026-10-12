@@ -399,6 +399,16 @@ internal object NativeFinalizationPolicy {
             ?: trimmed
     }
 
+    private val metadataListSeparator = Regex("\\s*[,;]\\s*")
+
+    fun metadataTagValue(value: String, separator: String?): String {
+        val delimiter = separator.orEmpty()
+        if (delimiter.isEmpty() || delimiter.length > 16 ||
+            delimiter.any { it <= '\u001f' || it == '\u007f' }) return value
+        return value.split(metadataListSeparator).map(String::trim)
+            .filter(String::isNotEmpty).joinToString(delimiter)
+    }
+
     private fun audioFormatForPath(filePath: String, fileName: String): String? {
         for (candidate in listOf(filePath, fileName)) {
             val lower = candidate.trim().lowercase(Locale.ROOT)

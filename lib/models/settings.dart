@@ -1,10 +1,11 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:spotiflac_android/models/automix_options.dart';
+import 'package:spotiflac_android/models/metadata_separators.dart';
 import 'package:spotiflac_android/utils/artist_utils.dart';
 
 part 'settings.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class AppSettings {
   static const String homeFeedProviderOff = '__off__';
   static const String libraryQualityLabelBitrate = 'bitrate';
@@ -30,6 +31,7 @@ class AppSettings {
   final int embeddedCoverMaxDimension;
   final String
   artistTagMode; // 'joined', 'split_vorbis' (Vorbis formats), or 'primary'
+  final MetadataSeparators metadataSeparators;
   final bool embedLyrics;
   final bool embedReplayGain;
   // Apply ReplayGain/R128 tags as volume normalization in the built-in player.
@@ -176,6 +178,7 @@ class AppSettings {
     this.embedMetadata = true,
     this.embeddedCoverMaxDimension = 0,
     this.artistTagMode = artistTagModeJoined,
+    this.metadataSeparators = const MetadataSeparators(),
     this.embedLyrics = true,
     this.embedReplayGain = false,
     this.playbackNormalization = false,
@@ -284,6 +287,7 @@ class AppSettings {
     bool? embedMetadata,
     int? embeddedCoverMaxDimension,
     String? artistTagMode,
+    MetadataSeparators? metadataSeparators,
     bool? embedLyrics,
     bool? embedReplayGain,
     bool? playbackNormalization,
@@ -388,6 +392,7 @@ class AppSettings {
       embeddedCoverMaxDimension:
           embeddedCoverMaxDimension ?? this.embeddedCoverMaxDimension,
       artistTagMode: artistTagMode ?? this.artistTagMode,
+      metadataSeparators: metadataSeparators ?? this.metadataSeparators,
       embedLyrics: embedLyrics ?? this.embedLyrics,
       embedReplayGain: embedReplayGain ?? this.embedReplayGain,
       playbackNormalization:

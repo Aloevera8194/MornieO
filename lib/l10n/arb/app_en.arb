@@ -431,6 +431,15 @@
     }
   },
   "optionsArtistTagMode": "Artist Tag Mode",
+  "metadataSeparators": "Metadata separators",
+  "metadataSeparatorsDescription": "Choose how comma- or semicolon-separated values are joined in future downloads. Custom artist separators use a joined tag; Primary artist only still applies. Names containing & or / are preserved.",
+  "metadataSeparatorSource": "Keep source formatting",
+  "metadataSeparatorComma": "Comma (,)",
+  "metadataSeparatorSemicolon": "Semicolon (;)",
+  "metadataSeparatorSlash": "Slash (/)",
+  "metadataSeparatorCustom": "Custom separator",
+  "metadataSeparatorPreview": "Preview",
+  "metadataSeparatorInvalid": "Use 1–16 characters without line breaks or control characters.",
   "@optionsArtistTagMode": {
     "description": "Setting title for how artist metadata is written into files"
   },
