@@ -70,7 +70,7 @@
   "usbBitPerfectFallback": "Цей пристрій або аудіоформат не підтримує високо - бітовий вихід. Використовується звичайне відтворення.",
   "usbBitPerfectRouteChanged": "Шлях аудіо USB змінився. Відтворення призупинено; виберіть доріжку для повторного підключення.",
   "upgradeIntroWelcome": "Ласкаво просимо до SpotiFLAC-Mobile 5.0",
-  "upgradeIntroThemeTitle": "Зробіть це самостійно.",
+  "upgradeIntroThemeTitle": "Зробіть це по-своєму.",
   "upgradeIntroThemeBody": "Виберіть вигляд. Ваш вибір застосовується негайно, і ви можете змінити його пізніше у розділі \"Зовнішній вигляд\".",
   "upgradeIntroThemeMaterialBody": "Звичний макет з елементами керування матеріалами та вашим акцентним кольором.",
   "upgradeIntroThemeMornyeBody": "Навігація Glass, перероблена Бібліотека та імерсивний програвач.",
@@ -571,7 +571,7 @@
   "@aboutOriginalCreator": {
     "description": "Role description for original creator"
   },
-  "aboutLogoArtist": "Талановитий художник, який створив чудовий логотип нашого додатку!",
+  "aboutLogoArtist": "Талановитий митець, який створив чудовий логотип нашого додатку!",
   "@aboutLogoArtist": {
     "description": "Role description for logo artist"
   },
@@ -671,7 +671,7 @@
   "@artistAlbums": {
     "description": "Section header for artist albums"
   },
-  "artistSingles": "Сингли та мініальбом",
+  "artistSingles": "Сингли та мініальбоми",
   "@artistSingles": {
     "description": "Section header for singles/EPs"
   },
@@ -733,7 +733,7 @@
   "@setupPermissionDeniedMessage": {
     "description": "Error when permission denied"
   },
-  "setupPermissionRequired": "{permissionType} Потрібен дозвіл",
+  "setupPermissionRequired": "Потрібен дозвіл {permissionType}",
   "@setupPermissionRequired": {
     "description": "Generic permission required title",
     "placeholders": {
@@ -743,7 +743,7 @@
       }
     }
   },
-  "setupPermissionRequiredMessage": "{permissionType} Для найкращого досвіду потрібен дозвіл. Ви можете змінити це пізніше в налаштуваннях.",
+  "setupPermissionRequiredMessage": "Для найкращої роботи додатка потрібен дозвіл типу {permissionType}. Ви можете змінити це пізніше в Налаштуваннях.",
   "@setupPermissionRequiredMessage": {
     "description": "Generic permission required message",
     "placeholders": {
@@ -969,7 +969,7 @@
   "@dialogDeleteSelectedTitle": {
     "description": "Dialog title - delete selected items"
   },
-  "dialogDeleteSelectedMessage": "Видалити {count} {count, plural, =1{трек} other{треків}} з історії?\n\nЦе також видалить файли з пам'яті.",
+  "dialogDeleteSelectedMessage": "Видалити {count} {count, plural, =1{трек} few{треки} many{треків} other{трека}} з історії?\n\nЦе також видалить файли з пам'яті.",
   "@dialogDeleteSelectedMessage": {
     "description": "Dialog message - delete selected tracks",
     "placeholders": {
@@ -1048,7 +1048,7 @@
   "@duplicatesKeepBestAll": {
     "description": "Button that keeps the highest-quality copy in every duplicate group and deletes the rest"
   },
-  "duplicatesKeepBestAllMessage": "Зберегти найкращу копію {groupCount} {groupCount, plural, =1{треку} other{треків}}і видалити {count} гіршої якості {count, plural, =1{копію} other{копій}}?\n\nВидалені файли буде усунуто зі сховища.",
+  "duplicatesKeepBestAllMessage": "Зберегти найкращу копію з {groupCount} {groupCount, plural, =1{треку} few{треків} many{треків} other{треків}} і видалити {count} {count, plural, =1{менш якісну копію} few{менш якісні копії} many{менш якісних копій} other{менш якісних копій}}?\n\nВидалені файли буде усунуто зі сховища.",
   "@duplicatesKeepBestAllMessage": {
     "description": "Confirmation message for keeping the best copy across every duplicate group",
     "placeholders": {
@@ -1173,7 +1173,7 @@
   "@snackbarProviderPrioritySaved": {
     "description": "Snackbar - provider order saved"
   },
-  "snackbarMetadataProviderSaved": "Пріоритет постачальника метаданих збережено",
+  "snackbarMetadataProviderSaved": "Пріоритет провайдера метаданих збережено",
   "@snackbarMetadataProviderSaved": {
     "description": "Snackbar - metadata provider order saved"
   },
@@ -1203,7 +1203,7 @@
   "@snackbarFailedToUpdate": {
     "description": "Snackbar - extension update error"
   },
-  "errorRateLimited": "Обмежений тариф",
+  "errorRateLimited": "Перевищено ліміт запитів",
   "@errorRateLimited": {
     "description": "Error title - too many requests"
   },
