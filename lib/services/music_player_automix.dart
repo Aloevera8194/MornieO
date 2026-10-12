@@ -77,7 +77,6 @@ class _MusicAutoMix {
       }
       final delay = plan.start - position;
       _startTimer?.cancel();
-      if (delay < const Duration(milliseconds: -350)) return;
       final generation = _generation;
       _startTimer = Timer(delay.isNegative ? Duration.zero : delay, () {
         if (_current(generation)) unawaited(_start(generation));
@@ -243,16 +242,38 @@ class _MusicAutoMix {
         onPosition(position);
         return;
       }
-      if (delta > const Duration(milliseconds: 350)) return;
-      await incoming.resume();
+      final outgoingEnd =
+          handler.mediaItem.value?.duration ?? plan.start + plan.duration;
+      if (outgoingEnd - position <= const Duration(milliseconds: 500)) {
+        await _abandonStart(generation);
+        return;
+      }
+      final incomingPosition = await incoming.getCurrentPosition();
       if (!_current(generation)) return;
+      await incoming.resume();
+      final audiblePosition = await _waitForProgress(
+        incoming,
+        incomingPosition ?? plan.incomingStart,
+        generation,
+      );
+      if (!_current(generation)) return;
+      if (audiblePosition == null) {
+        _log.w('AutoMix standby did not advance; keeping the current song');
+        await _abandonStart(generation);
+        return;
+      }
       final original = handler._player;
       final outgoingVolume = handler._normalizationVolume;
       var outgoing = original;
       final effectDeck = _effectPrepared;
       if (effectDeck != null) {
         try {
-          await effectDeck.seek(delta.isNegative ? Duration.zero : delta);
+          final livePosition = await original.getCurrentPosition() ?? position;
+          if (!_current(generation)) return;
+          final effectOffset = livePosition - plan.start;
+          await effectDeck.seek(
+            effectOffset.isNegative ? Duration.zero : effectOffset,
+          );
           if (!_current(generation)) return;
           await effectDeck.resume();
           if (!_current(generation)) return;
@@ -267,6 +288,17 @@ class _MusicAutoMix {
         }
         _effectPrepared = null;
       }
+      final outgoingPosition = await original.getCurrentPosition() ?? position;
+      if (!_current(generation)) return;
+      final remaining = outgoingEnd - outgoingPosition;
+      // Native resume acknowledges a command before audio necessarily starts.
+      // Keep the old song at full gain until the new decoder advances, then
+      // fit the overlap into the remaining outro instead of fading into silence.
+      final fadeDuration = remaining <= Duration.zero
+          ? const Duration(milliseconds: 40)
+          : remaining < plan.duration
+          ? remaining
+          : plan.duration;
       _outgoing = outgoing;
       _prepared = null;
       _plan = null;
@@ -290,16 +322,20 @@ class _MusicAutoMix {
             )
             .copyWith(duration: _nextDuration),
       );
-      handler._broadcastPosition(plan.incomingStart, force: true);
+      handler._broadcastPosition(audiblePosition, force: true);
       handler._broadcastState(playerState: PlayerState.playing);
-      unawaited(handler._persistSession(position: plan.incomingStart));
+      unawaited(handler._persistSession(position: audiblePosition));
       final clock = Stopwatch()..start();
       _fadeTimer = Timer.periodic(const Duration(milliseconds: 40), (_) {
         if (_writing || generation != _generation) return;
         _writing = true;
         _fadeWrite = () async {
           try {
-            final levels = autoMixEnvelope(clock.elapsed, plan);
+            final levels = autoMixEnvelope(
+              clock.elapsed,
+              plan,
+              fadeDuration: fadeDuration,
+            );
             final dry = _effectDry;
             final progress = (clock.elapsedMicroseconds / 240000).clamp(
               0.0,
@@ -318,11 +354,6 @@ class _MusicAutoMix {
               );
             }
             if (generation != _generation) return;
-            if (dry != null && progress >= 1) {
-              _effectDry = null;
-              await handler._disposeDeck(dry);
-              if (generation != _generation) return;
-            }
             await incoming.setVolume(_incomingVolume * levels.incoming);
             if (generation != _generation) return;
             if ((levels.rate - rate).abs() > 0.001 || levels.complete) {
@@ -330,7 +361,12 @@ class _MusicAutoMix {
               rate = levels.rate;
             }
             if (generation != _generation) return;
-            if (clock.elapsed >= plan.duration && _outgoing != null) {
+            if (dry != null && progress >= 1) {
+              _effectDry = null;
+              await handler._disposeDeck(dry);
+              if (generation != _generation) return;
+            }
+            if (clock.elapsed >= fadeDuration && _outgoing != null) {
               _outgoing = null;
               await handler._disposeDeck(outgoing);
               final tail = _effectTail;
@@ -357,9 +393,34 @@ class _MusicAutoMix {
       });
     } catch (error) {
       _log.w('AutoMix start skipped: $error');
+      if (generation == _generation) await _abandonStart(generation);
     } finally {
       if (generation == _generation) _starting = false;
     }
+  }
+
+  Future<void> _abandonStart(int generation) async {
+    final attempt = _attempt;
+    await cancel();
+    // Do not repeatedly prepare the same stalled transition on every tick.
+    if (_generation == generation + 1) _attempt = attempt;
+  }
+
+  Future<Duration?> _waitForProgress(
+    MusicPlaybackDeck deck,
+    Duration initialPosition,
+    int generation,
+  ) async {
+    final clock = Stopwatch()..start();
+    while (_current(generation) && clock.elapsed < const Duration(seconds: 2)) {
+      final position = await deck.getCurrentPosition();
+      if (position != null &&
+          position - initialPosition >= const Duration(milliseconds: 20)) {
+        return position;
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 40));
+    }
+    return null;
   }
 
   Future<void> cancel() async {

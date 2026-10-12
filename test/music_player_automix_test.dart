@@ -72,6 +72,8 @@ class _AudioNative {
   final resumedSources = <String>[];
   Completer<void>? resumeGate;
   final resumeGates = <String, Completer<void>>{};
+  final stalled = <String>{};
+  final clocks = <String, Stopwatch>{};
   bool emitsDuration = true;
 
   void install() {
@@ -110,14 +112,19 @@ class _AudioNative {
             if (emitsDuration) unawaited(event(id, 'audio.onDuration', 60000));
           case 'seek':
             positions[id] = args['position']! as int;
+            clocks[id]?.reset();
             unawaited(event(id, 'audio.onSeekComplete'));
           case 'resume':
             await resumeGate?.future;
             await resumeGates[id]?.future;
             playing.add(id);
             resumedSources.add(sources[id]!);
+            if (id.startsWith('music-mix-') || id.startsWith('music-effect-')) {
+              clocks[id] = Stopwatch()..start();
+            }
           case 'pause' || 'stop':
             playing.remove(id);
+            clocks[id]?.stop();
           case 'release':
             playing.remove(id);
             sources.remove(id);
@@ -128,7 +135,10 @@ class _AudioNative {
           case 'getDuration':
             return 60000;
           case 'getCurrentPosition':
-            return positions[id];
+            return (positions[id] ?? 0) +
+                (stalled.contains(id)
+                    ? 0
+                    : clocks[id]?.elapsedMilliseconds ?? 0);
         }
         return null;
       },
@@ -1522,6 +1532,74 @@ void main() {
         ),
         hasLength(1),
       );
+    },
+  );
+
+  test(
+    'Auto waits for advancing audio before fading the current song',
+    () async {
+      analyzer.matchBeats = true;
+      await prepare();
+      final incoming = native.prepared;
+      native.stalled.add(incoming);
+      native.positions['music-player'] = 55670;
+      await _until(() => native.playing.contains(incoming));
+      await Future<void>.delayed(const Duration(milliseconds: 240));
+      expect(native.lastVolume('music-player'), 1);
+      expect(native.lastVolume(incoming), 0);
+      expect(handler.mediaItem.value?.id, 'one');
+
+      native.positions['music-player'] = 58500;
+      native.stalled.remove(incoming);
+      native.clocks[incoming]!.reset();
+      await _until(() => handler.mediaItem.value?.id == 'two');
+      // Startup consumed most of the outro. Finish the fade within the remaining
+      // 1.5 seconds instead of fading against a song that has already ended.
+      await _until(() => !native.live.contains('music-player'));
+      expect(native.lastVolume(incoming), closeTo(1, 0.0001));
+    },
+  );
+
+  test('a stalled Auto standby leaves the current song playing', () async {
+    analyzer.matchBeats = true;
+    await prepare();
+    final incoming = native.prepared;
+    native.stalled.add(incoming);
+    native.positions['music-player'] = 55670;
+    await _until(() => native.playing.contains(incoming));
+    await Future<void>.delayed(const Duration(milliseconds: 2300));
+    expect(native.live, {'music-player'});
+    expect(native.playing, {'music-player'});
+    expect(native.lastVolume('music-player'), 1);
+    expect(handler.mediaItem.value?.id, 'one');
+    expect(analyzer.calls, hasLength(2));
+  });
+
+  test('a late Auto timer still overlaps within the remaining outro', () async {
+    analyzer.matchBeats = true;
+    final incoming = await startMix(startPosition: 58500);
+    await _until(() => !native.live.contains('music-player'));
+    expect(native.lastVolume(incoming), closeTo(1, 0.0001));
+    expect(native.playing, {incoming});
+  });
+
+  test(
+    'pausing while Auto waits for audio cancels the pending handoff',
+    () async {
+      analyzer.matchBeats = true;
+      await prepare();
+      final incoming = native.prepared;
+      native.stalled.add(incoming);
+      native.positions['music-player'] = 55670;
+      await _until(() => native.playing.contains(incoming));
+      await handler.pause();
+      native.stalled.remove(incoming);
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+      expect(handler.mediaItem.value?.id, 'one');
+      expect(handler.playbackState.value.playing, isFalse);
+      expect(native.live, {'music-player'});
+      expect(native.playing, isEmpty);
+      expect(native.lastVolume('music-player'), 1);
     },
   );
 

@@ -268,12 +268,10 @@ class AutoMixPlan {
 
 /// Equal-power gain ramps; tempo returns gradually after the outgoing song ends.
 ({double outgoing, double incoming, double rate, bool complete})
-autoMixEnvelope(Duration elapsed, AutoMixPlan plan) {
-  final t = (elapsed.inMicroseconds / plan.duration.inMicroseconds).clamp(
-    0.0,
-    1.0,
-  );
-  final recovery = ((elapsed - plan.duration).inMicroseconds / 8000000).clamp(
+autoMixEnvelope(Duration elapsed, AutoMixPlan plan, {Duration? fadeDuration}) {
+  final duration = fadeDuration ?? plan.duration;
+  final t = (elapsed.inMicroseconds / duration.inMicroseconds).clamp(0.0, 1.0);
+  final recovery = ((elapsed - duration).inMicroseconds / 8000000).clamp(
     0.0,
     1.0,
   );
