@@ -193,6 +193,23 @@ class _SettingsSearchTargetState extends State<SettingsSearchTarget> {
   }
 }
 
+/// Whether rows sit in an expressive connected [SettingsGroup], where the gaps
+/// between row surfaces replace dividers.
+bool _rowsConnected(BuildContext context) =>
+    context.dependOnInheritedWidgetOfExactType<_ConnectedRowsScope>() != null;
+
+BorderRadius _connectedRowRadius({
+  required Radius top,
+  required Radius bottom,
+}) => BorderRadius.vertical(top: top, bottom: bottom);
+
+class _ConnectedRowsScope extends InheritedWidget {
+  const _ConnectedRowsScope({required super.child});
+
+  @override
+  bool updateShouldNotify(_ConnectedRowsScope oldWidget) => false;
+}
+
 class SettingsGroup extends StatelessWidget {
   final List<Widget> children;
   final EdgeInsetsGeometry? margin;
@@ -244,7 +261,59 @@ class SettingsGroup extends StatelessWidget {
       );
     }
 
-    if (materialExpressiveEnabled(context)) {
+    final expressive = materialExpressiveEnabled(context);
+    // Only groups of standard rows split into connected tiles. Forms and
+    // custom content keep one card, so spacers never become empty tiles.
+    final standardRows =
+        children.isNotEmpty &&
+        children.every(
+          (child) => child is SettingsItem || child is SettingsSwitchItem,
+        );
+    if (expressive && standardRows) {
+      // Expressive connected list: every row is its own surface separated by
+      // a 2dp gap. The group's ends keep the card radius, inner corners stay
+      // tight, and the gaps replace row dividers.
+      final outer = Radius.circular(context.tokens.radiusCard);
+      const inner = Radius.circular(4);
+      final last = children.length - 1;
+      return LayoutBuilder(
+        builder: (context, constraints) => Padding(
+          padding:
+              margin ??
+              EdgeInsets.symmetric(
+                horizontal:
+                    16 +
+                    (constraints.hasBoundedWidth
+                        ? wideInsetForWidth(constraints.maxWidth)
+                        : 0),
+                vertical: 4,
+              ),
+          child: _ConnectedRowsScope(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final (index, row) in children.indexed) ...[
+                  if (index > 0) const SizedBox(height: 2),
+                  Material(
+                    color: cardColor,
+                    clipBehavior: Clip.antiAlias,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: _connectedRowRadius(
+                        top: index == 0 ? outer : inner,
+                        bottom: index == last ? outer : inner,
+                      ),
+                    ),
+                    child: row,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (expressive) {
       return LayoutBuilder(
         builder: (context, constraints) => Padding(
           padding:
@@ -417,7 +486,7 @@ class SettingsItem extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider)
+        if (showDivider && !_rowsConnected(context))
           Divider(
             height: 1,
             indent: showIcon
@@ -538,7 +607,7 @@ class SettingsSwitchItem extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider)
+        if (showDivider && !_rowsConnected(context))
           Divider(
             height: 1,
             indent: showIcon

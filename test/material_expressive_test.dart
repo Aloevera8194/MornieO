@@ -454,4 +454,46 @@ void main() {
     expect(find.byType(CupertinoButton), findsAtLeast(2));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('standard settings rows connect; custom content keeps a card', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        SettingsGroup(
+          children: [
+            SettingsItem(title: 'First', onTap: () {}),
+            SettingsSwitchItem(title: 'Second', value: true, onChanged: (_) {}),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final group = find.byType(SettingsGroup);
+    expect(
+      find.descendant(of: group, matching: find.byType(M3ECard)),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: group, matching: find.byType(Divider)),
+      findsNothing,
+    );
+    final first = tester.getRect(find.text('First'));
+    final second = tester.getRect(find.text('Second'));
+    expect(second.top, greaterThan(first.bottom));
+
+    await tester.pumpWidget(
+      _host(
+        SettingsGroup(
+          children: [
+            SettingsItem(title: 'Field', onTap: () {}),
+            const SizedBox(height: 12),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(M3ECard), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
