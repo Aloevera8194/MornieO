@@ -3,7 +3,7 @@
   "networkUseForDownloads": "Download ke folder ini",
   "networkDownloadSelected": "Tujuan download terpilih",
   "networkUseLocalDownloads": "Gunakan folder download lokal",
-  "networkDownloadAccessFailed": "Tak dapat mengakses folder ini",
+  "networkDownloadAccessFailed": "Tak dapat mengakses folder ini.",
   "networkUploading": "Mengupload ke penyimpanan jaringan",
   "networkDownloadDescription": "Siapkan lagu di perangkat ini, lalu upload ke NAS Anda. Pastikan aplikasi terbuka sampai upload selesai. Mencoba lagi menggunakan lagu yang disiapkan. File yang sudah ada tak akan dimodifikasi; download baru dengan nama sama akan diberi akhiran angka.",
   "networkAddToLibrary": "Tambah folder ke Koleksi",
@@ -38,7 +38,7 @@
   "networkNoFiles": "Tak menemukan file lagu atau folder terdukung.",
   "networkConnectionError": "Tak dapat mengakses sumber jaringan. Periksa alamat server, kredensial, dan koneksi, lalu coba lagi.",
   "extensionAccountTitle": "Akun ekstensi",
-  "extensionAccountInvalidForm": "Ekstensi mengembalikan bentuk akun yang tak valid",
+  "extensionAccountInvalidForm": "Ekstensi mengembalikan bentuk akun yang tak valid.",
   "extensionAccountRestartLogin": "Mulai ulang akun login untuk lanjut.",
   "extensionAccountRequiredValue": "Harap diisi.",
   "extensionAccountInvalidNumber": "Beri angka yang valid.",
@@ -114,8 +114,8 @@
   "appearanceAccentPurple": "Ungu",
   "appearanceAccentPink": "Pink",
   "appearanceGlassClarity": "Kebeningan kaca",
-  "appearanceGlassOutlines": "Glass outlines",
-  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
+  "appearanceGlassOutlines": "Garis tepi kaca",
+  "appearanceGlassOutlinesSubtitle": "Tampilkan garis di ujung kaca Mornye. Mematikan tidak menghilangkan blur dan refraksi.",
   "appearanceGlassClaritySubtitle": "Atur kebeningan kaca menu dan navigasi Mornye. Kontras teks tetap terjaga.",
   "appearanceGlassTinted": "Berwarna",
   "appearanceGlassClear": "Bening",
@@ -129,7 +129,7 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
+  "appearanceGlassClarityHighContrast": "Kontras tinggi dihidupkan di sistem, jadi kaca tetap berwarna. Hidupkan \"{setting}\" untuk menggunakan kaca; kontras teks tetap terjaga.",
   "@appearanceGlassClarityHighContrast": {
     "description": "Explains the system contrast request (which can include medium contrast) and the explicit glass-only override.",
     "placeholders": {
@@ -242,7 +242,7 @@
   "@downloadFilenameFormat": {
     "description": "Setting for output filename pattern"
   },
-  "downloadSingleFilenameFormat": "Format Nama FileTunggal",
+  "downloadSingleFilenameFormat": "Format Nama File Single",
   "@downloadSingleFilenameFormat": {
     "description": "Setting for output filename pattern for singles/EPs"
   },
@@ -709,7 +709,7 @@
   "@trackMetadataDelete": {
     "description": "Action button - delete track"
   },
-  "setupGrantPermission": "Berikan Izin",
+  "setupGrantPermission": "Beri Perizinan",
   "@setupGrantPermission": {
     "description": "Button to request permission"
   },
@@ -936,11 +936,11 @@
   "@dialogClearAll": {
     "description": "Dialog title - clear all items"
   },
-  "dialogRemoveExtension": "Hapus Ekstensi",
+  "dialogRemoveExtension": "Uninstal Ekstensi",
   "@dialogRemoveExtension": {
     "description": "Dialog title - uninstall extension"
   },
-  "dialogRemoveExtensionMessage": "Apakah Anda yakin ingin menghapus ekstensi ini? Ini tidak dapat dibatalkan.",
+  "dialogRemoveExtensionMessage": "Apakah Anda ingin meng-uninstal ekstensi ini? Ini tak dapat diurungkan.",
   "@dialogRemoveExtensionMessage": {
     "description": "Dialog message - uninstall confirmation"
   },
@@ -948,7 +948,7 @@
   "@dialogUninstallExtension": {
     "description": "Dialog title - uninstall extension"
   },
-  "dialogUninstallExtensionMessage": "Apakah Anda yakin ingin menghapus {extensionName}?",
+  "dialogUninstallExtensionMessage": "Apakah Anda yakin ingin meng-uninstal {extensionName}?",
   "@dialogUninstallExtensionMessage": {
     "description": "Dialog message - uninstall specific extension",
     "placeholders": {
@@ -1373,7 +1373,7 @@
   "@folderOrganizationByPlaylist": {
     "description": "Folder option - playlist folders"
   },
-  "folderOrganizationByPlaylistSubtitle": "Pisahkan folder untuk setiap playlist ",
+  "folderOrganizationByPlaylistSubtitle": "Pisahkan folder untuk setiap playlist",
   "@folderOrganizationByPlaylistSubtitle": {
     "description": "Subtitle for playlist folder option"
   },
@@ -1881,8 +1881,8 @@
   "@trackDeleteConfirmTitle": {
     "description": "Delete confirmation title"
   },
-  "trackDeleteNetworkConfirmMessage": "This will permanently delete the file from your network storage and remove it from your library and history.",
-  "snackbarDeleteTracksFailed": "Could not delete {count} {count, plural, =1{track} other{tracks}}. Check storage access and try again.",
+  "trackDeleteNetworkConfirmMessage": "Ini akan menghapus file dari Penyimpanan Jaringan, Koleksi, dan Histori Anda.",
+  "snackbarDeleteTracksFailed": "Tak dapat menghapus {count} {count, plural, =1{lagu} other{lagu}}. Periksa akses penyimpanan lalu coba lagi.",
   "@snackbarDeleteTracksFailed": {
     "placeholders": {
       "count": {
@@ -5419,7 +5419,7 @@
       }
     }
   },
-  "notifLibraryScanProgressNoTotal": "{scanned} files scanned",
+  "notifLibraryScanProgressNoTotal": "{scanned} file dipindai",
   "@notifLibraryScanProgressNoTotal": {
     "description": "Notification body for library scan progress when total is unknown",
     "placeholders": {
@@ -7107,10 +7107,10 @@
   "autoplayOn": "Autoplay hidup",
   "autoplayOff": "Autoplay mati",
   "autoplayFromLibrary": "Autoplay dari Koleksi Anda",
-  "autoplayDescription": "Continue with related songs from your Library when the queue ends.",
-  "autoplayPersonalization": "Personalized autoplay",
-  "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
-  "autoplayResetLearning": "Reset recommendation learning",
+  "autoplayDescription": "Lanjut dengar lagu serupa dari Koleksi Anda begitu antrean berakhir.",
+  "autoplayPersonalization": "Autoplay cerdas",
+  "autoplayPersonalizationDescription": "Pelajari lagu kesukaan Anda melalui pemrosesan kecerdasan lokal. Matikan untuk berhenti pelajari dan menggunakan autoplay biasa.",
+  "autoplayResetLearning": "Reset pemahaman lagu kesukaan",
   "profileTitle": "Profil",
   "profileSetUp": "Atur profil Anda",
   "profileEdit": "Edit nama dan foto",
@@ -7213,12 +7213,12 @@
   "playbackPauseOnMuteDescription": "Menjeda musik jika volume media dibisukan dan dilanjut saat dinaikkan. Jeda manual akan tetap terjeda. Hanya untuk output audio standar.",
   "playbackOnHeadphonesConnected": "Putar saat headphone terhubung",
   "playbackOnHeadphonesConnectedDescription": "Lanjut putar lagi saat headphone kabel/bluetooth terhubung. Pemutaran dijeda saat terputus. Hanya untuk pemutar built-in.",
-  "appearanceCustomFont": "Custom font",
-  "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
-  "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
-  "appearanceCustomFontReset": "Use theme font",
-  "lyricsTextSize": "Lyrics text size",
-  "lyricsTextPreview": "Follow every line of your favorite song",
+  "appearanceCustomFont": "Font kustom",
+  "appearanceCustomFontSubtitle": "Impor file TTP/OTF (hingga 10MB). Mengganti font tema dan sistem",
+  "appearanceCustomFontInvalid": "Tak dapat memuat font. Pilih file TTF/OTF hingga 10MB yang valid.",
+  "appearanceCustomFontReset": "Gunakan font tema",
+  "lyricsTextSize": "Ukuran teks lirik",
+  "lyricsTextPreview": "Ikuti irama lagu favoritmu~",
   "optionsEmbeddedCoverSizeOriginal": "Resolusi asli",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
