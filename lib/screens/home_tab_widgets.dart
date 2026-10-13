@@ -445,6 +445,19 @@ class _CollectionItemWidget extends StatelessWidget {
     if (isArtist) placeholderIcon = Icons.person;
 
     final hasCover = item.coverUrl != null && item.coverUrl!.isNotEmpty;
+    final image = hasCover
+        ? CachedCoverImage(
+            imageUrl: item.coverUrl!,
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+          )
+        : Container(
+            width: 56,
+            height: 56,
+            color: colorScheme.surfaceContainerHighest,
+            child: Icon(placeholderIcon, color: colorScheme.onSurfaceVariant),
+          );
     final cover = Semantics(
       label:
           '${context.l10n.dialogDownload} '
@@ -455,25 +468,13 @@ class _CollectionItemWidget extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         excludeFromSemantics: true,
         onLongPress: hasCover ? onSaveCover : null,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(isArtist ? 28 : 10),
-          child: hasCover
-              ? CachedCoverImage(
-                  imageUrl: item.coverUrl!,
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                )
-              : Container(
-                  width: 56,
-                  height: 56,
-                  color: colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    placeholderIcon,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-        ),
+        child: isArtist
+            ? AppShapeClip(
+                kind: AppShapes.artist,
+                fallbackRadius: BorderRadius.circular(28),
+                child: image,
+              )
+            : ClipRRect(borderRadius: BorderRadius.circular(10), child: image),
       ),
     );
     return Column(

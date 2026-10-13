@@ -8,6 +8,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
+import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 
@@ -78,7 +79,8 @@ class _ArtistConcertsScreenState extends State<ArtistConcertsScreen> {
             sliver: SliverToBoxAdapter(
               child: Row(
                 children: [
-                  ClipOval(
+                  AppShapeClip(
+                    kind: AppShapes.artist,
                     child: SizedBox.square(
                       dimension: 96,
                       child: widget.coverUrl == null || widget.coverUrl!.isEmpty

@@ -7,6 +7,7 @@ import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
 
@@ -39,7 +40,7 @@ class _WeeklyReleasesScreenState extends ConsumerState<WeeklyReleasesScreen> {
   Widget build(BuildContext context) {
     final feed = ref.watch(weeklyReleasesProvider(_refresh));
     return Scaffold(
-      body: RefreshIndicator(
+      body: AppRefreshIndicator(
         onRefresh: _reload,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),

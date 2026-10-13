@@ -7,6 +7,8 @@ import 'package:spotiflac_android/services/listening_statistics.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
+import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
@@ -80,7 +82,7 @@ class _ListeningStatisticsScreenState
     final summary = ref.watch(listeningSummaryProvider(period));
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      body: RefreshIndicator(
+      body: AppRefreshIndicator(
         onRefresh: () => ref.refresh(listeningSummaryProvider(period).future),
         child: CustomScrollView(
           slivers: [
@@ -281,7 +283,8 @@ class _ListeningStatisticsScreenState
           for (final artist in artists.take(10))
             ListTile(
               leading: ExcludeSemantics(
-                child: ClipOval(
+                child: AppShapeClip(
+                  kind: AppShapes.artist,
                   child: SizedBox.square(
                     dimension: 48,
                     child: artistArtwork[artist.key] == null

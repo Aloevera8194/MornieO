@@ -335,10 +335,10 @@ extension _QueueTabItemWidgets on _QueueTabState {
               child: SizedBox(
                 width: coverSize * 0.6,
                 height: coverSize * 0.6,
-                child: CircularProgressIndicator(
+                child: AppProgressIndicator.circular(
                   strokeWidth: 3,
                   color: Colors.white,
-                  backgroundColor: Colors.white.withValues(alpha: 0.25),
+                  trackColor: Colors.white.withValues(alpha: 0.25),
                 ),
               ),
             )
@@ -351,11 +351,11 @@ extension _QueueTabItemWidgets on _QueueTabState {
                     child: SizedBox(
                       width: coverSize * 0.6,
                       height: coverSize * 0.6,
-                      child: CircularProgressIndicator(
+                      child: AppProgressIndicator.circular(
                         value: visualProgress,
                         strokeWidth: 3,
                         color: Colors.white,
-                        backgroundColor: Colors.white.withValues(alpha: 0.25),
+                        trackColor: Colors.white.withValues(alpha: 0.25),
                       ),
                     ),
                   ),
@@ -471,7 +471,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                CircularProgressIndicator(
+                AppProgressIndicator.circular(
                   strokeWidth: 3,
                   color: colorScheme.tertiary,
                 ),

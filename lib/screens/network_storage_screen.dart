@@ -15,6 +15,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
@@ -331,11 +332,12 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
                       context.l10n.networkDownloadDescription,
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
-                    if (_selectingDestination) const LinearProgressIndicator(),
+                    if (_selectingDestination)
+                      const AppProgressIndicator.linear(),
                     if (_adding)
                       const Padding(
                         padding: EdgeInsets.only(top: 8),
-                        child: LinearProgressIndicator(),
+                        child: AppProgressIndicator.linear(),
                       ),
                   ],
                 ),

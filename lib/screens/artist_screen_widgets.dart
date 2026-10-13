@@ -1188,10 +1188,10 @@ class _FetchingProgressDialogState extends State<_FetchingProgressDialog> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                CircularProgressIndicator(
+                AppProgressIndicator.circular(
                   value: progress > 0 ? progress : null,
                   strokeWidth: 4,
-                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  trackColor: colorScheme.surfaceContainerHighest,
                 ),
                 Icon(Icons.library_music, color: colorScheme.primary, size: 24),
               ],
@@ -1214,9 +1214,9 @@ class _FetchingProgressDialogState extends State<_FetchingProgressDialog> {
           const SizedBox(height: 8),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
+            child: AppProgressIndicator.linear(
               value: progress > 0 ? progress : null,
-              backgroundColor: colorScheme.surfaceContainerHighest,
+              trackColor: colorScheme.surfaceContainerHighest,
               minHeight: 6,
             ),
           ),

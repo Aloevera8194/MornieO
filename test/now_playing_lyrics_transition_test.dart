@@ -11,6 +11,8 @@ import 'package:flutter/rendering.dart'
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_3_expressive/material_3_expressive.dart'
+    show M3EIconButton;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
@@ -28,6 +30,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/utils/lyrics_parser.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
+import 'package:spotiflac_android/widgets/expressive_playback_transport.dart';
 import 'package:spotiflac_android/widgets/expressive_seek_track.dart';
 import 'package:spotiflac_android/widgets/mornye_volume_control.dart';
 import 'package:spotiflac_android/widgets/lyric_gap_indicator.dart';
@@ -1978,8 +1981,19 @@ void main() {
       );
       mediaItems.add(item('first'));
       await settlePlayer(tester);
-      expect(find.byType(ExpressiveIconButton), findsNWidgets(6));
-      for (final element in find.byType(ExpressiveIconButton).evaluate()) {
+      // Shuffle, previous, play-pause, next and repeat form the expressive
+      // transport row; the lyrics toggle sits outside it.
+      final transport = find.descendant(
+        of: find.byType(ExpressivePlaybackTransport),
+        matching: find.byType(M3EIconButton),
+      );
+      final lyricsToggle = find.byKey(const ValueKey('material-lyrics-toggle'));
+      expect(transport, findsNWidgets(5));
+      expect(lyricsToggle, findsOneWidget);
+      for (final element in [
+        ...transport.evaluate(),
+        ...lyricsToggle.evaluate(),
+      ]) {
         final bounds = tester.getRect(find.byWidget(element.widget));
         expect(bounds.left, greaterThanOrEqualTo(0));
         expect(bounds.right, lessThanOrEqualTo(width));

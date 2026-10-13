@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons, CupertinoTextField;
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/extension_row.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
@@ -94,7 +95,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: RefreshIndicator(
+      body: AppRefreshIndicator(
         onRefresh: () =>
             ref.read(repoProvider.notifier).refresh(forceRefresh: true),
         child: CustomScrollView(

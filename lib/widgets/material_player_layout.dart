@@ -41,8 +41,31 @@ class MaterialPlayerLayout extends StatelessWidget {
           child: PlayerArtworkDragRegion(
             child: Hero(
               tag: kNowPlayingArtworkHeroTag,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
+              // Expressive rest: paused artwork settles smaller and rounder.
+              child: Consumer(
+                builder: (context, ref, artwork) {
+                  final resting =
+                      !ref.watch(playbackPlayingProvider) &&
+                      !ref.watch(playbackLoadingProvider);
+                  final duration = MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 500);
+                  return AnimatedScale(
+                    scale: resting ? 0.9 : 1,
+                    duration: duration,
+                    curve: Curves.easeOutBack,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(end: resting ? 40 : 20),
+                      duration: duration,
+                      curve: Curves.easeOutCubic,
+                      builder: (context, radius, artwork) => ClipRRect(
+                        borderRadius: BorderRadius.circular(radius),
+                        child: artwork,
+                      ),
+                      child: artwork,
+                    ),
+                  );
+                },
                 child: SizedBox(
                   width: artSize,
                   height: artSize,

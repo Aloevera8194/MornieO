@@ -12,12 +12,13 @@ bool useNavigationRailForWidth(double width) =>
 
 /// Explicit horizontal safe spacing for controls drawn in full-bleed detail
 /// headers. iOS reports no left/right safe-area inset in portrait, so toolbar
-/// buttons otherwise land only a few pixels from the device edge.
+/// buttons otherwise land only a few pixels from the device edge. Filled
+/// expressive circles need the same breathing room on Android.
 double detailHeaderEdgeInset(BuildContext context) {
   final platform = Theme.of(context).platform;
   return platform == TargetPlatform.iOS || platform == TargetPlatform.macOS
       ? 12
-      : 0;
+      : 8;
 }
 
 /// Visual scale for touch-first tablet surfaces. Large iPads have enough

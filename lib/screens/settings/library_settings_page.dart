@@ -19,6 +19,7 @@ import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/ios_library_folder_sheet.dart';
@@ -1369,13 +1370,13 @@ class _LibraryHeroCard extends StatelessWidget {
                 ],
                 if (isScanning) ...[
                   const SizedBox(height: 16),
-                  LinearProgressIndicator(
+                  AppProgressIndicator.linear(
                     value: showIndeterminateProgress
                         ? null
                         : scanTotalFiles > 0
                         ? scanProgress / 100
                         : 0,
-                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    trackColor: colorScheme.surfaceContainerHighest,
                     color: colorScheme.primary,
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -1541,9 +1542,9 @@ class _ScanProgressTile extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          LinearProgressIndicator(
+          AppProgressIndicator.linear(
             value: showIndeterminateProgress ? null : progressValue,
-            backgroundColor: colorScheme.surfaceContainerHighest,
+            trackColor: colorScheme.surfaceContainerHighest,
             color: colorScheme.primary,
             borderRadius: BorderRadius.circular(4),
           ),

@@ -16,6 +16,7 @@ import 'package:spotiflac_android/widgets/album_detail_header.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 class ConcertDetailScreen extends StatefulWidget {
@@ -190,7 +191,8 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
                     Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        ClipOval(
+                        AppShapeClip(
+                          kind: AppShapes.artist,
                           child: SizedBox.square(
                             dimension: photoSize,
                             child: source == null

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
@@ -332,30 +334,56 @@ class SelectionBottomBar extends StatelessWidget {
         ],
       ),
     );
+    const floatingMargin = 12.0;
     return _SelectionPanelDrag(
       onClose: onClose,
       header: header,
       bottomPadding: bottomPadding,
+      floatingMargin: context.isMornye ? 0 : floatingMargin,
       children: children,
       surfaceBuilder: (content) {
         if (context.isMornye) {
           return MornyeGlassPanel.overlay(child: content);
         }
-        return Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(tokens.radiusSheet),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: colorScheme.shadow.withValues(alpha: 0.15),
-                blurRadius: 12,
-                offset: const Offset(0, -4),
+        // Expressive floating toolbar: detached from the screen edges and
+        // fully rounded. The faded backdrop hides and blocks the navigation
+        // bar underneath, so a tap beside the toolbar cannot switch tabs.
+        final surface = colorScheme.surface;
+        return Listener(
+          behavior: HitTestBehavior.opaque,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [surface.withValues(alpha: 0), surface],
+                stops: const [0, 0.4],
               ),
-            ],
+            ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                floatingMargin,
+                0,
+                floatingMargin,
+                floatingMargin + MediaQuery.viewPaddingOf(context).bottom,
+              ),
+              child: Material(
+                color: colorScheme.surfaceContainerHigh,
+                surfaceTintColor: Colors.transparent,
+                shadowColor: colorScheme.shadow,
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(tokens.radiusSheet),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: MediaQuery.removePadding(
+                  context: context,
+                  removeBottom: true,
+                  child: content,
+                ),
+              ),
+            ),
           ),
-          child: content,
         );
       },
     );
@@ -372,11 +400,16 @@ class _SelectionPanelDrag extends StatefulWidget {
     required this.bottomPadding,
     required this.children,
     required this.surfaceBuilder,
+    this.floatingMargin = 0,
   });
 
   final VoidCallback onClose;
   final Widget header;
   final double bottomPadding;
+
+  /// Bottom margin the surface already places below a floating panel. The
+  /// content gives up the same space so the panel keeps its docked height.
+  final double floatingMargin;
   final List<Widget> children;
   final Widget Function(Widget) surfaceBuilder;
 
@@ -522,7 +555,10 @@ class _SelectionPanelDragState extends State<_SelectionPanelDrag>
               16,
               16,
               16,
-              widget.bottomPadding > 0 ? 8 : 16,
+              math.max(
+                0,
+                (widget.bottomPadding > 0 ? 8 : 16) - widget.floatingMargin,
+              ),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

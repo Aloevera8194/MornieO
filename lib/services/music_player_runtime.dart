@@ -95,6 +95,9 @@ class PlaybackDependencies {
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.zarz.spotiflac.playback',
       androidNotificationChannelName: 'Playback',
+      // System UI draws only the small icon's alpha. The opaque launcher
+      // default became a blank dot in the status bar and output switcher.
+      androidNotificationIcon: 'drawable/ic_launcher_monochrome',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
     ),

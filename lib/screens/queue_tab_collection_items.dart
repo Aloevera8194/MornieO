@@ -51,13 +51,11 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                           SizedBox(
                             width: 34,
                             height: 34,
-                            child: CircularProgressIndicator(
+                            child: AppProgressIndicator.circular(
                               value: visualProgress,
                               strokeWidth: 3,
                               color: Colors.white,
-                              backgroundColor: Colors.white.withValues(
-                                alpha: 0.25,
-                              ),
+                              trackColor: Colors.white.withValues(alpha: 0.25),
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -75,10 +73,10 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                   : SizedBox(
                       width: 34,
                       height: 34,
-                      child: CircularProgressIndicator(
+                      child: AppProgressIndicator.circular(
                         strokeWidth: 3,
                         color: Colors.white,
-                        backgroundColor: Colors.white.withValues(alpha: 0.25),
+                        trackColor: Colors.white.withValues(alpha: 0.25),
                       ),
                     ),
             ),

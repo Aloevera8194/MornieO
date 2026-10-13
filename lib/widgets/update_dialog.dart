@@ -9,6 +9,7 @@ import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 
 class UpdateDialog extends StatefulWidget {
@@ -302,11 +303,10 @@ class _UpdateDialogState extends State<UpdateDialog> {
                         const SizedBox(height: 12),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
+                          child: AppProgressIndicator.linear(
                             value: _progress,
                             minHeight: 6,
-                            backgroundColor:
-                                colorScheme.surfaceContainerHighest,
+                            trackColor: colorScheme.surfaceContainerHighest,
                           ),
                         ),
                         const SizedBox(height: 8),

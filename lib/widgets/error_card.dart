@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 /// Error card shown by detail screens: a dedicated rate-limit presentation
@@ -124,7 +127,19 @@ class EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: colorScheme.onSurfaceVariant),
+            if (context.isMornye)
+              Icon(icon, size: 64, color: colorScheme.onSurfaceVariant)
+            else
+              AppShapeBadge(
+                kind: AppShapes.badge,
+                size: 112,
+                color: colorScheme.secondaryContainer,
+                child: AppIcon(
+                  icon,
+                  size: 52,
+                  color: colorScheme.onSecondaryContainer,
+                ),
+              ),
             SizedBox(height: tokens.gapLg),
             Text(
               title,

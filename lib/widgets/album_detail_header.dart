@@ -284,8 +284,8 @@ class AlbumDetailHeader extends StatelessWidget {
     final plainArtworkHeader = context.isMornye && coverBuilder != null;
     // iOS does not add horizontal safe-area padding in portrait. Give toolbar
     // controls and header content an explicit inset so circular actions do not
-    // sit against the glass edge on either iPhone or iPad. Android retains its
-    // existing spacing.
+    // sit against the glass edge on either iPhone or iPad. Android uses a
+    // smaller inset for the same reason.
     final iosEdgeInset = detailHeaderEdgeInset(context);
     // Scrim and gradient are drawn from the palette surface instead of black,
     // so a light theme gets a light header with dark text and a dark theme
@@ -441,19 +441,22 @@ class AlbumDetailHeader extends StatelessWidget {
         padding: EdgeInsets.only(left: iosEdgeInset),
         child:
             leading ??
-            AppIconButton.filledTonal(
-              tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-              icon: AppIcon(
-                context.isMornye ? Icons.chevron_left : Icons.arrow_back,
-              ),
-              style: IconButton.styleFrom(
-                minimumSize: Size.square(tokens.minTouchTarget),
-                backgroundColor: headerScheme.surfaceContainerHigh.withValues(
-                  alpha: 0.75,
+            // Centered so the tight leading slot cannot stretch the circle.
+            Center(
+              child: AppIconButton.filledTonal(
+                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                icon: AppIcon(
+                  context.isMornye ? Icons.chevron_left : Icons.arrow_back,
                 ),
-                foregroundColor: headerScheme.onSurfaceVariant,
+                style: IconButton.styleFrom(
+                  minimumSize: Size.square(tokens.minTouchTarget),
+                  backgroundColor: headerScheme.surfaceContainerHigh.withValues(
+                    alpha: 0.75,
+                  ),
+                  foregroundColor: headerScheme.onSurfaceVariant,
+                ),
+                onPressed: () => Navigator.pop(context),
               ),
-              onPressed: () => Navigator.pop(context),
             ),
       ),
       actionsPadding: EdgeInsets.only(right: iosEdgeInset),

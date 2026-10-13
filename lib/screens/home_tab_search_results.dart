@@ -117,13 +117,10 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            width: 86,
-            height: 86,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: colorScheme.surfaceContainerHighest,
-            ),
+          AppShapeBadge(
+            kind: AppShapes.badge,
+            size: 86,
+            color: colorScheme.surfaceContainerHighest,
             child: Icon(
               Icons.manage_search,
               size: 46,
@@ -343,7 +340,7 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
         const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
-            child: LinearProgressIndicator(),
+            child: AppProgressIndicator.linear(),
           ),
         ),
       if (showEmptySearchResult && !hasActualData)

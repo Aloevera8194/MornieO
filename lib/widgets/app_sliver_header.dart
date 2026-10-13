@@ -63,15 +63,30 @@ class AppSliverHeader extends StatelessWidget {
               padding: EdgeInsets.only(left: edgeInset),
               child:
                   leading ??
-                  AppIconButton(
-                    tooltip: MaterialLocalizations.of(
-                      context,
-                    ).backButtonTooltip,
-                    icon: AppIcon(
-                      context.isMornye ? Icons.chevron_left : Icons.arrow_back,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
+                  (context.isMornye
+                      ? AppIconButton(
+                          tooltip: MaterialLocalizations.of(
+                            context,
+                          ).backButtonTooltip,
+                          icon: const AppIcon(Icons.chevron_left),
+                          onPressed: () => Navigator.pop(context),
+                        )
+                      // Expressive app bars hold navigation in a tonal circle.
+                      : AppIconButton.filledTonal(
+                          tooltip: MaterialLocalizations.of(
+                            context,
+                          ).backButtonTooltip,
+                          icon: const AppIcon(Icons.arrow_back),
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(
+                              colorScheme.surfaceContainerHighest,
+                            ),
+                            foregroundColor: WidgetStatePropertyAll(
+                              colorScheme.onSurface,
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        )),
             )
           : null,
       actionsPadding: EdgeInsets.only(right: edgeInset),
@@ -104,7 +119,7 @@ class AppSliverHeader extends StatelessWidget {
                       tokens.headerCollapsedTitleSize) *
                   expandRatio;
 
-          return FlexibleSpaceBar(
+          final bar = FlexibleSpaceBar(
             centerTitle: false,
             expandedTitleScale: 1.0,
             titlePadding: EdgeInsets.only(
@@ -125,6 +140,17 @@ class AppSliverHeader extends StatelessWidget {
                 color: colorScheme.onSurface,
               ),
             ),
+          );
+          if (context.isMornye) return bar;
+          // Collapsed expressive bars sit on a container tone, like a
+          // scrolled-under app bar, and fade back to the surface on expand.
+          return ColoredBox(
+            color: Color.lerp(
+              colorScheme.surfaceContainer,
+              colorScheme.surface,
+              expandRatio,
+            )!,
+            child: bar,
           );
         },
       ),

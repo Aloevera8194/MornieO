@@ -10,6 +10,7 @@ import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class FavoriteArtistsScreen extends ConsumerWidget {
@@ -153,7 +154,8 @@ class _ArtistThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final imageUrl = artist.imageUrl;
-    return ClipOval(
+    return AppShapeClip(
+      kind: AppShapes.artist,
       child: imageUrl != null && imageUrl.isNotEmpty
           ? CachedNetworkImage(
               imageUrl: imageUrl,

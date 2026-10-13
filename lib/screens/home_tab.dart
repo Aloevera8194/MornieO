@@ -9,6 +9,11 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
+import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
@@ -913,7 +918,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
       },
       behavior: HitTestBehavior.translucent,
       child: Scaffold(
-        body: RefreshIndicator(
+        body: AppRefreshIndicator(
           onRefresh: () => ref.read(exploreProvider.notifier).refresh(),
           notificationPredicate: (notification) => showExplore,
           child: CustomScrollView(
@@ -1205,13 +1210,10 @@ class _HomeTabState extends ConsumerState<HomeTab>
       child: Column(
         children: [
           SizedBox(height: screenHeight * 0.06),
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: colorScheme.primary,
-              shape: BoxShape.circle,
-            ),
+          AppShapeBadge(
+            kind: AppShapes.brand,
+            size: 96,
+            color: colorScheme.primary,
             child: Image.asset(
               'assets/images/logo-transparent.png',
               color: colorScheme.onPrimary,
@@ -1266,19 +1268,84 @@ class _HomeTabState extends ConsumerState<HomeTab>
     final itemCount = items.length < 10 ? items.length : 10;
     final coverSize = _recentDownloadCoverSize(context);
     final rowHeight = _recentDownloadsRowHeight(context);
+    final header = Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Text(
+        context.l10n.homeRecent,
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+      ),
+    );
+
+    if (materialExpressiveEnabled(context)) {
+      final recent = items.take(itemCount).toList(growable: false);
+      final carouselHeight = coverSize * 1.6;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          header,
+          MaterialExpressiveScope(
+            child: M3ECarousel(
+              type: M3ECarouselType.contained,
+              height: carouselHeight,
+              freeScroll: true,
+              children: [
+                for (final (index, item) in recent.indexed)
+                  M3ECarouselItem(
+                    semanticLabel: context.l10n.a11yOpenTrackByArtist(
+                      item.trackName,
+                      item.artistName,
+                    ),
+                    // Each slot changes width while scrolling; cover-fit a
+                    // square decode so every slot stays filled.
+                    image: DownloadableCover(
+                      coverUrl: item.coverUrl,
+                      baseName: '${item.artistName} - ${item.trackName}',
+                      child: SizedBox.expand(
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          clipBehavior: Clip.hardEdge,
+                          child: _DownloadedOrRemoteCover(
+                            downloadedFilePath: item.filePath,
+                            imageUrl: item.coverUrl,
+                            width: carouselHeight,
+                            height: carouselHeight,
+                            borderRadius: BorderRadius.zero,
+                            fallbackIcon: Icons.music_note,
+                            fallbackIconSize: 32,
+                            colorScheme: colorScheme,
+                          ),
+                        ),
+                      ),
+                    ),
+                    subtitle: Text(
+                      item.trackName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    showScrim: const M3ECarouselScrim.gradient(),
+                    onTap: () => _navigateToMetadataScreen(
+                      item,
+                      navigationItems: recent,
+                      navigationIndex: index,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Text(
-            context.l10n.homeRecent,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
+        header,
         SizedBox(
           height: rowHeight,
           child: ListView.builder(

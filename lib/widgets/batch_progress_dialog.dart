@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 
 class _BatchProgress {
   final int current;
@@ -131,10 +132,10 @@ class _BatchProgressDialogState extends State<BatchProgressDialog> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                CircularProgressIndicator(
+                AppProgressIndicator.circular(
                   value: progress > 0 ? progress : null,
                   strokeWidth: 4,
-                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  trackColor: colorScheme.surfaceContainerHighest,
                 ),
                 Icon(widget.icon, color: colorScheme.primary, size: 24),
               ],
@@ -168,9 +169,9 @@ class _BatchProgressDialogState extends State<BatchProgressDialog> {
           const SizedBox(height: 12),
           ClipRRect(
             borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
+            child: AppProgressIndicator.linear(
               value: progress > 0 ? progress : null,
-              backgroundColor: colorScheme.surfaceContainerHighest,
+              trackColor: colorScheme.surfaceContainerHighest,
               minHeight: 6,
             ),
           ),

@@ -6,6 +6,7 @@ import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
@@ -13,6 +14,7 @@ import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/automix_status_badge.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
+import 'package:spotiflac_android/widgets/expressive_playback_transport.dart';
 import 'package:spotiflac_android/widgets/mornye_playback_button.dart';
 import 'package:spotiflac_android/widgets/mornye_playback_time.dart';
 import 'package:spotiflac_android/widgets/mornye_player_slider.dart';
@@ -146,89 +148,118 @@ class PlayerPlaybackControls extends ConsumerWidget {
           ),
         ),
         SizedBox(height: compact ? 8 : transportTopPadding + (mornye ? 0 : 8)),
-        Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: mornye ? (compact ? 16 : 32) : 0,
+        if (!mornye && materialExpressiveEnabled(context))
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ExpressivePlaybackTransport(
+              colorScheme: colorScheme,
+              playing: isPlaying,
+              loading: isLoading,
+              compact: compact,
+              playTooltip: isPlaying
+                  ? context.l10n.actionPause
+                  : context.l10n.tooltipPlay,
+              previousTooltip: context.l10n.nowPlayingPreviousTrack,
+              nextTooltip: context.l10n.nowPlayingNextTrack,
+              onPlayPause: () => controller.togglePlayPause(isPlaying),
+              onPrevious: controller.previous,
+              onNext: controller.next,
+              leading: PlayerPlaybackModeButton(
+                mode: PlayerPlaybackMode.shuffle,
+                colorScheme: colorScheme,
+              ),
+              trailing: PlayerPlaybackModeButton(
+                mode: PlayerPlaybackMode.repeat,
+                colorScheme: colorScheme,
+              ),
+            ),
+          )
+        else
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: mornye ? (compact ? 16 : 32) : 0,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                if (!mornye)
+                  PlayerPlaybackModeButton(
+                    mode: PlayerPlaybackMode.shuffle,
+                    colorScheme: colorScheme,
+                  ),
+                if (mornye)
+                  MornyePlaybackButton(
+                    icon: CupertinoIcons.backward_fill,
+                    color: colorScheme.onSurface,
+                    tooltip: context.l10n.nowPlayingPreviousTrack,
+                    onPressed: controller.previous,
+                  )
+                else
+                  ExpressiveIconButton(
+                    iconSize: 44,
+                    foregroundColor: colorScheme.onSurface,
+                    tooltip: context.l10n.nowPlayingPreviousTrack,
+                    icon: const Icon(Icons.skip_previous),
+                    onPressed: controller.previous,
+                  ),
+                if (mornye)
+                  MornyePlaybackButton(
+                    icon: isPlaying
+                        ? CupertinoIcons.pause_fill
+                        : CupertinoIcons.play_fill,
+                    tooltip: isPlaying
+                        ? context.l10n.actionPause
+                        : context.l10n.tooltipPlay,
+                    color: colorScheme.onSurface,
+                    iconSize: playPauseSize,
+                    // A smaller play glyph keeps the same 68dp touch target and
+                    // does not move the timeline, artwork or adjacent buttons.
+                    padding: EdgeInsets.all((68 - playPauseSize) / 2),
+                    loading: isLoading,
+                    onPressed: () => controller.togglePlayPause(isPlaying),
+                  )
+                else
+                  ExpressiveIconButton(
+                    size: 68,
+                    iconSize: 44,
+                    selected: isPlaying,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    tooltip: isPlaying
+                        ? context.l10n.actionPause
+                        : context.l10n.tooltipPlay,
+                    icon: isLoading
+                        ? AppLoadingIndicator(
+                            color: colorScheme.onSurfaceVariant,
+                          )
+                        : Icon(isPlaying ? Icons.pause : Icons.play_arrow),
+                    onPressed: isLoading
+                        ? null
+                        : () => controller.togglePlayPause(isPlaying),
+                  ),
+                if (mornye)
+                  MornyePlaybackButton(
+                    icon: CupertinoIcons.forward_fill,
+                    color: colorScheme.onSurface,
+                    tooltip: context.l10n.nowPlayingNextTrack,
+                    onPressed: controller.next,
+                  )
+                else
+                  ExpressiveIconButton(
+                    iconSize: 44,
+                    foregroundColor: colorScheme.onSurface,
+                    tooltip: context.l10n.nowPlayingNextTrack,
+                    icon: const Icon(Icons.skip_next),
+                    onPressed: controller.next,
+                  ),
+                if (!mornye)
+                  PlayerPlaybackModeButton(
+                    mode: PlayerPlaybackMode.repeat,
+                    colorScheme: colorScheme,
+                  ),
+              ],
+            ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              if (!mornye)
-                PlayerPlaybackModeButton(
-                  mode: PlayerPlaybackMode.shuffle,
-                  colorScheme: colorScheme,
-                ),
-              if (mornye)
-                MornyePlaybackButton(
-                  icon: CupertinoIcons.backward_fill,
-                  color: colorScheme.onSurface,
-                  tooltip: context.l10n.nowPlayingPreviousTrack,
-                  onPressed: controller.previous,
-                )
-              else
-                ExpressiveIconButton(
-                  iconSize: 44,
-                  foregroundColor: colorScheme.onSurface,
-                  tooltip: context.l10n.nowPlayingPreviousTrack,
-                  icon: const Icon(Icons.skip_previous),
-                  onPressed: controller.previous,
-                ),
-              if (mornye)
-                MornyePlaybackButton(
-                  icon: isPlaying
-                      ? CupertinoIcons.pause_fill
-                      : CupertinoIcons.play_fill,
-                  tooltip: isPlaying
-                      ? context.l10n.actionPause
-                      : context.l10n.tooltipPlay,
-                  color: colorScheme.onSurface,
-                  iconSize: playPauseSize,
-                  // A smaller play glyph keeps the same 68dp touch target and
-                  // does not move the timeline, artwork or adjacent buttons.
-                  padding: EdgeInsets.all((68 - playPauseSize) / 2),
-                  loading: isLoading,
-                  onPressed: () => controller.togglePlayPause(isPlaying),
-                )
-              else
-                ExpressiveIconButton(
-                  size: 68,
-                  iconSize: 44,
-                  selected: isPlaying,
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: colorScheme.onPrimary,
-                  tooltip: isPlaying
-                      ? context.l10n.actionPause
-                      : context.l10n.tooltipPlay,
-                  icon: isLoading
-                      ? AppLoadingIndicator(color: colorScheme.onSurfaceVariant)
-                      : Icon(isPlaying ? Icons.pause : Icons.play_arrow),
-                  onPressed: isLoading
-                      ? null
-                      : () => controller.togglePlayPause(isPlaying),
-                ),
-              if (mornye)
-                MornyePlaybackButton(
-                  icon: CupertinoIcons.forward_fill,
-                  color: colorScheme.onSurface,
-                  tooltip: context.l10n.nowPlayingNextTrack,
-                  onPressed: controller.next,
-                )
-              else
-                ExpressiveIconButton(
-                  iconSize: 44,
-                  foregroundColor: colorScheme.onSurface,
-                  tooltip: context.l10n.nowPlayingNextTrack,
-                  icon: const Icon(Icons.skip_next),
-                  onPressed: controller.next,
-                ),
-              if (!mornye)
-                PlayerPlaybackModeButton(
-                  mode: PlayerPlaybackMode.repeat,
-                  colorScheme: colorScheme,
-                ),
-            ],
-          ),
-        ),
       ],
     );
   }
