@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart' show CupertinoColors;
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 
 /// One switch style for settings, extension controls and editing sheets.
 /// Mornye keeps its wide oval thumb even when glass or motion is disabled.
@@ -27,6 +28,7 @@ class AppSwitch extends StatelessWidget {
         child: M3ESwitch(
           value: value,
           onChanged: onChanged,
+          selectedIcon: const AppIcon(Icons.check),
           semanticLabel: semanticLabel,
         ),
       );

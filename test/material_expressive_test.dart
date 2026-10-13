@@ -125,10 +125,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(findAppIcon(Icons.check), findsNothing);
     await tester.tap(find.text('Autoplay'));
     await tester.pumpAndSettle();
     expect(value, isTrue);
     expect(calls, 1);
+    expect(findAppIcon(Icons.check), findsOneWidget);
     await tester.tap(find.byType(M3ESwitch));
     await tester.pumpAndSettle();
     expect(value, isFalse);
