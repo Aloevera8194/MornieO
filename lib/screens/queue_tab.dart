@@ -11,7 +11,11 @@ import 'package:spotiflac_android/widgets/track_card.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:spotiflac_android/widgets/library_search_results.dart';
@@ -770,7 +774,8 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                                     ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                               const Spacer(),
-                              TextButton(
+                              ExpressiveButton(
+                                text: true,
                                 onPressed: () {
                                   setSheetState(() {
                                     tempSource = null;
@@ -1792,7 +1797,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                     padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
                     child: Row(
                       children: [
-                        Icon(
+                        AppIcon(
                           Icons.downloading_rounded,
                           size: 16,
                           color: colorScheme.primary,
@@ -1811,7 +1816,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                           ),
                         ),
                         if (failedCount > 0 && !isProcessing)
-                          IconButton(
+                          AppIconButton(
                             onPressed: () => ref
                                 .read(downloadQueueProvider.notifier)
                                 .retryAllFailed(),
@@ -1822,7 +1827,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                             color: colorScheme.primary,
                             visualDensity: VisualDensity.compact,
                           ),
-                        IconButton(
+                        AppIconButton(
                           onPressed: () => ref
                               .read(downloadQueueProvider.notifier)
                               .togglePause(),
@@ -1838,7 +1843,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                           color: colorScheme.onSurfaceVariant,
                           visualDensity: VisualDensity.compact,
                         ),
-                        IconButton(
+                        AppIconButton(
                           onPressed: () =>
                               _showClearAllDialog(context, ref, colorScheme),
                           icon: const Icon(Icons.clear_all_rounded, size: 20),

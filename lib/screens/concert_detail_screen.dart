@@ -15,6 +15,8 @@ import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 class ConcertDetailScreen extends StatefulWidget {
   const ConcertDetailScreen({
@@ -356,7 +358,8 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
                                 context.l10n.concertDetailsUnavailable,
                                 textAlign: TextAlign.center,
                               ),
-                              TextButton(
+                              ExpressiveButton(
+                                text: true,
                                 onPressed: _load,
                                 child: Text(context.l10n.dialogRetry),
                               ),
@@ -440,10 +443,10 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
     IconData icon,
     String label,
     VoidCallback onTap,
-  ) => OutlinedButton.icon(
+  ) => ExpressiveButton(
+    outlined: true,
     onPressed: onTap,
     icon: Icon(icon, size: 19),
-    label: Text(label, textAlign: TextAlign.center),
     style: OutlinedButton.styleFrom(
       foregroundColor: Colors.white,
       backgroundColor: Colors.black.withValues(alpha: 0.15),
@@ -452,6 +455,7 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
     ),
+    child: Text(label, textAlign: TextAlign.center),
   );
 
   Widget _infoRow(
@@ -484,7 +488,7 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
           ),
         ),
         if (onTap != null)
-          IconButton(
+          AppIconButton(
             onPressed: onTap,
             tooltip: tooltip,
             icon: Icon(icon, size: 21),

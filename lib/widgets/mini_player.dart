@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
@@ -206,19 +209,17 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
                           ],
                         ),
                       ),
-                      IconButton(
+                      AppIconButton(
                         color: mornye ? colorScheme.onSurface : null,
                         tooltip: isPlaying
                             ? context.l10n.actionPause
                             : context.l10n.tooltipPlay,
                         icon: isLoading
-                            ? const SizedBox.square(
-                                dimension: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                ),
+                            ? const AppLoadingIndicator(
+                                size: 20,
+                                strokeWidth: 2.5,
                               )
-                            : Icon(
+                            : AppIcon(
                                 mornye
                                     ? (isPlaying
                                           ? CupertinoIcons.pause_fill
@@ -232,10 +233,10 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
                             : () => controller.togglePlayPause(isPlaying),
                       ),
                       if (!compact)
-                        IconButton(
+                        AppIconButton(
                           color: mornye ? colorScheme.onSurface : null,
                           tooltip: context.l10n.nowPlayingNextTrack,
-                          icon: Icon(
+                          icon: AppIcon(
                             mornye
                                 ? CupertinoIcons.forward_fill
                                 : Icons.skip_next,

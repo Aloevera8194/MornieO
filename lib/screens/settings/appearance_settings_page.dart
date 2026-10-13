@@ -11,6 +11,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/custom_font_setting.dart';
 
@@ -71,13 +72,13 @@ class AppearanceSettingsPage extends ConsumerWidget {
                       ),
                       leading: context.isMornye
                           ? null
-                          : Icon(
+                          : AppIcon(
                               style == AppThemeStyle.mornye
                                   ? Icons.music_note_outlined
                                   : Icons.palette_outlined,
                             ),
                       trailing: themeSettings.style == style
-                          ? Icon(
+                          ? AppIcon(
                               Icons.check_circle,
                               color: Theme.of(context).colorScheme.primary,
                             )
@@ -291,7 +292,7 @@ class _ThemePreviewCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Icon(
+                    AppIcon(
                       Icons.library_music_outlined,
                       color: colorScheme.primary,
                     ),
@@ -306,15 +307,15 @@ class _ThemePreviewCard extends StatelessWidget {
                 MornyeTabBar(
                   destinations: [
                     NavigationDestination(
-                      icon: const Icon(Icons.home_outlined),
+                      icon: const AppIcon(Icons.home_outlined),
                       label: context.l10n.navHome,
                     ),
                     NavigationDestination(
-                      icon: const Icon(Icons.library_music_outlined),
+                      icon: const AppIcon(Icons.library_music_outlined),
                       label: context.l10n.navLibrary,
                     ),
                     NavigationDestination(
-                      icon: const Icon(Icons.settings_outlined),
+                      icon: const AppIcon(Icons.settings_outlined),
                       label: context.l10n.navSettings,
                     ),
                   ],
@@ -405,7 +406,7 @@ class _ThemePreviewCard extends StatelessWidget {
                             color: colorScheme.primary,
                             borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Icon(
+                          child: AppIcon(
                             Icons.music_note,
                             color: colorScheme.onPrimary,
                             size: artworkSize * 0.44,
@@ -437,19 +438,19 @@ class _ThemePreviewCard extends StatelessWidget {
                               const SizedBox(height: 24),
                               Row(
                                 children: [
-                                  Icon(
+                                  AppIcon(
                                     Icons.skip_previous,
                                     size: 24,
                                     color: colorScheme.onSurfaceVariant,
                                   ),
                                   const SizedBox(width: 12),
-                                  Icon(
+                                  AppIcon(
                                     Icons.play_circle_fill,
                                     size: 32,
                                     color: colorScheme.primary,
                                   ),
                                   const SizedBox(width: 12),
-                                  Icon(
+                                  AppIcon(
                                     Icons.skip_next,
                                     size: 24,
                                     color: colorScheme.onSurfaceVariant,
@@ -571,7 +572,7 @@ class _MornyeGlassClaritySlider extends ConsumerWidget {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.music_note_rounded),
+                          const AppIcon(Icons.music_note_rounded),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
@@ -579,7 +580,7 @@ class _MornyeGlassClaritySlider extends ConsumerWidget {
                               style: theme.textTheme.titleMedium,
                             ),
                           ),
-                          const Icon(Icons.play_arrow_rounded),
+                          const AppIcon(Icons.play_arrow_rounded),
                         ],
                       ),
                     ),
@@ -675,7 +676,7 @@ class _MornyeAccentPicker extends StatelessWidget {
                       minimumSize: const Size.square(48),
                     ),
                     icon: selected == accent
-                        ? const Icon(Icons.check)
+                        ? const AppIcon(Icons.check)
                         : const SizedBox.square(dimension: 24),
                   ),
                 );
@@ -789,7 +790,7 @@ class _ColorPaletteItem extends StatelessWidget {
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check, size: 16, color: scheme.primary),
+                child: AppIcon(Icons.check, size: 16, color: scheme.primary),
               ),
             ),
           ),
@@ -936,10 +937,13 @@ class _LanguageSelector extends StatelessWidget {
     final content = ListTile(
       leading: context.isMornye
           ? null
-          : Icon(Icons.language, color: colorScheme.onSurfaceVariant),
+          : AppIcon(Icons.language, color: colorScheme.onSurfaceVariant),
       title: Text(context.l10n.appearanceLanguage),
       subtitle: Text(_getLanguageName(currentLocale)),
-      trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
+      trailing: AppIcon(
+        Icons.chevron_right,
+        color: colorScheme.onSurfaceVariant,
+      ),
       onTap: () => _showLanguagePicker(context),
     );
     return SettingsSearchTarget(
@@ -976,7 +980,7 @@ class _LanguageSelector extends StatelessWidget {
                   final lang = supportedLanguageChoices[index];
                   final isSelected = currentLocale == lang.$1;
                   return AppSheetOption(
-                    leading: Icon(
+                    leading: AppIcon(
                       lang.$3,
                       color: isSelected
                           ? colorScheme.primary
@@ -994,7 +998,7 @@ class _LanguageSelector extends StatelessWidget {
                       ),
                     ),
                     trailing: isSelected
-                        ? Icon(Icons.check, color: colorScheme.primary)
+                        ? AppIcon(Icons.check, color: colorScheme.primary)
                         : null,
                     onTap: () {
                       onChanged(lang.$1);

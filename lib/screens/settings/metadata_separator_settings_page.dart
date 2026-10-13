@@ -4,6 +4,8 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/metadata_separators.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
@@ -131,7 +133,7 @@ class _SeparatorPickerState extends State<_SeparatorPicker> {
                   title: Text(labels[i]),
                   trailing:
                       (_selected == (i < _presets.length ? _presets[i] : null))
-                      ? const Icon(Icons.check)
+                      ? const AppIcon(Icons.check)
                       : null,
                   onTap: () => setState(() {
                     _selected = i < _presets.length ? _presets[i] : null;
@@ -157,7 +159,7 @@ class _SeparatorPickerState extends State<_SeparatorPicker> {
               const SizedBox(height: 8),
               Text(formatMetadataTagValue(example, valid ? separator : '')),
               const SizedBox(height: 24),
-              FilledButton(
+              ExpressiveButton(
                 onPressed: valid
                     ? () => Navigator.of(context).pop(separator)
                     : null,

@@ -11,6 +11,8 @@ import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 
@@ -307,11 +309,7 @@ class _PlaylistPickerSheetContentState
                   );
                 },
                 loading: () => const Center(
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
+                  child: AppLoadingIndicator(size: 24, strokeWidth: 2),
                 ),
                 error: (_, _) => Padding(
                   padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -336,7 +334,7 @@ class _PlaylistPickerSheetContentState
                       icon: const Icon(CupertinoIcons.checkmark),
                       label: Text(context.l10n.dialogDone),
                     )
-                  : FilledButton(
+                  : ExpressiveButton(
                       onPressed: _isSubmitting ? null : onDone,
                       child: Text(context.l10n.dialogDone),
                     ),

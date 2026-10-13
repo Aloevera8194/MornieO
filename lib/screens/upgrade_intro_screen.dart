@@ -7,6 +7,8 @@ import 'package:spotiflac_android/providers/theme_provider.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 /// A local, replayable release tour. Theme changes require an explicit choice.
 class UpgradeIntroScreen extends StatefulWidget {
@@ -68,7 +70,7 @@ class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
                     child: Row(
                       children: [
                         if (_page > 0)
-                          IconButton(
+                          AppIconButton(
                             tooltip: MaterialLocalizations.of(
                               context,
                             ).backButtonTooltip,
@@ -83,7 +85,8 @@ class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
                         else
                           const SizedBox(width: 48, height: 48),
                         const Spacer(),
-                        TextButton(
+                        ExpressiveButton(
+                          text: true,
                           onPressed: _finish,
                           child: Text(l10n.upgradeIntroSkip),
                         ),
@@ -228,7 +231,7 @@ class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
                         const SizedBox(height: 20),
                         SizedBox(
                           width: double.infinity,
-                          child: FilledButton(
+                          child: ExpressiveButton(
                             onPressed: last ? _finish : () => _goTo(_page + 1),
                             style: FilledButton.styleFrom(
                               minimumSize: const Size.fromHeight(54),

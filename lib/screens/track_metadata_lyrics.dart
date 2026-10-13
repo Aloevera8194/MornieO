@@ -26,7 +26,7 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                   ),
                 ),
                 if (hasDisplayLyrics)
-                  IconButton(
+                  AppIconButton(
                     icon: Icon(
                       context.isMornye ? CupertinoIcons.doc_on_doc : Icons.copy,
                       size: 20,
@@ -52,7 +52,7 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
+                  child: AppLoadingIndicator(),
                 ),
               )
             else if (_lyricsError != null)
@@ -76,7 +76,8 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                         style: TextStyle(color: colorScheme.onErrorContainer),
                       ),
                     ),
-                    TextButton(
+                    ExpressiveButton(
+                      text: true,
                       onPressed: _fetchOnlineLyrics,
                       child: Text(context.l10n.dialogRetry),
                     ),
@@ -128,18 +129,16 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                   if (!_lyricsEmbedded && _fileExists && !_isNetworkItem) ...[
                     const SizedBox(height: 16),
                     Center(
-                      child: FilledButton.tonalIcon(
+                      child: ExpressiveButton(
+                        tonal: true,
                         onPressed: _isEmbedding ? null : _embedLyrics,
                         icon: _isEmbedding
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
+                            ? const AppLoadingIndicator(
+                                size: 18,
+                                strokeWidth: 2,
                               )
                             : const Icon(Icons.save_alt),
-                        label: Text(context.l10n.trackEmbedLyrics),
+                        child: Text(context.l10n.trackEmbedLyrics),
                       ),
                     ),
                   ],
@@ -177,20 +176,22 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                   ),
                   const SizedBox(height: 12),
                   Center(
-                    child: FilledButton.tonalIcon(
+                    child: ExpressiveButton(
+                      tonal: true,
                       onPressed: _fetchOnlineLyrics,
                       icon: const Icon(Icons.cloud_download_outlined),
-                      label: Text(context.l10n.trackFetchOnlineLyrics),
+                      child: Text(context.l10n.trackFetchOnlineLyrics),
                     ),
                   ),
                 ],
               )
             else
               Center(
-                child: FilledButton.tonalIcon(
+                child: ExpressiveButton(
+                  tonal: true,
                   onPressed: _fetchLyrics,
                   icon: const Icon(Icons.download),
-                  label: Text(context.l10n.trackLoadLyrics),
+                  child: Text(context.l10n.trackLoadLyrics),
                 ),
               ),
           ],

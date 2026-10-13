@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/widgets/scroll_edge_fade.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 class TutorialScreen extends ConsumerStatefulWidget {
   const TutorialScreen({super.key});
@@ -103,7 +106,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                   AnimatedOpacity(
                     duration: const Duration(milliseconds: 300),
                     opacity: _currentPage > 0 ? 1.0 : 0.0,
-                    child: IconButton.filledTonal(
+                    child: AppIconButton.filledTonal(
                       onPressed: _currentPage > 0 ? _prevPage : null,
                       tooltip: MaterialLocalizations.of(
                         context,
@@ -116,7 +119,8 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                     ),
                   ),
 
-                  TextButton(
+                  ExpressiveButton(
+                    text: true,
                     onPressed: _skipTutorial,
                     style: TextButton.styleFrom(
                       foregroundColor: colorScheme.onSurfaceVariant,
@@ -256,7 +260,7 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                       child: SizedBox(
                         width: double.infinity,
                         height: actionButtonHeight,
-                        child: FilledButton(
+                        child: ExpressiveButton(
                           onPressed: _nextPage,
                           style: FilledButton.styleFrom(
                             shape: RoundedRectangleBorder(
@@ -642,13 +646,9 @@ class _InteractiveDownloadExampleState
                       ],
                     ),
                     child: _isDownloading
-                        ? SizedBox(
-                            width: buttonIconSize,
-                            height: buttonIconSize,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: colorScheme.onPrimary,
-                            ),
+                        ? AppLoadingIndicator(
+                            size: buttonIconSize,
+                            color: colorScheme.onPrimary,
                           )
                         : ExcludeSemantics(
                             child: Icon(

@@ -13,6 +13,7 @@ import 'package:spotiflac_android/screens/settings/library_settings_page.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
 class _Settings extends SettingsNotifier {
@@ -162,7 +163,7 @@ void main() {
       expect(
         find.descendant(
           of: _cleanupRow,
-          matching: find.byType(CircularProgressIndicator),
+          matching: find.byType(AppLoadingIndicator),
         ),
         findsOneWidget,
       );

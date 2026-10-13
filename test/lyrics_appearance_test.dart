@@ -7,6 +7,7 @@ import 'package:spotiflac_android/models/theme_settings.dart';
 import 'package:spotiflac_android/providers/theme_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/lyrics_parser.dart';
+import 'package:spotiflac_android/widgets/app_slider.dart';
 import 'package:spotiflac_android/widgets/lyrics_size_setting.dart';
 import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
 import 'package:spotiflac_android/widgets/player_lyrics.dart';
@@ -40,7 +41,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final slider = tester.widget<Slider>(find.byType(Slider));
+    final slider = tester.widget<AppSlider>(find.byType(AppSlider));
     slider.onChanged!(1.3);
     await tester.pump();
     expect(find.text('130%'), findsOneWidget);

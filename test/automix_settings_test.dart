@@ -11,6 +11,7 @@ import 'package:spotiflac_android/widgets/automix_settings.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_slider.dart';
 
 void main() {
   testWidgets(
@@ -41,7 +42,7 @@ void main() {
           ),
         ),
       );
-      final slider = tester.widget<Slider>(find.byType(Slider).first);
+      final slider = tester.widget<AppSlider>(find.byType(AppSlider).first);
       slider.onChanged!(45);
       await tester.pump();
       expect(container.read(settingsProvider).autoMixDuration, 5);
@@ -51,7 +52,9 @@ void main() {
       expect(container.read(settingsProvider).autoMixDuration, 45);
       container.read(settingsProvider.notifier).setUsbBitPerfect(true);
       await tester.pump();
-      for (final slider in tester.widgetList<Slider>(find.byType(Slider))) {
+      for (final slider in tester.widgetList<AppSlider>(
+        find.byType(AppSlider),
+      )) {
         expect(slider.onChanged, isNull);
       }
       await tester.tap(find.text('Transition effect'));
@@ -126,7 +129,7 @@ void main() {
         );
         expect(find.byType(BottomSheet), findsNothing);
         expect(find.text('Custom'), findsOneWidget);
-        expect(find.byType(Slider), findsNWidgets(2));
+        expect(find.byType(AppSlider), findsNWidgets(2));
         expect(tester.takeException(), isNull);
       },
     );

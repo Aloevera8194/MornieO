@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 class PrioritySettingsScaffold extends StatelessWidget {
   final bool hasChanges;
@@ -55,14 +57,15 @@ class PrioritySettingsScaffold extends StatelessWidget {
           slivers: [
             AppSliverHeader.page(
               title: title,
-              leading: IconButton(
+              leading: AppIconButton(
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => _handleBack(context),
               ),
               actions: [
                 if (hasChanges)
-                  TextButton(
+                  ExpressiveButton(
+                    text: true,
                     onPressed: onSave,
                     child: Text(context.l10n.dialogSave),
                   ),

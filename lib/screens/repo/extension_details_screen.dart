@@ -13,6 +13,9 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/extension_repo_card.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 class ExtensionDetailsScreen extends ConsumerStatefulWidget {
   final RepoExtension extension;
@@ -134,7 +137,7 @@ class _ExtensionDetailsScreenState
       leadingWidth: kToolbarHeight + edgeInset,
       leading: Padding(
         padding: EdgeInsets.only(left: edgeInset),
-        child: IconButton(
+        child: AppIconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           icon: Icon(
             context.isMornye ? CupertinoIcons.chevron_back : Icons.arrow_back,
@@ -229,22 +232,15 @@ class _ExtensionDetailsScreenState
                 const SizedBox(height: 24),
 
                 if (isDownloading)
-                  Center(
-                    child: CircularProgressIndicator(
-                      color: colorScheme.primary,
-                    ),
-                  )
+                  Center(child: AppLoadingIndicator(color: colorScheme.primary))
                 else ...[
                   if (ext.hasUpdate)
-                    FilledButton.icon(
+                    ExpressiveButton(
                       onPressed: () => _updateExtension(ext),
                       icon: Icon(
                         context.isMornye
                             ? CupertinoIcons.arrow_clockwise
                             : Icons.update,
-                      ),
-                      label: Text(
-                        '${context.l10n.storeUpdate} v${ext.version}',
                       ),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
@@ -252,29 +248,33 @@ class _ExtensionDetailsScreenState
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
+                      child: Text(
+                        '${context.l10n.storeUpdate} v${ext.version}',
+                      ),
                     )
                   else if (ext.isInstalled)
                     Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton.icon(
+                          child: ExpressiveButton(
+                            outlined: true,
                             onPressed: null,
                             icon: Icon(
                               context.isMornye
                                   ? CupertinoIcons.check_mark
                                   : Icons.check,
                             ),
-                            label: Text(context.l10n.storeInstalled),
                             style: OutlinedButton.styleFrom(
                               minimumSize: const Size(0, 52),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16),
                               ),
                             ),
+                            child: Text(context.l10n.storeInstalled),
                           ),
                         ),
                         const SizedBox(width: 12),
-                        IconButton.filled(
+                        AppIconButton.filled(
                           onPressed: () => _uninstallExtension(ext),
                           icon: Icon(
                             context.isMornye
@@ -294,20 +294,20 @@ class _ExtensionDetailsScreenState
                       ],
                     )
                   else
-                    FilledButton.icon(
+                    ExpressiveButton(
                       onPressed: () => _installExtension(ext),
                       icon: Icon(
                         context.isMornye
                             ? CupertinoIcons.arrow_down_circle
                             : Icons.download,
                       ),
-                      label: Text(context.l10n.storeInstall),
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(52),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
+                      child: Text(context.l10n.storeInstall),
                     ),
                 ],
               ],

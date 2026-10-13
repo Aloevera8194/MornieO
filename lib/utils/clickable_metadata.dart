@@ -14,6 +14,7 @@ import 'package:spotiflac_android/services/shell_navigation_service.dart';
 import 'package:spotiflac_android/utils/artist_utils.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 
 final _log = AppLogger('ClickableMetadata');
 
@@ -499,11 +500,7 @@ void _showLoadingSnackBar(BuildContext context, String message) {
     SnackBar(
       content: Row(
         children: [
-          const SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          const AppLoadingIndicator(size: 16, strokeWidth: 2),
           const SizedBox(width: 12),
           Text(message),
         ],

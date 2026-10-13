@@ -205,7 +205,8 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
                         ),
                       ),
                       const Spacer(),
-                      TextButton(
+                      ExpressiveButton(
+                        text: true,
                         onPressed: () => setSheetState(
                           () => tempSort = HomeSearchSortOption.defaultOrder,
                         ),
@@ -824,20 +825,20 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (hasText)
-            IconButton(
+            AppIconButton(
               icon: const Icon(Icons.clear),
               onPressed: _clearAndRefresh,
               tooltip: context.l10n.dialogClear,
             )
           else ...[
-            IconButton(
+            AppIconButton(
               icon: const Icon(Icons.file_upload_outlined),
               onPressed: _isCsvImporting
                   ? null
                   : () => _importCsv(context, ref),
               tooltip: context.l10n.homeImportCsvTooltip,
             ),
-            IconButton(
+            AppIconButton(
               icon: const Icon(Icons.paste),
               onPressed: _pasteFromClipboard,
               tooltip: context.l10n.actionPaste,

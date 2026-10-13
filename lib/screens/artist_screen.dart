@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/mornye_artist_header.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
@@ -856,7 +858,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
       children: [
         SizedBox(
           width: double.infinity,
-          child: FilledButton.icon(
+          child: ExpressiveButton(
             onPressed: selectedCount > 0 && !_isFetchingDiscography
                 ? () {
                     exitSelectionMode();
@@ -869,19 +871,19 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                   }
                 : null,
             icon: const Icon(Icons.playlist_add),
-            label: Text(context.l10n.collectionAddToPlaylist),
+            child: Text(context.l10n.collectionAddToPlaylist),
           ),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
             Expanded(
-              child: FilledButton.icon(
+              child: ExpressiveButton(
                 onPressed: selectedCount > 0
                     ? () => _downloadSelectedAlbums(context, selectedAlbums)
                     : null,
                 icon: const Icon(Icons.download, size: 18),
-                label: Text(context.l10n.discographyDownloadSelected),
+                child: Text(context.l10n.discographyDownloadSelected),
               ),
             ),
           ],

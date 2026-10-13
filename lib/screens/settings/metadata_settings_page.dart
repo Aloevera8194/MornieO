@@ -6,6 +6,7 @@ import 'package:spotiflac_android/utils/artist_utils.dart';
 import 'package:spotiflac_android/screens/settings/metadata_provider_priority_page.dart';
 import 'package:spotiflac_android/screens/settings/metadata_separator_settings_page.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 
@@ -217,7 +218,7 @@ class MetadataSettingsPage extends ConsumerWidget {
               ),
               for (final maxDimension in options)
                 AppSheetOption(
-                  leading: Icon(
+                  leading: AppIcon(
                     maxDimension == 0
                         ? Icons.image_outlined
                         : Icons.compress_outlined,
@@ -226,7 +227,7 @@ class MetadataSettingsPage extends ConsumerWidget {
                     _getEmbeddedCoverSizeLabel(context, maxDimension),
                   ),
                   trailing: currentMaxDimension == maxDimension
-                      ? const Icon(Icons.check)
+                      ? const AppIcon(Icons.check)
                       : null,
                   onTap: () {
                     ref
@@ -281,11 +282,11 @@ class MetadataSettingsPage extends ConsumerWidget {
                 ),
               ),
               AppSheetOption(
-                leading: const Icon(Icons.segment_outlined),
+                leading: const AppIcon(Icons.segment_outlined),
                 title: Text(context.l10n.optionsArtistTagModeJoined),
                 subtitle: Text(context.l10n.optionsArtistTagModeJoinedSubtitle),
                 trailing: currentMode == artistTagModeJoined
-                    ? const Icon(Icons.check)
+                    ? const AppIcon(Icons.check)
                     : null,
                 onTap: () {
                   ref
@@ -295,13 +296,13 @@ class MetadataSettingsPage extends ConsumerWidget {
                 },
               ),
               AppSheetOption(
-                leading: const Icon(Icons.library_music_outlined),
+                leading: const AppIcon(Icons.library_music_outlined),
                 title: Text(context.l10n.optionsArtistTagModeSplitVorbis),
                 subtitle: Text(
                   context.l10n.optionsArtistTagModeSplitVorbisSubtitle,
                 ),
                 trailing: currentMode == artistTagModeSplitVorbis
-                    ? const Icon(Icons.check)
+                    ? const AppIcon(Icons.check)
                     : null,
                 onTap: () {
                   ref
@@ -311,13 +312,13 @@ class MetadataSettingsPage extends ConsumerWidget {
                 },
               ),
               AppSheetOption(
-                leading: const Icon(Icons.person_outline),
+                leading: const AppIcon(Icons.person_outline),
                 title: Text(context.l10n.optionsArtistTagModePrimary),
                 subtitle: Text(
                   context.l10n.optionsArtistTagModePrimarySubtitle,
                 ),
                 trailing: currentMode == artistTagModePrimary
-                    ? const Icon(Icons.check)
+                    ? const AppIcon(Icons.check)
                     : null,
                 onTap: () {
                   ref

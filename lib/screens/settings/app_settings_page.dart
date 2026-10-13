@@ -8,6 +8,8 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class AppSettingsPage extends ConsumerWidget {
@@ -226,7 +228,7 @@ class AppSettingsPage extends ConsumerWidget {
             if (context.isMornye)
               const CupertinoActivityIndicator()
             else
-              const CircularProgressIndicator(),
+              const AppLoadingIndicator(),
             const SizedBox(width: 16),
             Expanded(child: Text(context.l10n.cleanupOrphanedDownloads)),
           ],
@@ -281,7 +283,7 @@ class _UpdateChannelSelector extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              AppIcon(
                 context.adaptiveIcon(Icons.new_releases),
                 color: context.isMornye
                     ? colorScheme.primary
@@ -332,7 +334,7 @@ class _UpdateChannelSelector extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Icon(
+              AppIcon(
                 Icons.info_outline,
                 size: 16,
                 color: colorScheme.onSurfaceVariant,
@@ -386,7 +388,7 @@ class _VerificationBrowserModeSelector extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
+                  AppIcon(
                     context.adaptiveIcon(Icons.open_in_browser),
                     color: context.isMornye
                         ? colorScheme.primary

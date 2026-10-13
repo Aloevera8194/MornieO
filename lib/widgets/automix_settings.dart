@@ -4,6 +4,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/automix_options.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_slider.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
 class AutoMixSettings extends ConsumerStatefulWidget {
@@ -94,7 +95,7 @@ class _AutoMixSettingsState extends ConsumerState<AutoMixSettings> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label),
-            Slider(
+            AppSlider(
               value: value.clamp(min, max),
               min: min,
               max: max,

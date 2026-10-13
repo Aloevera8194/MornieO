@@ -22,6 +22,8 @@ import 'package:spotiflac_android/widgets/expressive_navigation_bar.dart';
 import 'package:spotiflac_android/widgets/selection_action_button.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
+import 'support/app_icon_finder.dart';
+
 Widget _host(
   Widget child, {
   ThemeData? theme,
@@ -156,7 +158,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('12'), findsOneWidget);
-    expect(find.byIcon(Icons.album_outlined), findsOneWidget);
+    expect(findAppIcon(Icons.album_outlined), findsOneWidget);
     await tester.tap(find.text('Albums'));
     await tester.pumpAndSettle();
     expect(selected, isTrue);

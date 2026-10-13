@@ -366,16 +366,11 @@ extension _QueueTabSelectionActions on _QueueTabState {
       children: [
         SizedBox(
           width: double.infinity,
-          child: FilledButton.icon(
+          child: ExpressiveButton(
             onPressed: selectedCount > 0
                 ? () => _downloadAllSelectedPlaylists(context)
                 : null,
             icon: const Icon(Icons.download_rounded),
-            label: Text(
-              selectedCount > 0
-                  ? context.l10n.bulkDownloadPlaylistsButton(selectedCount)
-                  : context.l10n.bulkDownloadSelectPlaylists,
-            ),
             style: FilledButton.styleFrom(
               backgroundColor: selectedCount > 0
                   ? colorScheme.primary
@@ -388,6 +383,11 @@ extension _QueueTabSelectionActions on _QueueTabState {
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
+            child: Text(
+              selectedCount > 0
+                  ? context.l10n.bulkDownloadPlaylistsButton(selectedCount)
+                  : context.l10n.bulkDownloadSelectPlaylists,
+            ),
           ),
         ),
 
@@ -395,16 +395,11 @@ extension _QueueTabSelectionActions on _QueueTabState {
 
         SizedBox(
           width: double.infinity,
-          child: FilledButton.icon(
+          child: ExpressiveButton(
             onPressed: selectedCount > 0
                 ? () => _deleteSelectedPlaylists(context)
                 : null,
             icon: const Icon(Icons.delete_outline),
-            label: Text(
-              selectedCount > 0
-                  ? context.l10n.selectionDeletePlaylistsCount(selectedCount)
-                  : context.l10n.selectionSelectPlaylistsToDelete,
-            ),
             style: FilledButton.styleFrom(
               backgroundColor: selectedCount > 0
                   ? colorScheme.error
@@ -416,6 +411,11 @@ extension _QueueTabSelectionActions on _QueueTabState {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
+            ),
+            child: Text(
+              selectedCount > 0
+                  ? context.l10n.selectionDeletePlaylistsCount(selectedCount)
+                  : context.l10n.selectionSelectPlaylistsToDelete,
             ),
           ),
         ),

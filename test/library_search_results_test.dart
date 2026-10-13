@@ -20,6 +20,8 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/library_search_results.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 
+import 'support/app_icon_finder.dart';
+
 class _PlaybackRecorder extends PlaybackController {
   final paths = <String>[];
 
@@ -205,11 +207,11 @@ void main() {
       await tester.tap(find.text('Found artists 0'));
       expect(artists, ['Found artists 0']);
       await tester.scrollUntilVisible(
-        find.byIcon(Icons.expand_more),
+        findAppIcon(Icons.expand_more),
         600,
         scrollable: find.byType(Scrollable).first,
       );
-      await tester.tap(find.byIcon(Icons.expand_more));
+      await tester.tap(findAppIcon(Icons.expand_more));
       await tester.pumpAndSettle();
       expect(requests.last.offset, 40);
       expect(tester.takeException(), isNull);

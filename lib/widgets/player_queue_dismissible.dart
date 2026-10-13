@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart' show CupertinoColors, CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 
 /// Removing a row affects the queue only, never the song on disk.
 class PlayerQueueDismissible extends StatefulWidget {
@@ -56,7 +57,7 @@ class _PlayerQueueDismissibleState extends State<PlayerQueueDismissible> {
               color: Theme.of(context).colorScheme.error,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
+            child: AppIcon(
               Icons.delete_outline,
               color: Theme.of(context).colorScheme.onError,
               semanticLabel: MaterialLocalizations.of(

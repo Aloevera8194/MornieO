@@ -8,6 +8,9 @@ import 'package:spotiflac_android/providers/user_profile_provider.dart';
 import 'package:spotiflac_android/services/user_profile_store.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/profile_avatar.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
@@ -116,7 +119,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                     Center(
                       child: AppActionButton(
                         onPressed: _busy ? null : _pickPhoto,
-                        icon: const Icon(Icons.photo_library_outlined),
+                        icon: const AppIcon(Icons.photo_library_outlined),
                         label: Text(context.l10n.profileChangePhoto),
                         outlined: true,
                         tonal: true,
@@ -124,7 +127,8 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                     ),
                     if (hasPhoto)
                       Center(
-                        child: TextButton(
+                        child: ExpressiveButton(
+                          text: true,
                           onPressed: _busy
                               ? null
                               : () => setState(() {
@@ -163,11 +167,8 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                     AppActionButton(
                       onPressed: _busy ? null : _save,
                       icon: _busy
-                          ? const SizedBox.square(
-                              dimension: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.check),
+                          ? const AppLoadingIndicator(size: 20, strokeWidth: 2)
+                          : const AppIcon(Icons.check),
                       label: Text(context.l10n.dialogSave),
                     ),
                   ],

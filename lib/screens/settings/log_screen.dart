@@ -5,6 +5,8 @@ import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus;
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/utils/ordered_range_selection.dart';
@@ -261,18 +263,18 @@ class _LogScreenState extends State<LogScreen> {
                   ? context.l10n.selectionSelected(_selectedEntries.length)
                   : context.l10n.logTitle,
               leading: _selectionMode
-                  ? IconButton(
+                  ? AppIconButton(
                       tooltip: MaterialLocalizations.of(
                         context,
                       ).closeButtonTooltip,
-                      icon: const Icon(Icons.close),
+                      icon: const AppIcon(Icons.close),
                       onPressed: _exitSelectionMode,
                     )
                   : null,
               actions: _selectionMode
                   ? [
-                      IconButton(
-                        icon: Icon(
+                      AppIconButton(
+                        icon: AppIcon(
                           logs.isNotEmpty &&
                                   logs.every(_selectedEntries.contains)
                               ? Icons.deselect
@@ -285,15 +287,15 @@ class _LogScreenState extends State<LogScreen> {
                             : context.l10n.actionSelectAll,
                         onPressed: _toggleSelectAllVisible,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.copy),
+                      AppIconButton(
+                        icon: const AppIcon(Icons.copy),
                         tooltip: context.l10n.logCopyLogs,
                         onPressed: _selectedEntries.isEmpty
                             ? null
                             : _copySelectedLogs,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.share),
+                      AppIconButton(
+                        icon: const AppIcon(Icons.share),
                         tooltip: context.l10n.logShareLogs,
                         onPressed: _selectedEntries.isEmpty
                             ? null
@@ -301,8 +303,8 @@ class _LogScreenState extends State<LogScreen> {
                       ),
                     ]
                   : [
-                      IconButton(
-                        icon: Icon(
+                      AppIconButton(
+                        icon: AppIcon(
                           _autoScroll
                               ? Icons.vertical_align_bottom
                               : Icons.vertical_align_center,
@@ -313,13 +315,13 @@ class _LogScreenState extends State<LogScreen> {
                         onPressed: () =>
                             setState(() => _autoScroll = !_autoScroll),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.copy),
+                      AppIconButton(
+                        icon: const AppIcon(Icons.copy),
                         tooltip: context.l10n.logCopyLogs,
                         onPressed: _copyLogs,
                       ),
                       PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert),
+                        icon: const AppIcon(Icons.more_vert),
                         tooltip: MaterialLocalizations.of(
                           context,
                         ).showMenuTooltip,
@@ -337,7 +339,7 @@ class _LogScreenState extends State<LogScreen> {
                           PopupMenuItem(
                             value: 'share',
                             child: ListTile(
-                              leading: const Icon(Icons.share),
+                              leading: const AppIcon(Icons.share),
                               title: Text(context.l10n.logShareLogs),
                               contentPadding: EdgeInsets.zero,
                             ),
@@ -345,7 +347,7 @@ class _LogScreenState extends State<LogScreen> {
                           PopupMenuItem(
                             value: 'clear',
                             child: ListTile(
-                              leading: const Icon(Icons.delete_outline),
+                              leading: const AppIcon(Icons.delete_outline),
                               title: Text(context.l10n.logClearLogs),
                               contentPadding: EdgeInsets.zero,
                             ),
@@ -370,7 +372,7 @@ class _LogScreenState extends State<LogScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        AppIcon(
                           Icons.filter_list,
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -465,7 +467,7 @@ class _LogScreenState extends State<LogScreen> {
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              AppIcon(
                                 Icons.article_outlined,
                                 size: 48,
                                 color: colorScheme.onSurfaceVariant.withValues(
@@ -638,7 +640,7 @@ class _LogEntryTile extends StatelessWidget {
                       ),
                       if (selectionMode) ...[
                         const SizedBox(width: 8),
-                        Icon(
+                        AppIcon(
                           selected
                               ? Icons.check_circle
                               : Icons.radio_button_unchecked,
@@ -719,7 +721,7 @@ class _LogSummaryCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
+                  AppIcon(
                     analysis.hasISPBlocking
                         ? Icons.block
                         : Icons.warning_amber_rounded,
@@ -918,7 +920,7 @@ class _IssueBadge extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: color),
+              AppIcon(icon, size: 16, color: color),
               const SizedBox(width: 6),
               Text(
                 label,
@@ -952,7 +954,7 @@ class _IssueBadge extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
+              AppIcon(
                 Icons.lightbulb_outline,
                 size: 14,
                 color: colorScheme.primary,

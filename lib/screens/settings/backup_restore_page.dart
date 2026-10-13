@@ -15,6 +15,8 @@ import 'package:spotiflac_android/services/backup_service.dart';
 import 'package:spotiflac_android/services/history_database.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class BackupRestorePage extends ConsumerStatefulWidget {
@@ -349,11 +351,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                       : l10n.backupSelectAtLeastOne,
                   onTap: _isBusy || !_hasSelection ? null : _createBackup,
                   trailing: _isExporting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
+                      ? const AppLoadingIndicator(size: 20, strokeWidth: 2)
                       : null,
                   showDivider: false,
                 ),
@@ -372,11 +370,7 @@ class _BackupRestorePageState extends ConsumerState<BackupRestorePage> {
                   subtitle: l10n.backupImportSectionDescription,
                   onTap: _isBusy ? null : _restoreBackup,
                   trailing: _isImporting
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
+                      ? const AppLoadingIndicator(size: 20, strokeWidth: 2)
                       : null,
                   showDivider: false,
                 ),
@@ -403,7 +397,7 @@ class _ContentRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+          AppIcon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
           const SizedBox(width: 10),
           Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
         ],

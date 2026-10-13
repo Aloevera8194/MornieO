@@ -10,11 +10,15 @@ class AppLoadingIndicator extends StatelessWidget {
     this.size = 32,
     this.color,
     this.semanticLabel,
+    this.strokeWidth = 3,
   });
 
   final double size;
   final Color? color;
   final String? semanticLabel;
+
+  /// Stroke of the Mornye circular indicator.
+  final double strokeWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +42,7 @@ class AppLoadingIndicator extends StatelessWidget {
               enabled: animate,
               child: CircularProgressIndicator(
                 color: color,
-                strokeWidth: 3,
+                strokeWidth: strokeWidth,
                 semanticsLabel: semanticLabel,
               ),
             ),

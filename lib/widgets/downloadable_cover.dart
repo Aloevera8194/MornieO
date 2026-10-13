@@ -4,6 +4,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/cover_download_service.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 
 /// Adds the app-wide long-press-to-save behavior to a remote cover image.
 ///
@@ -100,10 +101,7 @@ class _DownloadableCoverState extends ConsumerState<DownloadableCover> {
                 child: ColoredBox(
                   color: Color(0x33000000),
                   child: Center(
-                    child: SizedBox.square(
-                      dimension: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
+                    child: AppLoadingIndicator(size: 22, strokeWidth: 2),
                   ),
                 ),
               ),

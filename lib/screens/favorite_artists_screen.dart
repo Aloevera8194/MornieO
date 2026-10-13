@@ -9,6 +9,7 @@ import 'package:spotiflac_android/services/cover_cache_manager.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class FavoriteArtistsScreen extends ConsumerWidget {
@@ -97,7 +98,7 @@ class FavoriteArtistsScreen extends ConsumerWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
-                    trailing: IconButton(
+                    trailing: AppIconButton(
                       tooltip: context.l10n.artistOptionRemoveFromFavorites,
                       icon: Icon(Icons.favorite, color: colorScheme.error),
                       onPressed: () async {

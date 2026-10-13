@@ -376,10 +376,10 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
                       onPressed: () => _openServiceUrl(context),
                     );
                   }
-                  return OutlinedButton.icon(
+                  return ExpressiveButton(
+                    outlined: true,
                     onPressed: () => _openServiceUrl(context),
                     icon: const Icon(Icons.open_in_new, size: 18),
-                    label: Text(buttonLabel),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
@@ -389,6 +389,7 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+                    child: Text(buttonLabel),
                   );
                 },
               ),

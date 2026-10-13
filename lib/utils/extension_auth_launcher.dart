@@ -8,6 +8,8 @@ import 'package:spotiflac_android/services/app_navigation_service.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/extension_session_callback.dart';
 import 'package:spotiflac_android/utils/logger.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final _log = AppLogger('ExtensionAuthLauncher');
@@ -331,15 +333,16 @@ Future<bool> showExtensionVerificationHelpDialog(
               ],
             ),
             actions: [
-              TextButton(
+              ExpressiveButton(
+                text: true,
                 onPressed: clipboardGrantInFlight
                     ? null
                     : () => Navigator.of(dialogContext).pop(),
                 child: Text(dialogL10n.extensionVerificationClose),
               ),
-              TextButton.icon(
+              ExpressiveButton(
+                text: true,
                 icon: const Icon(Icons.copy),
-                label: Text(dialogL10n.extensionVerificationCopyLink),
                 onPressed: clipboardGrantInFlight
                     ? null
                     : () {
@@ -354,15 +357,13 @@ Future<bool> showExtensionVerificationHelpDialog(
                           ),
                         );
                       },
+                child: Text(dialogL10n.extensionVerificationCopyLink),
               ),
-              TextButton.icon(
+              ExpressiveButton(
+                text: true,
                 icon: clipboardGrantInFlight
-                    ? const SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                    ? const AppLoadingIndicator(size: 18, strokeWidth: 2)
                     : const Icon(Icons.content_paste),
-                label: const Text('Paste callback'),
                 onPressed: clipboardGrantInFlight
                     ? null
                     : () async {
@@ -376,15 +377,16 @@ Future<bool> showExtensionVerificationHelpDialog(
                           setDialogState(() => clipboardGrantInFlight = false);
                         }
                       },
+                child: const Text('Paste callback'),
               ),
-              FilledButton.icon(
+              ExpressiveButton(
                 icon: const Icon(Icons.open_in_browser),
-                label: Text(dialogL10n.extensionVerificationOpenBrowser),
                 onPressed: clipboardGrantInFlight
                     ? null
                     : () {
                         unawaited(_launchVerificationUrl(authUri, browserMode));
                       },
+                child: Text(dialogL10n.extensionVerificationOpenBrowser),
               ),
             ],
           ),

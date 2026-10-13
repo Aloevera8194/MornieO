@@ -336,11 +336,12 @@ extension _QueueTabNavigation on _QueueTabState {
             ),
           ),
           actions: [
-            TextButton(
+            ExpressiveButton(
+              text: true,
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(dialogContext.l10n.dialogCancel),
             ),
-            FilledButton(
+            ExpressiveButton(
               onPressed: () {
                 if (formKey.currentState?.validate() != true) return;
                 Navigator.of(dialogContext).pop(controller.text.trim());
@@ -431,7 +432,7 @@ extension _QueueTabNavigation on _QueueTabState {
         color: const Color(0xFF5085A5),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
+      child: AppIcon(
         Icons.queue_music,
         color: Colors.white,
         size: size != null ? size * 0.5 : 40,
@@ -523,7 +524,7 @@ extension _QueueTabNavigation on _QueueTabState {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.playlist_add, size: 18, color: colorScheme.primary),
+            AppIcon(Icons.playlist_add, size: 18, color: colorScheme.primary),
             const SizedBox(width: 8),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 180),

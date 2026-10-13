@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 
 /// Dialog presentation follows the selected design, including on Android.
@@ -149,7 +151,7 @@ class AppAlertDialog extends StatelessWidget {
       return AlertDialog(
         backgroundColor: backgroundColor,
         shape: shape,
-        icon: icon,
+        icon: icon == null ? null : symbolIconWidget(icon!),
         title: title,
         content: content,
         actions: actions,
@@ -283,10 +285,12 @@ class AppDialogAction extends StatelessWidget {
         ),
       );
     }
-    return filled
-        ? FilledButton(onPressed: onPressed, style: style, child: child)
-        : outlined
-        ? OutlinedButton(onPressed: onPressed, style: style, child: child)
-        : TextButton(onPressed: onPressed, style: style, child: child);
+    return ExpressiveButton(
+      onPressed: onPressed,
+      style: style,
+      outlined: !filled && outlined,
+      text: !filled && !outlined,
+      child: child,
+    );
   }
 }

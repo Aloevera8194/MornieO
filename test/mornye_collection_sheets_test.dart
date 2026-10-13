@@ -14,6 +14,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/playlist_picker_sheet.dart';
 import 'package:spotiflac_android/widgets/track_collection_quick_actions.dart';
@@ -76,7 +77,7 @@ class _PopObserver extends NavigatorObserver {
 
 VoidCallback? _doneAction(WidgetTester tester, bool mornye) => mornye
     ? tester.widget<AppActionButton>(find.byType(AppActionButton)).onPressed
-    : tester.widget<FilledButton>(find.byType(FilledButton)).onPressed;
+    : tester.widget<ExpressiveButton>(find.byType(ExpressiveButton)).onPressed;
 
 PlaylistPickerSummary _playlist(String name, {bool contains = false}) =>
     PlaylistPickerSummary(

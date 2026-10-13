@@ -14,6 +14,8 @@ import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
@@ -830,7 +832,8 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
                               ),
                             ),
                           )
-                        : TextButton.icon(
+                        : ExpressiveButton(
+                            text: true,
                             onPressed: _busy ? null : _remove,
                             icon: const Icon(Icons.link_off),
                             style: TextButton.styleFrom(
@@ -838,7 +841,7 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
                                 context,
                               ).colorScheme.error,
                             ),
-                            label: Text(context.l10n.networkRemoveConnection),
+                            child: Text(context.l10n.networkRemoveConnection),
                           ),
                   ),
               ],
@@ -921,7 +924,7 @@ class _NetworkProgress extends StatelessWidget {
     child: Center(
       child: context.isMornye
           ? const CupertinoActivityIndicator()
-          : const CircularProgressIndicator(),
+          : const AppLoadingIndicator(),
     ),
   );
 }

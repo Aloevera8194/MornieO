@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 
 /// Album-style track row: track number, title/subtitle, and a trailing play
@@ -59,7 +60,7 @@ class AlbumTrackTile extends StatelessWidget {
       ),
       title: trackName,
       subtitle: subtitle,
-      trailing: IconButton(
+      trailing: AppIconButton(
         tooltip: isPlaying
             ? context.l10n.actionPause
             : context.l10n.tooltipPlay,

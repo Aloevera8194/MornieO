@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/player_playback_controls.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
@@ -167,7 +168,7 @@ class PlayerQueueSheet extends ConsumerWidget {
                       index: i,
                       child: Padding(
                         padding: const EdgeInsets.all(8),
-                        child: Icon(
+                        child: AppIcon(
                           Icons.drag_handle,
                           color: colorScheme.onSurfaceVariant,
                         ),

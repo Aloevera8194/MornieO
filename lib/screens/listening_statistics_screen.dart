@@ -6,7 +6,9 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/listening_statistics.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
@@ -120,13 +122,13 @@ class _ListeningStatisticsScreenState
                         onSelected: (_) => setState(() => _days = days),
                       ),
                     if (_days == 0)
-                      IconButton(
+                      AppIconButton(
                         tooltip: context.l10n.listeningStatsPreviousYear,
                         onPressed: () => setState(() => _year--),
                         icon: const Icon(Icons.chevron_left),
                       ),
                     if (_days == 0)
-                      IconButton(
+                      AppIconButton(
                         tooltip: context.l10n.listeningStatsNextYear,
                         onPressed: _year >= DateTime.now().year
                             ? null
@@ -147,7 +149,7 @@ class _ListeningStatisticsScreenState
                 SliverToBoxAdapter(
                   child: ListTile(
                     title: Text(context.l10n.listeningStatsLoadError),
-                    trailing: IconButton(
+                    trailing: AppIconButton(
                       icon: const Icon(Icons.refresh),
                       onPressed: () =>
                           ref.invalidate(listeningSummaryProvider(period)),
@@ -160,10 +162,11 @@ class _ListeningStatisticsScreenState
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
-                child: TextButton.icon(
+                child: ExpressiveButton(
+                  text: true,
                   onPressed: _clearing ? null : _clear,
                   icon: Icon(Icons.delete_outline, color: colors.error),
-                  label: Text(
+                  child: Text(
                     context.l10n.listeningStatsClear,
                     style: TextStyle(color: colors.error),
                   ),

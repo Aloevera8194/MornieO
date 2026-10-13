@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -345,8 +346,8 @@ class SettingsItem extends StatelessWidget {
               child: Row(
                 children: [
                   if (showIcon) ...[
-                    Icon(
-                      context.adaptiveIcon(icon!),
+                    AppIcon.adaptive(
+                      icon!,
                       color: iconColor ?? colorScheme.onSurfaceVariant,
                       size: 24,
                     ),
@@ -398,7 +399,7 @@ class SettingsItem extends StatelessWidget {
                     trailing!,
                   ] else if (onTap != null) ...[
                     const SizedBox(width: 8),
-                    Icon(
+                    AppIcon(
                       context.isMornye
                           ? CupertinoIcons.chevron_forward
                           : Icons.chevron_right,
@@ -473,7 +474,7 @@ class SettingsSwitchItem extends StatelessWidget {
               child: Row(
                 children: [
                   if (showIcon) ...[
-                    Icon(
+                    AppIcon(
                       icon,
                       color: isDisabled
                           ? colorScheme.outline
@@ -646,7 +647,7 @@ class SettingsChoiceChip extends StatelessWidget {
       content = Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(context.adaptiveIcon(icon!), color: foreground),
+          AppIcon.adaptive(icon!, color: foreground),
           SizedBox(height: tokens.gapXs + 2),
           labelText,
         ],
@@ -655,7 +656,7 @@ class SettingsChoiceChip extends StatelessWidget {
       content = Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(context.adaptiveIcon(icon!), size: 18, color: foreground),
+          AppIcon.adaptive(icon!, size: 18, color: foreground),
           SizedBox(width: tokens.gapSm),
           Flexible(child: labelText),
         ],
@@ -775,7 +776,7 @@ class SettingsInfoCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (icon != null) ...[
-            Icon(
+            AppIcon(
               useGlass ? mornyeIconFor(icon!) : icon,
               size: 20,
               color: useGlass ? colorScheme.primary : foreground,

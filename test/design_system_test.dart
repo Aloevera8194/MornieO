@@ -24,6 +24,8 @@ import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 
+import 'support/app_icon_finder.dart';
+
 /// Every Dart source file under `lib/`, used by the source-level contracts
 /// below. Those contracts exist because the duplication they guard against was
 /// re-introduced by copy-paste several times before the shared widgets landed.
@@ -50,7 +52,10 @@ class _IconButtonTooltipVisitor extends RecursiveAstVisitor<void> {
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    if (node.constructorName.type.name.lexeme == 'IconButton') {
+    if (const {
+      'IconButton',
+      'AppIconButton',
+    }.contains(node.constructorName.type.name.lexeme)) {
       final hasTooltip = node.argumentList.arguments.any(
         (argument) =>
             argument is NamedArgument && argument.name.lexeme == 'tooltip',
@@ -369,9 +374,9 @@ void main() {
 
       expect(field.decoration!.filled, isTrue);
       expect(border.borderRadius.topLeft.x, AppTokens.standard.radiusSheet);
-      expect(find.byIcon(Icons.clear), findsOneWidget);
+      expect(findAppIcon(Icons.clear), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.clear));
+      await tester.tap(findAppIcon(Icons.clear));
       await tester.pump();
 
       expect(controller.text, isEmpty);
@@ -461,7 +466,7 @@ void main() {
       );
 
       expect(find.text('Library'), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_back), findsNothing);
+      expect(findAppIcon(Icons.arrow_back), findsNothing);
     });
 
     testWidgets('page variant shows a back button that pops the route', (
@@ -493,7 +498,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Downloads'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.tap(findAppIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
       expect(find.text('Downloads'), findsNothing);
     });
@@ -540,7 +545,7 @@ void main() {
           await tester.pump();
 
           final title = find.text('Metadata');
-          final backIcon = find.byIcon(Icons.arrow_back);
+          final backIcon = findAppIcon(Icons.arrow_back);
           expect(
             tester.getRect(title).overlaps(tester.getRect(backIcon)),
             isFalse,
@@ -679,7 +684,7 @@ void main() {
 
       expect(find.text('Song'), findsOneWidget);
       expect(find.text('Artist'), findsOneWidget);
-      expect(find.byIcon(Icons.play_arrow), findsOneWidget);
+      expect(findAppIcon(Icons.play_arrow), findsOneWidget);
     });
 
     testWidgets('selection mode swaps the trailing action for a tick', (
@@ -697,8 +702,8 @@ void main() {
         ),
       );
 
-      expect(find.byIcon(Icons.play_arrow), findsNothing);
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(findAppIcon(Icons.play_arrow), findsNothing);
+      expect(findAppIcon(Icons.check), findsOneWidget);
     });
 
     testWidgets('flat style keeps the row transparent', (tester) async {

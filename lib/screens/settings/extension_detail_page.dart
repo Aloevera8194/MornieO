@@ -17,6 +17,9 @@ import 'package:spotiflac_android/providers/repo_provider.dart';
 import 'package:spotiflac_android/utils/extension_auth_launcher.dart';
 import 'package:spotiflac_android/utils/extension_action_forms.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class ExtensionDetailPage extends ConsumerStatefulWidget {
@@ -131,7 +134,11 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
                                       height: 56,
                                       fit: BoxFit.cover,
                                       errorBuilder:
-                                          (context, error, stackTrace) => Icon(
+                                          (
+                                            context,
+                                            error,
+                                            stackTrace,
+                                          ) => AppIcon(
                                             context.isMornye
                                                 ? (hasError
                                                       ? CupertinoIcons
@@ -149,7 +156,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
                                           ),
                                     ),
                                   )
-                                : Icon(
+                                : AppIcon(
                                     context.isMornye
                                         ? (hasError
                                               ? CupertinoIcons
@@ -247,7 +254,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.all(32),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: AppLoadingIndicator()),
                   ),
                 )
               else
@@ -481,7 +488,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      AppIcon(
                         context.isMornye
                             ? CupertinoIcons.trash
                             : Icons.delete_outline,
@@ -706,7 +713,7 @@ class _CapabilityItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Icon(
+              AppIcon(
                 context.adaptiveIcon(icon),
                 color: context.isMornye || enabled
                     ? colorScheme.primary
@@ -730,7 +737,7 @@ class _CapabilityItem extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
+              AppIcon(
                 context.isMornye
                     ? (enabled
                           ? CupertinoIcons.check_mark_circled_solid
@@ -825,7 +832,7 @@ class _HealthSummaryItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Icon(_healthStatusIcon(context, statusValue), color: color),
+              AppIcon(_healthStatusIcon(context, statusValue), color: color),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -854,19 +861,16 @@ class _HealthSummaryItem extends StatelessWidget {
                   ],
                 ),
               ),
-              IconButton(
+              AppIconButton(
                 tooltip: context.l10n.extensionRefreshStatus,
                 onPressed: isRefreshing ? null : onRefresh,
                 icon: isRefreshing
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: colorScheme.primary,
-                        ),
+                    ? AppLoadingIndicator(
+                        size: 20,
+                        strokeWidth: 2,
+                        color: colorScheme.primary,
                       )
-                    : Icon(
+                    : AppIcon(
                         context.isMornye
                             ? CupertinoIcons.refresh
                             : Icons.refresh,
@@ -913,7 +917,7 @@ class _HealthCheckItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(_healthStatusIcon(context, check.status), color: color),
+              AppIcon(_healthStatusIcon(context, check.status), color: color),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -983,7 +987,7 @@ class _PermissionItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              Icon(
+              AppIcon(
                 context.adaptiveIcon(icon),
                 color: context.isMornye
                     ? colorScheme.primary
@@ -1107,7 +1111,7 @@ class _SettingItemState extends State<_SettingItem> {
               AppSheetOption(
                 title: Text(option),
                 trailing: option == widget.value
-                    ? const Icon(CupertinoIcons.check_mark)
+                    ? const AppIcon(CupertinoIcons.check_mark)
                     : null,
                 onTap: () => Navigator.pop(sheetContext, option),
               ),
@@ -1292,7 +1296,7 @@ class _PostProcessingHookItem extends StatelessWidget {
                       : colorScheme.tertiaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
+                child: AppIcon(
                   context.isMornye
                       ? CupertinoIcons.wand_stars
                       : Icons.auto_fix_high,
@@ -1401,7 +1405,7 @@ class _URLHandlerInfo extends StatelessWidget {
                       : colorScheme.tertiaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
+                child: AppIcon(
                   context.isMornye ? CupertinoIcons.link : Icons.link,
                   color: context.isMornye
                       ? colorScheme.primary
@@ -1449,7 +1453,11 @@ class _URLHandlerInfo extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.language, size: 16, color: colorScheme.primary),
+                    AppIcon(
+                      Icons.language,
+                      size: 16,
+                      color: colorScheme.primary,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       pattern,
@@ -1472,7 +1480,11 @@ class _URLHandlerInfo extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline, size: 20, color: colorScheme.primary),
+                AppIcon(
+                  Icons.info_outline,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -1517,7 +1529,7 @@ class _QualityOptionItem extends StatelessWidget {
                       : colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
+                child: AppIcon(
                   context.isMornye
                       ? CupertinoIcons.waveform
                       : Icons.high_quality,

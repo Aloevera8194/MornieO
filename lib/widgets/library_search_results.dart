@@ -22,6 +22,8 @@ import 'package:spotiflac_android/widgets/library_track_selection_bar.dart';
 import 'package:spotiflac_android/widgets/library_selection_playback_actions.dart';
 import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 /// Slivers shared by Material's Library and Mornye's Library/Songs screens.
 /// Only the current query's provider families are watched; late results from
@@ -337,7 +339,7 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
       title: hit.title,
       subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
       trailing: song
-          ? IconButton(
+          ? AppIconButton(
               tooltip: context.l10n.tooltipPlay,
               icon: const Icon(Icons.play_arrow_rounded),
               onPressed: () => _open(hit, play: true),
@@ -428,7 +430,7 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
             slivers.add(
               SliverToBoxAdapter(
                 child: Center(
-                  child: IconButton(
+                  child: AppIconButton(
                     tooltip: _label(kind),
                     icon: const Icon(Icons.expand_more),
                     onPressed: () => setState(() => _pages++),
@@ -442,11 +444,12 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
           slivers.add(
             SliverToBoxAdapter(
               child: Center(
-                child: TextButton.icon(
+                child: ExpressiveButton(
+                  text: true,
                   icon: const Icon(Icons.refresh),
-                  label: Text('${_label(kind)} · ${context.l10n.dialogRetry}'),
                   onPressed: () =>
                       ref.invalidate(librarySearchProvider(request)),
+                  child: Text('${_label(kind)} · ${context.l10n.dialogRetry}'),
                 ),
               ),
             ),

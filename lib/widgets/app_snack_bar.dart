@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 
 /// Applies the same transient-message policy to existing snackbar call sites.
@@ -129,13 +131,13 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
                   children: [
                     Expanded(child: content),
                     if (!actionBelow) ?action,
-                    IconButton(
+                    AppIconButton(
                       tooltip: MaterialLocalizations.of(
                         context,
                       ).closeButtonTooltip,
                       color: theme.colorScheme.onSurface,
                       onPressed: messenger.hideCurrentSnackBar,
-                      icon: const Icon(Icons.close, size: 20),
+                      icon: const AppIcon(Icons.close, size: 20),
                     ),
                   ],
                 );

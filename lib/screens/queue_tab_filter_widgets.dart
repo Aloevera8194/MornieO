@@ -311,13 +311,14 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               [
                 if (!_isSelectionMode) _buildFilterButton(context),
                 if (!_isSelectionMode && filteredUnifiedItems.isNotEmpty)
-                  TextButton.icon(
+                  ExpressiveButton(
+                    text: true,
                     onPressed: () => _showCreatePlaylistDialog(context),
                     icon: const Icon(Icons.add, size: 20),
-                    label: Text(context.l10n.collectionCreatePlaylist),
                     style: TextButton.styleFrom(
                       visualDensity: VisualDensity.compact,
                     ),
+                    child: Text(context.l10n.collectionCreatePlaylist),
                   ),
               ],
             ),
@@ -388,13 +389,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
                 children: [
-                  SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: colorScheme.primary,
-                    ),
+                  AppLoadingIndicator(
+                    size: 18,
+                    strokeWidth: 2,
+                    color: colorScheme.primary,
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -456,13 +454,14 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               context.l10n.queuePlaylistCount(playlistIndexes.length),
               [
                 if (!_isPlaylistSelectionMode)
-                  TextButton.icon(
+                  ExpressiveButton(
+                    text: true,
                     onPressed: () => _showCreatePlaylistDialog(context),
                     icon: const Icon(Icons.add, size: 20),
-                    label: Text(context.l10n.collectionCreatePlaylist),
                     style: TextButton.styleFrom(
                       visualDensity: VisualDensity.compact,
                     ),
+                    child: Text(context.l10n.collectionCreatePlaylist),
                   ),
               ],
             ),
@@ -619,13 +618,14 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               [
                 if (!_isSelectionMode) _buildFilterButton(context),
                 if (!_isSelectionMode && filteredUnifiedItems.isNotEmpty)
-                  TextButton.icon(
+                  ExpressiveButton(
+                    text: true,
                     onPressed: () => _showCreatePlaylistDialog(context),
                     icon: const Icon(Icons.add, size: 20),
-                    label: Text(context.l10n.collectionCreatePlaylist),
                     style: TextButton.styleFrom(
                       visualDensity: VisualDensity.compact,
                     ),
+                    child: Text(context.l10n.collectionCreatePlaylist),
                   ),
               ],
             ),
@@ -713,13 +713,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Center(
-                child: SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colorScheme.primary,
-                  ),
+                child: AppLoadingIndicator(
+                  size: 22,
+                  strokeWidth: 2,
+                  color: colorScheme.primary,
                 ),
               ),
             ),
@@ -825,10 +822,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
       message: subtitle,
       // Every empty branch here means "you have not downloaded anything of
       // this kind yet", so the way forward is always search.
-      action: FilledButton.icon(
+      action: ExpressiveButton(
         onPressed: () => ShellNavigationService.requestTab(ShellTab.home),
         icon: const Icon(Icons.search),
-        label: Text(context.l10n.navHome),
+        child: Text(context.l10n.navHome),
       ),
     );
   }
@@ -917,7 +914,11 @@ extension _QueueTabFilterWidgets on _QueueTabState {
     return Container(
       color: colorScheme.surfaceContainerHighest,
       child: Center(
-        child: Icon(Icons.album, color: colorScheme.onSurfaceVariant, size: 48),
+        child: AppIcon(
+          Icons.album,
+          color: colorScheme.onSurfaceVariant,
+          size: 48,
+        ),
       ),
     );
   }
@@ -988,7 +989,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(badgeIcon, size: 12, color: badgeTextColor),
+                            AppIcon(badgeIcon, size: 12, color: badgeTextColor),
                             const SizedBox(width: 4),
                             Text(
                               completeness?.badge ?? '$trackCount',

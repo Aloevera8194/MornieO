@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 
 /// Uses the system's real audio routes and keeps native discovery in native UI.
 class AudioOutputButton extends StatefulWidget {
@@ -102,7 +103,7 @@ class _AudioOutputButtonState extends State<AudioOutputButton> {
           ),
         );
       case TargetPlatform.android:
-        return IconButton(
+        return AppIconButton(
           tooltip: context.l10n.nowPlayingAudioOutput,
           color: widget.color,
           icon: const Icon(Icons.speaker_group_outlined),

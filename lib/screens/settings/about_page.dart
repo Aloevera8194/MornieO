@@ -8,6 +8,7 @@ import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/screens/upgrade_intro_screen.dart';
 
@@ -407,7 +408,7 @@ class _ContributorItem extends StatelessWidget {
                       width: 40,
                       height: 40,
                       color: colorScheme.surfaceContainerHighest,
-                      child: Icon(
+                      child: AppIcon(
                         Icons.person,
                         color: colorScheme.onSurfaceVariant,
                         size: 20,
@@ -417,7 +418,7 @@ class _ContributorItem extends StatelessWidget {
                       width: 40,
                       height: 40,
                       color: colorScheme.surfaceContainerHighest,
-                      child: Icon(
+                      child: AppIcon(
                         Icons.person,
                         color: colorScheme.onSurfaceVariant,
                         size: 20,
@@ -441,7 +442,10 @@ class _ContributorItem extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
+                AppIcon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ],
             ),
           ),
@@ -688,7 +692,7 @@ class _AboutSettingsItem extends StatelessWidget {
                 SizedBox(
                   width: 40,
                   height: 40,
-                  child: Icon(
+                  child: AppIcon(
                     context.adaptiveIcon(icon),
                     color: context.isMornye
                         ? colorScheme.primary
@@ -714,7 +718,7 @@ class _AboutSettingsItem extends StatelessWidget {
                   ),
                 ),
                 if (onTap != null)
-                  Icon(
+                  AppIcon(
                     Icons.chevron_right,
                     color: colorScheme.onSurfaceVariant,
                   ),

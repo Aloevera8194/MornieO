@@ -4,6 +4,7 @@ import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/isrc_utils.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/mornye_player_details_sheet.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
@@ -121,7 +122,7 @@ class _MetadataList extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(
+                    AppIcon(
                       Icons.info_outline,
                       size: 20,
                       color: colorScheme.primary,

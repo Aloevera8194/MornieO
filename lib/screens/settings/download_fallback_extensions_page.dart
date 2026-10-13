@@ -6,6 +6,9 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/discard_changes_dialog.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class DownloadFallbackExtensionsPage extends ConsumerStatefulWidget {
@@ -70,9 +73,9 @@ class _DownloadFallbackExtensionsPageState
           slivers: [
             AppSliverHeader.page(
               title: context.l10n.extensionsFallbackTitle,
-              leading: IconButton(
+              leading: AppIconButton(
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                icon: const Icon(Icons.arrow_back),
+                icon: const AppIcon(Icons.arrow_back),
                 onPressed: () async {
                   if (_hasChanges) {
                     final shouldPop = await showDiscardChangesDialog(context);
@@ -86,7 +89,8 @@ class _DownloadFallbackExtensionsPageState
               ),
               actions: [
                 if (_hasChanges)
-                  TextButton(
+                  ExpressiveButton(
+                    text: true,
                     onPressed: _saveChanges,
                     child: Text(context.l10n.dialogSave),
                   ),

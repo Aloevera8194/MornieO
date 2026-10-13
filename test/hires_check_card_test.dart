@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/hires_check_card.dart';
 
 const _limitedResult = <String, dynamic>{
@@ -121,7 +122,7 @@ void main() {
           of: find.text('Check'),
           matching: mornye
               ? find.byType(CupertinoButton)
-              : find.bySubtype<FilledButton>(),
+              : find.byType(ExpressiveButton),
         );
         expect(button, findsOneWidget);
         expect(tester.getSize(button).width, greaterThan(300));

@@ -17,6 +17,9 @@ import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/duplicate_review_sheet.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/ios_library_folder_sheet.dart';
 
@@ -650,12 +653,8 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                 }
                 return ListTile(
                   leading: status.loading
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(Icons.error_outline, color: colorScheme.error),
+                      ? const AppLoadingIndicator(size: 24, strokeWidth: 2)
+                      : AppIcon(Icons.error_outline, color: colorScheme.error),
                   title: Text(
                     status.loading
                         ? context.l10n.libraryLoading
@@ -663,7 +662,8 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                   ),
                   trailing: status.loading
                       ? null
-                      : TextButton(
+                      : ExpressiveButton(
+                          text: true,
                           onPressed: () => ref
                               .read(localLibraryProvider.notifier)
                               .reloadFromStorage(),
@@ -798,7 +798,7 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                     ),
                     child: Row(
                       children: [
-                        Icon(
+                        AppIcon(
                           Icons.warning_amber_outlined,
                           color: colorScheme.onTertiaryContainer,
                         ),
@@ -827,7 +827,8 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                             ],
                           ),
                         ),
-                        TextButton(
+                        ExpressiveButton(
+                          text: true,
                           onPressed: _startScan,
                           child: Text(context.l10n.dialogRetry),
                         ),
@@ -901,11 +902,9 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                           subtitle:
                               context.l10n.libraryCleanupMissingFilesSubtitle,
                           trailing: _isCleaningMissingFiles
-                              ? const SizedBox.square(
-                                  dimension: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
+                              ? const AppLoadingIndicator(
+                                  size: 20,
+                                  strokeWidth: 2,
                                 )
                               : null,
                           onTap: canCleanup ? _cleanupMissingFiles : null,
@@ -1008,20 +1007,20 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
         children: [
           AppSheetOption(
             enabled: canScan,
-            leading: const Icon(Icons.refresh_rounded),
+            leading: const AppIcon(Icons.refresh_rounded),
             title: Text(context.l10n.libraryScan),
             subtitle: Text(context.l10n.libraryScanSubtitle),
             onTap: canScan ? () => Navigator.pop(context, 'scan') : null,
           ),
           AppSheetOption(
             enabled: canScan,
-            leading: const Icon(Icons.sync_rounded),
+            leading: const AppIcon(Icons.sync_rounded),
             title: Text(context.l10n.libraryForceFullScan),
             subtitle: Text(context.l10n.libraryForceFullScanSubtitle),
             onTap: canScan ? () => Navigator.pop(context, 'full_scan') : null,
           ),
           AppSheetOption(
-            leading: Icon(
+            leading: AppIcon(
               Icons.delete_outline,
               color: Theme.of(context).colorScheme.error,
             ),
@@ -1086,7 +1085,7 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
         titleTrailing: source.isRemovable
             ? Tooltip(
                 message: context.l10n.libraryExternalStorage,
-                child: const Icon(Icons.sd_storage_outlined, size: 16),
+                child: const AppIcon(Icons.sd_storage_outlined, size: 16),
               )
             : null,
         subtitle: pathLine == null ? details : '$pathLine\n$details',
@@ -1238,7 +1237,7 @@ class _LibraryHeroCard extends StatelessWidget {
           Positioned(
             right: -20,
             top: -20,
-            child: Icon(
+            child: AppIcon(
               Icons.library_music,
               size: 200,
               color: colorScheme.primary.withValues(alpha: 0.05),
@@ -1271,7 +1270,7 @@ class _LibraryHeroCard extends StatelessWidget {
                         color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(
+                      child: AppIcon(
                         isScanning
                             ? scanIsPaused
                                   ? Icons.pause_rounded
@@ -1299,12 +1298,13 @@ class _LibraryHeroCard extends StatelessWidget {
                               width: 12,
                               height: 12,
                               child: scanIsPaused
-                                  ? Icon(
+                                  ? AppIcon(
                                       Icons.pause_rounded,
                                       size: 12,
                                       color: colorScheme.onPrimary,
                                     )
-                                  : CircularProgressIndicator(
+                                  : AppLoadingIndicator(
+                                      size: 12,
                                       strokeWidth: 2,
                                       color: colorScheme.onPrimary,
                                     ),
@@ -1418,7 +1418,7 @@ class _LibraryHeroCard extends StatelessWidget {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(
+                      AppIcon(
                         Icons.history,
                         size: 14,
                         color: colorScheme.onSurfaceVariant.withValues(
@@ -1490,7 +1490,7 @@ class _ScanProgressTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
+              AppIcon(
                 isPaused ? Icons.pause_circle_outline : Icons.scanner,
                 color: colorScheme.primary,
               ),
@@ -1524,7 +1524,8 @@ class _ScanProgressTile extends StatelessWidget {
                 ),
               ),
               if (!isFinalizing)
-                TextButton(
+                ExpressiveButton(
+                  text: true,
                   onPressed: isPaused ? onResume : onPause,
                   child: Text(
                     isPaused
@@ -1532,7 +1533,8 @@ class _ScanProgressTile extends StatelessWidget {
                         : context.l10n.actionPause,
                   ),
                 ),
-              TextButton(
+              ExpressiveButton(
+                text: true,
                 onPressed: onCancel,
                 child: Text(context.l10n.actionCancel),
               ),
@@ -1582,9 +1584,11 @@ class _AutoScanOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppSheetOption(
-      leading: Icon(icon),
+      leading: AppIcon(icon),
       title: Text(title),
-      trailing: selected ? Icon(Icons.check, color: colorScheme.primary) : null,
+      trailing: selected
+          ? AppIcon(Icons.check, color: colorScheme.primary)
+          : null,
       onTap: onTap,
     );
   }

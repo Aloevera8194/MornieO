@@ -16,6 +16,8 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
 import 'package:spotiflac_android/widgets/album_track_tile.dart';
 
+import 'support/app_icon_finder.dart';
+
 class _Playing extends Notifier<bool> {
   @override
   bool build() => false;
@@ -142,15 +144,15 @@ void main() {
           findsOneWidget,
         );
         expect(
-          find.descendant(of: header, matching: find.byIcon(pauseIcon)),
+          find.descendant(of: header, matching: findAppIcon(pauseIcon)),
           findsOneWidget,
         );
         expect(
-          find.descendant(of: row(1), matching: find.byIcon(pauseIcon)),
+          find.descendant(of: row(1), matching: findAppIcon(pauseIcon)),
           findsOneWidget,
         );
         expect(
-          find.descendant(of: row(2), matching: find.byIcon(playIcon)),
+          find.descendant(of: row(2), matching: findAppIcon(playIcon)),
           findsOneWidget,
         );
 
@@ -183,11 +185,11 @@ void main() {
         await tester.pumpAndSettle();
         expect(playback._started, ['1', '2']);
         expect(
-          find.descendant(of: row(1), matching: find.byIcon(playIcon)),
+          find.descendant(of: row(1), matching: findAppIcon(playIcon)),
           findsOneWidget,
         );
         expect(
-          find.descendant(of: row(2), matching: find.byIcon(pauseIcon)),
+          find.descendant(of: row(2), matching: findAppIcon(pauseIcon)),
           findsOneWidget,
         );
         await tester.tap(rowButton(2));
@@ -200,7 +202,7 @@ void main() {
         emitPlaying(true);
         await tester.pumpAndSettle();
         expect(
-          find.descendant(of: row(1), matching: find.byIcon(pauseIcon)),
+          find.descendant(of: row(1), matching: findAppIcon(pauseIcon)),
           findsOneWidget,
         );
         await tester.tap(rowButton(1));
@@ -222,7 +224,7 @@ void main() {
           find.descendant(of: header, matching: find.text('Play')),
           findsOneWidget,
         );
-        expect(find.byIcon(pauseIcon), findsNothing);
+        expect(findAppIcon(pauseIcon), findsNothing);
         await tester.ensureVisible(header);
         await tester.tap(
           find.descendant(of: header, matching: find.text('Play')),

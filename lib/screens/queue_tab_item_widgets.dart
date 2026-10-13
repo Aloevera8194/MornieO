@@ -93,7 +93,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
           ),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.only(right: 20),
-          child: Icon(
+          child: AppIcon(
             Icons.delete_outline,
             color: colorScheme.onErrorContainer,
           ),
@@ -159,7 +159,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      Icon(
+                      AppIcon(
                         Icons.download_rounded,
                         size: 12,
                         color: colorScheme.primary,
@@ -247,7 +247,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 1),
-          child: Icon(
+          child: AppIcon(
             Icons.hourglass_top_rounded,
             size: 14,
             color: colorScheme.tertiary,
@@ -304,7 +304,10 @@ extension _QueueTabItemWidgets on _QueueTabState {
               color: colorScheme.surfaceContainerHighest,
               borderRadius: radius,
             ),
-            child: Icon(Icons.music_note, color: colorScheme.onSurfaceVariant),
+            child: AppIcon(
+              Icons.music_note,
+              color: colorScheme.onSurfaceVariant,
+            ),
           );
 
     final isDownloading =
@@ -384,7 +387,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.skip_next),
+              leading: const AppIcon(Icons.skip_next),
               title: Text(context.l10n.queueDownloadNext),
               onTap: () {
                 Navigator.of(ctx).pop();
@@ -392,7 +395,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.arrow_upward),
+              leading: const AppIcon(Icons.arrow_upward),
               title: Text(context.l10n.queueMoveUp),
               onTap: () {
                 Navigator.of(ctx).pop();
@@ -400,7 +403,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.arrow_downward),
+              leading: const AppIcon(Icons.arrow_downward),
               title: Text(context.l10n.queueMoveDown),
               onTap: () {
                 Navigator.of(ctx).pop();
@@ -423,7 +426,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
+            AppIconButton(
               onPressed: () => ref
                   .read(downloadQueueProvider.notifier)
                   .downloadNext(item.id),
@@ -436,7 +439,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
               ),
             ),
             const SizedBox(width: 4),
-            IconButton(
+            AppIconButton(
               onPressed: () =>
                   ref.read(downloadQueueProvider.notifier).cancelItem(item.id),
               icon: Icon(Icons.close, color: colorScheme.error),
@@ -450,7 +453,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
           ],
         );
       case DownloadStatus.downloading:
-        return IconButton(
+        return AppIconButton(
           onPressed: () =>
               ref.read(downloadQueueProvider.notifier).cancelItem(item.id),
           icon: Icon(Icons.stop, color: colorScheme.error),
@@ -473,7 +476,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
                   color: colorScheme.tertiary,
                 ),
                 ExcludeSemantics(
-                  child: Icon(
+                  child: AppIcon(
                     Icons.edit_note,
                     color: colorScheme.tertiary,
                     size: 16,
@@ -509,7 +512,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
                   Semantics(
                     label: context.l10n.queueDownloadedFileMissing,
                     child: ExcludeSemantics(
-                      child: Icon(
+                      child: AppIcon(
                         Icons.error_outline,
                         color: colorScheme.error,
                         size: 20,
@@ -526,7 +529,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
                         color: colorScheme.primaryContainer,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(
+                      child: AppIcon(
                         Icons.check,
                         color: colorScheme.onPrimaryContainer,
                         size: 20,
@@ -543,7 +546,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
+            AppIconButton(
               onPressed: () =>
                   ref.read(downloadQueueProvider.notifier).retryItem(item.id),
               icon: Icon(Icons.refresh, color: colorScheme.primary),
@@ -555,7 +558,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
               ),
             ),
             const SizedBox(width: 4),
-            IconButton(
+            AppIconButton(
               onPressed: () =>
                   ref.read(downloadQueueProvider.notifier).removeItem(item.id),
               icon: Icon(
@@ -581,15 +584,16 @@ extension _QueueTabItemWidgets on _QueueTabState {
   Widget _buildFilterButton(BuildContext context) {
     return GestureDetector(
       onLongPress: _activeFilterCount > 0 ? _resetFilters : null,
-      child: TextButton.icon(
+      child: ExpressiveButton(
+        text: true,
         onPressed: () => _showFilterSheet(context),
         icon: Badge(
           isLabelVisible: _activeFilterCount > 0,
           label: Text('$_activeFilterCount'),
-          child: const Icon(Icons.filter_list, size: 18),
+          child: const AppIcon(Icons.filter_list, size: 18),
         ),
-        label: Text(context.l10n.libraryFilterTitle),
         style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+        child: Text(context.l10n.libraryFilterTitle),
       ),
     );
   }
@@ -662,7 +666,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
             : null,
         color: size != null ? null : bgColor,
         child: Center(
-          child: Icon(Icons.music_note, color: fgColor, size: iconSize),
+          child: AppIcon(Icons.music_note, color: fgColor, size: iconSize),
         ),
       );
     }
@@ -906,7 +910,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
             }
             return Tooltip(
               message: context.l10n.queueDownloadedFileMissing,
-              child: Icon(
+              child: AppIcon(
                 Icons.error_outline,
                 color: colorScheme.error,
                 size: 20,
@@ -983,7 +987,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
                     : colorScheme.secondaryContainer,
                 borderRadius: context.tokens.borderRadiusBadge,
               ),
-              child: Icon(
+              child: AppIcon(
                 isDownloaded ? Icons.download_done : Icons.folder,
                 size: 12,
                 color: isDownloaded
@@ -1028,7 +1032,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
                       color: colorScheme.errorContainer,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: AppIcon(
                       Icons.error_outline,
                       color: colorScheme.error,
                       size: 14,
@@ -1116,7 +1120,7 @@ class _LibraryPlaybackButton extends ConsumerWidget {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
-    return IconButton(
+    return AppIconButton(
       onPressed: onPressed,
       icon: Icon(icon, color: colorScheme.primary),
       tooltip: tooltip,

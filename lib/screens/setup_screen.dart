@@ -3,7 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -676,7 +682,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     if (_initializing) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(body: Center(child: AppLoadingIndicator()));
     }
 
     final progress = (_currentStep + 1) / _totalSteps;
@@ -691,7 +697,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
               child: Row(
                 children: [
                   if (_currentStep > 0)
-                    IconButton.filledTonal(
+                    AppIconButton.filledTonal(
                       onPressed: _prevPage,
                       tooltip: MaterialLocalizations.of(
                         context,
@@ -752,7 +758,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
           ],
         ),
       ),
-      floatingActionButton: _currentStep < _totalSteps - 1
+      floatingActionButton: materialExpressiveEnabled(context)
+          ? _buildExpressiveFab(colorScheme)
+          : _currentStep < _totalSteps - 1
           ? FloatingActionButton.extended(
               onPressed: !_isLoading && _isStepCompleted(_currentStep)
                   ? _nextPage
@@ -780,6 +788,29 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
               icon: const Icon(Icons.check),
               backgroundColor: colorScheme.primary,
               foregroundColor: colorScheme.onPrimary,
+            ),
+    );
+  }
+
+  /// Expressive FABs keep their icon leading and show loading in its place.
+  Widget _buildExpressiveFab(ColorScheme colorScheme) {
+    final isLastStep = _currentStep >= _totalSteps - 1;
+    return MaterialExpressiveScope(
+      child: isLastStep
+          ? M3EExtendedFab(
+              label: context.l10n.setupGetStarted,
+              icon: _isLoading
+                  ? AppLoadingIndicator(size: 24, color: colorScheme.onPrimary)
+                  : const AppIcon(Icons.check),
+              color: M3EFabColor.primaryFilled,
+              onPressed: _isLoading ? null : _completeSetup,
+            )
+          : M3EExtendedFab(
+              label: context.l10n.setupNext,
+              icon: const AppIcon(Icons.arrow_forward),
+              onPressed: !_isLoading && _isStepCompleted(_currentStep)
+                  ? _nextPage
+                  : null,
             ),
     );
   }
@@ -1011,16 +1042,17 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
               text: context.l10n.setupStorageGranted,
               colorScheme: colorScheme,
             )
-          : FilledButton.tonalIcon(
+          : ExpressiveButton(
+              tonal: true,
               onPressed: _requestStoragePermission,
               icon: const Icon(Icons.folder_open),
-              label: Text(context.l10n.setupGrantPermission),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
                 ),
               ),
+              child: Text(context.l10n.setupGrantPermission),
             ),
     );
   }
@@ -1037,18 +1069,20 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
             )
           : Column(
               children: [
-                FilledButton.tonalIcon(
+                ExpressiveButton(
+                  tonal: true,
                   onPressed: _requestNotificationPermission,
                   icon: const Icon(Icons.notifications_active),
-                  label: Text(context.l10n.setupEnableNotifications),
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 16,
                     ),
                   ),
+                  child: Text(context.l10n.setupEnableNotifications),
                 ),
-                TextButton(
+                ExpressiveButton(
+                  text: true,
                   onPressed: () async {
                     setState(() => _notificationPermissionSkipped = true);
                     await _saveProgress();
@@ -1082,7 +1116,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                trailing: IconButton(
+                trailing: AppIconButton(
                   tooltip: context.l10n.setupChangeFolderTooltip,
                   icon: const Icon(Icons.edit),
                   onPressed: _selectDirectory,
@@ -1090,16 +1124,17 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
               ),
             )
           else
-            FilledButton.tonalIcon(
+            ExpressiveButton(
+              tonal: true,
               onPressed: _selectDirectory,
               icon: const Icon(Icons.create_new_folder),
-              label: Text(context.l10n.setupSelectFolder),
               style: FilledButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
                 ),
               ),
+              child: Text(context.l10n.setupSelectFolder),
             ),
         ],
       ),

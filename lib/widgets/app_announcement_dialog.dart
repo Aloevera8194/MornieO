@@ -3,6 +3,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 
 class AppAnnouncementDialog extends StatelessWidget {
   final RemoteAnnouncement announcement;
@@ -82,7 +84,7 @@ class AppAnnouncementDialog extends StatelessWidget {
         title: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
+            AppIcon(
               isUrgent ? Icons.priority_high_rounded : Icons.campaign_rounded,
               color: isUrgent ? colorScheme.error : colorScheme.primary,
             ),
@@ -94,8 +96,8 @@ class AppAnnouncementDialog extends StatelessWidget {
               ),
             ),
             if (showCloseButton)
-              IconButton(
-                icon: const Icon(Icons.close_rounded),
+              AppIconButton(
+                icon: const AppIcon(Icons.close_rounded),
                 tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
                 visualDensity: VisualDensity.compact,
                 onPressed: () => _close(context),

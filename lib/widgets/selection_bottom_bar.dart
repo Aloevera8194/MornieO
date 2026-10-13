@@ -5,6 +5,8 @@ import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 
 /// Hosts selection bars above the shell navigation while keeping modal routes
@@ -263,13 +265,12 @@ class SelectionBottomBar extends StatelessWidget {
               ),
             )
           else
-            IconButton.filledTonal(
+            ExpressiveIconButton(
               onPressed: onClose,
               tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
               icon: const Icon(Icons.close),
-              style: IconButton.styleFrom(
-                backgroundColor: colorScheme.surfaceContainerHighest,
-              ),
+              foregroundColor: colorScheme.onSecondaryContainer,
+              backgroundColor: colorScheme.surfaceContainerHighest,
             ),
           const SizedBox(width: 12),
 
@@ -311,19 +312,20 @@ class SelectionBottomBar extends StatelessWidget {
                       ),
                     ),
                   )
-                : TextButton.icon(
+                : ExpressiveButton(
+                    text: true,
                     onPressed: onToggleSelectAll,
                     icon: Icon(
                       allSelected ? Icons.deselect : Icons.select_all,
                       size: 20,
                     ),
-                    label: Text(
+                    style: TextButton.styleFrom(
+                      foregroundColor: colorScheme.primary,
+                    ),
+                    child: Text(
                       allSelected
                           ? context.l10n.actionDeselect
                           : context.l10n.actionSelectAll,
-                    ),
-                    style: TextButton.styleFrom(
-                      foregroundColor: colorScheme.primary,
                     ),
                   ),
           ),

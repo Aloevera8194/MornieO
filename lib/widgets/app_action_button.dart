@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 
@@ -75,7 +76,7 @@ class AppActionButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (icon case Icon(:final icon?))
+              if (icon case Icon(:final icon?) || AppIcon(:final icon?))
                 Icon(mornyeIconFor(icon), size: 20)
               else
                 icon,

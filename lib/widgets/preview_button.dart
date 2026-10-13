@@ -5,6 +5,8 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/providers/preview_player_provider.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 
 class PreviewButton extends ConsumerWidget {
   final Track track;
@@ -46,7 +48,7 @@ class PreviewButton extends ConsumerWidget {
     );
     if (isCurrentMainTrack) {
       final isPlaying = ref.watch(playbackPlayingProvider);
-      return IconButton(
+      return AppIconButton(
         iconSize: size,
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
@@ -78,13 +80,10 @@ class PreviewButton extends ConsumerWidget {
     final String tooltip;
     switch (status) {
       case PreviewStatus.loading:
-        icon = SizedBox(
-          width: size * 0.7,
-          height: size * 0.7,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            color: colorScheme.primary,
-          ),
+        icon = AppLoadingIndicator(
+          size: size * 0.7,
+          strokeWidth: 2,
+          color: colorScheme.primary,
         );
         tooltip = context.l10n.previewStop;
         break;
@@ -108,7 +107,7 @@ class PreviewButton extends ConsumerWidget {
         break;
     }
 
-    return IconButton(
+    return AppIconButton(
       iconSize: size,
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 48, minHeight: 48),

@@ -22,6 +22,8 @@ import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/audio_output_button.dart';
 import 'package:spotiflac_android/widgets/lyrics_screen_awake.dart';
@@ -175,9 +177,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     if (mediaItem == null) {
       return Scaffold(
         appBar: AppBar(
-          leading: IconButton(
+          leading: AppIconButton(
             tooltip: context.l10n.nowPlayingMinimize,
-            icon: const Icon(Icons.keyboard_arrow_down),
+            icon: const AppIcon(Icons.keyboard_arrow_down),
             onPressed: () => Navigator.of(context).maybePop(),
           ),
         ),
@@ -313,24 +315,24 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           centerTitle: true,
           leading: mornye
               ? null
-              : IconButton(
+              : AppIconButton(
                   tooltip: context.l10n.nowPlayingMinimize,
-                  icon: const Icon(Icons.keyboard_arrow_down),
+                  icon: const AppIcon(Icons.keyboard_arrow_down),
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
           actions: mornye
               ? null
               : [
-                  IconButton(
+                  AppIconButton(
                     tooltip: context.l10n.nowPlayingUpNext,
-                    icon: const Icon(Icons.queue_music),
+                    icon: const AppIcon(Icons.queue_music),
                     onPressed: () => _showQueueSheet(colorScheme),
                   ),
-                  IconButton(
+                  AppIconButton(
                     tooltip: MaterialLocalizations.of(
                       context,
                     ).moreButtonTooltip,
-                    icon: const Icon(Icons.more_vert),
+                    icon: const AppIcon(Icons.more_vert),
                     onPressed: () => _showMoreActions(
                       context: context,
                       mediaItem: mediaItem,
@@ -424,7 +426,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                                       ? Colors.white.withValues(alpha: 0.16)
                                       : Colors.transparent,
                                 ),
-                                icon: const Icon(CupertinoIcons.quote_bubble),
+                                icon: const AppIcon(
+                                  CupertinoIcons.quote_bubble,
+                                ),
                                 onPressed: _toggleMornyeLyrics,
                               ),
                               AudioOutputButton(
@@ -444,7 +448,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                                       ? Colors.white.withValues(alpha: 0.16)
                                       : Colors.transparent,
                                 ),
-                                icon: const Icon(CupertinoIcons.list_bullet),
+                                icon: const AppIcon(CupertinoIcons.list_bullet),
                                 onPressed: () =>
                                     _setMornyePage(_currentPage == 2 ? 0 : 2),
                               ),
@@ -469,7 +473,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                                 backgroundColor: _currentPage == 1
                                     ? colorScheme.primaryContainer
                                     : null,
-                                icon: const Icon(Icons.lyrics_outlined),
+                                icon: const AppIcon(Icons.lyrics_outlined),
                                 onPressed: _toggleMaterialLyrics,
                               ),
                               AudioOutputButton(
@@ -677,10 +681,10 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     );
     if (!pronunciation && !translation) return null;
     return Builder(
-      builder: (buttonContext) => IconButton.filledTonal(
+      builder: (buttonContext) => AppIconButton.filledTonal(
         key: const ValueKey('lyrics-language-options'),
         tooltip: context.l10n.nowPlayingLyricsLanguageOptions,
-        icon: const Icon(Icons.translate_rounded),
+        icon: const AppIcon(Icons.translate_rounded),
         style: IconButton.styleFrom(
           foregroundColor: _lyricsOptionsOpen
               ? colorScheme.surface
@@ -776,7 +780,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                     value: value,
                     child: Row(
                       children: [
-                        Icon(icon),
+                        AppIcon(icon),
                         const SizedBox(width: 12),
                         Flexible(child: Text(label)),
                       ],
@@ -923,7 +927,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                   SettingsItem(
                     icon: Icons.open_in_new,
                     title: sheetContext.l10n.nowPlayingOpenInExternalPlayer,
-                    trailing: Icon(
+                    trailing: AppIcon(
                       Icons.open_in_new,
                       size: 18,
                       color: Theme.of(

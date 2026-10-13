@@ -20,6 +20,10 @@ import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.da
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class CacheManagementPage extends ConsumerStatefulWidget {
@@ -388,14 +392,11 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
 
   Widget _buildClearTrailing(String actionKey, VoidCallback onPressed) {
     if (_busyAction == actionKey) {
-      return const SizedBox(
-        width: 18,
-        height: 18,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
+      return const AppLoadingIndicator(size: 18, strokeWidth: 2);
     }
 
-    return TextButton(
+    return ExpressiveButton(
+      text: true,
       onPressed: _isBusy ? null : onPressed,
       child: Text(context.l10n.dialogClear),
     );
@@ -431,17 +432,17 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
           AppSliverHeader.page(
             title: context.l10n.cacheTitle,
             actions: [
-              IconButton(
+              AppIconButton(
                 tooltip: context.l10n.cacheRefresh,
                 onPressed: _isBusy ? null : _refreshOverview,
-                icon: const Icon(Icons.refresh),
+                icon: const AppIcon(Icons.refresh),
               ),
             ],
           ),
 
           if (_isLoading || overview == null)
             const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(child: AppLoadingIndicator()),
             )
           else ...[
             SliverToBoxAdapter(
@@ -506,14 +507,14 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
                                     ),
                                   );
                                 },
-                          icon: const Icon(Icons.delete_sweep_outlined),
+                          icon: const AppIcon(Icons.delete_sweep_outlined),
                           label: Text(context.l10n.cacheClearAll),
                         ),
                         AppActionButton(
                           outlined: true,
                           glass: false,
                           onPressed: _isBusy ? null : _refreshOverview,
-                          icon: const Icon(Icons.refresh),
+                          icon: const AppIcon(Icons.refresh),
                           label: Text(context.l10n.cacheRefreshStats),
                         ),
                       ],

@@ -43,6 +43,8 @@ import 'package:spotiflac_android/widgets/mini_player.dart';
 import 'package:spotiflac_android/widgets/lazy_tab_view.dart';
 import 'package:spotiflac_android/widgets/expressive_navigation_bar.dart';
 import 'package:spotiflac_android/widgets/mornye_bottom_bar.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
@@ -234,7 +236,7 @@ class _MainShellState extends ConsumerState<MainShell>
               return PopScope(
                 canPop: false,
                 child: AppAlertDialog(
-                  icon: Icon(
+                  icon: AppIcon(
                     Icons.folder_off_outlined,
                     color: Theme.of(context).colorScheme.error,
                   ),
@@ -298,10 +300,7 @@ class _MainShellState extends ConsumerState<MainShell>
                               }
                             },
                       child: isPickingFolder
-                          ? const SizedBox.square(
-                              dimension: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
+                          ? const AppLoadingIndicator(size: 18, strokeWidth: 2)
                           : Text(context.l10n.downloadFolderReselect),
                     ),
                   ],
@@ -482,7 +481,7 @@ class _MainShellState extends ConsumerState<MainShell>
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AppAlertDialog(
-        icon: Icon(
+        icon: AppIcon(
           Icons.folder_special_outlined,
           size: 32,
           color: colorScheme.primary,
@@ -847,10 +846,10 @@ class _MainShellState extends ConsumerState<MainShell>
     final l10n = context.l10n;
     final destinations = <NavigationDestination>[
       NavigationDestination(
-        icon: Icon(
+        icon: AppIcon(
           context.isMornye ? CupertinoIcons.house_fill : Icons.home_outlined,
         ),
-        selectedIcon: BouncingIcon(child: const Icon(Icons.home)),
+        selectedIcon: BouncingIcon(child: const AppIcon(Icons.home)),
         label: l10n.navHome,
       ),
       NavigationDestination(
@@ -864,7 +863,7 @@ class _MainShellState extends ConsumerState<MainShell>
                 child: Badge(
                   isLabelVisible: queueState > 0,
                   label: Text('$queueState'),
-                  child: const Icon(Icons.library_music_outlined),
+                  child: const AppIcon(Icons.library_music_outlined),
                 ),
               ),
         selectedIcon: SlidingIcon(
@@ -873,7 +872,7 @@ class _MainShellState extends ConsumerState<MainShell>
             child: Badge(
               isLabelVisible: queueState > 0,
               label: Text('$queueState'),
-              child: const Icon(Icons.library_music),
+              child: const AppIcon(Icons.library_music),
             ),
           ),
         ),
@@ -891,7 +890,7 @@ class _MainShellState extends ConsumerState<MainShell>
                   child: Badge(
                     isLabelVisible: repoUpdatesCount > 0,
                     label: Text('$repoUpdatesCount'),
-                    child: const Icon(Icons.extension_outlined),
+                    child: const AppIcon(Icons.extension_outlined),
                   ),
                 ),
           selectedIcon: BouncingIcon(
@@ -900,7 +899,7 @@ class _MainShellState extends ConsumerState<MainShell>
               child: Badge(
                 isLabelVisible: repoUpdatesCount > 0,
                 label: Text('$repoUpdatesCount'),
-                child: const Icon(Icons.extension),
+                child: const AppIcon(Icons.extension),
               ),
             ),
           ),
@@ -908,8 +907,8 @@ class _MainShellState extends ConsumerState<MainShell>
         ),
       if (!context.isMornye)
         NavigationDestination(
-          icon: const Icon(Icons.settings_outlined),
-          selectedIcon: SpinIcon(child: const Icon(Icons.settings)),
+          icon: const AppIcon(Icons.settings_outlined),
+          selectedIcon: SpinIcon(child: const AppIcon(Icons.settings)),
           label: l10n.navSettings,
         ),
       if (context.isMornye)

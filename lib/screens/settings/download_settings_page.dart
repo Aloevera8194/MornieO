@@ -9,6 +9,7 @@ import 'package:spotiflac_android/screens/settings/download_fallback_extensions_
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 
@@ -414,7 +415,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
         children: [
           for (final format in autoConvertFormats)
             AppSheetOption(
-              leading: Icon(
+              leading: AppIcon(
                 format == 'opus'
                     ? Icons.graphic_eq
                     : format == 'aac'
@@ -428,7 +429,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
                 _ => context.l10n.downloadAutoConvertMp3Subtitle,
               }),
               trailing: normalizedCurrent == format
-                  ? Icon(
+                  ? AppIcon(
                       Icons.check,
                       color: Theme.of(sheetContext).colorScheme.primary,
                     )
@@ -462,10 +463,10 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
         children: [
           for (final bitrate in autoConvertBitrates)
             AppSheetOption(
-              leading: const Icon(Icons.speed_outlined),
+              leading: const AppIcon(Icons.speed_outlined),
               title: Text(bitrate.replaceAll('k', ' kbps')),
               trailing: normalizedCurrent == bitrate
-                  ? Icon(
+                  ? AppIcon(
                       Icons.check,
                       color: Theme.of(sheetContext).colorScheme.primary,
                     )
@@ -517,11 +518,11 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
               ),
             ),
             AppSheetOption(
-              leading: const Icon(Icons.signal_cellular_alt),
+              leading: const AppIcon(Icons.signal_cellular_alt),
               title: Text(context.l10n.settingsDownloadNetworkAny),
               subtitle: Text(context.l10n.downloadNetworkAnySubtitle),
               trailing: current == 'any'
-                  ? Icon(Icons.check, color: colorScheme.primary)
+                  ? AppIcon(Icons.check, color: colorScheme.primary)
                   : null,
               onTap: () {
                 ref
@@ -531,11 +532,11 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
               },
             ),
             AppSheetOption(
-              leading: const Icon(Icons.wifi),
+              leading: const AppIcon(Icons.wifi),
               title: Text(context.l10n.settingsDownloadNetworkWifiOnly),
               subtitle: Text(context.l10n.downloadNetworkWifiOnlySubtitle),
               trailing: current == 'wifi_only'
-                  ? Icon(Icons.check, color: colorScheme.primary)
+                  ? AppIcon(Icons.check, color: colorScheme.primary)
                   : null,
               onTap: () {
                 ref
@@ -586,7 +587,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
             ),
             for (final count in const [1, 2, 3])
               AppSheetOption(
-                leading: Icon(
+                leading: AppIcon(
                   count == 1
                       ? Icons.looks_one_outlined
                       : count == 2
@@ -599,7 +600,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
                       : context.l10n.concurrentDownloadsCount(count),
                 ),
                 trailing: current == count
-                    ? Icon(Icons.check, color: colorScheme.primary)
+                    ? AppIcon(Icons.check, color: colorScheme.primary)
                     : null,
                 onTap: () {
                   ref
@@ -921,7 +922,7 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
                           title: Text(countryName != code ? countryName : code),
                           subtitle: countryName != code ? Text(code) : null,
                           trailing: isSelected
-                              ? Icon(Icons.check, color: colorScheme.primary)
+                              ? AppIcon(Icons.check, color: colorScheme.primary)
                               : null,
                           onTap: () => widget.onSelected(code),
                         );
@@ -960,7 +961,7 @@ class _QualityOption extends StatelessWidget {
       title: title,
       subtitle: subtitle,
       trailing: isSelected
-          ? Icon(Icons.check, color: colorScheme.primary)
+          ? AppIcon(Icons.check, color: colorScheme.primary)
           : null,
       onTap: onTap,
       showDivider: showDivider,
@@ -995,7 +996,7 @@ class _ServiceSelector extends ConsumerWidget {
       child: extensionProviders.isEmpty
           ? Row(
               children: [
-                Icon(
+                AppIcon(
                   Icons.info_outline,
                   size: 18,
                   color: colorScheme.onSurfaceVariant,

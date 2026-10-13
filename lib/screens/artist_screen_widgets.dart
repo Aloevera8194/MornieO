@@ -320,7 +320,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
                         color: headerScheme.primaryContainer,
                         shape: BoxShape.circle,
                       ),
-                      child: IconButton(
+                      child: AppIconButton(
                         onPressed: () => _toggleFavoriteArtist(context),
                         icon: Icon(
                           isFavoriteArtist
@@ -346,7 +346,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
                         color: headerScheme.primaryContainer,
                         shape: BoxShape.circle,
                       ),
-                      child: IconButton(
+                      child: AppIconButton(
                         onPressed: () => _showDiscographyOptions(
                           context,
                           colorScheme,

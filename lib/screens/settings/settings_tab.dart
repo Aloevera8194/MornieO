@@ -30,6 +30,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
@@ -546,7 +547,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
                               profile?.photoPath?.isNotEmpty == true
                           ? null
                           : Text(context.l10n.profileEdit),
-                      trailing: const Icon(Icons.chevron_right),
+                      trailing: const AppIcon(Icons.chevron_right),
                       onTap: profile == null
                           ? null
                           : () => _navigateTo(

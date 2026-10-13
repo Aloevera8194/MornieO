@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/donate_icons.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
@@ -181,7 +182,7 @@ class _MonthlyDonationGoalCard extends StatelessWidget {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(
+                  AppIcon(
                     Icons.check_circle_outline,
                     size: 20,
                     color: colorScheme.primary,
@@ -338,7 +339,11 @@ class _RecentSupportersCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.star_rounded, size: 20, color: colorScheme.primary),
+                AppIcon(
+                  Icons.star_rounded,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -427,7 +432,7 @@ class _DonateNoticeCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                AppIcon(
                   Icons.volunteer_activism_rounded,
                   size: 20,
                   color: colorScheme.primary,
@@ -509,7 +514,7 @@ class _DonateMethodItem extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
+            AppIcon(
               method.isWallet ? Icons.copy_rounded : Icons.open_in_new,
               size: 18,
               color: colorScheme.onSurfaceVariant,
@@ -561,7 +566,7 @@ class _NoticeLine extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: colorScheme.primary),
+        AppIcon(icon, size: 16, color: colorScheme.primary),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -595,14 +600,18 @@ Widget _methodIcon(DonateMethod method) {
         ),
       );
     case 'coffee':
-      return const Icon(
+      return const AppIcon(
         Icons.local_cafe_rounded,
         color: Colors.white,
         size: 22,
       );
     case 'heart':
     default:
-      return const Icon(Icons.favorite_rounded, color: Colors.white, size: 22);
+      return const AppIcon(
+        Icons.favorite_rounded,
+        color: Colors.white,
+        size: 22,
+      );
   }
 }
 

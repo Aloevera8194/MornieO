@@ -23,6 +23,8 @@ import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/metadata_candidate_tile.dart';
@@ -1009,7 +1011,8 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                             height: 22,
                             child: context.isMornye
                                 ? const CupertinoActivityIndicator()
-                                : const CircularProgressIndicator(
+                                : const AppLoadingIndicator(
+                                    size: 22,
                                     strokeWidth: 2,
                                   ),
                           ),
@@ -1323,13 +1326,10 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                 ),
               ),
               icon: _fetching
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+                  ? const AppLoadingIndicator(
+                      size: 16,
+                      strokeWidth: 2,
+                      color: Colors.white,
                     )
                   : const Icon(Icons.auto_fix_high),
               label: Text(
@@ -1361,11 +1361,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                 ),
               ),
               icon: _fetchingMusicBrainz
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
+                  ? const AppLoadingIndicator(size: 16, strokeWidth: 2)
                   : const Icon(Icons.library_music_outlined),
               label: Text(context.l10n.editMetadataMusicBrainzButton),
             ),
@@ -1631,7 +1627,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
             ),
             if (hasSelectedCover) ...[
               const SizedBox(width: 8),
-              IconButton(
+              AppIconButton(
                 tooltip: context.l10n.trackCoverClearSelected,
                 onPressed: _saving
                     ? null
@@ -1776,14 +1772,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
             overflow: TextOverflow.ellipsis,
           )
         else if (loadingDetails)
-          SizedBox(
-            width: 12,
-            height: 12,
-            child: CircularProgressIndicator(
-              strokeWidth: 1.5,
-              color: cs.primary,
-            ),
-          ),
+          AppLoadingIndicator(size: 12, strokeWidth: 1.5, color: cs.primary),
       ],
     );
   }

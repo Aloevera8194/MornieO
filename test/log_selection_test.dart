@@ -5,6 +5,8 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/screens/settings/log_screen.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
+import 'support/app_icon_finder.dart';
+
 void main() {
   test(
     'native log batches notify once and preserve redaction and capacity',
@@ -138,7 +140,7 @@ void main() {
     await tester.pump();
     expect(find.text('2 selected'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.copy));
+    await tester.tap(findAppIcon(Icons.copy));
     await tester.pump();
 
     expect(clipboardText, contains('first selected message'));

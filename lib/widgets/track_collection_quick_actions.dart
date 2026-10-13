@@ -14,6 +14,8 @@ import 'package:spotiflac_android/utils/local_playback.dart';
 import 'package:spotiflac_android/widgets/playlist_picker_sheet.dart';
 import 'package:spotiflac_android/widgets/mornye_context_menu.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/track_collection_action_policy.dart';
 import 'package:spotiflac_android/widgets/track_detail_actions.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
@@ -61,9 +63,9 @@ class TrackCollectionQuickActions extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return IconButton(
+    return AppIconButton(
       tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-      icon: Icon(
+      icon: AppIcon(
         context.isMornye ? CupertinoIcons.ellipsis : Icons.more_vert,
         color: colorScheme.onSurfaceVariant,
         size: 20,
@@ -245,7 +247,7 @@ class _TrackOptionsSheet extends ConsumerWidget {
                                         height: 56,
                                         color:
                                             colorScheme.surfaceContainerHighest,
-                                        child: Icon(
+                                        child: AppIcon(
                                           Icons.music_note,
                                           color: colorScheme.onSurfaceVariant,
                                         ),
@@ -255,7 +257,7 @@ class _TrackOptionsSheet extends ConsumerWidget {
                                   width: 56,
                                   height: 56,
                                   color: colorScheme.surfaceContainerHighest,
-                                  child: Icon(
+                                  child: AppIcon(
                                     Icons.music_note,
                                     color: colorScheme.onSurfaceVariant,
                                   ),
@@ -492,7 +494,7 @@ class _OptionTile extends StatelessWidget {
           color: colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(
+        child: AppIcon(
           icon,
           color: iconColor ?? colorScheme.onPrimaryContainer,
           size: 20,

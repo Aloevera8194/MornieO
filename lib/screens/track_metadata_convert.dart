@@ -482,7 +482,7 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    child: FilledButton.icon(
+                    child: ExpressiveButton(
                       onPressed: () {
                         Navigator.pop(sheetContext);
                         _confirmAndSplitCue(
@@ -496,13 +496,13 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
                         );
                       },
                       icon: const Icon(Icons.call_split),
-                      label: Text(sheetContext.l10n.cueSplitButton),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
+                      child: Text(sheetContext.l10n.cueSplitButton),
                     ),
                   ),
                   const SizedBox(height: 8),

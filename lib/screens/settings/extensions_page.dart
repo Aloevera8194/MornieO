@@ -18,6 +18,8 @@ import 'package:spotiflac_android/screens/settings/metadata_provider_priority_pa
 import 'package:spotiflac_android/screens/settings/provider_priority_page.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
@@ -55,7 +57,7 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final installButton = AppActionButton(
       onPressed: _installExtension,
-      icon: const Icon(Icons.add),
+      icon: const AppIcon(Icons.add),
       label: Text(context.l10n.extensionsInstallButton),
       outlined: context.isMornye,
       glass: false,
@@ -76,7 +78,7 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(child: AppLoadingIndicator()),
                 ),
               ),
 
@@ -92,7 +94,7 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.error_outline, color: colorScheme.error),
+                        AppIcon(Icons.error_outline, color: colorScheme.error),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
@@ -145,7 +147,7 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
                     ),
                     child: Column(
                       children: [
-                        Icon(
+                        AppIcon(
                           Icons.extension_outlined,
                           size: 48,
                           color: colorScheme.onSurfaceVariant,
@@ -469,7 +471,7 @@ class _DownloadPriorityItem extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(
+            AppIcon(
               Icons.download,
               color: hasDownloadExtensions
                   ? colorScheme.onSurfaceVariant
@@ -498,7 +500,7 @@ class _DownloadPriorityItem extends ConsumerWidget {
                 ],
               ),
             ),
-            Icon(
+            AppIcon(
               Icons.chevron_right,
               color: hasDownloadExtensions
                   ? colorScheme.onSurfaceVariant
@@ -561,7 +563,7 @@ class _MetadataPriorityItem extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(
+            AppIcon(
               Icons.search,
               color: hasMetadataExtensions
                   ? colorScheme.onSurfaceVariant
@@ -590,7 +592,7 @@ class _MetadataPriorityItem extends ConsumerWidget {
                 ],
               ),
             ),
-            Icon(
+            AppIcon(
               Icons.chevron_right,
               color: hasMetadataExtensions
                   ? colorScheme.onSurfaceVariant
@@ -653,7 +655,7 @@ class _DownloadFallbackItem extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
-            Icon(
+            AppIcon(
               Icons.alt_route,
               color: hasDownloadExtensions
                   ? colorScheme.onSurfaceVariant
@@ -682,7 +684,7 @@ class _DownloadFallbackItem extends ConsumerWidget {
                 ],
               ),
             ),
-            Icon(
+            AppIcon(
               Icons.chevron_right,
               color: hasDownloadExtensions
                   ? colorScheme.onSurfaceVariant
@@ -763,7 +765,7 @@ class _SearchProviderSelector extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(
+                AppIcon(
                   Icons.manage_search,
                   color: !hasAnyProvider
                       ? colorScheme.outline
@@ -792,7 +794,7 @@ class _SearchProviderSelector extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Icon(
+                AppIcon(
                   Icons.chevron_right,
                   color: !hasAnyProvider
                       ? colorScheme.outline
@@ -848,15 +850,21 @@ class _SearchProviderSelector extends ConsumerWidget {
               ),
               ...searchProviders.map(
                 (ext) => ListTile(
-                  leading: Icon(Icons.extension, color: colorScheme.secondary),
+                  leading: AppIcon(
+                    Icons.extension,
+                    color: colorScheme.secondary,
+                  ),
                   title: Text(ext.displayName),
                   subtitle: Text(
                     ext.searchBehavior?.placeholder ??
                         ctx.l10n.extensionsCustomSearch,
                   ),
                   trailing: settings.searchProvider == ext.id
-                      ? Icon(Icons.check_circle, color: colorScheme.primary)
-                      : Icon(Icons.circle_outlined, color: colorScheme.outline),
+                      ? AppIcon(Icons.check_circle, color: colorScheme.primary)
+                      : AppIcon(
+                          Icons.circle_outlined,
+                          color: colorScheme.outline,
+                        ),
                   onTap: () {
                     ref
                         .read(settingsProvider.notifier)
@@ -933,7 +941,7 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
-                Icon(
+                AppIcon(
                   Icons.explore_outlined,
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -958,7 +966,10 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
+                AppIcon(
+                  Icons.chevron_right,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ],
             ),
           ),
@@ -1008,14 +1019,20 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
                 ),
               ),
               ListTile(
-                leading: Icon(Icons.auto_awesome, color: colorScheme.primary),
+                leading: AppIcon(
+                  Icons.auto_awesome,
+                  color: colorScheme.primary,
+                ),
                 title: Text(ctx.l10n.extensionsHomeFeedAuto),
                 subtitle: Text(ctx.l10n.extensionsHomeFeedAutoSubtitle),
                 trailing:
                     (settings.homeFeedProvider == null ||
                         settings.homeFeedProvider!.isEmpty)
-                    ? Icon(Icons.check_circle, color: colorScheme.primary)
-                    : Icon(Icons.circle_outlined, color: colorScheme.outline),
+                    ? AppIcon(Icons.check_circle, color: colorScheme.primary)
+                    : AppIcon(
+                        Icons.circle_outlined,
+                        color: colorScheme.outline,
+                      ),
                 onTap: () {
                   ref.read(settingsProvider.notifier).setHomeFeedProvider(null);
                   ref.read(exploreProvider.notifier).refresh();
@@ -1023,13 +1040,16 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.block, color: colorScheme.error),
+                leading: AppIcon(Icons.block, color: colorScheme.error),
                 title: Text(ctx.l10n.extensionsHomeFeedOff),
                 subtitle: Text(ctx.l10n.extensionsHomeFeedOffSubtitle),
                 trailing:
                     settings.homeFeedProvider == AppSettings.homeFeedProviderOff
-                    ? Icon(Icons.check_circle, color: colorScheme.primary)
-                    : Icon(Icons.circle_outlined, color: colorScheme.outline),
+                    ? AppIcon(Icons.check_circle, color: colorScheme.primary)
+                    : AppIcon(
+                        Icons.circle_outlined,
+                        color: colorScheme.outline,
+                      ),
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)
@@ -1041,7 +1061,7 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
               if (homeFeedProviders.isEmpty)
                 ListTile(
                   enabled: false,
-                  leading: Icon(
+                  leading: AppIcon(
                     Icons.extension_off,
                     color: colorScheme.outline,
                   ),
@@ -1049,14 +1069,20 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
                 ),
               ...homeFeedProviders.map(
                 (ext) => ListTile(
-                  leading: Icon(Icons.extension, color: colorScheme.secondary),
+                  leading: AppIcon(
+                    Icons.extension,
+                    color: colorScheme.secondary,
+                  ),
                   title: Text(ext.displayName),
                   subtitle: Text(
                     ctx.l10n.extensionsHomeFeedUse(ext.displayName),
                   ),
                   trailing: settings.homeFeedProvider == ext.id
-                      ? Icon(Icons.check_circle, color: colorScheme.primary)
-                      : Icon(Icons.circle_outlined, color: colorScheme.outline),
+                      ? AppIcon(Icons.check_circle, color: colorScheme.primary)
+                      : AppIcon(
+                          Icons.circle_outlined,
+                          color: colorScheme.outline,
+                        ),
                   onTap: () {
                     ref
                         .read(settingsProvider.notifier)

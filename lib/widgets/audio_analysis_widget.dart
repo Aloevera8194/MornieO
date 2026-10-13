@@ -18,6 +18,8 @@ import 'package:spotiflac_android/services/network_audio_analysis_input.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
@@ -1689,11 +1691,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2.5),
-                ),
+                const AppLoadingIndicator(size: 24, strokeWidth: 2.5),
                 const SizedBox(height: 12),
                 Text(
                   isRescan
@@ -1724,7 +1722,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
                   style: TextStyle(color: cs.onErrorContainer, fontSize: 13),
                 ),
               ),
-              IconButton(
+              AppIconButton(
                 icon: const Icon(Icons.refresh, size: 20),
                 tooltip: l10n.audioAnalysisRescan,
                 visualDensity: VisualDensity.compact,

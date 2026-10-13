@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 /// Error card shown by detail screens: a dedicated rate-limit presentation
 /// when the message looks like an HTTP 429, otherwise a generic error row.
@@ -77,10 +78,11 @@ class ErrorCard extends StatelessWidget {
                   ),
                   if (onRetry != null) ...[
                     SizedBox(height: tokens.gapMd),
-                    FilledButton.tonalIcon(
+                    ExpressiveButton(
+                      tonal: true,
                       onPressed: onRetry,
                       icon: const Icon(Icons.refresh, size: 18),
-                      label: Text(context.l10n.dialogRetry),
+                      child: Text(context.l10n.dialogRetry),
                     ),
                   ],
                 ],

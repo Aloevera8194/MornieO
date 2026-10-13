@@ -771,7 +771,8 @@ class _LoadingOrErrorScaffold extends StatelessWidget {
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
+            ExpressiveButton(
+              tonal: true,
               onPressed: onRetry,
               child: Text(context.l10n.dialogRetry),
             ),
@@ -1666,7 +1667,7 @@ class _QuickPicksPageViewState extends State<_QuickPicksPageView> {
               ),
             ),
             Builder(
-              builder: (buttonContext) => IconButton(
+              builder: (buttonContext) => AppIconButton(
                 tooltip: MaterialLocalizations.of(context).showMenuTooltip,
                 icon: Icon(
                   Icons.more_vert,

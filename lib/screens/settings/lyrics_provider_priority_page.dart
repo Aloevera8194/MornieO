@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
@@ -321,7 +322,7 @@ class _DisabledProviderItem extends StatelessWidget {
                 children: [
                   const SizedBox(width: 28),
                   const SizedBox(width: 16),
-                  Icon(info.icon, color: colorScheme.outline),
+                  AppIcon(info.icon, color: colorScheme.outline),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(

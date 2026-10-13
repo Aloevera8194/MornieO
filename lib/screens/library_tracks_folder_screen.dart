@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/collection_scaffold.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
@@ -427,18 +429,11 @@ class _LibraryTracksFolderScreenState
 
         SizedBox(
           width: double.infinity,
-          child: FilledButton.icon(
+          child: ExpressiveButton(
             onPressed: selectedCount > 0
                 ? () => _removeSelected(entries)
                 : null,
             icon: const Icon(Icons.remove_circle_outline),
-            label: Text(
-              selectedCount > 0
-                  ? '${widget.mode == LibraryTracksFolderMode.playlist ? context.l10n.collectionRemoveFromPlaylist : context.l10n.collectionRemoveFromFolder} ($selectedCount)'
-                  : widget.mode == LibraryTracksFolderMode.playlist
-                  ? context.l10n.collectionRemoveFromPlaylist
-                  : context.l10n.collectionRemoveFromFolder,
-            ),
             style: FilledButton.styleFrom(
               backgroundColor: selectedCount > 0
                   ? colorScheme.error
@@ -450,6 +445,13 @@ class _LibraryTracksFolderScreenState
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
+            ),
+            child: Text(
+              selectedCount > 0
+                  ? '${widget.mode == LibraryTracksFolderMode.playlist ? context.l10n.collectionRemoveFromPlaylist : context.l10n.collectionRemoveFromFolder} ($selectedCount)'
+                  : widget.mode == LibraryTracksFolderMode.playlist
+                  ? context.l10n.collectionRemoveFromPlaylist
+                  : context.l10n.collectionRemoveFromFolder,
             ),
           ),
         ),
@@ -1025,7 +1027,7 @@ class _CollectionTrackTile extends ConsumerWidget {
         ],
       ),
       trailing: isInHistory || isInLocalLibrary
-          ? IconButton(
+          ? AppIconButton(
               tooltip: context.l10n.tooltipPlay,
               onPressed: () => _playFromHere(context, ref),
               icon: Icon(Icons.play_arrow, color: colorScheme.primary),

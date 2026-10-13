@@ -9,6 +9,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/automix_status_badge.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
@@ -344,7 +345,7 @@ class _QualityBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          AppIcon(
             Icons.graphic_eq,
             size: mornye ? 11 : 14,
             color: colorScheme.onSurfaceVariant,

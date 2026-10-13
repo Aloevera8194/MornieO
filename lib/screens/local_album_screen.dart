@@ -28,6 +28,7 @@ import 'package:spotiflac_android/screens/collapsing_header_scroll_mixin.dart';
 import 'package:spotiflac_android/screens/selection_mode_mixin.dart';
 import 'package:spotiflac_android/screens/track_metadata_screen.dart';
 import 'package:spotiflac_android/widgets/collection_scaffold.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/album_track_tile.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
@@ -250,12 +251,13 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
         if (_loadError != null)
           SliverToBoxAdapter(
             child: Center(
-              child: TextButton.icon(
+              child: ExpressiveButton(
+                text: true,
                 onPressed: () => setState(() {
                   _loadTracks();
                 }),
                 icon: const Icon(Icons.refresh),
-                label: Text(context.l10n.dialogRetry),
+                child: Text(context.l10n.dialogRetry),
               ),
             ),
           )

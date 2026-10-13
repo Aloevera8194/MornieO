@@ -10,6 +10,7 @@ import 'package:spotiflac_android/services/music_player_service.dart'
 import 'package:spotiflac_android/screens/listening_statistics_screen.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/mornye_volume_control.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
@@ -65,7 +66,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                   title: context.l10n.libraryExternalPlayer,
                   subtitle: context.l10n.libraryExternalPlayerSubtitle,
                   trailing: settings.playerMode == 'external'
-                      ? Icon(Icons.check, color: colorScheme.primary)
+                      ? AppIcon(Icons.check, color: colorScheme.primary)
                       : null,
                   onTap: () => ref
                       .read(settingsProvider.notifier)
@@ -76,7 +77,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                   title: context.l10n.libraryBuiltInPreviewPlayer,
                   subtitle: context.l10n.libraryBuiltInPreviewPlayerSubtitle,
                   trailing: settings.playerMode == 'internal'
-                      ? Icon(Icons.check, color: colorScheme.primary)
+                      ? AppIcon(Icons.check, color: colorScheme.primary)
                       : null,
                   onTap: () => ref
                       .read(settingsProvider.notifier)

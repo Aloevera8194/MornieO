@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart'
     show CupertinoButton, CupertinoDynamicColor, kCupertinoModalBarrierColor;
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 
@@ -227,8 +228,8 @@ class AppSheetOption extends StatelessWidget {
       return ListTile(
         title: title,
         subtitle: subtitle,
-        leading: leading,
-        trailing: trailing,
+        leading: leading == null ? null : symbolIconWidget(leading!),
+        trailing: trailing == null ? null : symbolIconWidget(trailing!),
         onTap: onTap,
         contentPadding: contentPadding,
         enabled: enabled,
@@ -237,11 +238,16 @@ class AppSheetOption extends StatelessWidget {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     Widget adaptedIcon(Widget widget, double size) {
-      if (widget case Icon(:final icon?)) {
+      final (icon, color) = switch (widget) {
+        Icon(:final icon?, :final color) => (icon, color),
+        AppIcon(:final icon?, :final color) => (icon, color),
+        _ => (null, null),
+      };
+      if (icon != null) {
         return Icon(
           mornyeIconFor(icon),
           size: size,
-          color: enabled ? widget.color ?? scheme.primary : theme.disabledColor,
+          color: enabled ? color ?? scheme.primary : theme.disabledColor,
         );
       }
       return widget;

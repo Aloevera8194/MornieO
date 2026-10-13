@@ -427,14 +427,14 @@ void main() {
     expect(gridSource, contains('resolveCompletionBridgePlayablePath('));
     expect(gridSource, contains('_completionBridgePlayableProbe.listenable('));
     expect(gridSource, contains('CompletionBridgePlayableStatus.checking'));
-    expect(gridSource, contains('semanticsLabel:'));
+    expect(gridSource, contains('semanticLabel:'));
     expect(gridSource, contains('queueCheckingDownloadedFile'));
     expect(gridSource, contains('_LibraryPlaybackButton('));
     expect(gridSource, contains('grid: true'));
     expect(listSource, contains('resolveCompletionBridgePlayablePath('));
     expect(listSource, contains('_completionBridgePlayableProbe.listenable('));
     expect(listSource, contains('CompletionBridgePlayableStatus.checking'));
-    expect(listSource, contains('semanticsLabel:'));
+    expect(listSource, contains('semanticLabel:'));
     expect(listSource, contains('queueCheckingDownloadedFile'));
     expect(listSource, contains('_LibraryPlaybackButton('));
   });

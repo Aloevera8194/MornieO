@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/theme_provider.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_slider.dart';
 import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
 
 class LyricsSizeSetting extends ConsumerWidget {
@@ -28,7 +30,7 @@ class LyricsSizeSetting extends ConsumerWidget {
                 ),
               ),
               Text(percent),
-              IconButton(
+              AppIconButton(
                 tooltip: context.l10n.libraryFilterReset,
                 onPressed: scale == 1
                     ? null
@@ -43,7 +45,7 @@ class LyricsSizeSetting extends ConsumerWidget {
               style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
-          Slider(
+          AppSlider(
             value: scale,
             min: 0.8,
             max: 1.4,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:flutter/services.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
@@ -117,7 +118,7 @@ class _OpenOnPlatformSheetState extends State<OpenOnPlatformSheet> {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Padding(
             padding: EdgeInsets.all(32),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: AppLoadingIndicator()),
           );
         }
         final links = snapshot.data ?? const <String, String>{};

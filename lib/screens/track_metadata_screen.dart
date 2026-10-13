@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:flutter/cupertino.dart' show CupertinoButton, CupertinoIcons;
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/re_enrich_review_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -854,30 +857,27 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
       children: [
         Expanded(
           flex: 2,
-          child: FilledButton.icon(
+          child: ExpressiveButton(
             onPressed: fileExists
                 ? () => _openFile(context, rawFilePath)
                 : null,
             icon: const Icon(Icons.play_arrow),
-            label: Text(context.l10n.trackMetadataPlay),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
+            child: Text(context.l10n.trackMetadataPlay),
           ),
         ),
         if (_canDeleteFile) ...[
           const SizedBox(width: 12),
           Expanded(
-            child: OutlinedButton.icon(
+            child: ExpressiveButton(
+              outlined: true,
               onPressed: () => _confirmDelete(context, ref, colorScheme),
               icon: Icon(Icons.delete_outline, color: colorScheme.error),
-              label: Text(
-                context.l10n.trackMetadataDelete,
-                style: TextStyle(color: colorScheme.error),
-              ),
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -886,6 +886,10 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
                 side: BorderSide(
                   color: colorScheme.error.withValues(alpha: 0.5),
                 ),
+              ),
+              child: Text(
+                context.l10n.trackMetadataDelete,
+                style: TextStyle(color: colorScheme.error),
               ),
             ),
           ),

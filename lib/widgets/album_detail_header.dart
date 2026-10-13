@@ -10,6 +10,8 @@ import 'package:spotiflac_android/theme/cover_palette.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
@@ -439,9 +441,9 @@ class AlbumDetailHeader extends StatelessWidget {
         padding: EdgeInsets.only(left: iosEdgeInset),
         child:
             leading ??
-            IconButton.filledTonal(
+            AppIconButton.filledTonal(
               tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-              icon: Icon(
+              icon: AppIcon(
                 context.isMornye ? Icons.chevron_left : Icons.arrow_back,
               ),
               style: IconButton.styleFrom(
@@ -573,7 +575,7 @@ class AlbumPlayActions extends StatelessWidget {
         Flexible(
           child: ExpressiveButton(
             onPressed: onPlay,
-            icon: Icon(isPlaying ? Icons.pause : Icons.play_arrow, size: 20),
+            icon: AppIcon(isPlaying ? Icons.pause : Icons.play_arrow, size: 20),
             style: FilledButton.styleFrom(
               backgroundColor: scheme.primary,
               foregroundColor: scheme.onPrimary,
@@ -591,7 +593,7 @@ class AlbumPlayActions extends StatelessWidget {
         ExpressiveIconButton(
           tooltip: shuffleTooltip,
           onPressed: onShuffle,
-          icon: const Icon(Icons.shuffle),
+          icon: const AppIcon(Icons.shuffle),
           size: tokens.minTouchTarget,
           backgroundColor: scheme.secondaryContainer.withValues(alpha: 0.8),
           foregroundColor: scheme.onSecondaryContainer,
@@ -631,7 +633,7 @@ class HeaderFilledButton extends StatelessWidget {
     }
     return ExpressiveButton(
       onPressed: onPressed,
-      icon: Icon(icon, size: 18),
+      icon: AppIcon(icon, size: 18),
       style: FilledButton.styleFrom(
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
@@ -694,7 +696,7 @@ class HeaderCircleButton extends ConsumerWidget {
                 alpha: scheme.brightness == Brightness.dark ? 0.10 : 0.06,
               ),
               onPressed: onPressed,
-              child: Icon(
+              child: AppIcon(
                 mornyeIconFor(icon),
                 size: iconSize,
                 color: onPressed == null
@@ -709,7 +711,7 @@ class HeaderCircleButton extends ConsumerWidget {
       final button = IconButton(
         onPressed: onPressed,
         tooltip: tooltip,
-        icon: Icon(mornyeIconFor(icon), size: iconSize),
+        icon: AppIcon(mornyeIconFor(icon), size: iconSize),
         style: IconButton.styleFrom(
           minimumSize: Size.square(buttonSize ?? 44),
           foregroundColor: iconColor ?? scheme.onSurface,
@@ -734,7 +736,7 @@ class HeaderCircleButton extends ConsumerWidget {
     }
     return ExpressiveIconButton(
       onPressed: onPressed,
-      icon: Icon(icon, size: iconSize),
+      icon: AppIcon(icon, size: iconSize),
       tooltip: tooltip,
       size: buttonSize ?? tokens.minTouchTarget,
       backgroundColor: scheme.surfaceContainerHighest.withValues(alpha: 0.7),
@@ -779,7 +781,7 @@ class _MornyeHeaderButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20, color: foreground),
+            AppIcon(icon, size: 20, color: foreground),
             const SizedBox(width: 8),
             Flexible(
               child: Text(
@@ -854,7 +856,7 @@ class HeaderMetaItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 15, color: scheme.onSurface),
+        AppIcon(icon, size: 15, color: scheme.onSurface),
         const SizedBox(width: 4),
         Text(label, style: textStyle),
       ],

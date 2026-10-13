@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 
 /// Square extension icon with a tinted fallback.
 class ExtensionAvatar extends StatelessWidget {
@@ -63,10 +64,7 @@ class ExtensionAvatar extends StatelessWidget {
         loadingBuilder: (context, child, progress) {
           if (progress == null) return child;
           return const Center(
-            child: SizedBox.square(
-              dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+            child: AppLoadingIndicator(size: 20, strokeWidth: 2),
           );
         },
       );

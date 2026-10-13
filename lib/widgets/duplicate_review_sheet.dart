@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:spotiflac_android/l10n/l10n.dart';
@@ -232,7 +235,7 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
         if (snapshot.connectionState != ConnectionState.done) {
           return const Padding(
             padding: EdgeInsets.all(32),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: AppLoadingIndicator()),
           );
         }
         final groups = snapshot.data ?? const [];
@@ -275,7 +278,7 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: SizedBox(
         width: double.infinity,
-        child: FilledButton.icon(
+        child: ExpressiveButton(
           onPressed: _deleteActionInProgress
               ? null
               : () => _keepBestAll(groups),
@@ -284,15 +287,13 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
             foregroundColor: colorScheme.onError,
           ),
           icon: _deleteActionInProgress
-              ? SizedBox.square(
-                  dimension: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colorScheme.onError,
-                  ),
+              ? AppLoadingIndicator(
+                  size: 18,
+                  strokeWidth: 2,
+                  color: colorScheme.onError,
                 )
               : const Icon(Icons.delete_sweep_outlined),
-          label: Text(context.l10n.duplicatesKeepBestAll),
+          child: Text(context.l10n.duplicatesKeepBestAll),
         ),
       ),
     );
@@ -334,7 +335,8 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
                   ],
                 ),
               ),
-              TextButton(
+              ExpressiveButton(
+                text: true,
                 onPressed: _deleteActionInProgress
                     ? null
                     : () => _keepBest(group),
@@ -363,7 +365,7 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
                 ),
               ],
             ),
-            trailing: IconButton(
+            trailing: AppIconButton(
               tooltip: context.l10n.dialogDelete,
               icon: Icon(Icons.delete_outline, color: colorScheme.error),
               onPressed: _deleteActionInProgress

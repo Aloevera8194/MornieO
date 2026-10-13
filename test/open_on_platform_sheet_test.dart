@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/app_localizations.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/open_on_platform_sheet.dart';
 
 void main() {
@@ -43,12 +44,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(calls.length, 1);
       expect(find.text('Spotify'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.byType(AppLoadingIndicator), findsNothing);
       await tester.pumpWidget(app(Brightness.dark, 'two'));
       await tester.pump();
       expect(calls.length, 2);
       expect(calls.last.arguments, {'spotify_id': 'two', 'isrc': ''});
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byType(AppLoadingIndicator), findsOneWidget);
       pending.complete({
         'platforms': {'appleMusic': 'https://example.test/two'},
       });

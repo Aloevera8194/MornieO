@@ -17,6 +17,8 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class FilesSettingsPage extends ConsumerStatefulWidget {
@@ -188,7 +190,8 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                   title: context.l10n.downloadFolderAccessLostTitle,
                   message: context.l10n.downloadFolderAccessLostSubtitle,
                   margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  action: FilledButton.tonal(
+                  action: ExpressiveButton(
+                    tonal: true,
                     onPressed: () async {
                       await _pickSafTreeAndSave();
                       await _checkSafAccess();
@@ -317,7 +320,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                       filterAlbumArtistContributors:
                           settings.filterContributingArtistsInAlbumArtist,
                     ),
-                    trailing: Icon(
+                    trailing: AppIcon(
                       _artistFolderFiltersExpanded
                           ? Icons.expand_less
                           : Icons.expand_more,
@@ -391,7 +394,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
+                      AppIcon(
                         Icons.info_outline,
                         size: 16,
                         color: colorScheme.onSurfaceVariant,
@@ -544,10 +547,13 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
               ),
             ),
             AppSheetOption(
-              leading: Icon(Icons.folder_special, color: colorScheme.primary),
+              leading: AppIcon(
+                Icons.folder_special,
+                color: colorScheme.primary,
+              ),
               title: Text(context.l10n.storageAutomaticFolder),
               subtitle: Text(context.l10n.storageAutomaticDownloadFolder),
-              trailing: !isSafMode ? const Icon(Icons.check) : null,
+              trailing: !isSafMode ? const AppIcon(Icons.check) : null,
               onTap: () async {
                 Navigator.pop(ctx);
                 final defaultDir = await _getDefaultAndroidDirectory();
@@ -558,10 +564,10 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
               },
             ),
             AppSheetOption(
-              leading: Icon(Icons.folder_open, color: colorScheme.primary),
+              leading: AppIcon(Icons.folder_open, color: colorScheme.primary),
               title: Text(context.l10n.storageSafRecommended),
               subtitle: Text(context.l10n.storageDownloadFolderHint),
-              trailing: isSafMode ? const Icon(Icons.check) : null,
+              trailing: isSafMode ? const AppIcon(Icons.check) : null,
               onTap: () async {
                 Navigator.pop(ctx);
                 await _pickSafTreeAndSave();
@@ -605,10 +611,13 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
               ),
             ),
             AppSheetOption(
-              leading: Icon(Icons.folder_special, color: colorScheme.primary),
+              leading: AppIcon(
+                Icons.folder_special,
+                color: colorScheme.primary,
+              ),
               title: Text(context.l10n.setupAppDocumentsFolder),
               subtitle: Text(context.l10n.setupAppDocumentsFolderSubtitle),
-              trailing: Icon(Icons.check_circle, color: colorScheme.primary),
+              trailing: AppIcon(Icons.check_circle, color: colorScheme.primary),
               onTap: () async {
                 final dir = await getApplicationDocumentsDirectory();
                 ref
@@ -618,7 +627,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
               },
             ),
             AppSheetOption(
-              leading: Icon(
+              leading: AppIcon(
                 Icons.cloud,
                 color: context.isMornye
                     ? colorScheme.primary
@@ -794,11 +803,11 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 ),
               ])
                 AppSheetOption(
-                  leading: Icon(option.$4),
+                  leading: AppIcon(option.$4),
                   title: Text(option.$2),
                   subtitle: Text(option.$3),
                   trailing: current == option.$1
-                      ? const Icon(Icons.check)
+                      ? const AppIcon(Icons.check)
                       : null,
                   onTap: () {
                     ref
@@ -940,8 +949,8 @@ class _FolderOption extends StatelessWidget {
         ],
       ),
       trailing: isSelected
-          ? Icon(Icons.check_circle, color: colorScheme.primary)
-          : Icon(Icons.circle_outlined, color: colorScheme.outline),
+          ? AppIcon(Icons.check_circle, color: colorScheme.primary)
+          : AppIcon(Icons.circle_outlined, color: colorScheme.outline),
       onTap: onTap,
     );
   }

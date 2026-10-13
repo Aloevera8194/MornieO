@@ -10,6 +10,7 @@ import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/mornye_context_menu.dart';

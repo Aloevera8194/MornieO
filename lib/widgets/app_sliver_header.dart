@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/app_bar_layout.dart';
 
@@ -61,11 +63,11 @@ class AppSliverHeader extends StatelessWidget {
               padding: EdgeInsets.only(left: edgeInset),
               child:
                   leading ??
-                  IconButton(
+                  AppIconButton(
                     tooltip: MaterialLocalizations.of(
                       context,
                     ).backButtonTooltip,
-                    icon: Icon(
+                    icon: AppIcon(
                       context.isMornye ? Icons.chevron_left : Icons.arrow_back,
                     ),
                     onPressed: () => Navigator.pop(context),

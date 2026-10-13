@@ -22,6 +22,7 @@ import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/extension_repo_card.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 
 class RepoTab extends ConsumerStatefulWidget {
@@ -102,7 +103,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               title: context.l10n.storeTitle,
               actions: [
                 if (hasRegistryUrl)
-                  IconButton(
+                  AppIconButton(
                     icon: Icon(
                       context.isMornye ? CupertinoIcons.link : Icons.link,
                     ),
@@ -384,10 +385,10 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton.icon(
+                child: ExpressiveButton(
                   onPressed: _submitRepoUrl,
                   icon: const Icon(Icons.add),
-                  label: Text(context.l10n.storeAddRepoButton),
+                  child: Text(context.l10n.storeAddRepoButton),
                 ),
               ),
             ],
@@ -533,11 +534,11 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            FilledButton.icon(
+            ExpressiveButton(
               onPressed: () =>
                   ref.read(repoProvider.notifier).refresh(forceRefresh: true),
               icon: const Icon(Icons.refresh),
-              label: Text(context.l10n.dialogRetry),
+              child: Text(context.l10n.dialogRetry),
             ),
           ],
         ),
@@ -569,7 +570,8 @@ class _RepoTabState extends ConsumerState<RepoTab> {
           ),
           if (hasFilters) ...[
             const SizedBox(height: 8),
-            TextButton(
+            ExpressiveButton(
+              text: true,
               onPressed: () {
                 _searchController.clear();
                 ref.read(repoProvider.notifier).clearSearch();

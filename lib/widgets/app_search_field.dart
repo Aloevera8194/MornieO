@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
@@ -60,14 +62,15 @@ class AppSearchField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hintText,
           prefixIcon:
-              prefixIcon ?? Icon(mornye ? CupertinoIcons.search : Icons.search),
+              prefixIcon ??
+              AppIcon(mornye ? CupertinoIcons.search : Icons.search),
           suffixIcon:
               suffixIcon ??
               (value.text.isEmpty
                   ? null
-                  : IconButton(
+                  : AppIconButton(
                       tooltip: clearTooltip,
-                      icon: Icon(
+                      icon: AppIcon(
                         mornye
                             ? CupertinoIcons.clear_circled_solid
                             : Icons.clear,

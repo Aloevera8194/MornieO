@@ -5,6 +5,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/player_lyrics.dart';
 import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
@@ -48,7 +49,7 @@ class PlayerLyricsSection extends ConsumerWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            AppIcon(
               Icons.lyrics_outlined,
               size: 40,
               color: colorScheme.onSurfaceVariant,

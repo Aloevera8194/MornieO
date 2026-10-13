@@ -5,6 +5,7 @@ import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/settings/lyrics_provider_priority_page.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
@@ -256,30 +257,32 @@ class LyricsSettingsPage extends ConsumerWidget {
               ),
             ),
             AppSheetOption(
-              leading: const Icon(Icons.audiotrack),
+              leading: const AppIcon(Icons.audiotrack),
               title: Text(context.l10n.lyricsModeEmbed),
               subtitle: Text(context.l10n.lyricsModeEmbedSubtitle),
-              trailing: current == 'embed' ? const Icon(Icons.check) : null,
+              trailing: current == 'embed' ? const AppIcon(Icons.check) : null,
               onTap: () {
                 ref.read(settingsProvider.notifier).setLyricsMode('embed');
                 Navigator.pop(context);
               },
             ),
             AppSheetOption(
-              leading: const Icon(Icons.insert_drive_file_outlined),
+              leading: const AppIcon(Icons.insert_drive_file_outlined),
               title: Text(context.l10n.lyricsModeExternal),
               subtitle: Text(context.l10n.lyricsModeExternalSubtitle),
-              trailing: current == 'external' ? const Icon(Icons.check) : null,
+              trailing: current == 'external'
+                  ? const AppIcon(Icons.check)
+                  : null,
               onTap: () {
                 ref.read(settingsProvider.notifier).setLyricsMode('external');
                 Navigator.pop(context);
               },
             ),
             AppSheetOption(
-              leading: const Icon(Icons.library_music_outlined),
+              leading: const AppIcon(Icons.library_music_outlined),
               title: Text(context.l10n.lyricsModeBoth),
               subtitle: Text(context.l10n.lyricsModeBothSubtitle),
-              trailing: current == 'both' ? const Icon(Icons.check) : null,
+              trailing: current == 'both' ? const AppIcon(Icons.check) : null,
               onTap: () {
                 ref.read(settingsProvider.notifier).setLyricsMode('both');
                 Navigator.pop(context);

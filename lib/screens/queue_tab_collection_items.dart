@@ -92,7 +92,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                   color: colorScheme.errorContainer,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
+                child: AppIcon(
                   Icons.error_outline,
                   color: colorScheme.error,
                   size: 14,
@@ -162,7 +162,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
               color: colorScheme.primaryContainer,
               borderRadius: context.tokens.borderRadiusBadge,
             ),
-            child: Icon(
+            child: AppIcon(
               Icons.download_done,
               size: 12,
               color: colorScheme.onPrimaryContainer,
@@ -217,10 +217,11 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                       color: colorScheme.primaryContainer,
                       shape: BoxShape.circle,
                     ),
-                    child: CircularProgressIndicator(
+                    child: AppLoadingIndicator(
+                      size: 14,
                       strokeWidth: 2,
                       color: colorScheme.primary,
-                      semanticsLabel: context.l10n.queueCheckingDownloadedFile,
+                      semanticLabel: context.l10n.queueCheckingDownloadedFile,
                     ),
                   );
                 }
@@ -232,7 +233,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                       color: colorScheme.errorContainer,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: AppIcon(
                       Icons.error_outline,
                       color: colorScheme.error,
                       size: 14,
@@ -289,7 +290,10 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
               color: colorScheme.surfaceContainerHighest,
               borderRadius: radius,
             ),
-            child: Icon(Icons.music_note, color: colorScheme.onSurfaceVariant),
+            child: AppIcon(
+              Icons.music_note,
+              color: colorScheme.onSurfaceVariant,
+            ),
           );
     final heroTag = historyItem != null
         ? 'cover_lib_dl_${historyItem.id}'
@@ -364,21 +368,18 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                   return SizedBox.square(
                     dimension: context.tokens.minTouchTarget,
                     child: Center(
-                      child: SizedBox.square(
-                        dimension: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: colorScheme.primary,
-                          semanticsLabel:
-                              context.l10n.queueCheckingDownloadedFile,
-                        ),
+                      child: AppLoadingIndicator(
+                        size: 18,
+                        strokeWidth: 2,
+                        color: colorScheme.primary,
+                        semanticLabel: context.l10n.queueCheckingDownloadedFile,
                       ),
                     ),
                   );
                 }
                 return Tooltip(
                   message: context.l10n.queueDownloadedFileMissing,
-                  child: Icon(
+                  child: AppIcon(
                     Icons.error_outline,
                     color: colorScheme.error,
                     size: 20,
@@ -458,7 +459,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                 : colorScheme.secondaryContainer,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
+          child: AppIcon(
             icon ?? Icons.folder,
             color: context.isMornye
                 ? iconColor ?? Colors.white
@@ -503,7 +504,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                   ],
                 ),
               ),
-              Icon(
+              AppIcon(
                 Icons.chevron_right,
                 color: colorScheme.onSurfaceVariant,
                 size: 20,
@@ -536,7 +537,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                 : colorScheme.secondaryContainer,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
+          child: AppIcon(
             icon ?? Icons.folder,
             color: context.isMornye
                 ? iconColor ?? Colors.white

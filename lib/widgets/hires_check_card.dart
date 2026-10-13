@@ -9,6 +9,9 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 /// On-demand sampled spectrum and bit-depth analysis for one FLAC/WAV file.
 class HiResCheckCard extends StatefulWidget {
@@ -123,7 +126,7 @@ class _HiResCheckCardState extends State<HiResCheckCard> {
                     height: 20,
                     child: mornye
                         ? const CupertinoActivityIndicator()
-                        : const CircularProgressIndicator(strokeWidth: 2.5),
+                        : const AppLoadingIndicator(size: 20, strokeWidth: 2.5),
                   )
                 else if (mornye && (result != null || _error != null))
                   Tooltip(
@@ -140,7 +143,7 @@ class _HiResCheckCardState extends State<HiResCheckCard> {
                     ),
                   )
                 else if (result != null || _error != null)
-                  IconButton(
+                  AppIconButton(
                     icon: const Icon(Icons.refresh, size: 20),
                     tooltip: l10n.audioAnalysisRescan,
                     visualDensity: VisualDensity.compact,
@@ -175,10 +178,11 @@ class _HiResCheckCardState extends State<HiResCheckCard> {
                         icon: const Icon(Icons.search),
                         label: Text(l10n.hiResCheckRun),
                       )
-                    : FilledButton.tonalIcon(
+                    : ExpressiveButton(
+                        tonal: true,
                         onPressed: _check,
                         icon: const Icon(Icons.search, size: 20),
-                        label: Text(l10n.hiResCheckRun),
+                        child: Text(l10n.hiResCheckRun),
                       ),
               ),
             ] else if (!result.supported)

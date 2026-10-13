@@ -19,6 +19,8 @@ import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 
+import 'support/app_icon_finder.dart';
+
 final _tracks = [
   for (final name in ['First', 'Unavailable', 'Selected', 'Last'])
     Track(
@@ -247,7 +249,7 @@ void main() {
       expect(calls, hasLength(1));
       expect(calls.single.$1, [_tracks[0], _tracks[1]]);
       expect(calls.single.$2, 'example');
-      expect(find.byIcon(Icons.remove_circle_outline), findsNothing);
+      expect(findAppIcon(Icons.remove_circle_outline), findsNothing);
       expect(find.text(l10n.selectionSelected(2)), findsOneWidget);
       expect(find.text('First'), findsOneWidget);
       expect(find.text('Unavailable'), findsOneWidget);
@@ -306,14 +308,14 @@ void main() {
           await tester.ensureVisible(find.text('Unavailable'));
           await tester.tap(find.text('Unavailable'));
           await tester.pumpAndSettle();
-          await tester.tap(find.byIcon(Icons.remove_circle_outline));
+          await tester.tap(findAppIcon(Icons.remove_circle_outline));
           await tester.pumpAndSettle();
           expect(calls, hasLength(1));
           expect(calls.single.$1, mode.name);
           expect(calls.single.$2, ['First', 'Unavailable']);
           expect(find.text('First'), findsNothing);
           expect(find.text('Unavailable'), findsNothing);
-          expect(find.byIcon(Icons.remove_circle_outline), findsNothing);
+          expect(findAppIcon(Icons.remove_circle_outline), findsNothing);
           final l10n = AppLocalizations.of(
             tester.element(find.byType(LibraryTracksFolderScreen)),
           );
@@ -371,7 +373,7 @@ void main() {
       );
       await tester.scrollUntilVisible(row, 200);
       await tester.tap(
-        find.descendant(of: row, matching: find.byIcon(Icons.play_arrow)),
+        find.descendant(of: row, matching: findAppIcon(Icons.play_arrow)),
       );
       await tester.pumpAndSettle();
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 
 /// Compact expressive transport/header actions with the same accessible target
 /// and tooltip as the standard Material fallback.
@@ -28,6 +29,7 @@ class ExpressiveIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final icon = symbolIconWidget(this.icon);
     final scheme = Theme.of(context).colorScheme;
     final foreground = WidgetStateProperty.resolveWith<Color?>((states) {
       if (states.contains(WidgetState.disabled)) {

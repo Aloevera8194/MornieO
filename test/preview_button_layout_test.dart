@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/models/track.dart';
@@ -11,6 +12,8 @@ import 'package:spotiflac_android/providers/preview_player_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/widgets/preview_button.dart';
 import 'package:spotiflac_android/widgets/track_collection_quick_actions.dart';
+
+import 'support/app_icon_finder.dart';
 
 void main() {
   const track = Track(
@@ -50,8 +53,10 @@ void main() {
   }
 
   void expectCenteredHitbox(WidgetTester tester, IconData iconData) {
-    final button = find.byType(IconButton);
-    final icon = find.byIcon(iconData);
+    final button = find.byWidgetPredicate(
+      (widget) => widget is IconButton || widget is M3EIconButton,
+    );
+    final icon = findAppIcon(iconData);
     final hitbox = tester.getRect(button);
 
     expect(hitbox.width, greaterThanOrEqualTo(48));
@@ -108,7 +113,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byIcon(Icons.pause_circle_filled_rounded), findsOneWidget);
+    expect(findAppIcon(Icons.pause_circle_filled_rounded), findsOneWidget);
     final playingBuilds = builds;
     for (var second = 1; second <= 3; second++) {
       player.emit(
@@ -130,7 +135,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byIcon(Icons.play_circle_fill_rounded), findsOneWidget);
+    expect(findAppIcon(Icons.play_circle_fill_rounded), findsOneWidget);
     expect(builds, playingBuilds + 1);
 
     player.emit(
@@ -140,7 +145,7 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.byIcon(Icons.play_circle_outline_rounded), findsOneWidget);
+    expect(findAppIcon(Icons.play_circle_outline_rounded), findsOneWidget);
   });
 
   testWidgets('overflow menu icon is centered in its adjacent hitbox', (
@@ -179,11 +184,11 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.more_vert));
+    await tester.tap(findAppIcon(Icons.more_vert));
     await tester.pumpAndSettle();
 
     expect(find.text('Go to Album'), findsOneWidget);
-    expect(find.byIcon(Icons.album_outlined), findsOneWidget);
+    expect(findAppIcon(Icons.album_outlined), findsOneWidget);
   });
 
   testWidgets(
@@ -207,11 +212,11 @@ void main() {
         ),
       );
 
-      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.tap(findAppIcon(Icons.more_vert));
       await tester.pumpAndSettle();
 
       expect(find.text('Go to Album'), findsOneWidget);
-      expect(find.byIcon(Icons.album_outlined), findsOneWidget);
+      expect(findAppIcon(Icons.album_outlined), findsOneWidget);
     },
   );
 }
