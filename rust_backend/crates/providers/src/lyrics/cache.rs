@@ -13,7 +13,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 pub const MAX_ENTRIES: usize = 500;
 pub const TTL: Duration = Duration::from_secs(24 * 60 * 60);
 const MAX_PERSISTED_BYTES: u64 = 64 << 20;
-const SNAPSHOT_VERSION: u32 = 5;
+const SNAPSHOT_VERSION: u32 = 6;
 
 #[derive(Clone)]
 struct Entry {
@@ -145,9 +145,8 @@ impl LyricsCache {
                 let Some(response) = entry.response else {
                     continue;
                 };
-                // Older versions lost Apple supplements or collapsed group vocals
-                // into the second singer instead of preserving the vocal side.
-                // Refetch once, preserving other providers' caches.
+                // Refetch legacy Apple results once to apply current source
+                // priority and vocal timing, preserving other providers' caches.
                 if loaded.version < SNAPSHOT_VERSION && response.provider == "Apple Music" {
                     continue;
                 }
@@ -333,8 +332,11 @@ mod tests {
     fn current_snapshot_restores_supplementary_text() {
         let file = tempfile::NamedTempFile::new().unwrap();
         let now = UNIX_EPOCH + Duration::from_secs(100);
-        let mut lyrics =
-            LyricsResponse::from_text("[00:01.009]Original", "Apple Music", "Apple Music");
+        let mut lyrics = LyricsResponse::from_text(
+            "[00:01.009]Original",
+            "Apple Music",
+            "SpotiFLAC-Mobile Lyrics",
+        );
         let line = &mut lyrics.lines.as_mut().unwrap()[0];
         line.romanization = Some("Romanized".into());
         line.romanization_words = Some(vec![spotiflac_core::lyrics::LyricsWord {

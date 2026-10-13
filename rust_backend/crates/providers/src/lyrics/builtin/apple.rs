@@ -10,6 +10,31 @@ static INDEX: LazyLock<Regex> =
 static TOKEN: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+").unwrap());
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum AppleLyricsSource {
+    Paxsenix,
+    SpotiFlac,
+}
+
+fn apple_with_fallback(
+    check: &Check<'_>,
+    mut fetch: impl FnMut(AppleLyricsSource) -> Result<LyricsResponse, LyricsError>,
+) -> Result<LyricsResponse, LyricsError> {
+    check().map_err(LyricsError::Cancelled)?;
+    match fetch(AppleLyricsSource::Paxsenix) {
+        Err(primary @ (LyricsError::Unavailable(_) | LyricsError::Other(_))) => {
+            check().map_err(LyricsError::Cancelled)?;
+            match fetch(AppleLyricsSource::SpotiFlac) {
+                // An outage followed by a missing backup must not be cached
+                // as proof that the primary has no lyrics for this song.
+                Err(LyricsError::NotFound(_)) => Err(primary),
+                result => result,
+            }
+        }
+        result => result,
+    }
+}
+
 impl BuiltinLyricsClient {
     fn lock_apple_token<'a>(
         &'a self,
@@ -141,14 +166,44 @@ impl BuiltinLyricsClient {
         })
         .filter(|(id, _)| !id.trim().is_empty())
         .ok_or_else(|| LyricsError::NotFound("no songs found on apple music".into()))?;
-        let mut get = Request::new("https://lyrics.paxsenix.org/apple-music/lyrics");
-        get.timeout = Duration::from_secs(20);
-        get.params = pairs(&[("id", selected.0.trim())]);
-        let raw = text_from_bytes(&self.http.get(get, check)?.body);
+        apple_with_fallback(check, |source| {
+            self.apple_lyrics(selected.0.trim(), source, request, check)
+        })
+    }
+
+    fn apple_lyrics(
+        &self,
+        id: &str,
+        source: AppleLyricsSource,
+        request: &SearchRequest,
+        check: &Check<'_>,
+    ) -> Result<LyricsResponse, LyricsError> {
+        let mut get = match source {
+            AppleLyricsSource::Paxsenix => {
+                let mut get = Request::new("https://lyrics.paxsenix.org/apple-music/lyrics");
+                get.timeout = Duration::from_secs(20);
+                get.params = pairs(&[("id", id)]);
+                get
+            }
+            AppleLyricsSource::SpotiFlac => {
+                let mut get = Request::new("https://api.zarz.moe/apple-music/lyrics");
+                get.timeout = Duration::from_secs(65);
+                // Let the backup use its account's storefront, since lyric
+                // availability differs between catalog regions.
+                get.params = pairs(&[("id", id), ("v", "1")]);
+                get
+            }
+        };
+        get.allowed = &[200, 404];
+        let response = self.http.get(get, check)?;
+        if response.status == 404 {
+            return Err(LyricsError::NotFound("apple music lyrics not found".into()));
+        }
+        let raw = text_from_bytes(&response.body);
         let raw = raw.trim();
-        if raw.is_empty() {
-            return Err(LyricsError::Other(
-                "empty lyrics response from apple music".into(),
+        if raw.is_empty() || raw.starts_with('<') {
+            return Err(LyricsError::Unavailable(
+                "invalid lyrics response from apple music".into(),
             ));
         }
         if let Some(message) = errors::detect_payload(raw) {
@@ -157,16 +212,26 @@ impl BuiltinLyricsClient {
                 format!("apple music proxy returned non-lyric payload: {message}"),
             ));
         }
-        let text = match payloads::format_apple(
-            raw,
-            request.options.multi_person_word_by_word,
-            request.options.apple_elrc_word_sync,
-        ) {
-            Ok(text) => text,
-            Err(error) if raw.starts_with(['{', '[']) => return Err(LyricsError::Other(error)),
-            Err(_) => raw.into(),
+        let multi_person = request.options.multi_person_word_by_word;
+        let word_timing = request.options.apple_elrc_word_sync;
+        let (text, credit) = match source {
+            AppleLyricsSource::Paxsenix => {
+                let text = match payloads::format_apple(raw, multi_person, word_timing) {
+                    Ok(text) => text,
+                    Err(error) if raw.starts_with(['{', '[']) => {
+                        return Err(LyricsError::Unavailable(error));
+                    }
+                    Err(_) => raw.into(),
+                };
+                (text, "Apple Music")
+            }
+            AppleLyricsSource::SpotiFlac => (
+                payloads::format_spotiflac_apple(raw, multi_person, word_timing)
+                    .map_err(LyricsError::Unavailable)?,
+                "SpotiFLAC-Mobile Lyrics",
+            ),
         };
-        let mut lyrics = from_text(&text, "Apple Music", "Apple Music")?;
+        let mut lyrics = from_text(&text, "Apple Music", credit)?;
         payloads::apple_supplements(raw, &mut lyrics);
         Ok(lyrics)
     }
@@ -182,6 +247,123 @@ mod tests {
         fn deezer_id_from_spotify(&self, _: &str, _: &Check<'_>) -> Result<String, LyricsError> {
             unreachable!("token test must not resolve tracks")
         }
+    }
+
+    #[test]
+    fn primary_success_never_calls_backup() {
+        let expected = LyricsResponse::from_text("[00:01.00]Example", "Apple Music", "Apple Music");
+        let mut calls = Vec::new();
+        let actual = apple_with_fallback(&|| Ok(()), |source| {
+            calls.push(source);
+            Ok(expected.clone())
+        });
+        assert_eq!(actual, Ok(expected));
+        assert_eq!(calls, [AppleLyricsSource::Paxsenix]);
+    }
+
+    #[test]
+    fn outages_try_backup_after_primary_and_keep_source_credit() {
+        for error in [
+            LyricsError::Unavailable("timeout".into()),
+            LyricsError::Unavailable("HTTP 503".into()),
+            LyricsError::Other("HTTP 403".into()),
+            LyricsError::Unavailable("invalid payload".into()),
+        ] {
+            let mut calls = Vec::new();
+            let result = apple_with_fallback(&|| Ok(()), |source| {
+                calls.push(source);
+                match source {
+                    AppleLyricsSource::Paxsenix => Err(error.clone()),
+                    AppleLyricsSource::SpotiFlac => Ok(LyricsResponse::from_text(
+                        "[00:01.00]Example",
+                        "Apple Music",
+                        "SpotiFLAC-Mobile Lyrics",
+                    )),
+                }
+            })
+            .unwrap();
+            assert_eq!(
+                calls,
+                [AppleLyricsSource::Paxsenix, AppleLyricsSource::SpotiFlac]
+            );
+            assert_eq!(result.provider, "Apple Music");
+            assert_eq!(result.source, "SpotiFLAC-Mobile Lyrics");
+            let saved = spotiflac_core::lyrics::lrc::with_metadata(&result, "Track", "Artist");
+            assert!(!saved.contains("Paxsenix"));
+        }
+    }
+
+    #[test]
+    fn missing_lyrics_and_cancellation_do_not_start_backup() {
+        for error in [
+            LyricsError::NotFound("no lyrics".into()),
+            LyricsError::Cancelled("cancelled".into()),
+            LyricsError::Recursive("recursive".into()),
+        ] {
+            let mut calls = Vec::new();
+            let result = apple_with_fallback(&|| Ok(()), |source| {
+                calls.push(source);
+                Err(error.clone())
+            });
+            assert_eq!(result, Err(error));
+            assert_eq!(calls, [AppleLyricsSource::Paxsenix]);
+        }
+        let checks = AtomicUsize::new(0);
+        let mut calls = Vec::new();
+        let result = apple_with_fallback(
+            &|| {
+                if checks.fetch_add(1, Ordering::AcqRel) > 0 {
+                    Err("cancel before backup".into())
+                } else {
+                    Ok(())
+                }
+            },
+            |source| {
+                calls.push(source);
+                Err(LyricsError::Unavailable("timeout".into()))
+            },
+        );
+        assert_eq!(
+            result,
+            Err(LyricsError::Cancelled("cancel before backup".into()))
+        );
+        assert_eq!(calls, [AppleLyricsSource::Paxsenix]);
+    }
+
+    #[test]
+    fn missing_backup_does_not_turn_primary_outage_into_negative_cache() {
+        let result = apple_with_fallback(&|| Ok(()), |source| match source {
+            AppleLyricsSource::Paxsenix => Err(LyricsError::Unavailable("HTTP 503".into())),
+            AppleLyricsSource::SpotiFlac => Err(LyricsError::NotFound("no lyrics".into())),
+        });
+        assert_eq!(result, Err(LyricsError::Unavailable("HTTP 503".into())));
+    }
+
+    #[test]
+    #[ignore = "requires live Apple catalog and SpotiFLAC-Mobile Lyrics access"]
+    fn live_apple_backup_after_primary_failure() {
+        let network = NetworkService::new().unwrap();
+        let client = BuiltinLyricsClient::with_endpoints(
+            &network,
+            "",
+            Arc::new(Resolver),
+            BTreeMap::from([(
+                "https://lyrics.paxsenix.org".into(),
+                "https://127.0.0.1:9".into(),
+            )]),
+        )
+        .unwrap();
+        let request = SearchRequest {
+            track: "Never Gonna Give You Up".into(),
+            artist: "Rick Astley".into(),
+            duration: 213.0,
+            ..SearchRequest::default()
+        };
+        let lyrics = client.apple(&request, &|| Ok(())).unwrap();
+        assert!(lyrics.has_usable_text());
+        assert!(lyrics.is_synced());
+        assert_eq!(lyrics.provider, "Apple Music");
+        assert_eq!(lyrics.source, "SpotiFLAC-Mobile Lyrics");
     }
 
     #[test]

@@ -145,6 +145,14 @@ class AboutPage extends StatelessWidget {
                   ),
                   _AboutSettingsItem(
                     icon: Icons.lyrics_outlined,
+                    title: 'SpotiFLAC-Mobile Lyrics',
+                    subtitle: context.l10n.lyricsProviderAppleMusicDesc,
+                    onTap: () =>
+                        _launchUrl('https://api.zarz.moe/apple-music/docs'),
+                    showDivider: true,
+                  ),
+                  _AboutSettingsItem(
+                    icon: Icons.lyrics_outlined,
                     title: 'Paxsenix',
                     subtitle: context.l10n.aboutPaxsenixSubtitle,
                     onTap: () => _launchUrl('https://lyrics.paxsenix.org'),

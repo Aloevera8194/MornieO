@@ -157,6 +157,7 @@ pub fn source_uses_proxy(source: &str) -> bool {
     !source.is_empty()
         && ![
             "lrclib",
+            "spotiflac-mobile lyrics",
             "kugou direct",
             "qq music direct",
             "genius direct",
@@ -248,6 +249,21 @@ pub fn with_metadata(lyrics: &LyricsResponse, track: &str, artist: &str) -> Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn first_party_lyrics_do_not_credit_paxsenix() {
+        for source in [
+            "SpotiFLAC-Mobile Lyrics",
+            "SpotiFLAC-Mobile Lyrics (cached)",
+        ] {
+            let lyrics = LyricsResponse::from_text("[00:01.00]Example", source, source);
+            let saved = with_metadata(&lyrics, "Track", "Artist");
+            assert!(!saved.contains("Paxsenix"));
+            assert_eq!(extract_source(&saved), source);
+        }
+        let lyrics = LyricsResponse::from_text("[00:01.00]Example", "Spotify", "Spotify");
+        assert!(with_metadata(&lyrics, "Track", "Artist").contains("via Paxsenix API"));
+    }
 
     #[test]
     fn zero_placeholders_are_plain_lyrics_without_losing_source_or_text() {

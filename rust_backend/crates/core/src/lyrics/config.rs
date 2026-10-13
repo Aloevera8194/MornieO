@@ -103,7 +103,7 @@ pub fn available_providers() -> Vec<AvailableProvider> {
             "apple_music",
             "Apple Music",
             true,
-            "Apple Music synced lyrics",
+            "Apple Music synced lyrics with a SpotiFLAC-Mobile fallback",
         ),
         (
             "qqmusic",

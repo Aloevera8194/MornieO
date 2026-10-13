@@ -24,6 +24,8 @@ pub struct PaxLine {
     pub opposite_turn: bool,
     pub background: bool,
     pub background_text: Option<Vec<PaxDetail>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub background_lines: Option<Vec<PaxLine>>,
     pub endtime: isize,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub agent: String,
@@ -31,6 +33,7 @@ pub struct PaxLine {
 json::go_deserialize!(PaxLine {
     "text" => text, "timestamp" => timestamp, "oppositeturn" => opposite_turn,
     "background" => background, "backgroundtext" => background_text, "endtime" => endtime,
+    "backgroundlines" => background_lines,
     "agent" => agent,
 });
 
@@ -225,6 +228,72 @@ pub fn format_pax_content(
         }
     }
     output.trim().into()
+}
+
+/// The first-party service's exported eLRC flattens backing vocals into lead
+/// lines. Read its v1 JSON instead to preserve background groups and exact
+/// word boundaries, including adjacent syllables and line-only lyrics.
+pub fn format_spotiflac_apple(
+    raw: &str,
+    multi_person: bool,
+    word_timing: bool,
+) -> Result<String, String> {
+    let payload: ApplePayload = json::decode(raw)
+        .map_err(|error| format!("invalid SpotiFLAC-Mobile Lyrics response: {error}"))?;
+    let kind = json::field_name(&payload.kind);
+    if kind == "unsynced" && !payload.plain.trim().is_empty() {
+        return Ok(payload.plain.trim().into());
+    }
+    if !matches!(kind.as_str(), "syllable" | "line" | "unsynced") {
+        return Err("unsupported SpotiFLAC-Mobile Lyrics sync type".into());
+    }
+    let lines = payload
+        .content
+        .as_deref()
+        .ok_or("missing SpotiFLAC-Mobile Lyrics content")?;
+    let timed = kind != "unsynced";
+    let words = word_timing && kind == "syllable";
+    let mut output = String::new();
+    for line in lines {
+        let details = line.text.as_deref().unwrap_or_default();
+        if !details.iter().any(|detail| !detail.text.trim().is_empty()) {
+            continue;
+        }
+        if !output.is_empty() {
+            output.push('\n');
+        }
+        if timed {
+            output.push_str(&lrc::timestamp(line.timestamp as i64));
+            if multi_person {
+                output.push_str(if line.opposite_turn { "v2:" } else { "v1:" });
+            }
+        }
+        append_detail(&mut output, details, words);
+        if timed && multi_person {
+            for background in line.background_lines.as_deref().unwrap_or_default() {
+                let details = background.text.as_deref().unwrap_or_default();
+                if !details.iter().any(|detail| !detail.text.trim().is_empty()) {
+                    continue;
+                }
+                output.push_str("\n[bg:");
+                // Group bounds retain backing timing even in line-only mode.
+                output.push_str(&format!(
+                    "<{}>",
+                    lrc::timestamp_inline(background.timestamp as i64)
+                ));
+                append_detail(&mut output, details, words);
+                output.push_str(&format!(
+                    "<{}>]",
+                    lrc::timestamp_inline(background.endtime as i64)
+                ));
+            }
+        }
+    }
+    Ok(if timed && multi_person {
+        apple_vocal_sides(output.trim(), &payload)
+    } else {
+        output.trim().into()
+    })
 }
 
 pub fn format_apple(raw: &str, multi_person: bool, word_timing: bool) -> Result<String, String> {
@@ -576,6 +645,78 @@ pub fn format_kpoe(response: &KpoeResponse, multi_person: bool, word_timing: boo
 #[cfg(test)]
 mod supplement_tests {
     use super::*;
+
+    #[test]
+    fn spotiflac_apple_preserves_syllables_and_separate_background_groups() {
+        let raw = serde_json::json!({
+            "type": "Syllable",
+            "elrcMultiPerson": "[00:01.00]Lead\n[00:02.00]Echo",
+            "content": [{
+                "timestamp": 1009, "endtime": 4000, "agent": "v3", "oppositeTurn": true,
+                "text": [
+                    {"text": "To", "part": true, "timestamp": 1009, "endtime": 1500},
+                    {"text": "gether", "timestamp": 1500, "endtime": 4000}
+                ],
+                "backgroundLines": [
+                    {"timestamp": 2000, "endtime": 2500, "text": [
+                        {"text": "Echo", "timestamp": 2000, "endtime": 2500}
+                    ]},
+                    {"timestamp": 3000, "endtime": 3500, "text": [
+                        {"text": "Again", "timestamp": 3000, "endtime": 3500}
+                    ]}
+                ]
+            }]
+        })
+        .to_string();
+        for words in [false, true] {
+            let text = format_spotiflac_apple(&raw, true, words).unwrap();
+            assert!(text.starts_with("[00:01.009]v1:"));
+            assert_eq!(text.matches("[bg:").count(), 2);
+            let lyrics = LyricsResponse::from_text(
+                &text,
+                "SpotiFLAC-Mobile Lyrics",
+                "SpotiFLAC-Mobile Lyrics",
+            );
+            assert_eq!(lyrics.lines().len(), 1);
+            assert_eq!(lyrics.lines()[0].start_time_ms, 1009);
+            if words {
+                assert!(text.contains("To<00:01.50><00:01.50>gether"));
+            } else {
+                assert!(text.contains("Together"));
+            }
+            let solo = format_spotiflac_apple(&raw, false, words).unwrap();
+            assert!(!solo.contains("[bg:"));
+            assert!(!solo.contains("v1:"));
+        }
+    }
+
+    #[test]
+    fn spotiflac_apple_handles_line_only_unsynced_and_invalid_responses() {
+        let mut raw = serde_json::json!({
+            "type": "Line", "content": [{
+                "timestamp": 1500, "text": [{"text": "Whole"}, {"text": "line"}]
+            }]
+        });
+        assert_eq!(
+            format_spotiflac_apple(&raw.to_string(), false, true).unwrap(),
+            "[00:01.50]Whole line"
+        );
+        raw["type"] = "Unsynced".into();
+        raw["content"][0]["timestamp"] = serde_json::Value::Null;
+        let text = format_spotiflac_apple(&raw.to_string(), true, true).unwrap();
+        assert_eq!(text, "Whole line");
+        assert_eq!(
+            LyricsResponse::from_text(&text, "Example", "Example").sync_type,
+            "UNSYNCED"
+        );
+        for raw in [
+            "<html>Error</html>",
+            r#"{"error":{"code":"APPLE_AUTH_REQUIRED"}}"#,
+            "{}",
+        ] {
+            assert!(format_spotiflac_apple(raw, true, true).is_err());
+        }
+    }
 
     #[test]
     fn apple_agents_restore_vocal_sides_without_reformatting_word_times() {
