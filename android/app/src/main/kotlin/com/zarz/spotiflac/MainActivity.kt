@@ -1814,8 +1814,11 @@ class MainActivity: FlutterFragmentActivity() {
                                             if (!writeUriFromPath(uri, tempPath)) {
                                                 return@withContext """{"error":"Failed to write enriched metadata back to SAF file"}"""
                                             }
-                                            if (obj.optBoolean("write_external_lrc", false)) {
-                                                writeSafSidecarLrc(uri, obj.optString("lyrics", ""))
+                                            if (obj.optBoolean("write_external_lrc", false) &&
+                                                !writeSafSidecarLrc(uri, obj.optString("lyrics", ""))) {
+                                                return@withContext errorJson(
+                                                    "Metadata was saved, but the LRC lyrics file could not be updated"
+                                                )
                                             }
                                             raw
                                         } finally {

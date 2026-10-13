@@ -505,6 +505,7 @@ fn reenrich_cover_and_lyrics_overlap_preserve_best_effort_results_and_cancel() {
         "instrumental",
         "instrumental_native",
         "instrumental_with_lyrics",
+        "word_synced_native",
         "cancel",
     ] {
         let (network, config) = network();
@@ -513,7 +514,10 @@ fn reenrich_cover_and_lyrics_overlap_preserve_best_effort_results_and_cancel() {
             &[
                 (
                     "/cover",
-                    if matches!(mode, "cover_failure" | "instrumental_native") {
+                    if matches!(
+                        mode,
+                        "cover_failure" | "instrumental_native" | "word_synced_native"
+                    ) {
                         404
                     } else {
                         200
@@ -548,6 +552,10 @@ fn reenrich_cover_and_lyrics_overlap_preserve_best_effort_results_and_cancel() {
             json!(format!("{}/lyrics", server.url)),
             if mode.starts_with("instrumental") {
                 "{instrumental:true}"
+            } else if mode == "word_synced_native" {
+                r#"{syncType:"LINE_SYNCED",lines:[
+                    {startTimeMs:1000,words:"<00:01.00>New <00:01.50>lyrics<00:02.00>",endTimeMs:2000},
+                    {startTimeMs:3000,words:"<00:03.00>Next <00:03.50>line<00:04.00>",endTimeMs:4000}]}"#
             } else {
                 "{plainLyrics:response.body}"
             },
@@ -567,7 +575,7 @@ fn reenrich_cover_and_lyrics_overlap_preserve_best_effort_results_and_cancel() {
         backend
             .set_lyrics_providers_json(r#"["extension:example.lyrics"]"#)
             .unwrap();
-        let native = mode == "instrumental_native";
+        let native = matches!(mode, "instrumental_native" | "word_synced_native");
         let file_name = if native { "track.flac" } else { "track.mp3" };
         let audio = directory.path().join("data").join(file_name);
         let sidecar = directory.path().join("data/track.lrc");
@@ -583,6 +591,11 @@ fn reenrich_cover_and_lyrics_overlap_preserve_best_effort_results_and_cancel() {
         let has_existing = !matches!(mode, "missing" | "instrumental" | "instrumental_native");
         if has_existing {
             std::fs::write(&sidecar, "[00:01.00]Old lyrics").unwrap();
+            if native {
+                backend
+                    .embed_lyrics_to_file(file_name, "[00:01.00]Old lyrics", &|| Ok(()))
+                    .unwrap();
+            }
         }
         let request = json!({"file_path":file_name,"track_name":"Track","artist_name":"Artist",
             "cover_url":format!("{}/cover", server.url),"embed_lyrics":true,"lyrics_mode":"both",
@@ -633,6 +646,7 @@ fn reenrich_cover_and_lyrics_overlap_preserve_best_effort_results_and_cancel() {
                 "lyrics_failure" | "instrumental_with_lyrics" => ("preserved", "Old lyrics"),
                 "missing" => ("not_found", ""),
                 "instrumental" | "instrumental_native" => ("instrumental", "[instrumental:true]"),
+                "word_synced_native" => ("updated", "<00:01.00>New <00:01.50>lyrics<00:02.00>"),
                 _ => ("updated", "New lyrics"),
             };
             assert_eq!(result["lyrics_status"], status);
@@ -663,7 +677,7 @@ fn reenrich_cover_and_lyrics_overlap_preserve_best_effort_results_and_cancel() {
                         &|| Ok(()),
                     )
                     .unwrap();
-                assert_eq!(embedded, "[instrumental:true]");
+                assert_eq!(embedded, lyrics);
             }
         }
         if !native {

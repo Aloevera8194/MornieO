@@ -1,7 +1,10 @@
 package com.zarz.spotiflac
 
+import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.ParcelFileDescriptor
+import android.provider.DocumentsContract
 import android.system.Os
 import android.system.OsConstants
 import androidx.documentfile.provider.DocumentFile
@@ -357,22 +360,40 @@ internal fun MainActivity.writeUriFromPath(uri: Uri, srcPath: String): Boolean {
      * The child URI must be a tree-based document URI (e.g. from SAF tree scan).
      * Returns a DocumentFile that supports findFile() for sibling lookup.
      */
-internal fun MainActivity.safParentDir(childUri: Uri): DocumentFile? {
+internal fun Context.safParentDir(childUri: Uri): DocumentFile? {
         try {
-            val docId = android.provider.DocumentsContract.getDocumentId(childUri)
-            if (docId.isNullOrEmpty()) return null
+            val docId = DocumentsContract.getDocumentId(childUri)
+            val treeDocId = DocumentsContract.getTreeDocumentId(childUri)
+            if (docId.isNullOrEmpty() || treeDocId.isNullOrEmpty() || docId == treeDocId) return null
+
+            // Document IDs are opaque, including when they contain slashes.
+            // Ask the provider for the ancestry instead of treating IDs as paths.
+            val path = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                try {
+                    DocumentsContract.findDocumentPath(contentResolver, childUri)?.path
+                } catch (_: Exception) {
+                    null
+                }
+            } else null
+            if (path != null) {
+                if (path.size < 2 || path.first() != treeDocId || path.last() != docId) return null
+                val parentUri = DocumentsContract.buildDocumentUriUsingTree(
+                    childUri, path[path.lastIndex - 1]
+                )
+                return DocumentFile.fromTreeUri(this, parentUri)
+            }
+
+            // Older providers may only expose path-like IDs. Accept that
+            // fallback only if the candidate actually lists this document.
             val lastSlash = docId.lastIndexOf('/')
             if (lastSlash <= 0) return null
-
-            val parentDocId = docId.substring(0, lastSlash)
-            val treeDocId = android.provider.DocumentsContract.getTreeDocumentId(childUri)
-            if (treeDocId.isNullOrEmpty()) return null
-
-            val parentUri = android.provider.DocumentsContract.buildDocumentUriUsingTree(
-                childUri, parentDocId
+            val parentUri = DocumentsContract.buildDocumentUriUsingTree(
+                childUri, docId.substring(0, lastSlash)
             )
-            return DocumentFile.fromTreeUri(this, parentUri)
-                ?: DocumentFile.fromSingleUri(this, parentUri)
+            val parent = DocumentFile.fromTreeUri(this, parentUri) ?: return null
+            val name = DocumentFile.fromSingleUri(this, childUri)?.name ?: return null
+            val child = findSafChild(this, parent, name) ?: return null
+            return parent.takeIf { DocumentsContract.getDocumentId(child.uri) == docId }
         } catch (e: Exception) {
             android.util.Log.w("SpotiFLAC", "Failed to get SAF parent dir: ${e.message}")
             return null
@@ -383,10 +404,10 @@ internal fun MainActivity.safParentDir(childUri: Uri): DocumentFile? {
      * Write a ".lrc" sidecar next to a SAF audio document. The sidecar reuses
      * the audio file's base name (e.g. "Song.flac" -> "Song.lrc") and is created
      * in the same parent directory. Used by re-enrich when the user's lyrics
-     * mode requests an external/both sidecar. Best-effort: failures are logged
-     * and swallowed so they never abort the metadata enrichment itself.
+     * mode requests an external/both sidecar. Callers must handle false so a
+     * failed lyrics write cannot be reported as a successful refresh.
      */
-internal fun MainActivity.writeSafSidecarLrc(audioUri: Uri, lrcContent: String): Boolean {
+internal fun Context.writeSafSidecarLrc(audioUri: Uri, lrcContent: String): Boolean {
         if (lrcContent.isBlank()) return false
         try {
             val parent = safParentDir(audioUri) ?: run {
