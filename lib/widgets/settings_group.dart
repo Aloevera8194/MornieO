@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
@@ -173,12 +174,16 @@ class _SettingsSearchTargetState extends State<SettingsSearchTarget> {
     if (!_handled) return widget.child;
 
     final colorScheme = Theme.of(context).colorScheme;
+    final motion = AppMotion.effects(
+      context,
+      AppMotionSpec(context.tokens.motionMedium, Curves.easeOutCubic),
+    );
     return Semantics(
       selected: _highlighted,
       child: AnimatedContainer(
         key: ValueKey('settings-highlight:${widget.label}'),
-        duration: context.tokens.motionMedium,
-        curve: Curves.easeOutCubic,
+        duration: motion.duration,
+        curve: motion.curve,
         color: _highlighted
             ? colorScheme.primaryContainer.withValues(alpha: 0.3)
             : Colors.transparent,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 
 /// Wraps a child in a staggered fade-in + slide-up animation.
@@ -33,6 +35,40 @@ class StaggeredListItem extends StatelessWidget {
     }
     final cappedIndex = index.clamp(0, _maxAnimatedItems - 1);
     final delay = staggerDelay * cappedIndex;
+    if (materialExpressiveEnabled(context)) {
+      // Expressive: each item springs up after its own delay and may
+      // overshoot slightly; opacity stays within range.
+      final motion = AppMotion.spatial(
+        context,
+        AppMotionSpec(duration, Curves.easeOutCubic),
+      );
+      final total = motion.duration + delay;
+      final delayFraction = total.inMicroseconds > 0
+          ? delay.inMicroseconds / total.inMicroseconds
+          : 0.0;
+      return TweenAnimationBuilder<double>(
+        key: ValueKey('stagger_$index'),
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: total,
+        builder: (context, value, child) {
+          final elapsed = value <= delayFraction
+              ? 0.0
+              : ((value - delayFraction) / (1.0 - delayFraction)).clamp(
+                  0.0,
+                  1.0,
+                );
+          final progress = motion.curve.transform(elapsed);
+          return Opacity(
+            opacity: progress.clamp(0.0, 1.0),
+            child: Transform.translate(
+              offset: Offset(0, 16 * (1 - progress)),
+              child: child,
+            ),
+          );
+        },
+        child: child,
+      );
+    }
     final totalDuration = duration + delay;
 
     return TweenAnimationBuilder<double>(
@@ -1037,12 +1073,21 @@ class AnimatedSelectionCheckbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scale = AppMotion.spatialFast(
+      context,
+      const AppMotionSpec(Duration(milliseconds: 200), Curves.easeOutBack),
+    );
+    final fill = AppMotion.effectsFast(
+      context,
+      const AppMotionSpec(Duration(milliseconds: 200), Curves.linear),
+    );
     return AnimatedScale(
       scale: visible ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOutBack,
+      duration: scale.duration,
+      curve: scale.curve,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: fill.duration,
+        curve: fill.curve,
         width: size,
         height: size,
         decoration: BoxDecoration(

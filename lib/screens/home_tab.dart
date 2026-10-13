@@ -11,6 +11,7 @@ import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/app_shape.dart';
@@ -875,6 +876,10 @@ class _HomeTabState extends ConsumerState<HomeTab>
         !hasHomeFeedExtension &&
         !hasExploreContent &&
         !hasResults;
+    final sectionMotion = AppMotion.spatial(
+      context,
+      const AppMotionSpec(Duration(milliseconds: 250), Curves.easeOut),
+    );
 
     ref.listen<String>(settingsProvider.select((s) => s.defaultSearchTab), (
       previous,
@@ -936,8 +941,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
 
               SliverToBoxAdapter(
                 child: AnimatedSize(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOut,
+                  duration: sectionMotion.duration,
+                  curve: sectionMotion.curve,
                   child: (hasResults || showExplore || !_showsHome)
                       ? const SizedBox.shrink()
                       : _buildHomeIntro(
@@ -1010,8 +1015,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
 
               SliverToBoxAdapter(
                 child: AnimatedSize(
-                  duration: const Duration(milliseconds: 250),
-                  curve: Curves.easeOut,
+                  duration: sectionMotion.duration,
+                  curve: sectionMotion.curve,
                   child:
                       (!_showsHome ||
                           hasResults ||

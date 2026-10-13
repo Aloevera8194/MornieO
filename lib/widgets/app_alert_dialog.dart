@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
@@ -21,6 +23,37 @@ Future<T?> showAppDialog<T>({
         context: context,
         builder: (context) => themes.wrap(Builder(builder: builder)),
         barrierDismissible: barrierDismissible,
+      ),
+    );
+  }
+  if (materialExpressiveEnabled(context)) {
+    // Expressive: the dialog scales in on a spatial spring while an effects
+    // spring fades it, keeping opacity within range.
+    const fallback = AppMotionSpec(Duration.zero, Curves.linear);
+    final scale = AppMotion.spatial(context, fallback);
+    final fade = AppMotion.effectsFast(context, fallback);
+    final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+    final themes = InheritedTheme.capture(from: context, to: navigator.context);
+    return showGeneralDialog<T>(
+      context: context,
+      barrierDismissible: barrierDismissible,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: DialogTheme.of(context).barrierColor ?? Colors.black54,
+      useRootNavigator: useRootNavigator,
+      transitionDuration: scale.duration,
+      pageBuilder: (dialogContext, _, _) =>
+          themes.wrap(SafeArea(child: Builder(builder: builder))),
+      transitionBuilder: (context, animation, _, child) => FadeTransition(
+        opacity: animation.drive(CurveTween(curve: fade.curve)),
+        child: ScaleTransition(
+          scale: animation.drive(
+            Tween<double>(
+              begin: 0.85,
+              end: 1,
+            ).chain(CurveTween(curve: scale.curve)),
+          ),
+          child: child,
+        ),
       ),
     );
   }

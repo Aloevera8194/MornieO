@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/routes/now_playing_route.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
@@ -47,17 +49,23 @@ class MaterialPlayerLayout extends StatelessWidget {
                   final resting =
                       !ref.watch(playbackPlayingProvider) &&
                       !ref.watch(playbackLoadingProvider);
-                  final duration = MediaQuery.disableAnimationsOf(context)
-                      ? Duration.zero
-                      : const Duration(milliseconds: 500);
+                  final motion = AppMotion.spatialSlow(
+                    context,
+                    AppMotionSpec(
+                      MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 500),
+                      Curves.easeOutBack,
+                    ),
+                  );
                   return AnimatedScale(
                     scale: resting ? 0.9 : 1,
-                    duration: duration,
-                    curve: Curves.easeOutBack,
+                    duration: motion.duration,
+                    curve: motion.curve,
                     child: TweenAnimationBuilder<double>(
                       tween: Tween(end: resting ? 40 : 20),
-                      duration: duration,
-                      curve: Curves.easeOutCubic,
+                      duration: motion.duration,
+                      curve: motion.curve,
                       builder: (context, radius, artwork) => ClipRRect(
                         borderRadius: BorderRadius.circular(radius),
                         child: artwork,
@@ -175,20 +183,28 @@ class MaterialPlayerLayout extends StatelessWidget {
     BuildContext context, {
     bool compact = false,
   }) {
+    final expressive = materialExpressiveEnabled(context);
+    const fallback = AppMotionSpec(Duration(milliseconds: 350), Curves.linear);
+    final slide = AppMotion.spatial(context, fallback);
+    final fade = AppMotion.effects(context, fallback);
     return [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
         child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 350),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
+          duration: slide.duration,
+          // Expressive: a spatial spring moves the title while an effects
+          // spring fades it, so opacity never overshoots.
+          switchInCurve: expressive ? Curves.linear : Curves.easeOutCubic,
+          switchOutCurve: expressive ? Curves.linear : Curves.easeInCubic,
           transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
+            opacity: expressive
+                ? animation.drive(CurveTween(curve: fade.curve))
+                : animation,
             child: SlideTransition(
               position: Tween(
                 begin: const Offset(0, 0.15),
                 end: Offset.zero,
-              ).animate(animation),
+              ).chain(CurveTween(curve: slide.curve)).animate(animation),
               child: child,
             ),
           ),

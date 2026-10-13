@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
@@ -54,6 +55,7 @@ class _ExpressivePlaybackTransportState
   static const _sideActionWidth = 48.0;
   static const _minTarget = 48.0;
   static const _squishRatio = 0.15;
+  static final _pressSpring = SpringCurve(M3EMotion.expressiveSpatialPress);
 
   int? _pressed;
 
@@ -178,8 +180,8 @@ class _ExpressivePlaybackTransportState
     // One curve for every slot keeps the summed width constant mid-flight.
     child: TweenAnimationBuilder<double>(
       tween: Tween(end: width),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutBack,
+      duration: _pressSpring.duration,
+      curve: _pressSpring,
       builder: (context, width, child) =>
           SizedBox(width: math.max(0, width), height: height, child: child),
       child: child,

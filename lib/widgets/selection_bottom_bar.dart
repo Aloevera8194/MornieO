@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
@@ -183,19 +184,29 @@ class _AnimatedSelectionBottomBarState extends State<AnimatedSelectionBottomBar>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 240),
+    _controller = AnimationController(vsync: this);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_controller.duration != null) return;
+    // Expressive: the bar springs into place while fading without overshoot.
+    const fallback = AppMotionSpec(
+      Duration(milliseconds: 240),
+      Curves.easeOutCubic,
     );
-    final curve = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-    );
+    final slide = AppMotion.spatial(context, fallback);
+    final fade = AppMotion.effects(context, fallback);
+    _controller.duration = slide.duration;
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.08),
       end: Offset.zero,
-    ).animate(curve);
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(curve);
+    ).animate(CurvedAnimation(parent: _controller, curve: slide.curve));
+    _fadeAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: fade.curve));
     _controller.forward();
   }
 
@@ -493,12 +504,19 @@ class _SelectionPanelDragState extends State<_SelectionPanelDrag>
   void _setExpanded(bool expanded) {
     setState(() => _expanded = expanded);
     if (!expanded && _scroll.hasClients) _scroll.jumpTo(0);
+    final motion = AppMotion.spatialSlow(
+      context,
+      AppMotionSpec(
+        MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 220),
+        Curves.easeOutCubic,
+      ),
+    );
     _expansion.animateTo(
       expanded ? 1 : 0,
-      duration: MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
+      duration: motion.duration,
+      curve: motion.curve,
     );
     _animateToRest(0);
   }
