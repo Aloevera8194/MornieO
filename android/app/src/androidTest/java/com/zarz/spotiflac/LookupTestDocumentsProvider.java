@@ -245,7 +245,8 @@ public final class LookupTestDocumentsProvider extends DocumentsProvider {
     public String renameDocument(String documentId, String displayName) throws FileNotFoundException {
         Entry entry = entries.get(documentId);
         if (entry == null) throw new FileNotFoundException(documentId);
-        if (failFinalRename && entry.name.endsWith(".partial") && displayName.equals("Song.flac")) {
+        if (failFinalRename && (entry.name.endsWith(".partial") || entry.name.contains(".partial."))
+                && displayName.equals("Song.flac")) {
             throw new FileNotFoundException("Injected publish rename failure");
         }
         String newId = "renamed:" + sequence++;

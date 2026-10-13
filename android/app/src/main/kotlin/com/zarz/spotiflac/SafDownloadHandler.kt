@@ -16,7 +16,6 @@ import java.util.Locale
 object SafDownloadHandler {
     private val safDirLock = Any()
     private const val MAX_SAF_DISPLAY_NAME_UTF8_BYTES = 180
-    private const val STAGED_SAF_MIME_TYPE = "application/octet-stream"
 
     // Serializes the exists-check/create/write/publish sequence per target
     // file so concurrent downloads that sanitize to the same display name
@@ -112,7 +111,9 @@ object SafDownloadHandler {
         val finalizerPromotesStaged = req.optBoolean("stage_saf_output", false) && !deferSafPublish
         val useStagedOutput = !deferSafPublish
         val stagedFileName = if (useStagedOutput) buildStagedSafFileName(fileName) else fileName
-        val stagedMimeType = if (useStagedOutput) STAGED_SAF_MIME_TYPE else mimeType
+        // Providers may retain the creation MIME after rename. A temporary
+        // name must not turn completed audio into an unclassified file.
+        val stagedMimeType = mimeType
 
         val existingDir = findDocumentDir(context, treeUri, relativeDir)
         if (existingDir != null && req.optString("album_folder_template", "").isBlank()) {
@@ -248,7 +249,7 @@ object SafDownloadHandler {
                             val replacement = createOrReuseDocumentFile(
                                 context,
                                 targetDir,
-                                if (useStagedOutput) STAGED_SAF_MIME_TYPE else actualMimeType,
+                                actualMimeType,
                                 actualStagedFileName
                             ) ?: throw IllegalStateException(
                                 "failed to create SAF output with actual extension"
@@ -390,7 +391,7 @@ object SafDownloadHandler {
             try {
                 val targetDir = ensureDocumentDir(context, Uri.parse(treeUriStr), relativeDir)
                     ?: return@withSafNameLock null
-                writeFileToSafLocked(context, targetDir, finalName, srcPath)
+                writeFileToSafLocked(context, targetDir, finalName, mimeType, srcPath)
             } catch (e: Exception) {
                 android.util.Log.w("SpotiFLAC", "Failed to write file to SAF: ${e.message}")
                 null
@@ -426,6 +427,7 @@ object SafDownloadHandler {
                 context,
                 targetDir,
                 availableName,
+                mimeType,
                 srcPath,
                 trace,
             ) ?: return@withSafNameLock null
@@ -466,6 +468,7 @@ object SafDownloadHandler {
                 context,
                 targetDir,
                 selectedName,
+                mimeType,
                 srcPath,
                 trace,
             ) ?: return@withSafNameLock null
@@ -504,6 +507,7 @@ object SafDownloadHandler {
                 context,
                 targetDir,
                 finalName,
+                mimeType,
                 srcPath,
                 trace,
             ) ?: return@withSafNameLock null
@@ -591,6 +595,7 @@ object SafDownloadHandler {
         context: Context,
         targetDir: DocumentFile,
         finalName: String,
+        mimeType: String,
         srcPath: String,
         trace: PublishTrace = PublishTrace(),
     ): String? {
@@ -600,7 +605,7 @@ object SafDownloadHandler {
             val stagedName = buildStagedSafFileName(finalName)
             deleteStaleStagedFiles(context, targetDir, finalName, ext)
             trace.mark("cleanup")
-            val document = createOrReuseDocumentFile(context, targetDir, STAGED_SAF_MIME_TYPE, stagedName)
+            val document = createOrReuseDocumentFile(context, targetDir, mimeType, stagedName)
                 ?: return null
             trace.mark("create")
             stagedDocument = document
@@ -679,8 +684,9 @@ object SafDownloadHandler {
     }
 
     private fun buildStagedSafFileName(fileName: String): String {
-        val safeName = sanitizeFilename(fileName)
-        return "$safeName.partial"
+        // Filesystem providers append an audio extension when it does not
+        // match the MIME. Keep that extension last on the temporary name.
+        return buildLegacyStagedSafFileName(fileName, "")
     }
 
     private fun buildLegacyStagedSafFileName(fileName: String, outputExt: String): String {
@@ -701,6 +707,7 @@ object SafDownloadHandler {
     private fun deleteStaleStagedFiles(context: Context, parent: DocumentFile, fileName: String, outputExt: String) {
         val stagedNames = linkedSetOf(
             buildStagedSafFileName(fileName),
+            "${sanitizeFilename(fileName)}.partial",
             buildLegacyStagedSafFileName(fileName, outputExt),
             buildReplacedSafFileName(fileName)
         )

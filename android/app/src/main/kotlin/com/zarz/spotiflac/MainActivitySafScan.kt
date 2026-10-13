@@ -952,6 +952,7 @@ internal fun MainActivity.scanSafTree(
                         queue.add(child.doc to childPath)
                     } else {
                         val name = child.name ?: continue
+                        if (isIncompleteSafFileName(name)) continue
                         val lastModified = child.lastModified
                         val ext = name.substringAfterLast('.', "").lowercase(Locale.ROOT)
                         if (ext == "cue") {
@@ -1384,9 +1385,10 @@ internal fun MainActivity.scanSafTreeIncremental(
                         queue.add(child.doc to childPath)
                     } else {
                         val uriStr = child.doc.uri.toString()
+                        val name = child.name
+                        if (name != null && isIncompleteSafFileName(name)) continue
                         currentUris.add(uriStr)
-
-                        val name = child.name ?: continue
+                        if (name == null) continue
                         val ext = name.substringAfterLast('.', "").lowercase(Locale.ROOT)
 
                         if (ext == "cue") {
