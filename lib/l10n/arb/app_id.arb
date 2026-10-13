@@ -1466,7 +1466,7 @@
   "@updateDownloadInstall": {
     "description": "Update button - download and install"
   },
-  "updateDontRemind": "Tidak usah",
+  "updateDontRemind": "Tidak Usah",
   "@updateDontRemind": {
     "description": "Update button - skip this version"
   },
@@ -1630,7 +1630,7 @@
   "@lyricsModeDescription": {
     "description": "Lyrics mode picker description"
   },
-  "lyricsModeEmbed": "Tersemat di file",
+  "lyricsModeEmbed": "Sematkan di file",
   "@lyricsModeEmbed": {
     "description": "Lyrics mode option - embed in audio file"
   },
@@ -2057,7 +2057,7 @@
   "@extensionUpdated": {
     "description": "Extension detail - last update"
   },
-  "extensionMinAppVersion": "Versi App Min",
+  "extensionMinAppVersion": "Versi Apl Min.",
   "@extensionMinAppVersion": {
     "description": "Extension detail - minimum app version"
   },
@@ -2364,7 +2364,7 @@
   "@appearanceHeroAnimations": {
     "description": "Toggle for shared-element (Hero) transitions"
   },
-  "appearanceHeroAnimationsSubtitle": "Transisikan cover art antar layar, cont. membuka pemutar",
+  "appearanceHeroAnimationsSubtitle": "Transisikan foto cover antar layar, cont. membuka pemutar",
   "@appearanceHeroAnimationsSubtitle": {
     "description": "Subtitle for the Hero animations toggle"
   },
@@ -2542,7 +2542,7 @@
   "@recentTypePlaylist": {
     "description": "Recent access item type - playlist"
   },
-  "recentEmpty": "Tidak ada baru-baru ini",
+  "recentEmpty": "Tak ada baru-baru ini",
   "@recentEmpty": {
     "description": "Empty state text for recent access list"
   },
@@ -3099,7 +3099,7 @@
   "@tutorialWelcomeDesc": {
     "description": "Tutorial welcome page description"
   },
-  "tutorialWelcomeTip1": "Telusuri dengan ekstensi terinstal atau tempelkan link musik yang didukung.",
+  "tutorialWelcomeTip1": "Telusuri dengan ekstensi terinstal atau tempelkan link musik yang didukung",
   "@tutorialWelcomeTip1": {
     "description": "Tutorial welcome tip 1"
   },
@@ -3107,7 +3107,7 @@
   "@tutorialWelcomeTip2": {
     "description": "Tutorial welcome tip 2"
   },
-  "tutorialWelcomeTip3": "Otomatis menyatukan metadata, cover art, lirik, dan informasi rilisan",
+  "tutorialWelcomeTip3": "Otomatis menyatukan metadata, foto cover, lirik, dan informasi rilisan",
   "@tutorialWelcomeTip3": {
     "description": "Tutorial welcome tip 3"
   },
@@ -3155,7 +3155,7 @@
   "@tutorialExtensionsDesc": {
     "description": "Tutorial extensions page description"
   },
-  "tutorialExtensionsTip1": "Jelajahi menu Repo untuk menemukan berbagai ekstensi.",
+  "tutorialExtensionsTip1": "Jelajahi menu Repo untuk menemukan berbagai ekstensi",
   "@tutorialExtensionsTip1": {
     "description": "Tutorial extensions tip 1"
   },
@@ -3433,7 +3433,7 @@
   "@trackReEnrichBatchSubtitle": {
     "description": "Subtitle for batch metadata update choices"
   },
-  "trackReEnrichFieldCover": "Cover Art",
+  "trackReEnrichFieldCover": "Foto Cover",
   "@trackReEnrichFieldCover": {
     "description": "Checkbox label for cover art field in re-enrich"
   },
@@ -3541,7 +3541,7 @@
   "@trackEditMetadata": {
     "description": "Menu action - edit embedded metadata"
   },
-  "trackCoverSaved": "Cover art disimpan ke {fileName}",
+  "trackCoverSaved": "Foto cover disimpan ke {fileName}",
   "@trackCoverSaved": {
     "description": "Snackbar after cover art saved",
     "placeholders": {
@@ -3550,7 +3550,7 @@
       }
     }
   },
-  "trackCoverNoSource": "Tidak ada sumber cover art",
+  "trackCoverNoSource": "Tidak ada sumber foto cover",
   "@trackCoverNoSource": {
     "description": "Snackbar when no cover art URL or embedded cover"
   },
@@ -4284,7 +4284,7 @@
   },
   "backupSettingsOnly": "Setelan saja",
   "backupSelectHistory": "Histori download",
-  "backupSelectCollections": "Koleksi saya",
+  "backupSelectCollections": "Seluruh koleksi",
   "backupSelectCollectionsDescription": "Lagu, wishlist, artis favorit, playlist, dan cover playlist yang disukai.",
   "backupSelectExtensions": "Ekstensi dan setelannya",
   "backupSelectedExportDescription": "Buat file cadangan dari kategori terpilih. Tidak termasuk file audio.",
@@ -4669,7 +4669,7 @@
   "@snackbarUnsupportedAudioFormat": {
     "description": "Snackbar when the audio format is not supported for the requested operation"
   },
-  "cacheRefresh": "Muat Ulang",
+  "cacheRefresh": "Refresh",
   "@cacheRefresh": {
     "description": "Tooltip for refresh button on cache management page"
   },
@@ -4829,7 +4829,7 @@
   "@editMetadataFieldCopyright": {
     "description": "Chip label for copyright field in auto-fill selector"
   },
-  "editMetadataFieldCover": "Cover Art",
+  "editMetadataFieldCover": "Foto Cover",
   "@editMetadataFieldCover": {
     "description": "Chip label for cover art field in auto-fill selector"
   },
@@ -6272,7 +6272,7 @@
       }
     }
   },
-  "extensionRefreshStatus": "Muat ulang status",
+  "extensionRefreshStatus": "Refresh status",
   "@extensionRefreshStatus": {
     "description": "Tooltip for refreshing extension service health status"
   },
@@ -6868,7 +6868,7 @@
   "@releaseTypeEp": {
     "description": "Badge label for EP releases"
   },
-  "releaseTypeSingle": "SIngle",
+  "releaseTypeSingle": "Single",
   "@releaseTypeSingle": {
     "description": "Badge label for single releases"
   },
@@ -6936,7 +6936,7 @@
   "@extensionVerificationBrowserSubtitleExternal": {
     "description": "Subtitle when external browser is preferred for extension verification"
   },
-  "extensionVerificationBrowserSubtitleInApp": "Buka verifikasi di browser aplikasi dulu",
+  "extensionVerificationBrowserSubtitleInApp": "Buka verifikasi di SpotiFLAC dulu",
   "@extensionVerificationBrowserSubtitleInApp": {
     "description": "Subtitle when in-app browser is preferred for extension verification"
   },
@@ -7097,7 +7097,7 @@
   "@mornyeFavorite": {
     "description": "Compact context menu action that adds a track to Loved"
   },
-  "mornyeFavorited": "Terfavorit",
+  "mornyeFavorited": "Difavoritkan",
   "@mornyeFavorited": {
     "description": "Selected state of the compact favorite action"
   },
@@ -7166,7 +7166,7 @@
   "listeningStatsTopTracks": "Lagu teratas",
   "listeningStatsLoadError": "Tak dapat memuat statistik mendengar",
   "listeningStatsClear": "Hapus statistik mendengar",
-  "listeningStatsClearError": "Tak dapat menghapus statistik mendengar. Coba lagi",
+  "listeningStatsClearError": "Tak dapat menghapus statistik mendengar. Coba lagi.",
   "listeningStatsClearDescription": "Hapus semua statistik mendengar perangkat ini? Musik dan playlist Anda akan tetap ada.",
   "weeklyReleases": "Rilisan baru",
   "weeklyReleasesDescription": "Album dan single terbaru dari artis favorit Anda, info disediakan oleh ekstensi metadata terinstal.",
