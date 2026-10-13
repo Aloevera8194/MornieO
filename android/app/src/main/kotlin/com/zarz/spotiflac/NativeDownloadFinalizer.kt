@@ -646,9 +646,9 @@ object NativeDownloadFinalizer {
         shouldCancel: () -> Boolean,
     ) {
         if (outputExt(input) != ".flac") return
-        val requestedDecryptionExt = requestedDecryptionOutputExt(input)
         val forceContainerConversion = shouldForceContainerConversion(input, state)
-        if (!forceContainerConversion && requestedDecryptionExt.isNotBlank() && requestedDecryptionExt != ".flac") return
+        // The decrypted container may still contain FLAC. Only the measured
+        // stream codec can decide whether an M4A/MP4 should be preserved.
         val mayNeedContainerConversion = forceContainerConversion ||
             looksLikeM4a(state.filePath, state.fileName) ||
             isMP4ContainerFile(state.filePath) ||

@@ -116,6 +116,7 @@ class _DownloadRun {
   String actualQuality = '';
   String? resultOutputExt;
   bool shouldPreserveNativeM4a = false;
+  bool forceContainerConversion = false;
 
   /// Filled by the SAF embed op from the local temp so the final quality
   /// probe doesn't have to copy the published file back out of SAF.
@@ -650,13 +651,16 @@ class _DownloadRun {
     final resultIsKnownLossyAudio =
         isLossyAudioFormat(resultAudioFormat) &&
         !isInconclusiveAudioCodec(resultAudioFormat);
-    final requiresContainerConversion =
+    forceContainerConversion =
         result.requiresContainerConversion ||
         (!resultIsKnownLossyAudio &&
             n._shouldRequestContainerConversion(actualService, safOutputExt));
     final preferredOutputExt = n._extensionPreferredOutputExt(actualService);
     shouldPreserveNativeM4a =
-        !requiresContainerConversion &&
+        // M4A/MP4 may contain FLAC. A requested FLAC output must reach the
+        // codec probe even if the extension did not ask for conversion.
+        safOutputExt != '.flac' &&
+        !forceContainerConversion &&
         (resultOutputExt == '.m4a' ||
             resultOutputExt == '.mp4' ||
             preferredOutputExt == '.m4a' ||
@@ -1141,8 +1145,7 @@ class _DownloadRun {
   }
 
   Future<void> _preserveSafNativeM4a(String currentFilePath) async {
-    // Decrypted streams are already in their final format.
-    // Converting e.g. eac3 M4A to FLAC would produce fake upscaled output.
+    // Preserve explicitly requested M4A/MP4 output, including spatial audio.
     _log.d('M4A/MP4 file detected (SAF), preserving native container...');
     final preserveExt = currentFilePath.toLowerCase().endsWith('.mp4')
         ? '.mp4'
@@ -1204,7 +1207,7 @@ class _DownloadRun {
               codec == 'flac' && await FFmpegService.isNativeFlacFile(tempPath);
           final shouldAttemptConversion =
               shouldAttemptLosslessContainerConversion(
-                forceConversion: true,
+                forceConversion: forceContainerConversion,
                 probedCodec: codec,
               );
           if (!shouldAttemptConversion) {
@@ -1216,6 +1219,13 @@ class _DownloadRun {
             final preserveExt = resultOutputExt == '.mp4' ? '.mp4' : '.m4a';
             final newFileName = '${safBaseName ?? 'track'}$preserveExt';
             producedFileName = newFileName;
+            if (metadataEmbeddingEnabled) {
+              await _embedFinalMetadata(
+                tempPath,
+                format: 'm4a',
+                writeExternalLrc: false,
+              );
+            }
             return (tempPath, newFileName);
           } else if (isAlreadyNativeFlac) {
             _log.d(
@@ -1267,7 +1277,9 @@ class _DownloadRun {
       if (newUri != null) {
         filePath = newUri;
         finalSafFileName = producedFileName;
-        _markFinalOutputAsFlac();
+        if (branch == 'nativeFlac' || branch == 'convert') {
+          _markFinalOutputAsFlac();
+        }
       } else if (branch == 'nativeFlac') {
         _log.w('Failed to write native FLAC to SAF');
       } else if (branch == 'convert') {
@@ -1339,7 +1351,7 @@ class _DownloadRun {
               await FFmpegService.isNativeFlacFile(currentFilePath);
           final shouldAttemptConversion =
               shouldAttemptLosslessContainerConversion(
-                forceConversion: true,
+                forceConversion: forceContainerConversion,
                 probedCodec: codec,
               );
           if (!shouldAttemptConversion) {
@@ -1347,6 +1359,7 @@ class _DownloadRun {
               'Preserving native container; audio codec is ${codec ?? 'unknown'}, '
               'no FLAC container conversion needed.',
             );
+            await _preserveLocalNativeM4a(currentFilePath);
           } else if (isAlreadyNativeFlac) {
             _log.d(
               'Native FLAC payload detected; ensuring .flac '

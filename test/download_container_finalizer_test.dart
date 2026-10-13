@@ -60,27 +60,47 @@ void main() {
     embedMetadata: embed,
   );
 
-  test(
-    'native output and explicit non-FLAC decryption bypass conversion',
-    () async {
-      for (final raw in <Map<String, dynamic>>[
-        {'audio_codec': 'aac'},
-        {'decryption_key': 'abcd', 'output_extension': '.mp4'},
-      ]) {
-        expect(
-          await finalize(finalizer(), DownloadResult.fromMap(raw)),
-          '/Song.m4a',
-        );
-      }
+  test('explicit non-FLAC requests bypass conversion', () async {
+    for (final extension in ['.m4a', '.mp4', '.opus']) {
       expect(
         await finalize(
           finalizer(),
-          DownloadResult.fromMap({}),
-          extension: '.opus',
+          DownloadResult.fromMap({'audio_codec': 'flac'}),
+          extension: extension,
           force: true,
         ),
         '/Song.m4a',
       );
+    }
+  });
+
+  test(
+    'container hints cannot override measured FLAC or lossy audio',
+    () async {
+      final source = await File(
+        '${directory.path}/Song.m4a',
+      ).writeAsString('MP4');
+      for (final codec in ['flac', 'aac', 'eac3']) {
+        for (final raw in <Map<String, dynamic>>[
+          {'audio_codec': 'm4a'},
+          {'audio_codec': 'aac'},
+          {'decryption_key': 'abcd', 'output_extension': '.mp4'},
+        ]) {
+          final result = DownloadResult.fromMap(raw);
+          var converted = false;
+          final stage = finalizer(
+            probe: (_) async => codec,
+            convert: (_) async {
+              converted = true;
+              return '${directory.path}/Song.flac';
+            },
+          );
+          final path = await finalize(stage, result, path: source.path);
+          expect(converted, codec == 'flac', reason: '$codec / $raw');
+          expect(path, converted ? '${directory.path}/Song.flac' : source.path);
+          if (converted) expect(result.outputExtension(), '.flac');
+        }
+      }
     },
   );
 
@@ -146,7 +166,12 @@ void main() {
             return output.path;
           },
         );
-        final result = DownloadResult.fromMap({'file_name': 'Song.m4a'});
+        final result = DownloadResult.fromMap({
+          'file_name': 'Song.m4a',
+          'audio_codec': 'm4a',
+          'decryption_key': 'abcd',
+          'output_extension': '.mp4',
+        });
         final path = await finalize(
           stage,
           result,
@@ -192,7 +217,12 @@ void main() {
               },
           deleteSource: (_) async => deleted = true,
         );
-        final result = DownloadResult.fromMap({'file_name': 'Song.m4a'});
+        final result = DownloadResult.fromMap({
+          'file_name': 'Song.m4a',
+          'audio_codec': 'm4a',
+          'decryption_key': 'abcd',
+          'output_extension': '.mp4',
+        });
         final stage = finalizer(
           probe: (_) async => 'flac',
           replaceSaf: replacer.replace,
@@ -206,7 +236,7 @@ void main() {
         );
         expect(path, published ? 'content://final' : null);
         expect(result.fileName, published ? 'Song.flac' : 'Song.m4a');
-        expect(result.audioCodec, published ? 'flac' : null);
+        expect(result.audioCodec, published ? 'flac' : 'm4a');
         expect(deleted, published);
         expect(await directory.list().length, 0);
       }

@@ -242,11 +242,3 @@ internal fun NativeDownloadFinalizer.isNativeFlacFile(path: String): Boolean {
         false
     }
 }
-
-internal fun NativeDownloadFinalizer.requestedDecryptionOutputExt(input: NativeDownloadFinalizer.FinalizeInput): String {
-    val descriptor = input.result.optJSONObject("decryption")
-    return normalizeExt(
-        descriptor?.optString("output_extension", "")
-            ?.ifBlank { input.result.optString("output_extension", "") }
-    )
-}

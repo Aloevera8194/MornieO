@@ -34,13 +34,6 @@ class DownloadContainerFinalizer {
   }) async {
     if (requestedExtension != '.flac') return filePath;
     forceConversion = forceConversion || result.requiresContainerConversion;
-    final reportedCodec = normalizeAudioFormatValue(result.audioCodec);
-    if (!forceConversion && isLossyAudioFormat(reportedCodec)) {
-      debug(
-        'Native-worker output is $reportedCodec; preserving native container.',
-      );
-      return filePath;
-    }
     final outputExtension = result.outputExtension(path: filePath);
     final lowerPath = filePath.toLowerCase();
     final isSafSource = filePath.startsWith('content://');
@@ -50,15 +43,8 @@ class DownloadContainerFinalizer {
         outputExtension == '.m4a' ||
         outputExtension == '.mp4';
     if (!forceConversion && !pathLooksLikeM4a && !isSafSource) return filePath;
-    final decryptionExtension = result.decryption?.normalizedOutputExtension;
-    if (!forceConversion &&
-        decryptionExtension != null &&
-        decryptionExtension != '.flac') {
-      debug(
-        'Native-worker decrypted output requested $decryptionExtension; preserving native container.',
-      );
-      return filePath;
-    }
+    // Provider/decryption extensions describe the input container, not its
+    // audio codec. Inspect the stream before preserving an M4A/MP4 download.
     bool shouldConvert(String? codec) {
       if (shouldAttemptLosslessContainerConversion(
         forceConversion: forceConversion,
