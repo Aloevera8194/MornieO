@@ -60,6 +60,8 @@ class AppTheme {
       progressIndicatorTheme: _progressIndicatorTheme(scheme),
       switchTheme: _switchTheme(scheme),
       chipTheme: _chipTheme(scheme),
+      popupMenuTheme: _popupMenuTheme(scheme),
+      tabBarTheme: _tabBarTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
       extensions: const <ThemeExtension<dynamic>>[AppTokens.standard],
       fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
@@ -101,6 +103,8 @@ class AppTheme {
       progressIndicatorTheme: _progressIndicatorTheme(scheme),
       switchTheme: _switchTheme(scheme),
       chipTheme: _chipTheme(scheme),
+      popupMenuTheme: _popupMenuTheme(scheme),
+      tabBarTheme: _tabBarTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
       extensions: const <ThemeExtension<dynamic>>[AppTokens.standard],
       fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
@@ -136,10 +140,11 @@ class AppTheme {
     ),
   );
 
+  // Expressive cards use the larger card radius.
   static CardThemeData _cardTheme(ColorScheme scheme) => CardThemeData(
     elevation: 0,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(_tokens.radiusControl),
+      borderRadius: BorderRadius.circular(_tokens.radiusCard),
     ),
     color: scheme.surfaceContainerLow,
     surfaceTintColor: scheme.surfaceTint,
@@ -192,8 +197,9 @@ class AppTheme {
 
   static InputDecorationTheme _inputDecorationTheme(ColorScheme scheme) =>
       InputDecorationTheme(
+        // Expressive fields sit on a solid tonal container.
         filled: true,
-        fillColor: scheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        fillColor: scheme.surfaceContainerHigh,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(_tokens.radiusControl),
           borderSide: BorderSide.none,
@@ -257,7 +263,7 @@ class AppTheme {
       SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_tokens.radiusThumb),
+          borderRadius: BorderRadius.circular(_tokens.radiusControl),
         ),
         backgroundColor: scheme.inverseSurface,
         contentTextStyle: TextStyle(color: scheme.onInverseSurface),
@@ -290,6 +296,28 @@ class AppTheme {
       }
       return null;
     }),
+  );
+
+  // Expressive menus: a rounded tonal container lifted above the content.
+  static PopupMenuThemeData _popupMenuTheme(ColorScheme scheme) =>
+      PopupMenuThemeData(
+        color: scheme.surfaceContainer,
+        surfaceTintColor: Colors.transparent,
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_tokens.radiusControl),
+        ),
+        menuPadding: const EdgeInsets.symmetric(vertical: 8),
+      );
+
+  // Expressive tabs: a label-width indicator with rounded top corners.
+  static TabBarThemeData _tabBarTheme(ColorScheme scheme) => TabBarThemeData(
+    indicatorSize: TabBarIndicatorSize.label,
+    indicator: UnderlineTabIndicator(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(3)),
+      borderSide: BorderSide(color: scheme.primary, width: 3),
+    ),
+    labelStyle: const TextStyle(fontWeight: FontWeight.w600),
   );
 
   static ChipThemeData _chipTheme(ColorScheme scheme) => ChipThemeData(

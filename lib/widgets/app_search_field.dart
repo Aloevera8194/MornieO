@@ -7,7 +7,6 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
 
 /// The standard search field used by top-level app surfaces.
 ///
@@ -80,17 +79,15 @@ class AppSearchField extends StatelessWidget {
                         onClear();
                       },
                     )),
+          // Expressive search bar: an outline-free tonal pill. Focus keeps a
+          // visible 2dp ring.
           border: OutlineInputBorder(
             borderRadius: radius,
-            borderSide: mornye
-                ? BorderSide.none
-                : BorderSide(color: colorScheme.outlineVariant),
+            borderSide: BorderSide.none,
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: radius,
-            borderSide: mornye
-                ? BorderSide.none
-                : BorderSide(color: colorScheme.outlineVariant),
+            borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: radius,
@@ -99,7 +96,9 @@ class AppSearchField extends StatelessWidget {
                 : BorderSide(color: colorScheme.primary, width: 2),
           ),
           filled: true,
-          fillColor: mornye ? Colors.transparent : settingsGroupColor(context),
+          fillColor: mornye
+              ? Colors.transparent
+              : colorScheme.surfaceContainerHigh,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 16,
