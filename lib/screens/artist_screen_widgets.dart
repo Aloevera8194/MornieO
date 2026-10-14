@@ -168,26 +168,42 @@ extension _ArtistScreenSections on _ArtistScreenState {
     required bool isFavoriteArtist,
   }) {
     final edgeInset = detailHeaderEdgeInset(context);
+    const fallbackMotion = AppMotionSpec(
+      Duration(milliseconds: 200),
+      Curves.linear,
+    );
+    final titleFade = AppMotion.effects(context, fallbackMotion);
+    Widget toolbarTitle = AnimatedOpacity(
+      duration: titleFade.duration,
+      curve: titleFade.curve,
+      opacity: _showTitleInAppBar ? 1.0 : 0.0,
+      child: Text(
+        widget.artistName,
+        style: TextStyle(
+          color: colorScheme.onSurface,
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+    if (materialExpressiveEnabled(context)) {
+      final titleSlide = AppMotion.spatial(context, fallbackMotion);
+      toolbarTitle = AnimatedSlide(
+        duration: titleSlide.duration,
+        curve: titleSlide.curve,
+        offset: _showTitleInAppBar ? Offset.zero : const Offset(0, 0.6),
+        child: toolbarTitle,
+      );
+    }
     return SliverAppBar(
       expandedHeight: hasDiscography ? 420 : 380,
       pinned: true,
       stretch: true,
       backgroundColor: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
-      title: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: _showTitleInAppBar ? 1.0 : 0.0,
-        child: Text(
-          widget.artistName,
-          style: TextStyle(
-            color: colorScheme.onSurface,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
+      title: toolbarTitle,
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.none,
         background: Stack(
@@ -313,50 +329,92 @@ extension _ArtistScreenSections on _ArtistScreenState {
                   ),
                   if (!isSelectionMode) ...[
                     const SizedBox(width: 12),
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: headerScheme.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: AppIconButton(
-                        onPressed: () => _toggleFavoriteArtist(context),
-                        icon: Icon(
-                          isFavoriteArtist
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          size: 26,
+                    if (materialExpressiveEnabled(context))
+                      // Favourite morphs to a square while selected, and the
+                      // pair squishes like a button group when pressed.
+                      ExpressiveButtonGroup(
+                        slotWidth: 52,
+                        children: [
+                          ExpressiveIconButton(
+                            onPressed: () => _toggleFavoriteArtist(context),
+                            icon: Icon(
+                              isFavoriteArtist
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                            ),
+                            selected: isFavoriteArtist,
+                            size: 52,
+                            iconSize: 26,
+                            backgroundColor: headerScheme.primaryContainer,
+                            foregroundColor: isFavoriteArtist
+                                ? headerScheme.error
+                                : headerScheme.onPrimaryContainer,
+                            tooltip: isFavoriteArtist
+                                ? context.l10n.artistOptionRemoveFromFavorites
+                                : context.l10n.artistOptionAddToFavorites,
+                          ),
+                          if (hasDiscography)
+                            ExpressiveIconButton(
+                              onPressed: () => _showDiscographyOptions(
+                                context,
+                                colorScheme,
+                                albums,
+                              ),
+                              icon: const Icon(Icons.download_rounded),
+                              size: 52,
+                              iconSize: 26,
+                              backgroundColor: headerScheme.primaryContainer,
+                              foregroundColor: headerScheme.onPrimaryContainer,
+                              tooltip: context.l10n.discographyDownload,
+                            ),
+                        ],
+                      )
+                    else ...[
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: headerScheme.primaryContainer,
+                          shape: BoxShape.circle,
                         ),
-                        color: isFavoriteArtist
-                            ? headerScheme.error
-                            : headerScheme.onPrimaryContainer,
-                        tooltip: isFavoriteArtist
-                            ? context.l10n.artistOptionRemoveFromFavorites
-                            : context.l10n.artistOptionAddToFavorites,
-                      ),
-                    ),
-                  ],
-                  if (hasDiscography && !isSelectionMode) ...[
-                    const SizedBox(width: 12),
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: headerScheme.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: AppIconButton(
-                        onPressed: () => _showDiscographyOptions(
-                          context,
-                          colorScheme,
-                          albums,
+                        child: AppIconButton(
+                          onPressed: () => _toggleFavoriteArtist(context),
+                          icon: Icon(
+                            isFavoriteArtist
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            size: 26,
+                          ),
+                          color: isFavoriteArtist
+                              ? headerScheme.error
+                              : headerScheme.onPrimaryContainer,
+                          tooltip: isFavoriteArtist
+                              ? context.l10n.artistOptionRemoveFromFavorites
+                              : context.l10n.artistOptionAddToFavorites,
                         ),
-                        icon: const Icon(Icons.download_rounded, size: 26),
-                        color: headerScheme.onPrimaryContainer,
-                        tooltip: context.l10n.discographyDownload,
                       ),
-                    ),
+                      if (hasDiscography) ...[
+                        const SizedBox(width: 12),
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: headerScheme.primaryContainer,
+                            shape: BoxShape.circle,
+                          ),
+                          child: AppIconButton(
+                            onPressed: () => _showDiscographyOptions(
+                              context,
+                              colorScheme,
+                              albums,
+                            ),
+                            icon: const Icon(Icons.download_rounded, size: 26),
+                            color: headerScheme.onPrimaryContainer,
+                            tooltip: context.l10n.discographyDownload,
+                          ),
+                        ),
+                      ],
+                    ],
                   ],
                 ],
               ),

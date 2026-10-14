@@ -17,6 +17,7 @@ import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button_group.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/expressive_navigation_bar.dart';
 import 'package:spotiflac_android/widgets/selection_action_button.dart';
@@ -494,6 +495,69 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.byType(M3ECard), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('button group squishes neighbours and keeps a plain fallback', (
+    tester,
+  ) async {
+    var calls = 0;
+    Widget group() => SizedBox(
+      width: 360,
+      child: ExpressiveButtonGroup(
+        flexible: const {1},
+        children: [
+          ExpressiveIconButton(
+            icon: const Icon(Icons.favorite_border),
+            tooltip: 'Love',
+            backgroundColor: Colors.grey,
+            onPressed: () => calls++,
+          ),
+          ExpressiveButton(
+            onPressed: () => calls++,
+            child: const Text('Download'),
+          ),
+          ExpressiveIconButton(
+            icon: const Icon(Icons.playlist_add),
+            tooltip: 'Add',
+            backgroundColor: Colors.grey,
+            onPressed: () => calls++,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpWidget(_host(group()));
+    await tester.pumpAndSettle();
+    final slot = find.byType(ExpressiveButtonGroupSlot).first;
+    final download = find.byType(M3EButton);
+    final restingSlot = tester.getSize(slot).width;
+    final restingDownload = tester.getSize(download).width;
+    expect(restingSlot, 48);
+    // The flexible action fills what the fixed slots and gaps leave.
+    expect(restingDownload, closeTo(360 - 2 * 48 - 2 * 12, 1));
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byTooltip('Love')),
+    );
+    // Stay under the long-press delay so the release still taps.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+    expect(tester.getSize(slot).width, greaterThan(restingSlot));
+    expect(tester.getSize(download).width, lessThan(restingDownload));
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(tester.getSize(slot).width, restingSlot);
+    expect(calls, 1);
+
+    await tester.pumpWidget(_host(group(), reduceMotion: true));
+    await tester.pumpAndSettle();
+    expect(find.byType(ExpressiveButtonGroupSlot), findsNothing);
+    expect(
+      tester.getSize(find.byType(FilledButton)).width,
+      lessThan(restingDownload),
+    );
+    await tester.tap(find.text('Download'));
+    expect(calls, 2);
     expect(tester.takeException(), isNull);
   });
 }

@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/collection_scaffold.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button_group.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
@@ -623,12 +624,12 @@ class _LibraryTracksFolderScreenState
             )
           : null,
       actions: entries.isNotEmpty
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          ? ExpressiveButtonGroup(
+              flexible: const {0, 1},
+              spacing: 8,
               children: [
-                Flexible(child: _buildPlayAllCenterButton(entries)),
-                const SizedBox(width: 8),
-                Flexible(child: _buildDownloadAllCenterButton(entries)),
+                _buildPlayAllCenterButton(entries),
+                _buildDownloadAllCenterButton(entries),
               ],
             )
           : null,

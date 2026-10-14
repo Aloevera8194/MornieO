@@ -5,14 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderProxySliver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/cover_palette.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/expressive_button_group.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 
@@ -292,6 +295,34 @@ class AlbumDetailHeader extends StatelessWidget {
     // keeps the familiar dark treatment — both tinted by the artwork.
     final scrimColor = headerScheme.surface;
     final onHeader = headerScheme.onSurface;
+    final expressive = materialExpressiveEnabled(context);
+    final fallbackMotion = AppMotionSpec(tokens.motionFast, Curves.linear);
+    final titleSlide = AppMotion.spatial(context, fallbackMotion);
+    final titleFade = AppMotion.effects(context, fallbackMotion);
+    Widget toolbarTitle = AnimatedOpacity(
+      duration: titleFade.duration,
+      curve: titleFade.curve,
+      opacity: showTitleInAppBar ? 1.0 : 0.0,
+      child: Text(
+        appBarTitle ?? title,
+        style: TextStyle(
+          color: onHeader,
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+    if (expressive) {
+      // The collapsed title rises into the toolbar as the hero title leaves.
+      toolbarTitle = AnimatedSlide(
+        duration: titleSlide.duration,
+        curve: titleSlide.curve,
+        offset: showTitleInAppBar ? Offset.zero : const Offset(0, 0.6),
+        child: toolbarTitle,
+      );
+    }
 
     return SliverAppBar(
       expandedHeight: expandedHeight,
@@ -299,26 +330,73 @@ class AlbumDetailHeader extends StatelessWidget {
       stretch: true,
       backgroundColor: backgroundColor ?? headerScheme.surface,
       surfaceTintColor: Colors.transparent,
-      title: AnimatedOpacity(
-        duration: tokens.motionFast,
-        opacity: showTitleInAppBar ? 1.0 : 0.0,
-        child: Text(
-          appBarTitle ?? title,
-          style: TextStyle(
-            color: onHeader,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
+      title: toolbarTitle,
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
           final collapseRatio =
               (constraints.maxHeight - kToolbarHeight) /
               (expandedHeight - kToolbarHeight);
           final showContent = collapseRatio > 0.3;
+          // Expressive headers shrink and fade the hero content with the
+          // scroll instead of hiding it at one threshold.
+          final contentProgress = Curves.easeOut.transform(
+            ((collapseRatio - 0.3) / 0.5).clamp(0.0, 1.0),
+          );
+          final content = Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (coverBuilder != null) ...[
+                Builder(
+                  builder: (context) {
+                    final coverSize = (constraints.maxWidth * 0.5)
+                        .clamp(150.0, 210.0)
+                        .toDouble();
+                    // Material uses the expressive extra-large corner.
+                    final coverRadius = context.isMornye
+                        ? tokens.radiusControl
+                        : 28.0;
+                    return Container(
+                      width: coverSize,
+                      height: coverSize,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(
+                          plainArtworkHeader ? tokens.radiusCover : coverRadius,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: headerScheme.shadow.withValues(alpha: 0.45),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(coverRadius),
+                        child: coverBuilder!(context, coverSize),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 20),
+              ],
+              Text(
+                title,
+                style: TextStyle(
+                  color: onHeader,
+                  fontSize: _titleFontSize(),
+                  fontWeight: FontWeight.bold,
+                  height: 1.2,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              if (subtitle != null) ...[const SizedBox(height: 6), subtitle!],
+              if (meta != null) ...[const SizedBox(height: 12), meta!],
+              if (actions != null) ...[const SizedBox(height: 16), actions!],
+            ],
+          );
 
           return FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
@@ -359,76 +437,23 @@ class AlbumDetailHeader extends StatelessWidget {
                   left: 20 + iosEdgeInset,
                   right: 20 + iosEdgeInset,
                   bottom: 40,
-                  child: AnimatedOpacity(
-                    duration: tokens.motionFast,
-                    opacity: showContent ? 1.0 : 0.0,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (coverBuilder != null) ...[
-                          Builder(
-                            builder: (context) {
-                              final coverSize = (constraints.maxWidth * 0.5)
-                                  .clamp(150.0, 210.0)
-                                  .toDouble();
-                              return Container(
-                                width: coverSize,
-                                height: coverSize,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(
-                                    plainArtworkHeader
-                                        ? tokens.radiusCover
-                                        : tokens.radiusControl,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: headerScheme.shadow.withValues(
-                                        alpha: 0.45,
-                                      ),
-                                      blurRadius: 24,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    tokens.radiusControl,
-                                  ),
-                                  child: coverBuilder!(context, coverSize),
-                                ),
-                              );
-                            },
+                  child: expressive
+                      ? IgnorePointer(
+                          ignoring: contentProgress == 0,
+                          child: Opacity(
+                            opacity: contentProgress,
+                            child: Transform.scale(
+                              scale: 0.9 + 0.1 * contentProgress,
+                              alignment: Alignment.bottomCenter,
+                              child: content,
+                            ),
                           ),
-                          const SizedBox(height: 20),
-                        ],
-                        Text(
-                          title,
-                          style: TextStyle(
-                            color: onHeader,
-                            fontSize: _titleFontSize(),
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
+                        )
+                      : AnimatedOpacity(
+                          duration: tokens.motionFast,
+                          opacity: showContent ? 1.0 : 0.0,
+                          child: content,
                         ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 6),
-                          subtitle!,
-                        ],
-                        if (meta != null) ...[
-                          const SizedBox(height: 12),
-                          meta!,
-                        ],
-                        if (actions != null) ...[
-                          const SizedBox(height: 16),
-                          actions!,
-                        ],
-                      ],
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -572,27 +597,22 @@ class AlbumPlayActions extends StatelessWidget {
         ],
       );
     }
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return ExpressiveButtonGroup(
+      flexible: const {0},
+      spacing: tokens.gapMd,
+      slotWidth: tokens.minTouchTarget,
       children: [
-        Flexible(
-          child: ExpressiveButton(
-            onPressed: onPlay,
-            icon: AppIcon(isPlaying ? Icons.pause : Icons.play_arrow, size: 20),
-            style: FilledButton.styleFrom(
-              backgroundColor: scheme.primary,
-              foregroundColor: scheme.onPrimary,
-              minimumSize: Size(0, tokens.minTouchTarget),
-              shape: const StadiumBorder(),
-            ),
-            child: Text(
-              playLabel,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+        ExpressiveButton(
+          onPressed: onPlay,
+          icon: AppIcon(isPlaying ? Icons.pause : Icons.play_arrow, size: 20),
+          style: FilledButton.styleFrom(
+            backgroundColor: scheme.primary,
+            foregroundColor: scheme.onPrimary,
+            minimumSize: Size(0, tokens.minTouchTarget),
+            shape: const StadiumBorder(),
           ),
+          child: Text(playLabel, maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
-        SizedBox(width: tokens.gapMd),
         ExpressiveIconButton(
           tooltip: shuffleTooltip,
           onPressed: onShuffle,

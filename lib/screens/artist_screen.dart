@@ -53,6 +53,10 @@ import 'package:spotiflac_android/widgets/cross_extension_share_sheet.dart';
 import 'package:spotiflac_android/widgets/view_queue_snackbar_action.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:spotiflac_android/widgets/downloadable_cover.dart';
+import 'package:spotiflac_android/widgets/expressive_button_group.dart';
+import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 
 part 'artist_screen_widgets.dart';
 

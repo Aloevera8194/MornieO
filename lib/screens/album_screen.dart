@@ -21,6 +21,7 @@ import 'package:spotiflac_android/screens/collapsing_header_scroll_mixin.dart';
 import 'package:spotiflac_android/screens/selection_mode_mixin.dart';
 import 'package:spotiflac_android/widgets/error_card.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
+import 'package:spotiflac_android/widgets/expressive_button_group.dart';
 import 'package:spotiflac_android/widgets/album_description.dart';
 import 'package:spotiflac_android/utils/editorial_notes.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
@@ -632,21 +633,17 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
                 _buildAddToPlaylistButton(context),
               ],
             )
-          : Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+          : ExpressiveButtonGroup(
+              flexible: const {1},
               children: [
                 _buildLoveAllButton(),
-                const SizedBox(width: 12),
-                Flexible(
-                  child: HeaderFilledButton(
-                    icon: Icons.download,
-                    label: context.l10n.downloadAllCount(tracks.length),
-                    onPressed: tracks.isEmpty
-                        ? null
-                        : () => _downloadAll(context),
-                  ),
+                HeaderFilledButton(
+                  icon: Icons.download,
+                  label: context.l10n.downloadAllCount(tracks.length),
+                  onPressed: tracks.isEmpty
+                      ? null
+                      : () => _downloadAll(context),
                 ),
-                const SizedBox(width: 12),
                 _buildAddToPlaylistButton(context),
               ],
             ),

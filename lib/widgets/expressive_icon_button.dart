@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/expressive_button_group.dart';
 
 /// Compact expressive transport/header actions with the same accessible target
 /// and tooltip as the standard Material fallback.
@@ -68,7 +69,11 @@ class ExpressiveIconButton extends StatelessWidget {
           semanticLabel: tooltip,
           onPressed: onPressed,
           isSelected: selected,
-          visualSize: Size.square(size),
+          // Widens with an expressive button group's squish.
+          visualSize: Size(
+            ExpressiveButtonGroupSlot.widthOf(context) ?? size,
+            size,
+          ),
           variant: backgroundColor == null
               ? M3EIconButtonVariant.standard
               : M3EIconButtonVariant.filled,

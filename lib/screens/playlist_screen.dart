@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:spotiflac_android/screens/track_history_snapshot.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
+import 'package:spotiflac_android/widgets/expressive_button_group.dart';
 import 'package:spotiflac_android/screens/selection_mode_mixin.dart';
 import 'package:spotiflac_android/widgets/collection_scaffold.dart';
 import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
@@ -356,29 +357,30 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           ),
         ],
       ),
-      actions: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          if (context.isMornye) ...[
-            _buildLoveAllButton(),
-            const SizedBox(width: 16),
-            Flexible(
-              child: SizedBox(
-                width: 172,
-                child: _buildDownloadAllCenterButton(context),
-              ),
+      actions: context.isMornye
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _buildLoveAllButton(),
+                const SizedBox(width: 16),
+                Flexible(
+                  child: SizedBox(
+                    width: 172,
+                    child: _buildDownloadAllCenterButton(context),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                _buildAddToPlaylistButton(context),
+              ],
+            )
+          : ExpressiveButtonGroup(
+              flexible: const {1},
+              children: [
+                _buildLoveAllButton(),
+                _buildDownloadAllCenterButton(context),
+                _buildAddToPlaylistButton(context),
+              ],
             ),
-            const SizedBox(width: 16),
-            _buildAddToPlaylistButton(context),
-          ] else ...[
-            _buildLoveAllButton(),
-            const SizedBox(width: 12),
-            Flexible(child: _buildDownloadAllCenterButton(context)),
-            const SizedBox(width: 12),
-            _buildAddToPlaylistButton(context),
-          ],
-        ],
-      ),
     );
   }
 
