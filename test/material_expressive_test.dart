@@ -22,6 +22,7 @@ import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/expressive_navigation_bar.dart';
 import 'package:spotiflac_android/widgets/selection_action_button.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/track_card.dart';
 
 import 'support/app_icon_finder.dart';
 
@@ -559,5 +560,34 @@ void main() {
     await tester.tap(find.text('Download'));
     expect(calls, 2);
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('track rows connect only on the Material theme', (tester) async {
+    BorderRadius? radius;
+    Widget segment({required bool first, required bool last}) =>
+        TrackCardSegment(
+          first: first,
+          last: last,
+          child: Builder(
+            builder: (context) {
+              radius = TrackCardSegment.radiusOf(context);
+              return const SizedBox();
+            },
+          ),
+        );
+    await tester.pumpWidget(_host(segment(first: true, last: false)));
+    expect(radius?.topLeft, const Radius.circular(20));
+    expect(radius?.bottomLeft, const Radius.circular(4));
+    await tester.pumpWidget(_host(segment(first: false, last: true)));
+    expect(radius?.topLeft, const Radius.circular(4));
+    expect(radius?.bottomLeft, const Radius.circular(20));
+    await tester.pumpWidget(
+      _host(
+        segment(first: true, last: true),
+        theme: MornyeTheme.build(Brightness.dark),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(radius, isNull);
   });
 }

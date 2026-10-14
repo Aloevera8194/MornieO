@@ -54,9 +54,8 @@ extension _QueueTabItemWidgets on _QueueTabState {
     return SmoothedProgressScope(
       value: item.progress,
       animate: _shouldAnimateDownloadProgress(context, item),
-      child: Dismissible(
-        key: ValueKey('dismiss_${item.id}'),
-        direction: DismissDirection.endToStart,
+      child: SwipeDeleteDismissible(
+        dismissKey: ValueKey('dismiss_${item.id}'),
         confirmDismiss: isActive
             ? (_) async {
                 return await showAppDialog<bool>(
@@ -85,19 +84,6 @@ extension _QueueTabItemWidgets on _QueueTabState {
         onDismissed: (_) {
           ref.read(downloadQueueProvider.notifier).dismissItem(item.id);
         },
-        background: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: colorScheme.errorContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.centerRight,
-          padding: const EdgeInsets.only(right: 20),
-          child: AppIcon(
-            Icons.delete_outline,
-            color: colorScheme.onErrorContainer,
-          ),
-        ),
         child: DownloadSuccessOverlay(
           showSuccess: isCompleted,
           child: TrackCard(
@@ -379,32 +365,36 @@ extension _QueueTabItemWidgets on _QueueTabState {
 
   Future<void> _showQueuedItemMenu(BuildContext context, DownloadItem item) {
     final notifier = ref.read(downloadQueueProvider.notifier);
-    return showModalBottomSheet<void>(
+    return showAppBottomSheet<void>(
       context: context,
-      showDragHandle: true,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      title: item.track.name,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(bottom: ctx.tokens.gapLg),
+        child: SettingsGroup(
           children: [
-            ListTile(
-              leading: const AppIcon(Icons.skip_next),
-              title: Text(context.l10n.queueDownloadNext),
+            SettingsItem(
+              icon: Icons.skip_next,
+              showIconInMornye: true,
+              title: context.l10n.queueDownloadNext,
               onTap: () {
                 Navigator.of(ctx).pop();
                 notifier.downloadNext(item.id);
               },
             ),
-            ListTile(
-              leading: const AppIcon(Icons.arrow_upward),
-              title: Text(context.l10n.queueMoveUp),
+            SettingsItem(
+              icon: Icons.arrow_upward,
+              showIconInMornye: true,
+              title: context.l10n.queueMoveUp,
               onTap: () {
                 Navigator.of(ctx).pop();
                 notifier.moveQueuedItem(item.id, -1);
               },
             ),
-            ListTile(
-              leading: const AppIcon(Icons.arrow_downward),
-              title: Text(context.l10n.queueMoveDown),
+            SettingsItem(
+              icon: Icons.arrow_downward,
+              showIconInMornye: true,
+              title: context.l10n.queueMoveDown,
+              showDivider: false,
               onTap: () {
                 Navigator.of(ctx).pop();
                 notifier.moveQueuedItem(item.id, 1);

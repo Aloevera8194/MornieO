@@ -421,11 +421,13 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
   String _getDefaultViewLabel(BuildContext context, String view) {
     switch (view) {
       case 'all':
-        return context.l10n.historyFilterAll;
+        return context.l10n.searchSongs;
       case 'albums':
         return context.l10n.historyFilterAlbums;
       case 'singles':
         return context.l10n.historyFilterSingles;
+      case 'artists':
+        return context.l10n.searchArtists;
       case 'playlists':
         return context.l10n.searchPlaylists;
       default:
@@ -437,9 +439,10 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
     final colorScheme = Theme.of(context).colorScheme;
     final options = [
       ('last', Icons.history, context.l10n.libraryDefaultViewLastUsed),
-      ('all', Icons.apps, context.l10n.historyFilterAll),
+      ('all', Icons.music_note, context.l10n.searchSongs),
       ('albums', Icons.album, context.l10n.historyFilterAlbums),
-      ('singles', Icons.music_note, context.l10n.historyFilterSingles),
+      ('singles', Icons.audiotrack, context.l10n.historyFilterSingles),
+      ('artists', Icons.person, context.l10n.searchArtists),
       ('playlists', Icons.queue_music, context.l10n.searchPlaylists),
     ];
     showAppModalBottomSheet<void>(

@@ -101,6 +101,7 @@
   "listeningStatsClear": "Hapus statistik mendengarkan",
   "listeningStatsClearError": "Statistik mendengarkan tidak dapat dihapus. Silakan coba lagi.",
   "listeningStatsClearDescription": "Hapus semua statistik mendengarkan di perangkat ini? Musik dan playlist tetap tersimpan.",
+  "libraryArtistsEmpty": "Artis muncul di sini setelah kamu mengunduh musik atau memindai library lokal.",
   "weeklyReleases": "Rilis baru",
   "weeklyReleasesDescription": "Album dan single terbaru dari artis favorit, melalui extension metadata yang terpasang.",
   "weeklyReleasesEmpty": "Tidak ditemukan rilis dengan tanggal dalam periode ini. Tambahkan artis favorit atau coba periode lebih panjang.",

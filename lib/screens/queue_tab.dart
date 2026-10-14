@@ -7,8 +7,12 @@ import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/services/local_track_batch_actions.dart';
 import 'package:spotiflac_android/services/shell_navigation_service.dart';
 import 'package:spotiflac_android/widgets/error_card.dart';
+import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/swipe_delete_dismissible.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
@@ -26,7 +30,18 @@ import 'package:spotiflac_android/widgets/library_playlist_drag_source.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart' show DateFormat;
+import 'package:material_3_expressive/material_3_expressive.dart'
+    show
+        M3EButtonGroup,
+        M3EButtonGroupAction,
+        M3EButtonGroupType,
+        M3EButtonStyle;
+import 'package:spotiflac_android/providers/library_browse_provider.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:spotiflac_android/widgets/app_shape.dart';
+import 'package:spotiflac_android/widgets/library_fast_scroller.dart';
+import 'package:spotiflac_android/widgets/player_artwork.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/audio_quality_badge_policy.dart';
@@ -76,6 +91,7 @@ part 'queue_tab_selection.dart';
 part 'queue_tab_navigation.dart';
 part 'queue_tab_collection_items.dart';
 part 'queue_tab_filter_widgets.dart';
+part 'queue_tab_sections.dart';
 part 'queue_tab_batch_actions.dart';
 part 'queue_tab_item_widgets.dart';
 
@@ -269,7 +285,22 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   double _playlistSelectionOverlayBottomPadding = 0;
 
   PageController? _filterPageController;
-  final List<String> _filterModes = ['all', 'albums', 'singles', 'playlists'];
+
+  /// Pages of the Library pager: Songs, Albums, Artists and Playlists.
+  /// Singles share the Albums page behind [_albumsShowSingles].
+  final List<String> _filterModes = ['all', 'albums', 'artists', 'playlists'];
+  bool _albumsShowSingles = false;
+
+  int _pageIndexFor(String mode) =>
+      _filterModes.indexOf(mode == 'singles' ? 'albums' : mode);
+
+  /// Data mode of the page at [index], resolving Albums to Singles when the
+  /// Albums page shows singles.
+  String _modeForPage(int index) {
+    final mode = _filterModes[index];
+    return mode == 'albums' && _albumsShowSingles ? 'singles' : mode;
+  }
+
   bool _isPageControllerInitialized = false;
   bool _wasTabVisible = false;
   final TextEditingController _searchController = TextEditingController();
@@ -289,6 +320,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   double? _libraryGridPinchStartExtent;
   final Map<String, int> _libraryPageOffsetByFilter = {};
   bool _libraryPageLoadScheduled = false;
+
   final Map<_QueueLibraryCountsRequest, QueueLibraryCounts>
   _queueLibraryCountsCache = {};
   final Map<_QueueLibraryPageRequest, _QueueLibraryPageData>
@@ -353,16 +385,16 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         (settings.defaultLibraryView == 'last'
             ? settings.historyFilterMode
             : settings.defaultLibraryView);
-    final initialPage = _filterModes
-        .indexOf(initialFilter)
-        .clamp(0, _filterModes.length - 1);
+    final initialPage = _pageIndexFor(
+      initialFilter,
+    ).clamp(0, _filterModes.length - 1);
+    _albumsShowSingles = initialFilter == 'singles';
+    final initialMode = _modeForPage(initialPage);
     if (widget.librarySection == null &&
-        settings.historyFilterMode != _filterModes[initialPage]) {
+        settings.historyFilterMode != initialMode) {
       Future.microtask(() {
         if (!mounted) return;
-        ref
-            .read(settingsProvider.notifier)
-            .setHistoryFilterMode(_filterModes[initialPage]);
+        ref.read(settingsProvider.notifier).setHistoryFilterMode(initialMode);
       });
     }
     _filterPageController = PageController(initialPage: initialPage);
@@ -380,10 +412,13 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     if (!becameVisible) return;
     final defaultView = ref.read(settingsProvider).defaultLibraryView;
     if (defaultView == 'last') return;
-    final index = _filterModes.indexOf(defaultView);
+    final index = _pageIndexFor(defaultView);
     if (index < 0) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      if (_filterModes[index] == 'albums') {
+        _setState(() => _albumsShowSingles = defaultView == 'singles');
+      }
       if (ref.read(settingsProvider).historyFilterMode != defaultView) {
         ref.read(settingsProvider.notifier).setHistoryFilterMode(defaultView);
       }
@@ -662,22 +697,37 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   void _onFilterPageChanged(int index) {
     if (widget.librarySection != null) return;
     HapticFeedback.selectionClick();
-    final filterMode = _filterModes[index];
-    ref.read(settingsProvider.notifier).setHistoryFilterMode(filterMode);
+    ref
+        .read(settingsProvider.notifier)
+        .setHistoryFilterMode(_modeForPage(index));
   }
 
   void _animateToFilterPage(int index) {
     if (index >= 0 && index < _filterModes.length) {
-      final filterMode = _filterModes[index];
+      final filterMode = _modeForPage(index);
       if (ref.read(settingsProvider).historyFilterMode != filterMode) {
         ref.read(settingsProvider.notifier).setHistoryFilterMode(filterMode);
       }
     }
+    final motion = AppMotion.spatialSlow(
+      context,
+      const AppMotionSpec(Duration(milliseconds: 300), Curves.easeOutCubic),
+    );
     _filterPageController?.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
+      duration: motion.duration,
+      curve: motion.curve,
     );
+  }
+
+  /// Switches the Albums page between albums and singles.
+  void _setAlbumsShowSingles(bool singles) {
+    if (_albumsShowSingles == singles) return;
+    HapticFeedback.selectionClick();
+    setState(() => _albumsShowSingles = singles);
+    ref
+        .read(settingsProvider.notifier)
+        .setHistoryFilterMode(singles ? 'singles' : 'albums');
   }
 
   void _onEmbeddedCoverChanged() {
@@ -1333,11 +1383,15 @@ class _QueueTabState extends ConsumerState<QueueTab> {
           _buildQueueHeaderSliver(context, colors),
           SliverList.builder(
             itemCount: ids.length,
-            itemBuilder: (context, index) => _QueueItemSliverRow(
+            itemBuilder: (context, index) => TrackCardSegment.at(
               key: ValueKey(ids[index]),
-              itemId: ids[index],
-              colorScheme: colors,
-              itemBuilder: _buildQueueItem,
+              index: index,
+              count: ids.length,
+              child: _QueueItemSliverRow(
+                itemId: ids[index],
+                colorScheme: colors,
+                itemBuilder: _buildQueueItem,
+              ),
             ),
           ),
           if (ids.isEmpty)
@@ -1465,7 +1519,8 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     }
 
     final activePageRequest = pageRequest(historyFilterMode);
-    final activePageValue = searchingLibrary
+    // The Artists page browses its own query.
+    final activePageValue = searchingLibrary || historyFilterMode == 'artists'
         ? const AsyncData(_QueueLibraryPageData())
         : ref.watch(_queueLibraryPageProvider(activePageRequest));
 
@@ -1517,7 +1572,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     final currentTotalCount = switch (historyFilterMode) {
       'albums' => queueCounts.albumCount,
       'singles' => queueCounts.singleTrackCount,
-      'playlists' => 0,
+      'playlists' || 'artists' => 0,
       _ => queueCounts.allTrackCount,
     };
     final hasMoreLibrary = currentLoadedCount < currentTotalCount;
@@ -1622,14 +1677,14 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                       child: LayoutBuilder(
                         builder: (context, constraints) {
-                          int filteredAllCount;
-                          int filteredAlbumCount;
-                          int filteredSingleCount;
-
-                          filteredAllCount = queueCounts.allTrackCount;
-                          filteredAlbumCount = queueCounts.albumCount;
-                          filteredSingleCount = queueCounts.singleTrackCount;
-
+                          final activePage = _pageIndexFor(historyFilterMode);
+                          Widget tab(int index, String label, int? count) =>
+                              _FilterChip(
+                                label: label,
+                                count: count,
+                                isSelected: activePage == index,
+                                onTap: () => _animateToFilterPage(index),
+                              );
                           return ScrollEdgeFade(
                             axis: Axis.horizontal,
                             size: 48,
@@ -1642,46 +1697,36 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                                 constraints: BoxConstraints(
                                   minWidth: constraints.maxWidth,
                                 ),
+                                // Mornye spreads its glass pills across the
+                                // search field; Material chips sit 8dp apart
+                                // from the start like other filter rows.
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment: context.isMornye
+                                      ? MainAxisAlignment.spaceBetween
+                                      : MainAxisAlignment.start,
                                   children: [
-                                    _FilterChip(
-                                      label: context.l10n.historyFilterAll,
-                                      count: filteredAllCount,
-                                      isSelected: historyFilterMode == 'all',
-                                      onTap: () {
-                                        _animateToFilterPage(0);
-                                      },
+                                    tab(
+                                      0,
+                                      context.l10n.searchSongs,
+                                      queueCounts.allTrackCount,
                                     ),
                                     const SizedBox(width: 8),
-                                    _FilterChip(
-                                      label: context.l10n.historyFilterAlbums,
-                                      count: filteredAlbumCount,
-                                      isSelected: historyFilterMode == 'albums',
-                                      onTap: () {
-                                        _animateToFilterPage(1);
-                                      },
+                                    tab(
+                                      1,
+                                      context.l10n.historyFilterAlbums,
+                                      queueCounts.albumCount,
                                     ),
                                     const SizedBox(width: 8),
-                                    _FilterChip(
-                                      label: context.l10n.historyFilterSingles,
-                                      count: filteredSingleCount,
-                                      isSelected:
-                                          historyFilterMode == 'singles',
-                                      onTap: () {
-                                        _animateToFilterPage(2);
-                                      },
-                                    ),
+                                    // Artist totals need a full scan; the
+                                    // tab shows none rather than a guess.
+                                    tab(2, context.l10n.searchArtists, null),
                                     const SizedBox(width: 8),
-                                    _FilterChip(
-                                      label: context.l10n.searchPlaylists,
-                                      count: collectionState.playlists.length,
-                                      isSelected:
-                                          historyFilterMode == 'playlists',
-                                      onTap: () {
-                                        _animateToFilterPage(3);
-                                      },
+                                    tab(
+                                      3,
+                                      context.l10n.searchPlaylists,
+                                      _getVisibleCollectionEntries(
+                                        collectionState,
+                                      ).length,
                                     ),
                                   ],
                                 ),
@@ -1733,7 +1778,10 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                       onPageChanged: _onFilterPageChanged,
                       itemCount: _filterModes.length,
                       itemBuilder: (context, index) {
-                        final filterMode = _filterModes[index];
+                        if (_filterModes[index] == 'artists') {
+                          return _buildArtistsPage(context, colorScheme);
+                        }
+                        final filterMode = _modeForPage(index);
                         final filterData = getFilterData(filterMode);
                         return _buildFilterContent(
                           context: context,

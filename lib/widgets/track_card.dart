@@ -3,6 +3,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
+import 'package:spotiflac_android/widgets/settings_group.dart';
 
 /// How a [TrackCard] paints its container.
 enum TrackCardStyle {
@@ -14,6 +15,67 @@ enum TrackCardStyle {
   /// header and reads as one continuous list: album, playlist and folder track
   /// lists.
   flat,
+}
+
+/// Marks a filled [TrackCard] as one row of a run of cards, so the Material
+/// theme draws the run as an expressive connected list: 2dp apart, large
+/// corners at the ends of the run and small corners between rows.
+class TrackCardSegment extends InheritedWidget {
+  const TrackCardSegment({
+    super.key,
+    required this.first,
+    required this.last,
+    required super.child,
+  });
+
+  /// Positions row [index] of a run of [count] rows.
+  const TrackCardSegment.at({
+    Key? key,
+    required int index,
+    required int count,
+    required Widget child,
+  }) : this(
+         key: key,
+         first: index == 0,
+         last: index == count - 1,
+         child: child,
+       );
+
+  final bool first;
+  final bool last;
+
+  static TrackCardSegment? _of(BuildContext context) {
+    if (context.isMornye) return null;
+    return context.dependOnInheritedWidgetOfExactType<TrackCardSegment>();
+  }
+
+  /// Corners of the enclosing segment, or null outside a connected run.
+  static BorderRadius? radiusOf(BuildContext context) {
+    final segment = _of(context);
+    if (segment == null) return null;
+    return connectedRowRadius(
+      context,
+      first: segment.first,
+      last: segment.last,
+    );
+  }
+
+  /// Outer margin of the enclosing segment, or null outside a connected run.
+  static EdgeInsets? marginOf(BuildContext context) {
+    final segment = _of(context);
+    if (segment == null) return null;
+    final tokens = context.tokens;
+    return EdgeInsets.fromLTRB(
+      tokens.gapLg,
+      segment.first ? tokens.gapXs : 1,
+      tokens.gapLg,
+      segment.last ? tokens.gapXs : 1,
+    );
+  }
+
+  @override
+  bool updateShouldNotify(TrackCardSegment oldWidget) =>
+      first != oldWidget.first || last != oldWidget.last;
 }
 
 /// The one track row in the app.
@@ -68,7 +130,11 @@ class TrackCard extends StatelessWidget {
     final tokens = context.tokens;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final borderRadius = tokens.borderRadiusCover;
+    final filled = style == TrackCardStyle.filled;
+    final borderRadius =
+        (filled ? TrackCardSegment.radiusOf(context) : null) ??
+        tokens.borderRadiusCover;
+    final segmentMargin = filled ? TrackCardSegment.marginOf(context) : null;
     final contentPadding = style == TrackCardStyle.flat
         ? EdgeInsets.fromLTRB(tokens.gapMd, tokens.gapMd, 6, tokens.gapMd)
         : EdgeInsets.all(tokens.gapMd);
@@ -89,6 +155,7 @@ class TrackCard extends StatelessWidget {
       // get the Material list margin.
       margin:
           margin ??
+          segmentMargin ??
           (style == TrackCardStyle.flat
               ? EdgeInsets.symmetric(horizontal: tokens.gapSm, vertical: 2)
               : EdgeInsets.symmetric(

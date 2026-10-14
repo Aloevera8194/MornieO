@@ -7131,6 +7131,7 @@
   "listeningStatsClear": "Clear listening statistics",
   "listeningStatsClearError": "Could not clear listening statistics. Please try again.",
   "listeningStatsClearDescription": "Delete all listening statistics on this device? Your music and playlists will be kept.",
+  "libraryArtistsEmpty": "Artists appear here once you download music or scan a local library.",
   "weeklyReleases": "New releases",
   "weeklyReleasesDescription": "Recent albums and singles from your favorite artists, supplied by installed metadata extensions.",
   "weeklyReleasesEmpty": "No dated releases found in this period. Add favorite artists or try a longer period.",

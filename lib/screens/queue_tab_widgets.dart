@@ -44,7 +44,9 @@ class _CollectionEntry {
 
 class _FilterChip extends ConsumerWidget {
   final String label;
-  final int count;
+
+  /// Items in the tab; null hides the count.
+  final int? count;
   final bool isSelected;
   final VoidCallback onTap;
 
@@ -74,26 +76,28 @@ class _FilterChip extends ConsumerWidget {
                 )
               : null,
         ),
-        const SizedBox(width: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? colorScheme.primary.withValues(alpha: 0.2)
-                : colorScheme.outline.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 11,
+        if (count != null) ...[
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
               color: isSelected
-                  ? colorScheme.onPrimaryContainer
-                  : colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
+                  ? colorScheme.primary.withValues(alpha: 0.2)
+                  : colorScheme.outline.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              count.toString(),
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-        ),
+        ],
       ],
     );
 
@@ -101,7 +105,7 @@ class _FilterChip extends ConsumerWidget {
       return Semantics(
         button: true,
         selected: isSelected,
-        label: '$label, $count',
+        label: count == null ? label : '$label, $count',
         excludeSemantics: true,
         onTap: onTap,
         child: MornyeGlass(

@@ -221,10 +221,20 @@ extension _QueueTabFilterWidgets on _QueueTabState {
     }
 
     final leadCount = activeDownloadIds.length + bridgeIds.length;
-    final collectionEntries = filterMode == 'all'
+    // The tab-root Library keeps Songs to songs: collections live on the
+    // Playlists page. Section pages opened from Mornye keep them inline.
+    final rootLibrary = widget.librarySection == null;
+    final collectionEntries = filterMode == 'all' && !rootLibrary
         ? _getVisibleCollectionEntries(collectionState)
         : const <_CollectionEntry>[];
     final collectionCount = collectionEntries.length;
+    final specialEntries = filterMode == 'playlists' && rootLibrary
+        ? _getVisibleCollectionEntries(collectionState)
+              .where((entry) => entry.type != _CollectionEntryType.playlist)
+              .toList(growable: false)
+        : const <_CollectionEntry>[];
+    // Material lists group rows under pinned sections.
+    final sectioned = rootLibrary && !context.isMornye;
 
     // Indexes into collectionState.playlists, name-filtered by the search
     // query, for the 'playlists' view.
@@ -277,19 +287,31 @@ extension _QueueTabFilterWidgets on _QueueTabState {
       );
     }
 
+    // Active downloads and the library tracks below them form one connected
+    // run of rows.
     Widget leadListCell(int index) {
+      // Sectioned lists keep the active downloads as their own run.
+      final runLength = rootLibrary && !context.isMornye
+          ? leadCount
+          : leadCount + filteredUnifiedItems.length;
       if (index < activeDownloadIds.length) {
         final id = activeDownloadIds[index];
-        return _QueueItemSliverRow(
+        return TrackCardSegment.at(
           key: ValueKey('dllist_$id'),
-          itemId: id,
-          colorScheme: colorScheme,
-          itemBuilder: _buildQueueItem,
+          index: index,
+          count: runLength,
+          child: _QueueItemSliverRow(
+            itemId: id,
+            colorScheme: colorScheme,
+            itemBuilder: _buildQueueItem,
+          ),
         );
       }
       final bridgeId = bridgeIds[index - activeDownloadIds.length];
-      return KeyedSubtree(
+      return TrackCardSegment.at(
         key: ValueKey('dllist_bridge_$bridgeId'),
+        index: index,
+        count: runLength,
         child: _buildBridgeListItem(
           context,
           _completionBridge[bridgeId]!,
@@ -303,14 +325,23 @@ extension _QueueTabFilterWidgets on _QueueTabState {
 
     final content = CustomScrollView(
       slivers: [
+        if (rootLibrary && (filterMode == 'albums' || filterMode == 'singles'))
+          SliverToBoxAdapter(child: _buildAlbumsModeToggle(context)),
+
         if (totalTrackCount > 0 && filterMode == 'all')
           SliverToBoxAdapter(
             child: _countHeaderRow(
               context,
               context.l10n.queueTrackCount(totalTrackCount),
               [
+                if (rootLibrary && !_isSelectionMode) _buildSortButton(context),
                 if (!_isSelectionMode) _buildFilterButton(context),
-                if (!_isSelectionMode && filteredUnifiedItems.isNotEmpty)
+                if (rootLibrary && !_isSelectionMode)
+                  _buildViewModeButton(context, historyViewMode),
+                // The root Library creates playlists from the Playlists page.
+                if (!rootLibrary &&
+                    !_isSelectionMode &&
+                    filteredUnifiedItems.isNotEmpty)
                   ExpressiveButton(
                     text: true,
                     onPressed: () => _showCreatePlaylistDialog(context),
@@ -331,7 +362,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             child: _countHeaderRow(
               context,
               context.l10n.queueAlbumCount(totalAlbumCount),
-              [_buildFilterButton(context)],
+              [
+                if (rootLibrary) _buildSortButton(context),
+                _buildFilterButton(context),
+              ],
             ),
           ),
 
@@ -447,7 +481,8 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             ),
           ),
 
-        if (filterMode == 'playlists' && playlistIndexes.isNotEmpty) ...[
+        if (filterMode == 'playlists' &&
+            (playlistIndexes.isNotEmpty || specialEntries.isNotEmpty)) ...[
           SliverToBoxAdapter(
             child: _countHeaderRow(
               context,
@@ -474,7 +509,21 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               crossAxisSpacing: 12,
               childAspectRatio: 0.72,
               delegate: SliverChildBuilderDelegate((context, index) {
-                final playlistIndex = playlistIndexes[index];
+                // Wishlist, Loved and Favorite artists lead the grid.
+                if (index < specialEntries.length) {
+                  final entry = specialEntries[index];
+                  return KeyedSubtree(
+                    key: ValueKey('plgrid_special_${entry.type.name}'),
+                    child: _buildAllTabGridCollectionItem(
+                      context: context,
+                      colorScheme: colorScheme,
+                      entry: entry,
+                      collectionState: collectionState,
+                    ),
+                  );
+                }
+                final playlistIndex =
+                    playlistIndexes[index - specialEntries.length];
                 return KeyedSubtree(
                   key: ValueKey(
                     'plgrid_${collectionState.playlists[playlistIndex].id}',
@@ -486,7 +535,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                     collectionState: collectionState,
                   ),
                 );
-              }, childCount: playlistIndexes.length),
+              }, childCount: specialEntries.length + playlistIndexes.length),
             ),
           ),
         ],
@@ -552,6 +601,38 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                 ),
               ),
             )
+          else if (sectioned)
+            _buildSectionedTrackSlivers(
+              context: context,
+              items: filteredUnifiedItems,
+              leadCount: leadCount,
+              leadBuilder: leadListCell,
+              rowBuilder: (index) {
+                final item = filteredUnifiedItems[index];
+                return LibraryPlaylistDragSource<UnifiedLibraryItem>(
+                  data: item,
+                  onSelect: () =>
+                      _selectDraggedTrack(item, filteredUnifiedItems),
+                  onDragStarted: _startLibraryTrackDrag,
+                  onDragEnd: _endLibraryTrackDrag,
+                  feedbackBuilder: (context) =>
+                      _buildDragFeedback(context, item, colorScheme),
+                  child: _buildUnifiedLibraryItem(
+                    context,
+                    item,
+                    colorScheme,
+                    downloadedNavigationItems: downloadedNavigationItems,
+                    downloadedNavigationIndex:
+                        downloadedNavigationIndexByUnifiedId[item.id],
+                    localNavigationItems: localNavigationItems,
+                    localNavigationIndex:
+                        localNavigationIndexByUnifiedId[item.id],
+                    libraryItems: filteredUnifiedItems,
+                    playlistDragEnabled: true,
+                  ),
+                );
+              },
+            )
           else
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
@@ -574,8 +655,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                     final trackIndex = afterCollections - leadCount;
                     if (trackIndex < filteredUnifiedItems.length) {
                       final item = filteredUnifiedItems[trackIndex];
-                      return KeyedSubtree(
+                      return TrackCardSegment.at(
                         key: ValueKey(item.id),
+                        index: afterCollections,
+                        count: leadCount + filteredUnifiedItems.length,
                         child: LibraryPlaylistDragSource<UnifiedLibraryItem>(
                           data: item,
                           onSelect: () =>
@@ -616,8 +699,14 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               context,
               context.l10n.queueTrackCount(totalTrackCount),
               [
+                if (rootLibrary && !_isSelectionMode) _buildSortButton(context),
                 if (!_isSelectionMode) _buildFilterButton(context),
-                if (!_isSelectionMode && filteredUnifiedItems.isNotEmpty)
+                if (rootLibrary && !_isSelectionMode)
+                  _buildViewModeButton(context, historyViewMode),
+                // The root Library creates playlists from the Playlists page.
+                if (!rootLibrary &&
+                    !_isSelectionMode &&
+                    filteredUnifiedItems.isNotEmpty)
                   ExpressiveButton(
                     text: true,
                     onPressed: () => _showCreatePlaylistDialog(context),
@@ -667,6 +756,28 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                     }, childCount: leadCount + filteredUnifiedItems.length),
                   ),
                 )
+              : sectioned
+              ? _buildSectionedTrackSlivers(
+                  context: context,
+                  items: filteredUnifiedItems,
+                  leadCount: leadCount,
+                  leadBuilder: leadListCell,
+                  rowBuilder: (index) {
+                    final item = filteredUnifiedItems[index];
+                    return _buildUnifiedLibraryItem(
+                      context,
+                      item,
+                      colorScheme,
+                      downloadedNavigationItems: downloadedNavigationItems,
+                      downloadedNavigationIndex:
+                          downloadedNavigationIndexByUnifiedId[item.id],
+                      localNavigationItems: localNavigationItems,
+                      localNavigationIndex:
+                          localNavigationIndexByUnifiedId[item.id],
+                      libraryItems: filteredUnifiedItems,
+                    );
+                  },
+                )
               : SliverPadding(
                   padding: EdgeInsets.symmetric(
                     horizontal: wideListInset(context),
@@ -677,8 +788,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                         return leadListCell(index);
                       }
                       final item = filteredUnifiedItems[index - leadCount];
-                      return KeyedSubtree(
+                      return TrackCardSegment.at(
                         key: ValueKey(item.id),
+                        index: index,
+                        count: leadCount + filteredUnifiedItems.length,
                         child: _buildUnifiedLibraryItem(
                           context,
                           item,
@@ -701,7 +814,8 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             (filterMode != 'albums' ||
                 (filteredGroupedAlbums.isEmpty &&
                     filteredGroupedLocalAlbums.isEmpty)) &&
-            (filterMode != 'playlists' || playlistIndexes.isEmpty) &&
+            (filterMode != 'playlists' ||
+                (playlistIndexes.isEmpty && specialEntries.isEmpty)) &&
             !showFilteringIndicator &&
             !isPageLoading)
           SliverFillRemaining(
@@ -727,13 +841,51 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             (filterMode == 'albums' &&
                 (filteredGroupedAlbums.isNotEmpty ||
                     filteredGroupedLocalAlbums.isNotEmpty)) ||
-            (filterMode == 'playlists' && playlistIndexes.isNotEmpty))
+            (filterMode == 'playlists' &&
+                (playlistIndexes.isNotEmpty || specialEntries.isNotEmpty)))
           SliverToBoxAdapter(
             child: SizedBox(height: _isSelectionMode ? 100 : 16),
           ),
         const NavBarSliverSpacer(),
       ],
     );
+
+    // The fast scroller follows the loaded rows. Near-end notifications load
+    // the next page while a drag continues.
+    final albumCount =
+        filteredGroupedAlbums.length + filteredGroupedLocalAlbums.length;
+    String? labelAt(double fraction) {
+      if (filterMode == 'albums') {
+        if (albumCount == 0) return null;
+        final index = (fraction * (albumCount - 1)).round();
+        if (index < filteredGroupedAlbums.length) {
+          final album = filteredGroupedAlbums[index];
+          return _albumSectionLabel(
+            context,
+            album: album.albumName,
+            artist: album.artistName,
+            added: album.latestDownload,
+          );
+        }
+        final album =
+            filteredGroupedLocalAlbums[index - filteredGroupedAlbums.length];
+        return _albumSectionLabel(
+          context,
+          album: album.albumName,
+          artist: album.artistName,
+          added: album.latestScanned,
+        );
+      }
+      if (filterMode != 'all' && filterMode != 'singles') return null;
+      final rows = collectionCount + leadCount + filteredUnifiedItems.length;
+      if (rows == 0) return null;
+      final itemIndex =
+          (fraction * (rows - 1)).round() - collectionCount - leadCount;
+      if (itemIndex < 0 || itemIndex >= filteredUnifiedItems.length) {
+        return null;
+      }
+      return _trackSectionLabel(context, filteredUnifiedItems[itemIndex]);
+    }
 
     final scrollAwareContent = NotificationListener<ScrollNotification>(
       onNotification: (notification) => _handleLibraryScrollNotification(
@@ -742,7 +894,12 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         hasMoreLibrary: hasMoreLibrary,
         isPageLoading: isPageLoading,
       ),
-      child: content,
+      child: LibraryFastScroller(
+        topPadding: MediaQuery.paddingOf(context).top + kToolbarHeight,
+        bottomPadding: context.navBarBottomInset,
+        labelAt: labelAt,
+        child: content,
+      ),
     );
 
     if (historyViewMode != 'grid') return scrollAwareContent;

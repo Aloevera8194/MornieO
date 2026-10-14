@@ -110,6 +110,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
     'all',
     'albums',
     'singles',
+    'artists',
     'playlists',
   };
   static const Set<String> _extensionVerificationBrowserModeValues = {
