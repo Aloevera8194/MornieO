@@ -101,7 +101,11 @@ class _SearchProviderDropdown extends ConsumerWidget {
         ),
         tooltip: context.l10n.homeChangeSearchProviderTooltip,
         offset: const Offset(0, 40),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        // Material takes the expressive menu shape from popupMenuTheme.
+        shape: context.isMornye
+            ? RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
+            : null,
+        popUpAnimationStyle: AppMotion.surfaceEntrance(context),
         onSelected: (String providerId) {
           ref.read(settingsProvider.notifier).setSearchProvider(providerId);
           onProviderChanged?.call();
@@ -110,52 +114,77 @@ class _SearchProviderDropdown extends ConsumerWidget {
           ...searchProviders.map(
             (ext) => PopupMenuItem<String>(
               value: ext.id,
-              child: Row(
-                children: [
-                  if (ext.iconPath != null && ext.iconPath!.isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.file(
-                        File(ext.iconPath!),
-                        width: 20,
-                        height: 20,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, e, st) => Icon(
-                          _getIconFromName(ext.searchBehavior?.icon),
-                          size: 20,
-                          color: currentProvider == ext.id
-                              ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant,
+              // Expressive menus mark the selection with an inset pill.
+              padding: context.isMornye
+                  ? null
+                  : const EdgeInsets.symmetric(horizontal: 4),
+              child: _searchProviderMenuRow(
+                context,
+                selected: currentProvider == ext.id,
+                child: Row(
+                  children: [
+                    if (ext.iconPath != null && ext.iconPath!.isNotEmpty)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.file(
+                          File(ext.iconPath!),
+                          width: 20,
+                          height: 20,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, e, st) => Icon(
+                            _getIconFromName(ext.searchBehavior?.icon),
+                            size: 20,
+                            color: currentProvider == ext.id
+                                ? colorScheme.primary
+                                : colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      )
+                    else
+                      Icon(
+                        _getIconFromName(ext.searchBehavior?.icon),
+                        size: 20,
+                        color: currentProvider == ext.id
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
+                      ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        ext.displayName,
+                        style: TextStyle(
+                          fontWeight: currentProvider == ext.id
+                              ? FontWeight.w600
+                              : FontWeight.normal,
                         ),
                       ),
-                    )
-                  else
-                    Icon(
-                      _getIconFromName(ext.searchBehavior?.icon),
-                      size: 20,
-                      color: currentProvider == ext.id
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
                     ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      ext.displayName,
-                      style: TextStyle(
-                        fontWeight: currentProvider == ext.id
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                  if (currentProvider == ext.id)
-                    Icon(Icons.check, size: 18, color: colorScheme.primary),
-                ],
+                    if (currentProvider == ext.id)
+                      Icon(Icons.check, size: 18, color: colorScheme.primary),
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _searchProviderMenuRow(
+    BuildContext context, {
+    required bool selected,
+    required Widget child,
+  }) {
+    if (context.isMornye) return child;
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: selected ? colorScheme.secondaryContainer : null,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: child,
     );
   }
 

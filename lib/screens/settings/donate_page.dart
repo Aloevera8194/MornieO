@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/donate_icons.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
@@ -169,7 +170,8 @@ class _MonthlyDonationGoalCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
             ],
-            LinearProgressIndicator(
+            AppProgressIndicator.linear(
+              wavy: false,
               value: goal.progressRatio,
               minHeight: 8,
               borderRadius: BorderRadius.circular(4),

@@ -31,6 +31,7 @@ import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
@@ -582,7 +583,8 @@ class _DonationGoalProgress extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: LinearProgressIndicator(
+          child: AppProgressIndicator.linear(
+            wavy: false,
             value: goal.progressRatio,
             minHeight: 4,
             borderRadius: BorderRadius.circular(2),

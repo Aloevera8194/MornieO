@@ -4,11 +4,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -686,6 +688,10 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
     }
 
     final progress = (_currentStep + 1) / _totalSteps;
+    final stepMotion = AppMotion.spatial(
+      context,
+      const AppMotionSpec(Duration.zero, Curves.linear),
+    );
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -717,12 +723,21 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 4,
-                          backgroundColor: colorScheme.surfaceContainerHighest,
-                          color: colorScheme.primary,
-                          strokeCap: StrokeCap.round,
+                        // Expressive steps fill on a spring around a wavy
+                        // ring; the fallback jumps straight to the step.
+                        TweenAnimationBuilder<double>(
+                          tween: Tween(end: progress),
+                          duration: stepMotion.duration,
+                          curve: stepMotion.curve,
+                          builder: (context, value, _) =>
+                              AppProgressIndicator.circular(
+                                wavy: false,
+                                value: value,
+                                strokeWidth: 4,
+                                trackColor: colorScheme.surfaceContainerHighest,
+                                color: colorScheme.primary,
+                                strokeCap: StrokeCap.round,
+                              ),
                         ),
                         Center(
                           child: Text(
@@ -975,15 +990,40 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
         final name = lang.$2;
         final isSelected = _selectedLocale == code;
 
+        // Expressive rows morph into a pill as they become selected.
+        final shapeMotion = AppMotion.spatial(
+          context,
+          const AppMotionSpec(Duration.zero, Curves.linear),
+        );
+        final fillMotion = AppMotion.effects(
+          context,
+          const AppMotionSpec(Duration.zero, Curves.linear),
+        );
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Material(
-            color: isSelected
-                ? colorScheme.primaryContainer
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(end: isSelected ? 1 : 0),
+            duration: fillMotion.duration,
+            curve: fillMotion.curve,
+            builder: (context, fill, child) => TweenAnimationBuilder<double>(
+              tween: Tween(
+                end: isSelected && materialExpressiveEnabled(context) ? 28 : 16,
+              ),
+              duration: shapeMotion.duration,
+              curve: shapeMotion.curve,
+              builder: (context, radius, child) => Material(
+                color: Color.lerp(
+                  colorScheme.primaryContainer.withValues(alpha: 0),
+                  colorScheme.primaryContainer,
+                  fill.clamp(0.0, 1.0),
+                ),
+                borderRadius: BorderRadius.circular(radius.clamp(0.0, 32.0)),
+                clipBehavior: Clip.antiAlias,
+                child: child,
+              ),
+              child: child,
+            ),
             child: InkWell(
-              borderRadius: BorderRadius.circular(16),
               onTap: () => _onLanguageSelected(code),
               child: Padding(
                 padding: const EdgeInsets.symmetric(

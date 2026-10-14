@@ -673,20 +673,28 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
         shrinkWrap: true,
         padding: const EdgeInsets.only(bottom: 12),
         children: [
-          ListTile(
-            leading: const Icon(Icons.content_copy_rounded),
-            title: Text(sheetContext.l10n.metadataCopyValue),
-            onTap: () => Navigator.pop(sheetContext, 'value'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.label_outline_rounded),
-            title: Text(sheetContext.l10n.metadataCopyField),
-            onTap: () => Navigator.pop(sheetContext, 'field'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.copy_all_rounded),
-            title: Text(sheetContext.l10n.metadataCopyAll),
-            onTap: () => Navigator.pop(sheetContext, 'all'),
+          SettingsGroup(
+            children: [
+              SettingsItem(
+                icon: Icons.content_copy_rounded,
+                showIconInMornye: true,
+                title: sheetContext.l10n.metadataCopyValue,
+                onTap: () => Navigator.pop(sheetContext, 'value'),
+              ),
+              SettingsItem(
+                icon: Icons.label_outline_rounded,
+                showIconInMornye: true,
+                title: sheetContext.l10n.metadataCopyField,
+                onTap: () => Navigator.pop(sheetContext, 'field'),
+              ),
+              SettingsItem(
+                icon: Icons.copy_all_rounded,
+                showIconInMornye: true,
+                title: sheetContext.l10n.metadataCopyAll,
+                showDivider: false,
+                onTap: () => Navigator.pop(sheetContext, 'all'),
+              ),
+            ],
           ),
         ],
       ),

@@ -15,6 +15,8 @@ class AppProgressIndicator extends StatelessWidget {
     this.minHeight,
     this.borderRadius,
     this.semanticsLabel,
+    this.semanticsValue,
+    this.wavy = true,
   }) : strokeWidth = null,
        strokeCap = null,
        _circular = false;
@@ -28,6 +30,8 @@ class AppProgressIndicator extends StatelessWidget {
     this.strokeWidth,
     this.strokeCap,
     this.semanticsLabel,
+    this.semanticsValue,
+    this.wavy = true,
   }) : minHeight = null,
        borderRadius = null,
        _circular = true;
@@ -45,6 +49,12 @@ class AppProgressIndicator extends StatelessWidget {
   /// Cap of the flat circular fallback; the wavy stroke is always round.
   final StrokeCap? strokeCap;
   final String? semanticsLabel;
+  final String? semanticsValue;
+
+  /// Whether determinate progress waves. Values that only change on a new
+  /// step or refresh, such as goals, use the flat expressive track at the
+  /// caller's thickness instead.
+  final bool wavy;
   final bool _circular;
 
   @override
@@ -59,6 +69,7 @@ class AppProgressIndicator extends StatelessWidget {
               strokeWidth: strokeWidth,
               strokeCap: strokeCap,
               semanticsLabel: semanticsLabel,
+              semanticsValue: semanticsValue,
             )
           : LinearProgressIndicator(
               value: value,
@@ -67,32 +78,60 @@ class AppProgressIndicator extends StatelessWidget {
               minHeight: minHeight,
               borderRadius: borderRadius,
               semanticsLabel: semanticsLabel,
+              semanticsValue: semanticsValue,
             );
     }
     final scheme = Theme.of(context).colorScheme;
+    // Indeterminate progress always waves.
+    final wavy = this.wavy || value == null;
     if (!_circular) {
       return MaterialExpressiveScope(
-        child: M3EProgressIndicator.linearWavy(
-          value: value,
-          color: color ?? scheme.primary,
-          trackColor: trackColor,
-          semanticsLabel: semanticsLabel,
-        ),
+        child: wavy
+            ? M3EProgressIndicator.linearWavy(
+                value: value,
+                color: color ?? scheme.primary,
+                trackColor: trackColor,
+                semanticsLabel: semanticsLabel,
+                semanticsValue: semanticsValue,
+              )
+            : M3EProgressIndicator.linear(
+                value: value,
+                linearSize: M3EProgressIndicatorSize.s,
+                strokeWidth: minHeight,
+                trackStrokeWidth: minHeight,
+                color: color ?? scheme.primary,
+                trackColor: trackColor,
+                semanticsLabel: semanticsLabel,
+                semanticsValue: semanticsValue,
+              ),
       );
     }
     return LayoutBuilder(
       builder: (context, constraints) {
         final side = constraints.biggest.shortestSide;
+        final size = side.isFinite ? side : null;
         return MaterialExpressiveScope(
-          child: M3EProgressIndicator.circularWavy(
-            value: value,
-            size: side.isFinite ? side : null,
-            color: color ?? scheme.primary,
-            trackColor: trackColor,
-            strokeWidth: strokeWidth,
-            trackStrokeWidth: strokeWidth,
-            semanticsLabel: semanticsLabel,
-          ),
+          child: wavy
+              ? M3EProgressIndicator.circularWavy(
+                  value: value,
+                  size: size,
+                  color: color ?? scheme.primary,
+                  trackColor: trackColor,
+                  strokeWidth: strokeWidth,
+                  trackStrokeWidth: strokeWidth,
+                  semanticsLabel: semanticsLabel,
+                  semanticsValue: semanticsValue,
+                )
+              : M3EProgressIndicator.circular(
+                  value: value,
+                  size: size,
+                  color: color ?? scheme.primary,
+                  trackColor: trackColor,
+                  strokeWidth: strokeWidth,
+                  trackStrokeWidth: strokeWidth,
+                  semanticsLabel: semanticsLabel,
+                  semanticsValue: semanticsValue,
+                ),
         );
       },
     );

@@ -13,6 +13,7 @@ import 'package:spotiflac_android/screens/settings/settings_tab.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
 void main() {
@@ -84,13 +85,13 @@ void main() {
       );
       final progress = find.descendant(
         of: support,
-        matching: find.byType(LinearProgressIndicator),
+        matching: find.byType(AppProgressIndicator),
       );
       expect(
         find.descendant(of: support, matching: find.text('9%')),
         findsOneWidget,
       );
-      expect(tester.widget<LinearProgressIndicator>(progress).value, 0.09);
+      expect(tester.widget<AppProgressIndicator>(progress).value, 0.09);
 
       response.complete(
         http.Response(jsonEncode(goalConfig(progress: 0.27)), 200),
@@ -100,7 +101,7 @@ void main() {
         find.descendant(of: support, matching: find.text('27%')),
         findsOneWidget,
       );
-      expect(tester.widget<LinearProgressIndicator>(progress).value, 0.27);
+      expect(tester.widget<AppProgressIndicator>(progress).value, 0.27);
       expect(find.text('9%'), findsNothing);
       expect(tester.takeException(), isNull);
     });
@@ -121,7 +122,7 @@ void main() {
       await pumpSettings(tester, service: service);
       expect(find.text('9%'), findsNothing);
       expect(
-        find.byType(LinearProgressIndicator),
+        find.byType(AppProgressIndicator),
         active ? findsOneWidget : findsNothing,
       );
     });

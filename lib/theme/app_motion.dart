@@ -87,4 +87,16 @@ abstract final class AppMotion {
   /// Default effects spring for opacity and color.
   static AppMotionSpec effects(BuildContext context, AppMotionSpec fallback) =>
       materialExpressiveEnabled(context) ? _spec(_effectsDefault) : fallback;
+
+  /// Entrance for sheets and menus. The slow spatial spring is critically
+  /// damped, so a surface never overshoots its own size and reveals what is
+  /// behind it. Null keeps the platform transition.
+  static AnimationStyle? surfaceEntrance(BuildContext context) =>
+      materialExpressiveEnabled(context)
+      ? AnimationStyle(
+          duration: _spatialSlow.duration,
+          curve: _spatialSlow,
+          reverseDuration: const Duration(milliseconds: 200),
+        )
+      : null;
 }

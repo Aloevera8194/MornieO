@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart'
     show CupertinoButton, CupertinoDynamicColor, kCupertinoModalBarrierColor;
 import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
@@ -180,32 +179,20 @@ Future<T?> showAppModalBottomSheet<T>({
   bool enableDrag = true,
   bool useRootNavigator = false,
   bool useSafeArea = false,
+  bool? showDragHandle,
   BoxConstraints? constraints,
   Color? backgroundColor,
 }) {
   final mornye = context.isMornye;
-  // Expressive sheets rise on a critically damped spring, so they never
-  // overshoot their own height and reveal the barrier underneath.
-  final spring = materialExpressiveEnabled(context)
-      ? AppMotion.spatialSlow(
-          context,
-          const AppMotionSpec(Duration.zero, Curves.linear),
-        )
-      : null;
   return showModalBottomSheet<T>(
     context: context,
-    sheetAnimationStyle: spring == null
-        ? null
-        : AnimationStyle(
-            duration: spring.duration,
-            curve: spring.curve,
-            reverseDuration: const Duration(milliseconds: 200),
-          ),
+    sheetAnimationStyle: AppMotion.surfaceEntrance(context),
     isScrollControlled: isScrollControlled,
     isDismissible: isDismissible,
     enableDrag: enableDrag,
     useRootNavigator: useRootNavigator,
     useSafeArea: useSafeArea,
+    showDragHandle: showDragHandle,
     constraints: constraints,
     backgroundColor: mornye ? Colors.transparent : backgroundColor,
     barrierColor: mornye

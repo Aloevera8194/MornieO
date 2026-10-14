@@ -3,6 +3,7 @@ import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus;
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
@@ -325,6 +326,7 @@ class _LogScreenState extends State<LogScreen> {
                         tooltip: MaterialLocalizations.of(
                           context,
                         ).showMenuTooltip,
+                        popUpAnimationStyle: AppMotion.surfaceEntrance(context),
                         onSelected: (value) {
                           switch (value) {
                             case 'share':

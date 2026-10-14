@@ -1139,7 +1139,7 @@ class _AnimatedScanCount extends StatelessWidget {
         children: [
           SizedBox.square(
             dimension: 18,
-            child: CircularProgressIndicator(
+            child: AppProgressIndicator.circular(
               value: determinate ? (progress / 100).clamp(0.0, 1.0) : null,
               strokeWidth: 2,
             ),

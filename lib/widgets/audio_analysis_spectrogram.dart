@@ -70,7 +70,7 @@ class _SpectrogramView extends StatelessWidget {
           if (channelLoading)
             const Padding(
               padding: EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: LinearProgressIndicator(minHeight: 2),
+              child: AppProgressIndicator.linear(minHeight: 2),
             ),
           Padding(
             padding: const EdgeInsets.fromLTRB(6, 10, 10, 4),

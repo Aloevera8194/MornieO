@@ -6,6 +6,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/widgets/scroll_edge_fade.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 
@@ -598,10 +599,10 @@ class _InteractiveDownloadExampleState
                     if (_isDownloading)
                       ClipRRect(
                         borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
+                        child: AppProgressIndicator.linear(
                           value: _progress,
                           minHeight: 12,
-                          backgroundColor: colorScheme.surfaceContainerHighest,
+                          trackColor: colorScheme.surfaceContainerHighest,
                           color: colorScheme.primary,
                         ),
                       )

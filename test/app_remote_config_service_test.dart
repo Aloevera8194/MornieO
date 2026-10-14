@@ -10,6 +10,7 @@ import 'package:spotiflac_android/l10n/app_localizations.dart';
 import 'package:spotiflac_android/screens/settings/donate_page.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 
 class _TrackedClient extends MockClient {
   _TrackedClient(super.handler);
@@ -136,9 +137,7 @@ void main() {
       expect(find.text('14 supporters'), findsNothing);
       expect(
         tester
-            .widget<LinearProgressIndicator>(
-              find.byType(LinearProgressIndicator),
-            )
+            .widget<AppProgressIndicator>(find.byType(AppProgressIndicator))
             .value,
         0.09,
       );
@@ -167,7 +166,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('Monthly development goal'), findsNothing);
-      expect(find.byType(LinearProgressIndicator), findsNothing);
+      expect(find.byType(AppProgressIndicator), findsNothing);
     });
   }
 
@@ -207,9 +206,7 @@ void main() {
       expect(find.text('14 supporters'), findsNothing);
       expect(
         tester
-            .widget<LinearProgressIndicator>(
-              find.byType(LinearProgressIndicator),
-            )
+            .widget<AppProgressIndicator>(find.byType(AppProgressIndicator))
             .value,
         1,
       );

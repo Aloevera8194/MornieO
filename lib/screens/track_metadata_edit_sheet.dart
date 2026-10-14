@@ -23,6 +23,7 @@ import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
+import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
@@ -1592,7 +1593,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
         if (_loadingCurrentCover)
           const Padding(
             padding: EdgeInsets.only(bottom: 8),
-            child: LinearProgressIndicator(minHeight: 2),
+            child: AppProgressIndicator.linear(minHeight: 2),
           )
         else if (!hasCurrentCover && !hasSelectedCover)
           Padding(
