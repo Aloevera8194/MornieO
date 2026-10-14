@@ -267,6 +267,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
                 else
                   SliverToBoxAdapter(
                     child: SettingsGroup(
+                      connected: true,
                       children: filteredExtensions.asMap().entries.map((entry) {
                         final index = entry.key;
                         final ext = entry.value;

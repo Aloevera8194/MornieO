@@ -58,6 +58,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _ServiceSelector(
                     currentService: settings.defaultService,
@@ -76,6 +77,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   SettingsSwitchItem(
                     icon: Icons.tune,
@@ -241,6 +243,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   const _MetadataSourceSelector(),
                   const _DefaultSearchTabSelector(),

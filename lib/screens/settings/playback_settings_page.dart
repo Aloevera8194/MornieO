@@ -232,6 +232,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
           if (Platform.isAndroid)
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   ValueListenableBuilder<UsbAudioStatus>(
                     valueListenable: usbAudioStatus,

@@ -32,6 +32,7 @@ class AppSettingsPage extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   SettingsSwitchItem(
                     icon: Icons.extension,
@@ -442,13 +443,14 @@ class _VerificationBrowserModeSelector extends StatelessWidget {
             ],
           ),
         ),
-        Divider(
-          height: 1,
-          thickness: 1,
-          indent: 56,
-          endIndent: 20,
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-        ),
+        if (!settingsRowsConnected(context))
+          Divider(
+            height: 1,
+            thickness: 1,
+            indent: 56,
+            endIndent: 20,
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          ),
       ],
     );
     return SettingsSearchTarget(

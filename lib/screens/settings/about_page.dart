@@ -63,6 +63,7 @@ class AboutPage extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _ContributorItem(
                     name: AppInfo.mobileAuthor,
@@ -107,6 +108,7 @@ class AboutPage extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _ContributorItem(
                     name: 'binimum',
@@ -167,6 +169,7 @@ class AboutPage extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _AboutSettingsItem(
                     icon: Icons.phone_android,
@@ -212,6 +215,7 @@ class AboutPage extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _AboutSettingsItem(
                     icon: Icons.telegram,
@@ -236,6 +240,7 @@ class AboutPage extends StatelessWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _AboutSettingsItem(
                     icon: Icons.info_outline,
@@ -458,7 +463,7 @@ class _ContributorItem extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider)
+        if (showDivider && !settingsRowsConnected(context))
           Divider(
             height: 1,
             thickness: 1,
@@ -734,7 +739,7 @@ class _AboutSettingsItem extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider)
+        if (showDivider && !settingsRowsConnected(context))
           Divider(
             height: 1,
             thickness: 1,

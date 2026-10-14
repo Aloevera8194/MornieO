@@ -168,6 +168,7 @@ class AppearanceSettingsPage extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _ThemeModeSelector(
                     currentMode: themeSettings.themeMode,
@@ -191,6 +192,7 @@ class AppearanceSettingsPage extends ConsumerWidget {
 
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   SettingsSwitchItem(
                     icon: Icons.font_download_outlined,
@@ -230,6 +232,7 @@ class AppearanceSettingsPage extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _LanguageSelector(
                     currentLocale: settings.locale,
@@ -245,6 +248,7 @@ class AppearanceSettingsPage extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   _HistoryViewSelector(
                     currentMode: settings.historyViewMode,

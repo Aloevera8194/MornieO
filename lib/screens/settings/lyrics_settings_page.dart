@@ -35,6 +35,7 @@ class LyricsSettingsPage extends ConsumerWidget {
             ),
             SliverToBoxAdapter(
               child: SettingsGroup(
+                connected: true,
                 children: [
                   const LyricsSizeSetting(),
                   SettingsSwitchItem(

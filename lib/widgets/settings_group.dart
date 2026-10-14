@@ -194,14 +194,25 @@ class _SettingsSearchTargetState extends State<SettingsSearchTarget> {
 }
 
 /// Whether rows sit in an expressive connected [SettingsGroup], where the gaps
-/// between row surfaces replace dividers.
-bool _rowsConnected(BuildContext context) =>
+/// between row surfaces replace dividers. Custom rows check this to hide
+/// their own dividers.
+bool settingsRowsConnected(BuildContext context) =>
     context.dependOnInheritedWidgetOfExactType<_ConnectedRowsScope>() != null;
 
-BorderRadius _connectedRowRadius({
-  required Radius top,
-  required Radius bottom,
-}) => BorderRadius.vertical(top: top, bottom: bottom);
+/// Corners of one row in an expressive connected list: the card radius at the
+/// [first] and [last] ends of the run, tight corners between rows.
+BorderRadius connectedRowRadius(
+  BuildContext context, {
+  required bool first,
+  required bool last,
+}) {
+  final outer = Radius.circular(context.tokens.radiusCard);
+  const inner = Radius.circular(4);
+  return BorderRadius.vertical(
+    top: first ? outer : inner,
+    bottom: last ? outer : inner,
+  );
+}
 
 class _ConnectedRowsScope extends InheritedWidget {
   const _ConnectedRowsScope({required super.child});
@@ -215,11 +226,17 @@ class SettingsGroup extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final bool glass;
 
+  /// Connects custom [children] that are each one complete row, such as
+  /// extension rows. Groups of [SettingsItem], [SettingsSwitchItem] and [ListTile]
+  /// connect without it.
+  final bool connected;
+
   const SettingsGroup({
     super.key,
     required this.children,
     this.margin,
     this.glass = false,
+    this.connected = false,
   });
 
   @override
@@ -266,15 +283,18 @@ class SettingsGroup extends StatelessWidget {
     // custom content keep one card, so spacers never become empty tiles.
     final standardRows =
         children.isNotEmpty &&
-        children.every(
-          (child) => child is SettingsItem || child is SettingsSwitchItem,
-        );
-    if (expressive && standardRows) {
+        (connected ||
+            children.every(
+              (child) =>
+                  child is SettingsItem ||
+                  child is SettingsSwitchItem ||
+                  child is ListTile,
+            ));
+    // Connected surfaces are static layout, so reduced motion keeps the gaps.
+    if (!context.isMornye && standardRows) {
       // Expressive connected list: every row is its own surface separated by
       // a 2dp gap. The group's ends keep the card radius, inner corners stay
       // tight, and the gaps replace row dividers.
-      final outer = Radius.circular(context.tokens.radiusCard);
-      const inner = Radius.circular(4);
       final last = children.length - 1;
       return LayoutBuilder(
         builder: (context, constraints) => Padding(
@@ -298,9 +318,10 @@ class SettingsGroup extends StatelessWidget {
                     color: cardColor,
                     clipBehavior: Clip.antiAlias,
                     shape: RoundedRectangleBorder(
-                      borderRadius: _connectedRowRadius(
-                        top: index == 0 ? outer : inner,
-                        bottom: index == last ? outer : inner,
+                      borderRadius: connectedRowRadius(
+                        context,
+                        first: index == 0,
+                        last: index == last,
                       ),
                     ),
                     child: row,
@@ -486,7 +507,7 @@ class SettingsItem extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider && !_rowsConnected(context))
+        if (showDivider && !settingsRowsConnected(context))
           Divider(
             height: 1,
             indent: showIcon
@@ -607,7 +628,7 @@ class SettingsSwitchItem extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider && !_rowsConnected(context))
+        if (showDivider && !settingsRowsConnected(context))
           Divider(
             height: 1,
             indent: showIcon

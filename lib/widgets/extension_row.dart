@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/settings_group.dart';
 
 /// Square extension icon with a tinted fallback.
 class ExtensionAvatar extends StatelessWidget {
@@ -145,7 +146,7 @@ class ExtensionRow extends StatelessWidget {
             ),
           ),
         ),
-        if (showDivider)
+        if (showDivider && !settingsRowsConnected(context))
           Divider(
             height: 1,
             thickness: 1,

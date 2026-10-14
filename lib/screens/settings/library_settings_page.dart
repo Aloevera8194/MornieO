@@ -676,6 +676,7 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
           ),
           SliverToBoxAdapter(
             child: SettingsGroup(
+              connected: true,
               children: [
                 SettingsSwitchItem(
                   icon: Icons.library_music_outlined,
@@ -854,6 +855,7 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                           hasDownloads ||
                           librarySources.isNotEmpty);
                   return SettingsGroup(
+                    connected: true,
                     children: [
                       if (libraryState.isScanning)
                         _ScanProgressTile(

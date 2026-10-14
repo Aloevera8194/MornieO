@@ -110,6 +110,7 @@ class _AutoMixSettingsState extends ConsumerState<AutoMixSettings> {
     }
 
     return SettingsGroup(
+      connected: true,
       children: [
         SettingsSwitchItem(
           icon: Icons.timer_outlined,

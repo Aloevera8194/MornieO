@@ -261,6 +261,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
                 SliverToBoxAdapter(
                   child: SettingsGroup(
                     glass: true,
+                    connected: true,
                     children: extension.settings.asMap().entries.map((entry) {
                       final index = entry.key;
                       final setting = entry.value;
@@ -288,6 +289,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
               SliverToBoxAdapter(
                 child: SettingsGroup(
                   glass: true,
+                  connected: true,
                   children: [
                     _HealthSummaryItem(
                       status: healthStatus,
@@ -335,6 +337,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
               SliverToBoxAdapter(
                 child: SettingsGroup(
                   glass: true,
+                  connected: true,
                   children: extension.qualityOptions.asMap().entries.map((
                     entry,
                   ) {
@@ -359,6 +362,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
               SliverToBoxAdapter(
                 child: SettingsGroup(
                   glass: true,
+                  connected: true,
                   children: extension.postProcessing!.hooks.asMap().entries.map(
                     (entry) {
                       final index = entry.key;
@@ -383,6 +387,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
               SliverToBoxAdapter(
                 child: SettingsGroup(
                   glass: true,
+                  connected: true,
                   children: extension.permissions.asMap().entries.map((entry) {
                     final index = entry.key;
                     final permission = entry.value;
@@ -403,6 +408,7 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
             SliverToBoxAdapter(
               child: SettingsGroup(
                 glass: true,
+                connected: true,
                 children: [
                   _CapabilityItem(
                     icon: Icons.search,
@@ -601,14 +607,18 @@ class _ExtensionDivider extends StatelessWidget {
   final double indent;
 
   @override
-  Widget build(BuildContext context) => Divider(
-    height: 1,
-    indent: indent,
-    endIndent: 16,
-    color: context.isMornye
-        ? MornyeTheme.metadataDividerColor(context)
-        : Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.3),
-  );
+  Widget build(BuildContext context) => settingsRowsConnected(context)
+      ? const SizedBox.shrink()
+      : Divider(
+          height: 1,
+          indent: indent,
+          endIndent: 16,
+          color: context.isMornye
+              ? MornyeTheme.metadataDividerColor(context)
+              : Theme.of(
+                  context,
+                ).colorScheme.outlineVariant.withValues(alpha: 0.3),
+        );
 }
 
 /// Long OAuth URLs: selectable text so users can copy without relying on snackbars.
