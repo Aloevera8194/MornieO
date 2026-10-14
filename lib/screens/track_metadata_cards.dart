@@ -188,9 +188,14 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
 
     // Centered square cover over a blurred backdrop (same layout as the album
     // header) so the Hero flight from a list thumbnail keeps its square shape.
-    final coverSize = (MediaQuery.sizeOf(context).width * 0.5)
-        .clamp(150.0, 210.0)
-        .toDouble();
+    // Landscape headers are short: the cover also yields to the height left
+    // below the toolbar after the title block, so nothing rises into it.
+    final toolbarBottom = MediaQuery.paddingOf(context).top + kToolbarHeight;
+    const textBlockHeight = 190.0;
+    final coverSize = math.min(
+      (MediaQuery.sizeOf(context).width * 0.5).clamp(150.0, 210.0),
+      math.max(96.0, expandedHeight - toolbarBottom - textBlockHeight),
+    );
 
     return Stack(
       fit: StackFit.expand,

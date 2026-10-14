@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/app_motion.dart';
@@ -745,31 +746,22 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
               leadingWidth: kToolbarHeight + edgeInset,
               leading: Padding(
                 padding: EdgeInsets.only(left: edgeInset),
-                child: IconButton(
-                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.arrow_back, color: Colors.white),
+                // Centered so the tight leading slot cannot stretch it.
+                child: Center(
+                  child: HeaderCircleButton(
+                    icon: Icons.arrow_back,
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).backButtonTooltip,
+                    onPressed: _popWithMetadataResult,
                   ),
-                  onPressed: _popWithMetadataResult,
                 ),
               ),
               actionsPadding: EdgeInsets.only(right: edgeInset),
               actions: [
-                IconButton(
+                HeaderCircleButton(
+                  icon: Icons.more_vert,
                   tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.more_vert, color: Colors.white),
-                  ),
                   onPressed: () => _showOptionsMenu(context, ref, colorScheme),
                 ),
               ],

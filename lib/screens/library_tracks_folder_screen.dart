@@ -635,75 +635,44 @@ class _LibraryTracksFolderScreenState
           : null,
       appBarActions: [
         if (!isSelectionMode && entries.isNotEmpty)
-          IconButton(
+          HeaderCircleButton(
+            icon: Icons.ios_share,
+            iconSize: 20,
             tooltip: context.l10n.collectionExportM3u,
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.ios_share, color: Colors.white, size: 20),
-            ),
             onPressed: () => _exportAsM3u8(context, title, entries),
           ),
         if (isPlaylistMode && !isSelectionMode) ...[
-          IconButton(
+          const SizedBox(width: 8),
+          HeaderCircleButton(
+            icon: Icons.edit_outlined,
+            iconSize: 20,
             tooltip: context.l10n.collectionRenamePlaylist,
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.edit_outlined,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
             onPressed: () {
               final id = widget.playlistId ?? playlist?.id;
               if (id == null || id.isEmpty) return;
               _showRenamePlaylistDialog(context, id, playlist?.name ?? title);
             },
           ),
-          IconButton(
+          const SizedBox(width: 8),
+          HeaderCircleButton(
+            icon: Icons.camera_alt_outlined,
+            iconSize: 20,
             tooltip: context.l10n.collectionPlaylistChangeCover,
-            icon: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.camera_alt_outlined,
-                color: Colors.white,
-                size: 20,
-              ),
-            ),
             onPressed: () => _showCoverOptionsSheet(context, hasCustomCover),
           ),
         ],
       ],
-      leading: IconButton(
-        tooltip: isSelectionMode
-            ? MaterialLocalizations.of(context).closeButtonTooltip
-            : MaterialLocalizations.of(context).backButtonTooltip,
-        icon: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.4),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            isSelectionMode ? Icons.close : Icons.arrow_back,
-            color: Colors.white,
-          ),
+      // Centered so the tight leading slot cannot stretch it.
+      leading: Center(
+        child: HeaderCircleButton(
+          icon: isSelectionMode ? Icons.close : Icons.arrow_back,
+          tooltip: isSelectionMode
+              ? MaterialLocalizations.of(context).closeButtonTooltip
+              : MaterialLocalizations.of(context).backButtonTooltip,
+          onPressed: isSelectionMode
+              ? exitSelectionMode
+              : () => Navigator.pop(context),
         ),
-        onPressed: isSelectionMode
-            ? exitSelectionMode
-            : () => Navigator.pop(context),
       ),
     );
   }

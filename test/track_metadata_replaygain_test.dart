@@ -10,6 +10,8 @@ import 'package:spotiflac_android/providers/download_history_provider.dart';
 import 'package:spotiflac_android/screens/track_metadata_screen.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 
+import 'support/app_icon_finder.dart';
+
 class _History extends DownloadHistoryNotifier {
   _History(this._item);
   final DownloadHistoryItem _item;
@@ -140,7 +142,7 @@ void main() {
         expect(find.text(text), hasTags ? findsOneWidget : findsNothing);
       }
       Future<void> openRemoval() async {
-        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.tap(findAppIcon(Icons.more_vert));
         await tester.pumpAndSettle();
         expect(find.text('Edit audio file'), findsNothing);
         expect(find.text('Similar songs in Library'), findsNothing);

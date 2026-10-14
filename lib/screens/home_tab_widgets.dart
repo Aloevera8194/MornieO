@@ -988,17 +988,13 @@ class _ArtistLoadingScaffold extends StatelessWidget {
             leadingWidth: kToolbarHeight + edgeInset,
             leading: Padding(
               padding: EdgeInsets.only(left: edgeInset),
-              child: IconButton(
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                icon: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.arrow_back, color: Colors.white),
+              // Centered so the tight leading slot cannot stretch it.
+              child: Center(
+                child: HeaderCircleButton(
+                  icon: Icons.arrow_back,
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  onPressed: () => Navigator.pop(context),
                 ),
-                onPressed: () => Navigator.pop(context),
               ),
             ),
           ),

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -128,7 +129,13 @@ class AlbumDetailHeader extends StatelessWidget {
     }
     final scheme = Theme.of(context).colorScheme;
     final edgeInset = detailHeaderEdgeInset(context);
-    final artworkSize = MediaQuery.sizeOf(context).width.clamp(0.0, 440.0);
+    final screenSize = MediaQuery.sizeOf(context);
+    // Landscape tablets are short: the artwork also yields to the height so
+    // the title and actions stay on the first screen.
+    final artworkSize = math.min(
+      screenSize.width.clamp(0.0, 440.0),
+      math.max(240.0, screenSize.height * 0.55),
+    );
     final details = _buildMornyeDetails(context);
     Widget toolbar({bool collapsed = true}) => SliverAppBar(
       pinned: true,
@@ -201,6 +208,8 @@ class AlbumDetailHeader extends StatelessWidget {
         ),
         SliverToBoxAdapter(
           child: Stack(
+            // Centers the metadata when it is narrower than the screen.
+            alignment: Alignment.topCenter,
             children: [
               Positioned.fill(
                 child: squareArtwork
@@ -349,9 +358,26 @@ class AlbumDetailHeader extends StatelessWidget {
               if (coverBuilder != null) ...[
                 Builder(
                   builder: (context) {
-                    final coverSize = (constraints.maxWidth * 0.5)
-                        .clamp(150.0, 210.0)
-                        .toDouble();
+                    // Landscape headers are short: the cover also yields to
+                    // the height left below the toolbar once the title,
+                    // details and actions are placed, so it never rises
+                    // into the status bar or toolbar buttons.
+                    final toolbarBottom =
+                        MediaQuery.paddingOf(context).top + kToolbarHeight;
+                    final detailsHeight =
+                        40 +
+                        20 +
+                        58 +
+                        (subtitle == null ? 0 : 28) +
+                        (meta == null ? 0 : 34) +
+                        (actions == null ? 0 : 64);
+                    final coverSize = math.min(
+                      (constraints.maxWidth * 0.5).clamp(150.0, 210.0),
+                      math.max(
+                        96.0,
+                        expandedHeight - toolbarBottom - detailsHeight,
+                      ),
+                    );
                     // Material uses the expressive extra-large corner.
                     final coverRadius = context.isMornye
                         ? tokens.radiusControl

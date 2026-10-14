@@ -14,6 +14,8 @@ import 'package:spotiflac_android/screens/track_metadata_screen.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 
+import 'support/app_icon_finder.dart';
+
 class _Extensions extends ExtensionNotifier {
   @override
   ExtensionState build() => const ExtensionState(
@@ -163,7 +165,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      await tester.tap(find.byIcon(Icons.more_vert));
+      await tester.tap(findAppIcon(Icons.more_vert));
       await tester.pumpAndSettle();
       expect(find.text('Edit audio file'), findsNothing);
       expect(find.text('Similar songs in Library'), findsNothing);
