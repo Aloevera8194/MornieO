@@ -854,9 +854,7 @@ class MusicPlayerHandler extends BaseAudioHandler
           MediaAction.skipToPrevious,
           MediaAction.skipToNext,
         },
-        androidCompactActionIndices: _runtime.notification.mornye
-            ? const [1, 2, 3]
-            : const [0, 1, 2],
+        androidCompactActionIndices: const [1, 2, 3],
         processingState: (loading == true)
             ? AudioProcessingState.loading
             : _mapProcessingState(state),
@@ -884,9 +882,7 @@ class MusicPlayerHandler extends BaseAudioHandler
           item: mediaItem.value,
           shuffle: _shuffle,
         ),
-        androidCompactActionIndices: _runtime.notification.mornye
-            ? const [1, 2, 3]
-            : const [0, 1, 2],
+        androidCompactActionIndices: const [1, 2, 3],
       ),
     );
   }

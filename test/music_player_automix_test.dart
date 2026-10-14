@@ -1058,7 +1058,7 @@ void main() {
     );
   }
 
-  test('Mornye notification follows theme and keeps transport state', () async {
+  test('notification actions survive theme changes', () async {
     await handler.restoreSession(
       items: _tracks,
       index: 0,
@@ -1090,18 +1090,35 @@ void main() {
       PlaybackNotification.shuffleAction,
     );
     expect(state.androidCompactActionIndices, [1, 2, 3]);
+    expect(state.controls[1].androidIcon, 'drawable/ic_widget_previous');
+    expect(state.controls[2].androidIcon, 'drawable/ic_widget_play');
+    expect(state.controls[3].androidIcon, 'drawable/ic_widget_next');
 
     configurePlaybackNotification(
-      presentation: const PlaybackNotification(),
+      presentation: const PlaybackNotification(
+        mediaId: 'one',
+        source: '/one.flac',
+        loved: true,
+      ),
       toggleFavorite: (_) async => false,
     );
-    expect(handler.playbackState.value.controls, [
+    final material = handler.playbackState.value;
+    expect(
+      material.controls.first.customAction?.name,
+      PlaybackNotification.favoriteAction,
+    );
+    expect(material.controls.first.androidIcon, contains('star_filled'));
+    expect(material.controls.sublist(1, 4), [
       MediaControl.skipToPrevious,
       MediaControl.play,
       MediaControl.skipToNext,
     ]);
-    expect(handler.playbackState.value.androidCompactActionIndices, [0, 1, 2]);
-    expect(handler.playbackState.value.updatePosition, state.updatePosition);
+    expect(
+      material.controls.last.customAction?.name,
+      PlaybackNotification.shuffleAction,
+    );
+    expect(material.androidCompactActionIndices, [1, 2, 3]);
+    expect(material.updatePosition, state.updatePosition);
     handler.playbackState.add(
       PlaybackState(
         playing: true,
@@ -1122,10 +1139,10 @@ void main() {
   });
 
   test(
-    'notification shuffle toggles queue order without restarting audio',
+    'Material notification shuffle toggles queue order without restarting audio',
     () async {
       configurePlaybackNotification(
-        presentation: const PlaybackNotification(mornye: true),
+        presentation: const PlaybackNotification(),
         toggleFavorite: (_) async => false,
       );
       await handler.setQueueAndPlay(_tracks, initialIndex: 1);
@@ -1378,11 +1395,10 @@ void main() {
     },
   );
 
-  test('notification favorite refreshes without a UI rebuild', () async {
+  test('Material favorites refresh without a UI rebuild', () async {
     var loved = false;
     configurePlaybackNotification(
       presentation: const PlaybackNotification(
-        mornye: true,
         favoriteLabel: 'Add to Loved',
         unfavoriteLabel: 'Remove from Loved',
       ),
