@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/player_playback_controls.dart';
@@ -11,7 +15,7 @@ import 'package:spotiflac_android/widgets/player_queue_dismissible.dart';
 Future<void> showPlayerQueueSheet(
   BuildContext context,
   ColorScheme colorScheme,
-) => showModalBottomSheet<void>(
+) => showAppModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
   showDragHandle: true,
@@ -38,12 +42,20 @@ class PlayerQueueSheet extends ConsumerWidget {
   final ColorScheme colorScheme;
   final ScrollController scrollController;
 
+  static const _rowRadius = 16.0;
+  static final _liftSpring = SpringCurve(M3EMotion.expressiveSpatialFast);
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final queue = ref.watch(playQueueProvider).value ?? const [];
     final current = ref.watch(currentMediaItemProvider).value;
     final controller = ref.read(musicPlayerControllerProvider);
     final textTheme = Theme.of(context).textTheme;
+    final expressive = materialExpressiveEnabled(context);
+    final artworkMotion = AppMotion.spatial(
+      context,
+      const AppMotionSpec(Duration.zero, Curves.linear),
+    );
     return Column(
       children: [
         Padding(
@@ -112,11 +124,31 @@ class PlayerQueueSheet extends ConsumerWidget {
                 controller.moveQueueItem(oldIndex, newIndex);
               },
               proxyDecorator: (child, index, animation) {
-                return Material(
-                  elevation: 4,
-                  color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                if (!expressive) {
+                  return Material(
+                    elevation: 4,
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(12),
+                    child: child,
+                  );
+                }
+                // The lifted row springs up slightly larger and rounder.
+                return AnimatedBuilder(
+                  animation: animation,
                   child: child,
+                  builder: (context, child) {
+                    final t = _liftSpring.transform(animation.value);
+                    return Transform.scale(
+                      scale: 1 + 0.03 * t,
+                      child: Material(
+                        elevation: 6 * t.clamp(0.0, 1.0),
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(_rowRadius + 8 * t),
+                        clipBehavior: Clip.antiAlias,
+                        child: child,
+                      ),
+                    );
+                  },
                 );
               },
               itemBuilder: (context, i) {
@@ -130,9 +162,23 @@ class PlayerQueueSheet extends ConsumerWidget {
                     selected: isCurrent,
                     selectedTileColor: colorScheme.secondaryContainer
                         .withValues(alpha: 0.55),
+                    shape: expressive
+                        ? RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(_rowRadius),
+                          )
+                        : null,
                     contentPadding: const EdgeInsets.only(left: 16, right: 4),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                    // The playing song's artwork rounds into a circle.
+                    leading: TweenAnimationBuilder<double>(
+                      tween: Tween(end: expressive && isCurrent ? 22 : 8),
+                      duration: artworkMotion.duration,
+                      curve: artworkMotion.curve,
+                      builder: (context, radius, child) => ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                          radius.clamp(0.0, 22.0),
+                        ),
+                        child: child,
+                      ),
                       child: SizedBox.square(
                         dimension: 44,
                         child: PlayerArtwork(

@@ -1,6 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
@@ -10,7 +13,9 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
 import 'package:spotiflac_android/providers/player_artwork_video_provider.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/screens/now_playing_screen.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
@@ -66,6 +71,7 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
     final controller = ref.read(musicPlayerControllerProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final mornye = context.isMornye;
+    final expressive = materialExpressiveEnabled(context);
     final compact = mornye && widget.compact;
     // Frosted and flat glass levels run on constrained Android hardware. They
     // skip keeping a paused video decoder for the full player's motion cover,
@@ -137,6 +143,7 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
                   _MiniPlayerProgress(
                     duration: mediaItem.duration ?? Duration.zero,
                     backgroundColor: colorScheme.surfaceContainerHighest,
+                    playing: isPlaying,
                   ),
                 Padding(
                   padding: EdgeInsets.symmetric(
@@ -149,7 +156,7 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
                         tag: kNowPlayingArtworkHeroTag,
                         child: ClipRRect(
                           key: _artworkKey,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(mornye ? 6 : 12),
                           child: SizedBox(
                             width: context.tokens.coverMini,
                             height: context.tokens.coverMini,
@@ -209,29 +216,58 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
                           ],
                         ),
                       ),
-                      AppIconButton(
-                        color: mornye ? colorScheme.onSurface : null,
-                        tooltip: isPlaying
-                            ? context.l10n.actionPause
-                            : context.l10n.tooltipPlay,
-                        icon: isLoading
-                            ? const AppLoadingIndicator(
-                                size: 20,
-                                strokeWidth: 2.5,
-                              )
-                            : AppIcon(
-                                mornye
-                                    ? (isPlaying
-                                          ? CupertinoIcons.pause_fill
-                                          : CupertinoIcons.play_fill)
-                                    : (isPlaying
-                                          ? Icons.pause
-                                          : Icons.play_arrow),
-                              ),
-                        onPressed: isLoading
-                            ? null
-                            : () => controller.togglePlayPause(isPlaying),
-                      ),
+                      if (expressive)
+                        // Round while paused, square while playing, like the
+                        // full player's play-pause.
+                        AppIconButton.filled(
+                          tooltip: isPlaying
+                              ? context.l10n.actionPause
+                              : context.l10n.tooltipPlay,
+                          isSelected: isPlaying,
+                          style: IconButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                          ),
+                          icon: isLoading
+                              ? AppLoadingIndicator(
+                                  size: 20,
+                                  color: colorScheme.onPrimary,
+                                )
+                              : const AppIcon(Icons.play_arrow),
+                          selectedIcon: isLoading
+                              ? AppLoadingIndicator(
+                                  size: 20,
+                                  color: colorScheme.onPrimary,
+                                )
+                              : const AppIcon(Icons.pause),
+                          onPressed: isLoading
+                              ? null
+                              : () => controller.togglePlayPause(isPlaying),
+                        )
+                      else
+                        AppIconButton(
+                          color: mornye ? colorScheme.onSurface : null,
+                          tooltip: isPlaying
+                              ? context.l10n.actionPause
+                              : context.l10n.tooltipPlay,
+                          icon: isLoading
+                              ? const AppLoadingIndicator(
+                                  size: 20,
+                                  strokeWidth: 2.5,
+                                )
+                              : AppIcon(
+                                  mornye
+                                      ? (isPlaying
+                                            ? CupertinoIcons.pause_fill
+                                            : CupertinoIcons.play_fill)
+                                      : (isPlaying
+                                            ? Icons.pause
+                                            : Icons.play_arrow),
+                                ),
+                          onPressed: isLoading
+                              ? null
+                              : () => controller.togglePlayPause(isPlaying),
+                        ),
                       if (!compact)
                         AppIconButton(
                           color: mornye ? colorScheme.onSurface : null,
@@ -269,10 +305,12 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
 class _MiniPlayerProgress extends ConsumerWidget {
   final Duration duration;
   final Color backgroundColor;
+  final bool playing;
 
   const _MiniPlayerProgress({
     required this.duration,
     required this.backgroundColor,
+    required this.playing,
   });
 
   @override
@@ -282,10 +320,40 @@ class _MiniPlayerProgress extends ConsumerWidget {
     final progress = durationMs > 0
         ? (positionMs / durationMs).clamp(0.0, 1.0)
         : 0.0;
-    return LinearProgressIndicator(
-      value: progress,
-      minHeight: 2,
-      backgroundColor: backgroundColor,
+    if (!materialExpressiveEnabled(context)) {
+      return LinearProgressIndicator(
+        value: progress,
+        minHeight: 2,
+        backgroundColor: backgroundColor,
+      );
+    }
+    final motion = AppMotion.effects(
+      context,
+      const AppMotionSpec(Duration(milliseconds: 300), Curves.easeOut),
+    );
+    // The wave settles flat while paused; its ticker stops once flat so an
+    // idle mini player does not repaint every frame.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(end: playing ? 1 : 0),
+        duration: motion.duration,
+        curve: motion.curve,
+        builder: (context, amplitude, _) => TickerMode(
+          enabled: amplitude > 0,
+          child: MaterialExpressiveScope(
+            child: M3EProgressIndicator.linearWavy(
+              value: progress,
+              linearSize: M3EProgressIndicatorSize.s,
+              trackColor: backgroundColor,
+              // Taper toward both ends instead of the theme's hard cutoff.
+              amplitudeForProgress: (value) =>
+                  amplitude *
+                  (math.min(value, 1 - value) / 0.05).clamp(0.0, 1.0),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

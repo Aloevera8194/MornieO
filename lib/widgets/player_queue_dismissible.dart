@@ -55,7 +55,8 @@ class _PlayerQueueDismissibleState extends State<PlayerQueueDismissible> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.error,
-              borderRadius: BorderRadius.circular(12),
+              // Matches the queue sheet's row corners.
+              borderRadius: BorderRadius.circular(16),
             ),
             child: AppIcon(
               Icons.delete_outline,
