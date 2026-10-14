@@ -933,10 +933,15 @@ class _MainShellState extends ConsumerState<MainShell>
 
     final screenSize = MediaQuery.sizeOf(context);
     final isTablet = screenSize.shortestSide >= 600;
-    // Tablets remain touch-first in both orientations. Reserving the rail for
-    // desktop-width windows keeps all primary destinations at the reachable
-    // bottom edge on iPad and large Android tablets.
-    final useNavigationRail = useNavigationRailForWidth(screenSize.width);
+    // Material follows its expanded window class: landscape tablets get the
+    // rail, portrait tablets keep the bottom bar. Mornye keeps a bottom tab
+    // bar on tablets, compact and centered once the window is expanded, and
+    // reserves the rail for desktop-width windows.
+    final useNavigationRail = context.isMornye
+        ? useNavigationRailForWidth(screenSize.width)
+        : useMaterialNavigationRailForWidth(screenSize.width);
+    final compactMornyeChrome =
+        context.isMornye && screenSize.width >= expandedLayoutBreakpoint;
     final canMinimizeChrome =
         context.isMornye &&
         !useNavigationRail &&
@@ -1008,41 +1013,36 @@ class _MainShellState extends ConsumerState<MainShell>
                     SafeArea(
                       right: false,
                       bottom: false,
-                      // The rail needs ~300dp of height for four labeled
-                      // destinations; on short viewports (landscape phone with
-                      // the mini player showing) it must scroll, not overflow.
-                      child: LayoutBuilder(
-                        builder: (context, constraints) =>
-                            SingleChildScrollView(
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: constraints.maxHeight,
-                                ),
-                                child: IntrinsicHeight(
-                                  child: NavigationRail(
-                                    selectedIndex: selectedDestination,
-                                    onDestinationSelected: _onNavTap,
-                                    labelType: NavigationRailLabelType.all,
-                                    backgroundColor: Theme.of(
-                                      context,
-                                    ).colorScheme.surfaceContainer,
-                                    destinations: [
-                                      for (final destination in destinations)
-                                        NavigationRailDestination(
-                                          icon: destination.icon,
-                                          selectedIcon:
-                                              destination.selectedIcon,
-                                          label: Text(destination.label),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                      child: ExpressiveNavigationRail(
+                        selectedIndex: selectedDestination,
+                        onDestinationSelected: _onNavTap,
+                        backgroundColor: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainer,
+                        destinations: destinations,
                       ),
                     ),
                     const VerticalDivider(width: 1),
-                    Expanded(child: pageView),
+                    // Width-based layout (centered columns, grids) measures
+                    // the space beside the rail rather than the whole screen.
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final mediaQuery = MediaQuery.of(context);
+                          return MediaQuery(
+                            data: mediaQuery
+                                .copyWith(
+                                  size: Size(
+                                    constraints.maxWidth,
+                                    mediaQuery.size.height,
+                                  ),
+                                )
+                                .removePadding(removeLeft: true),
+                            child: pageView,
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 )
               : pageView,
@@ -1069,20 +1069,34 @@ class _MainShellState extends ConsumerState<MainShell>
                   child: SafeArea(
                     top: false,
                     minimum: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                    child: useNavigationRail
-                        ? const MiniPlayer()
-                        : ValueListenableBuilder<bool>(
-                            valueListenable: _mornyeChrome,
-                            builder: (context, collapsed, _) => MornyeBottomBar(
-                              collapsed: canMinimizeChrome && collapsed,
-                              destinations: destinations,
-                              selectedIndex: selectedDestination,
-                              onSelected: _onNavTap,
-                              onHome: () => _onNavTap(0),
-                              onSearch: ShellNavigationService.requestSearch,
-                              blurEnabled: ref.watch(mornyeBlurEnabledProvider),
-                            ),
-                          ),
+                    // iPadOS-style chrome: one compact, centered pill rather
+                    // than a bar spread across a landscape tablet.
+                    child: Center(
+                      heightFactor: 1,
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: compactMornyeChrome ? 600 : double.infinity,
+                        ),
+                        child: useNavigationRail
+                            ? const MiniPlayer()
+                            : ValueListenableBuilder<bool>(
+                                valueListenable: _mornyeChrome,
+                                builder: (context, collapsed, _) =>
+                                    MornyeBottomBar(
+                                      collapsed: canMinimizeChrome && collapsed,
+                                      destinations: destinations,
+                                      selectedIndex: selectedDestination,
+                                      onSelected: _onNavTap,
+                                      onHome: () => _onNavTap(0),
+                                      onSearch:
+                                          ShellNavigationService.requestSearch,
+                                      blurEnabled: ref.watch(
+                                        mornyeBlurEnabledProvider,
+                                      ),
+                                    ),
+                              ),
+                      ),
+                    ),
                   ),
                 );
               }

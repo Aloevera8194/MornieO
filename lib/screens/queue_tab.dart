@@ -1501,6 +1501,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         _searchQuery.isNotEmpty || _searchController.text.trim().isNotEmpty;
     final shouldShowLibraryControls =
         hasLibraryContent || hasAnyLibraryItems || hasActiveSearch;
+    final listInset = wideListInset(context);
     if (!searchingLibrary) {
       _scheduleBlankLibraryRepair(
         hasQueueItems: hasQueueItems,
@@ -1553,7 +1554,10 @@ class _QueueTabState extends ConsumerState<QueueTab> {
             child: NestedScrollView(
               headerSliverBuilder: (context, innerBoxIsScrolled) => [
                 if (widget.librarySection == null)
-                  AppSliverHeader.tabRoot(title: context.l10n.navLibrary)
+                  AppSliverHeader.tabRoot(
+                    title: context.l10n.navLibrary,
+                    alignToContent: true,
+                  )
                 else
                   AppSliverHeader.page(
                     title: widget.librarySection == 'playlists'
@@ -1564,7 +1568,12 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                 if (shouldShowLibraryControls || hasQueueItems)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                      padding: EdgeInsets.fromLTRB(
+                        16 + listInset,
+                        8,
+                        16 + listInset,
+                        0,
+                      ),
                       child: GestureDetector(
                         onTap: () {},
                         child: AppSearchField(
@@ -1587,7 +1596,12 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                     widget.librarySection == null)
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                      padding: EdgeInsets.fromLTRB(
+                        16 + listInset,
+                        12,
+                        16 + listInset,
+                        4,
+                      ),
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           final activePage = _pageIndexFor(historyFilterMode);
@@ -1756,7 +1770,12 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                   )
                 : Padding(
                     key: const ValueKey('dl_header'),
-                    padding: const EdgeInsets.fromLTRB(16, 4, 4, 4),
+                    padding: EdgeInsets.fromLTRB(
+                      16 + wideListInset(context),
+                      4,
+                      4 + wideListInset(context),
+                      4,
+                    ),
                     child: Row(
                       children: [
                         AppIcon(

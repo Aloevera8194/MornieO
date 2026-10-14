@@ -8,6 +8,7 @@ import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/providers/library_collections_provider.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/download_service_picker.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
@@ -308,9 +309,11 @@ Widget buildTrackListFooter(
   final countText = context.l10n.tracksCount(tracks.length);
   lines.add(totalMinutes > 0 ? '$countText • $totalMinutes min' : countText);
 
+  // Lines up with the track list, which centers on tablets.
+  final inset = wideListInset(context);
   return SliverToBoxAdapter(
     child: Padding(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
+      padding: EdgeInsets.fromLTRB(20 + inset, 8, 20 + inset, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

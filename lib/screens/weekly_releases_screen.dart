@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/weekly_releases_provider.dart';
+import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
@@ -46,96 +47,107 @@ class _WeeklyReleasesScreenState extends ConsumerState<WeeklyReleasesScreen> {
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             AppSliverHeader.page(title: context.l10n.weeklyReleases),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(context.l10n.weeklyReleasesDescription),
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      children: [
-                        for (final days in [7, 30])
-                          AppChoiceChip(
-                            label: Text(context.l10n.listeningStatsDays(days)),
-                            selected: _days == days,
-                            onSelected: (_) => setState(() => _days = days),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            ...feed.when(
-              loading: () => [
-                const SliverToBoxAdapter(
-                  child: Center(child: AppLoadingIndicator()),
-                ),
-              ],
-              error: (_, _) => [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(context.l10n.weeklyReleasesLoadError),
-                  ),
-                ),
-              ],
-              data: (data) {
-                final releases = data.inPeriod(DateTime.now(), _days);
-                return [
-                  if (data.unavailableArtists.isNotEmpty)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          '${context.l10n.weeklyReleasesUnavailable}\n'
-                          '${data.unavailableArtists.join(', ')}',
-                        ),
-                      ),
-                    ),
-                  if (releases.isEmpty)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(context.l10n.weeklyReleasesEmpty),
-                      ),
-                    ),
-                  SliverList.list(
-                    children: [
-                      for (final release in releases)
-                        ListTile(
-                          leading: release.coverUrl == null
-                              ? const SizedBox(
-                                  width: 56,
-                                  height: 56,
-                                  child: Icon(Icons.album_outlined),
-                                )
-                              : CachedCoverImage(
-                                  imageUrl: release.coverUrl!,
-                                  width: 56,
-                                  height: 56,
-                                  borderRadius: BorderRadius.circular(8),
+            // Centered at the reading width on tablets, under the title.
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+              sliver: SliverMainAxisGroup(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(context.l10n.weeklyReleasesDescription),
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 8,
+                            children: [
+                              for (final days in [7, 30])
+                                AppChoiceChip(
+                                  label: Text(
+                                    context.l10n.listeningStatsDays(days),
+                                  ),
+                                  selected: _days == days,
+                                  onSelected: (_) =>
+                                      setState(() => _days = days),
                                 ),
-                          title: Text(release.name),
-                          subtitle: Text(
-                            '${release.artist}\n${DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag()).format(release.date)}',
+                            ],
                           ),
-                          onTap: () => navigateToAlbum(
-                            context,
-                            albumName: release.name,
-                            albumId: release.id,
-                            artistName: release.artist,
-                            coverUrl: release.coverUrl,
-                            extensionId: release.providerId,
-                          ),
-                        ),
-                    ],
+                        ],
+                      ),
+                    ),
                   ),
-                ];
-              },
+                  ...feed.when(
+                    loading: () => [
+                      const SliverToBoxAdapter(
+                        child: Center(child: AppLoadingIndicator()),
+                      ),
+                    ],
+                    error: (_, _) => [
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Text(context.l10n.weeklyReleasesLoadError),
+                        ),
+                      ),
+                    ],
+                    data: (data) {
+                      final releases = data.inPeriod(DateTime.now(), _days);
+                      return [
+                        if (data.unavailableArtists.isNotEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text(
+                                '${context.l10n.weeklyReleasesUnavailable}\n'
+                                '${data.unavailableArtists.join(', ')}',
+                              ),
+                            ),
+                          ),
+                        if (releases.isEmpty)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Text(context.l10n.weeklyReleasesEmpty),
+                            ),
+                          ),
+                        SliverList.list(
+                          children: [
+                            for (final release in releases)
+                              ListTile(
+                                leading: release.coverUrl == null
+                                    ? const SizedBox(
+                                        width: 56,
+                                        height: 56,
+                                        child: Icon(Icons.album_outlined),
+                                      )
+                                    : CachedCoverImage(
+                                        imageUrl: release.coverUrl!,
+                                        width: 56,
+                                        height: 56,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                title: Text(release.name),
+                                subtitle: Text(
+                                  '${release.artist}\n${DateFormat.yMMMd(Localizations.localeOf(context).toLanguageTag()).format(release.date)}',
+                                ),
+                                onTap: () => navigateToAlbum(
+                                  context,
+                                  albumName: release.name,
+                                  albumId: release.id,
+                                  artistName: release.artist,
+                                  coverUrl: release.coverUrl,
+                                  extensionId: release.providerId,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ];
+                    },
+                  ),
+                ],
+              ),
             ),
             SliverToBoxAdapter(
               child: SizedBox(height: context.navBarBottomInset),

@@ -9,6 +9,7 @@ import 'package:spotiflac_android/services/music_player_service.dart';
 import 'package:spotiflac_android/services/network_storage_service.dart';
 import 'package:spotiflac_android/services/network_storage_error.dart';
 import 'package:spotiflac_android/services/network_certificate.dart';
+import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -281,207 +282,218 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
               ),
             ],
           ),
-          if (_loading || _starting)
-            SliverToBoxAdapter(child: _NetworkProgress()),
-          if (!_loading &&
-              !_failed &&
-              connection != null &&
-              connection.protocol != NetworkProtocol.http)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    AppActionButton(
-                      onPressed: _adding || _added ? null : _addToLibrary,
-                      icon: Icon(
-                        _added ? Icons.check : Icons.library_add_outlined,
+          // Centered at the reading width on tablets, under the title.
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+            sliver: SliverMainAxisGroup(
+              slivers: [
+                if (_loading || _starting)
+                  SliverToBoxAdapter(child: _NetworkProgress()),
+                if (!_loading &&
+                    !_failed &&
+                    connection != null &&
+                    connection.protocol != NetworkProtocol.http)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          AppActionButton(
+                            onPressed: _adding || _added ? null : _addToLibrary,
+                            icon: Icon(
+                              _added ? Icons.check : Icons.library_add_outlined,
+                            ),
+                            label: Text(
+                              _added
+                                  ? context.l10n.networkLibraryAdded
+                                  : context.l10n.networkAddToLibrary,
+                            ),
+                            tonal: true,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            context.l10n.networkLibraryDescription,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          const SizedBox(height: 12),
+                          AppActionButton(
+                            onPressed:
+                                _selectingDestination || isDownloadDestination
+                                ? null
+                                : _useForDownloads,
+                            icon: Icon(
+                              isDownloadDestination
+                                  ? Icons.check
+                                  : Icons.download_outlined,
+                            ),
+                            label: Text(
+                              isDownloadDestination
+                                  ? context.l10n.networkDownloadSelected
+                                  : context.l10n.networkUseForDownloads,
+                            ),
+                            tonal: true,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            context.l10n.networkDownloadDescription,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          if (_selectingDestination)
+                            const AppProgressIndicator.linear(),
+                          if (_adding)
+                            const Padding(
+                              padding: EdgeInsets.only(top: 8),
+                              child: AppProgressIndicator.linear(),
+                            ),
+                        ],
                       ),
-                      label: Text(
-                        _added
-                            ? context.l10n.networkLibraryAdded
-                            : context.l10n.networkAddToLibrary,
-                      ),
-                      tonal: true,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      context.l10n.networkLibraryDescription,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    const SizedBox(height: 12),
-                    AppActionButton(
-                      onPressed: _selectingDestination || isDownloadDestination
-                          ? null
-                          : _useForDownloads,
-                      icon: Icon(
-                        isDownloadDestination
-                            ? Icons.check
-                            : Icons.download_outlined,
+                  ),
+                if (_failed)
+                  SliverToBoxAdapter(
+                    child: _NetworkMessage(
+                      icon: context.isMornye
+                          ? CupertinoIcons.wifi_exclamationmark
+                          : Icons.wifi_off_rounded,
+                      message: _networkErrorMessage(context, _failure),
+                      action: AppActionButton(
+                        onPressed: _load,
+                        icon: const Icon(Icons.refresh),
+                        label: Text(context.l10n.dialogRetry),
+                        tonal: true,
                       ),
-                      label: Text(
-                        isDownloadDestination
-                            ? context.l10n.networkDownloadSelected
-                            : context.l10n.networkUseForDownloads,
-                      ),
-                      tonal: true,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      context.l10n.networkDownloadDescription,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                    if (_selectingDestination)
-                      const AppProgressIndicator.linear(),
-                    if (_adding)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8),
-                        child: AppProgressIndicator.linear(),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          if (_failed)
-            SliverToBoxAdapter(
-              child: _NetworkMessage(
-                icon: context.isMornye
-                    ? CupertinoIcons.wifi_exclamationmark
-                    : Icons.wifi_off_rounded,
-                message: _networkErrorMessage(context, _failure),
-                action: AppActionButton(
-                  onPressed: _load,
-                  icon: const Icon(Icons.refresh),
-                  label: Text(context.l10n.dialogRetry),
-                  tonal: true,
-                ),
-              ),
-            ),
-          if (!_loading && !_failed && connection == null) ...[
-            SliverToBoxAdapter(
-              child: _NetworkMessage(
-                icon: context.isMornye
-                    ? CupertinoIcons.cloud
-                    : Icons.dns_outlined,
-                message: context.l10n.networkStorageDescription,
-                action: AppActionButton(
-                  onPressed: () => _edit(),
-                  icon: const Icon(Icons.add),
-                  label: Text(context.l10n.networkAddConnection),
-                ),
-              ),
-            ),
-            if (_connections.isNotEmpty)
-              SliverToBoxAdapter(
-                child: SettingsSectionHeader(
-                  title: context.l10n.networkConnections,
-                ),
-              ),
-            SliverList.builder(
-              itemCount: _connections.length,
-              itemBuilder: (context, index) {
-                final c = _connections[index];
-                return SettingsGroup(
-                  children: [
-                    SettingsItem(
+                  ),
+                if (!_loading && !_failed && connection == null) ...[
+                  SliverToBoxAdapter(
+                    child: _NetworkMessage(
                       icon: context.isMornye
                           ? CupertinoIcons.cloud
                           : Icons.dns_outlined,
-                      showIconInMornye: true,
-                      title: c.name,
-                      subtitle:
-                          '${_protocolLabel(c.protocol)} · ${c.root.host}',
-                      onTap: () => _open(c),
-                      showDivider: false,
-                      trailing: _NetworkIconAction(
-                        tooltip: context.l10n.networkEditConnection,
-                        onPressed: () => _edit(c),
-                        icon: Icons.edit_outlined,
-                        cupertinoIcon: CupertinoIcons.pencil,
+                      message: context.l10n.networkStorageDescription,
+                      action: AppActionButton(
+                        onPressed: () => _edit(),
+                        icon: const Icon(Icons.add),
+                        label: Text(context.l10n.networkAddConnection),
                       ),
                     ),
-                  ],
-                );
-              },
-            ),
-          ],
-          if (!_loading && !_failed && connection != null) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
-                child: Text(
-                  '${_protocolLabel(connection.protocol)} · ${connection.root.host}'
-                  '\n/${widget.path}',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                ),
-              ),
-            ),
-            if (visible.isEmpty)
-              SliverToBoxAdapter(
-                child: _NetworkMessage(
-                  icon: context.isMornye
-                      ? CupertinoIcons.folder
-                      : Icons.folder_open_rounded,
-                  message: context.l10n.networkNoFiles,
-                ),
-              ),
-            SliverList.builder(
-              itemCount: visible.length,
-              itemBuilder: (context, index) {
-                final entry = visible[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Material(
-                    color: settingsGroupColor(context),
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(
-                        index == 0
-                            ? (context.isMornye
-                                  ? 28
-                                  : context.tokens.radiusCard)
-                            : 0,
-                      ),
-                      bottom: Radius.circular(
-                        index == visible.length - 1
-                            ? (context.isMornye
-                                  ? 28
-                                  : context.tokens.radiusCard)
-                            : 0,
+                  if (_connections.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: SettingsSectionHeader(
+                        title: context.l10n.networkConnections,
                       ),
                     ),
-                    clipBehavior: Clip.antiAlias,
-                    child: SettingsItem(
-                      icon: entry.directory
-                          ? Icons.folder_outlined
-                          : Icons.music_note,
-                      showIconInMornye: true,
-                      title: entry.name,
-                      subtitle: entry.directory
-                          ? null
-                          : entry.extension.toUpperCase(),
-                      showDivider: index != visible.length - 1,
-                      trailing: entry.directory
-                          ? null
-                          : _NetworkIconAction(
-                              tooltip: context.l10n.tooltipPlay,
-                              icon: Icons.play_arrow_rounded,
-                              cupertinoIcon: CupertinoIcons.play_fill,
-                              onPressed: _starting ? null : () => _play(entry),
+                  SliverList.builder(
+                    itemCount: _connections.length,
+                    itemBuilder: (context, index) {
+                      final c = _connections[index];
+                      return SettingsGroup(
+                        children: [
+                          SettingsItem(
+                            icon: context.isMornye
+                                ? CupertinoIcons.cloud
+                                : Icons.dns_outlined,
+                            showIconInMornye: true,
+                            title: c.name,
+                            subtitle:
+                                '${_protocolLabel(c.protocol)} · ${c.root.host}',
+                            onTap: () => _open(c),
+                            showDivider: false,
+                            trailing: _NetworkIconAction(
+                              tooltip: context.l10n.networkEditConnection,
+                              onPressed: () => _edit(c),
+                              icon: Icons.edit_outlined,
+                              cupertinoIcon: CupertinoIcons.pencil,
                             ),
-                      onTap: _starting
-                          ? null
-                          : () => entry.directory
-                                ? _open(connection, entry.path)
-                                : _play(entry),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+                if (!_loading && !_failed && connection != null) ...[
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+                      child: Text(
+                        '${_protocolLabel(connection.protocol)} · ${connection.root.host}'
+                        '\n/${widget.path}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
-                );
-              },
+                  if (visible.isEmpty)
+                    SliverToBoxAdapter(
+                      child: _NetworkMessage(
+                        icon: context.isMornye
+                            ? CupertinoIcons.folder
+                            : Icons.folder_open_rounded,
+                        message: context.l10n.networkNoFiles,
+                      ),
+                    ),
+                  SliverList.builder(
+                    itemCount: visible.length,
+                    itemBuilder: (context, index) {
+                      final entry = visible[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Material(
+                          color: settingsGroupColor(context),
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(
+                              index == 0
+                                  ? (context.isMornye
+                                        ? 28
+                                        : context.tokens.radiusCard)
+                                  : 0,
+                            ),
+                            bottom: Radius.circular(
+                              index == visible.length - 1
+                                  ? (context.isMornye
+                                        ? 28
+                                        : context.tokens.radiusCard)
+                                  : 0,
+                            ),
+                          ),
+                          clipBehavior: Clip.antiAlias,
+                          child: SettingsItem(
+                            icon: entry.directory
+                                ? Icons.folder_outlined
+                                : Icons.music_note,
+                            showIconInMornye: true,
+                            title: entry.name,
+                            subtitle: entry.directory
+                                ? null
+                                : entry.extension.toUpperCase(),
+                            showDivider: index != visible.length - 1,
+                            trailing: entry.directory
+                                ? null
+                                : _NetworkIconAction(
+                                    tooltip: context.l10n.tooltipPlay,
+                                    icon: Icons.play_arrow_rounded,
+                                    cupertinoIcon: CupertinoIcons.play_fill,
+                                    onPressed: _starting
+                                        ? null
+                                        : () => _play(entry),
+                                  ),
+                            onTap: _starting
+                                ? null
+                                : () => entry.directory
+                                      ? _open(connection, entry.path)
+                                      : _play(entry),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ],
             ),
-          ],
+          ),
           const NavBarSliverSpacer(),
         ],
       ),
@@ -696,157 +708,162 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
               ? context.l10n.networkAddConnection
               : context.l10n.networkEditConnection,
         ),
-        SliverToBoxAdapter(
-          child: Form(
-            key: _form,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                SettingsSectionHeader(title: context.l10n.networkProtocol),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: AbsorbPointer(
-                    absorbing: _busy,
-                    child: context.isMornye
-                        ? MornyeSegmentedControl(
-                            labels: NetworkProtocol.values
-                                .map(_protocolLabel)
-                                .toList(),
-                            selectedIndex: _protocol.index,
-                            onChanged: (index) => setState(
-                              () => _protocol = NetworkProtocol.values[index],
-                            ),
-                          )
-                        : Row(
-                            children: [
-                              for (final protocol in NetworkProtocol.values)
-                                Expanded(
-                                  child: Padding(
-                                    padding: EdgeInsets.only(
-                                      right: protocol == NetworkProtocol.http
-                                          ? 0
-                                          : 8,
-                                    ),
-                                    child: SettingsChoiceChip(
-                                      label: protocol == NetworkProtocol.http
-                                          ? 'HTTP(S)'
-                                          : _protocolLabel(protocol),
-                                      isSelected: _protocol == protocol,
-                                      onTap: () =>
-                                          setState(() => _protocol = protocol),
+        SliverPadding(
+          // Centered at the reading width on tablets, under the title.
+          padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+          sliver: SliverToBoxAdapter(
+            child: Form(
+              key: _form,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  SettingsSectionHeader(title: context.l10n.networkProtocol),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: AbsorbPointer(
+                      absorbing: _busy,
+                      child: context.isMornye
+                          ? MornyeSegmentedControl(
+                              labels: NetworkProtocol.values
+                                  .map(_protocolLabel)
+                                  .toList(),
+                              selectedIndex: _protocol.index,
+                              onChanged: (index) => setState(
+                                () => _protocol = NetworkProtocol.values[index],
+                              ),
+                            )
+                          : Row(
+                              children: [
+                                for (final protocol in NetworkProtocol.values)
+                                  Expanded(
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        right: protocol == NetworkProtocol.http
+                                            ? 0
+                                            : 8,
+                                      ),
+                                      child: SettingsChoiceChip(
+                                        label: protocol == NetworkProtocol.http
+                                            ? 'HTTP(S)'
+                                            : _protocolLabel(protocol),
+                                        isSelected: _protocol == protocol,
+                                        onTap: () => setState(
+                                          () => _protocol = protocol,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                  ),
-                ),
-                SettingsSectionHeader(title: context.l10n.networkServer),
-                SettingsGroup(
-                  children: [
-                    _field(
-                      _name,
-                      context.l10n.networkConnectionName,
-                      required: true,
-                    ),
-                    _field(
-                      _address,
-                      context.l10n.networkAddress,
-                      required: true,
-                      hint: _protocol == NetworkProtocol.smb
-                          ? 'smb://server/Music/'
-                          : 'https://server/music/',
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-                SettingsSectionHeader(title: context.l10n.networkCredentials),
-                SettingsGroup(
-                  children: [
-                    _field(_user, context.l10n.networkUsername),
-                    _field(
-                      _password,
-                      context.l10n.networkPassword,
-                      secret: true,
-                    ),
-                    if (_protocol == NetworkProtocol.smb)
-                      _field(_domain, context.l10n.networkDomain),
-                    const SizedBox(height: 12),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(
-                    context.l10n.networkStorageDescription,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ],
+                            ),
                     ),
                   ),
-                ),
-                if (_failed)
-                  _NetworkMessage(
-                    icon: context.isMornye
-                        ? CupertinoIcons.exclamationmark_circle
-                        : Icons.error_outline,
-                    message: switch (_pendingCertificate) {
-                      final certificate? =>
-                        '${context.l10n.networkCertificatePrompt}\n\n'
-                            '${certificate.origin}\nSHA-256:\n'
-                            '${certificate.fingerprint}',
-                      null => _networkErrorMessage(context, _failure),
-                    },
+                  SettingsSectionHeader(title: context.l10n.networkServer),
+                  SettingsGroup(
+                    children: [
+                      _field(
+                        _name,
+                        context.l10n.networkConnectionName,
+                        required: true,
+                      ),
+                      _field(
+                        _address,
+                        context.l10n.networkAddress,
+                        required: true,
+                        hint: _protocol == NetworkProtocol.smb
+                            ? 'smb://server/Music/'
+                            : 'https://server/music/',
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                   ),
-                if (_pendingCertificate != null)
+                  SettingsSectionHeader(title: context.l10n.networkCredentials),
+                  SettingsGroup(
+                    children: [
+                      _field(_user, context.l10n.networkUsername),
+                      _field(
+                        _password,
+                        context.l10n.networkPassword,
+                        secret: true,
+                      ),
+                      if (_protocol == NetworkProtocol.smb)
+                        _field(_domain, context.l10n.networkDomain),
+                      const SizedBox(height: 12),
+                    ],
+                  ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      context.l10n.networkStorageDescription,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  if (_failed)
+                    _NetworkMessage(
+                      icon: context.isMornye
+                          ? CupertinoIcons.exclamationmark_circle
+                          : Icons.error_outline,
+                      message: switch (_pendingCertificate) {
+                        final certificate? =>
+                          '${context.l10n.networkCertificatePrompt}\n\n'
+                              '${certificate.origin}\nSHA-256:\n'
+                              '${certificate.fingerprint}',
+                        null => _networkErrorMessage(context, _failure),
+                      },
+                    ),
+                  if (_pendingCertificate != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                      child: AppActionButton(
+                        onPressed: _busy
+                            ? null
+                            : () {
+                                final certificate = _pendingCertificate!;
+                                _trustedCertificate = certificate.fingerprint;
+                                _trustedOrigin = certificate.origin;
+                                _save();
+                              },
+                        icon: const Icon(Icons.verified_user_outlined),
+                        label: Text(context.l10n.networkTrustCertificate),
+                      ),
+                    ),
+                  if (_busy) _NetworkProgress(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
                     child: AppActionButton(
-                      onPressed: _busy
-                          ? null
-                          : () {
-                              final certificate = _pendingCertificate!;
-                              _trustedCertificate = certificate.fingerprint;
-                              _trustedOrigin = certificate.origin;
-                              _save();
-                            },
-                      icon: const Icon(Icons.verified_user_outlined),
-                      label: Text(context.l10n.networkTrustCertificate),
+                      onPressed: _busy ? null : _save,
+                      icon: const Icon(Icons.check),
+                      label: Text(context.l10n.networkConnectSave),
                     ),
                   ),
-                if (_busy) _NetworkProgress(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 12),
-                  child: AppActionButton(
-                    onPressed: _busy ? null : _save,
-                    icon: const Icon(Icons.check),
-                    label: Text(context.l10n.networkConnectSave),
-                  ),
-                ),
-                if (widget.connection != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                    child: context.isMornye
-                        ? CupertinoButton(
-                            onPressed: _busy ? null : _remove,
-                            child: Text(
-                              context.l10n.networkRemoveConnection,
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
+                  if (widget.connection != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                      child: context.isMornye
+                          ? CupertinoButton(
+                              onPressed: _busy ? null : _remove,
+                              child: Text(
+                                context.l10n.networkRemoveConnection,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
                               ),
+                            )
+                          : ExpressiveButton(
+                              text: true,
+                              onPressed: _busy ? null : _remove,
+                              icon: const Icon(Icons.link_off),
+                              style: TextButton.styleFrom(
+                                foregroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.error,
+                              ),
+                              child: Text(context.l10n.networkRemoveConnection),
                             ),
-                          )
-                        : ExpressiveButton(
-                            text: true,
-                            onPressed: _busy ? null : _remove,
-                            icon: const Icon(Icons.link_off),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Theme.of(
-                                context,
-                              ).colorScheme.error,
-                            ),
-                            child: Text(context.l10n.networkRemoveConnection),
-                          ),
-                  ),
-              ],
+                    ),
+                ],
+              ),
             ),
           ),
         ),

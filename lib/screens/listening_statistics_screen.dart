@@ -8,6 +8,7 @@ import 'package:spotiflac_android/services/listening_statistics.dart';
 import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart'
     show SkeletonBox;
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
@@ -92,91 +93,100 @@ class _ListeningStatisticsScreenState
         child: CustomScrollView(
           slivers: [
             AppSliverHeader.page(title: context.l10n.listeningStats),
-            SliverToBoxAdapter(
-              child: SettingsGroup(
-                children: [
-                  SettingsSwitchItem(
-                    icon: Icons.insights_outlined,
-                    title: context.l10n.listeningStatsRecord,
-                    subtitle: context.l10n.listeningStatsDescription,
-                    value: ref
-                        .watch(settingsProvider)
-                        .listeningStatisticsEnabled,
-                    enabled: !_clearing,
-                    onChanged: (value) => ref
-                        .read(settingsProvider.notifier)
-                        .setListeningStatisticsEnabled(value),
-                    showDivider: false,
-                  ),
-                ],
-              ),
-            ),
-            const SliverToBoxAdapter(child: ListeningRewindEntry()),
+            // Centered at the reading width on tablets, under the title.
             SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverToBoxAdapter(
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final days in [7, 30, 0])
-                      AppChoiceChip(
-                        label: Text(
-                          days == 0
-                              ? '$_year'
-                              : context.l10n.listeningStatsDays(days),
+              padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+              sliver: SliverMainAxisGroup(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: SettingsGroup(
+                      children: [
+                        SettingsSwitchItem(
+                          icon: Icons.insights_outlined,
+                          title: context.l10n.listeningStatsRecord,
+                          subtitle: context.l10n.listeningStatsDescription,
+                          value: ref
+                              .watch(settingsProvider)
+                              .listeningStatisticsEnabled,
+                          enabled: !_clearing,
+                          onChanged: (value) => ref
+                              .read(settingsProvider.notifier)
+                              .setListeningStatisticsEnabled(value),
+                          showDivider: false,
                         ),
-                        selected: _days == days,
-                        onSelected: (_) => setState(() => _days = days),
-                      ),
-                    if (_days == 0)
-                      AppIconButton(
-                        tooltip: context.l10n.listeningStatsPreviousYear,
-                        onPressed: () => setState(() => _year--),
-                        icon: const Icon(Icons.chevron_left),
-                      ),
-                    if (_days == 0)
-                      AppIconButton(
-                        tooltip: context.l10n.listeningStatsNextYear,
-                        onPressed: _year >= DateTime.now().year
-                            ? null
-                            : () => setState(() => _year++),
-                        icon: const Icon(Icons.chevron_right),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            ...summary.when(
-              loading: () => [
-                SliverToBoxAdapter(child: _summarySkeleton(context)),
-              ],
-              error: (error, _) => [
-                SliverToBoxAdapter(
-                  child: ListTile(
-                    title: Text(context.l10n.listeningStatsLoadError),
-                    trailing: AppIconButton(
-                      icon: const Icon(Icons.refresh),
-                      onPressed: () =>
-                          ref.invalidate(listeningSummaryProvider(period)),
+                      ],
                     ),
                   ),
-                ),
-              ],
-              data: (data) => _summarySlivers(context, data),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
-                child: ExpressiveButton(
-                  text: true,
-                  onPressed: _clearing ? null : _clear,
-                  icon: Icon(Icons.delete_outline, color: colors.error),
-                  child: Text(
-                    context.l10n.listeningStatsClear,
-                    style: TextStyle(color: colors.error),
+                  const SliverToBoxAdapter(child: ListeningRewindEntry()),
+                  SliverPadding(
+                    padding: const EdgeInsets.all(16),
+                    sliver: SliverToBoxAdapter(
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final days in [7, 30, 0])
+                            AppChoiceChip(
+                              label: Text(
+                                days == 0
+                                    ? '$_year'
+                                    : context.l10n.listeningStatsDays(days),
+                              ),
+                              selected: _days == days,
+                              onSelected: (_) => setState(() => _days = days),
+                            ),
+                          if (_days == 0)
+                            AppIconButton(
+                              tooltip: context.l10n.listeningStatsPreviousYear,
+                              onPressed: () => setState(() => _year--),
+                              icon: const Icon(Icons.chevron_left),
+                            ),
+                          if (_days == 0)
+                            AppIconButton(
+                              tooltip: context.l10n.listeningStatsNextYear,
+                              onPressed: _year >= DateTime.now().year
+                                  ? null
+                                  : () => setState(() => _year++),
+                              icon: const Icon(Icons.chevron_right),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  ...summary.when(
+                    loading: () => [
+                      SliverToBoxAdapter(child: _summarySkeleton(context)),
+                    ],
+                    error: (error, _) => [
+                      SliverToBoxAdapter(
+                        child: ListTile(
+                          title: Text(context.l10n.listeningStatsLoadError),
+                          trailing: AppIconButton(
+                            icon: const Icon(Icons.refresh),
+                            onPressed: () => ref.invalidate(
+                              listeningSummaryProvider(period),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                    data: (data) => _summarySlivers(context, data),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 24, 16, 48),
+                      child: ExpressiveButton(
+                        text: true,
+                        onPressed: _clearing ? null : _clear,
+                        icon: Icon(Icons.delete_outline, color: colors.error),
+                        child: Text(
+                          context.l10n.listeningStatsClear,
+                          style: TextStyle(color: colors.error),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

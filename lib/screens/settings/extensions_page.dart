@@ -202,14 +202,20 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
             SliverToBoxAdapter(
               child: SettingsSearchTarget(
                 label: context.l10n.extensionsInstallButton,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: context.isMornye
-                      ? MornyeGlassPanel.overlay(
-                          radius: 28,
-                          child: installButton,
-                        )
-                      : installButton,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Same edges as the extension group above.
+                    final inset = settingsHorizontalInset(constraints.maxWidth);
+                    return Padding(
+                      padding: EdgeInsets.fromLTRB(inset, 16, inset, 16),
+                      child: context.isMornye
+                          ? MornyeGlassPanel.overlay(
+                              radius: 28,
+                              child: installButton,
+                            )
+                          : installButton,
+                    );
+                  },
                 ),
               ),
             ),

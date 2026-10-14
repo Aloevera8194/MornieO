@@ -8,8 +8,9 @@ extension _QueueTabFilterWidgets on _QueueTabState {
     String countText,
     List<Widget> actions,
   ) {
+    final edge = 16 + wideListInset(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
       child: Row(
         children: [
           Text(
@@ -50,6 +51,8 @@ extension _QueueTabFilterWidgets on _QueueTabState {
     final allFilteredUnifiedItems = filterData.filteredUnifiedItems;
     final totalTrackCount = filterData.totalTrackCount;
     final totalAlbumCount = filterData.totalAlbumCount;
+    // Controls and grids share the centered column of the track list.
+    final edge = 16 + wideListInset(context);
 
     final activeDownloadIds = !hasQueueItems || filterMode == 'albums'
         ? const <String>[]
@@ -378,7 +381,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                     ref.read(localLibraryProvider).totalCount > 0)))
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
               child: Row(
                 children: [const Spacer(), _buildFilterButton(context)],
               ),
@@ -391,7 +394,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             (_activeFilterCount > 0 || unifiedItems.isNotEmpty))
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
               child: Row(
                 children: [
                   const Spacer(),
@@ -407,7 +410,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             (_activeFilterCount > 0 || unifiedItems.isNotEmpty))
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
               child: Row(
                 children: [
                   const Spacer(),
@@ -420,7 +423,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         if (showFilteringIndicator)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: EdgeInsets.fromLTRB(edge, 12, edge, 8),
               child: Row(
                 children: [
                   AppLoadingIndicator(
@@ -447,7 +450,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             (filteredGroupedAlbums.isNotEmpty ||
                 filteredGroupedLocalAlbums.isNotEmpty))
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: edge),
             sliver: _AnimatedLibrarySliverGrid(
               maxCrossAxisExtent: _libraryAlbumGridExtent,
               mainAxisSpacing: 12,
@@ -502,7 +505,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: edge),
             sliver: _AnimatedLibrarySliverGrid(
               maxCrossAxisExtent: _libraryAlbumGridExtent,
               mainAxisSpacing: 12,
@@ -543,7 +546,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         if (filterMode == 'all') ...[
           if (historyViewMode == 'grid')
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: edge),
               sliver: _AnimatedLibrarySliverGrid(
                 maxCrossAxisExtent: _libraryGridExtent,
                 mainAxisSpacing: 8,
@@ -727,7 +730,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             filterMode == 'singles')
           historyViewMode == 'grid'
               ? SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: edge),
                   sliver: _AnimatedLibrarySliverGrid(
                     maxCrossAxisExtent: _libraryGridExtent,
                     mainAxisSpacing: 8,
@@ -825,7 +828,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         else if (isPageLoading)
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              padding: EdgeInsets.fromLTRB(edge, 12, edge, 8),
               child: Center(
                 child: AppLoadingIndicator(
                   size: 22,

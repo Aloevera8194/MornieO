@@ -499,7 +499,10 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           if (widget.asPage)
             AppSliverHeader.page(title: context.l10n.settingsTitle)
           else
-            AppSliverHeader.tabRoot(title: context.l10n.settingsTitle),
+            AppSliverHeader.tabRoot(
+              title: context.l10n.settingsTitle,
+              alignToContent: true,
+            ),
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.fromLTRB(

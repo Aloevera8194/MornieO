@@ -173,7 +173,11 @@ class _HomeTabState extends ConsumerState<HomeTab>
     // in portrait while leaving all phone sizes unchanged.
     final scale = _responsiveScale(context: context, min: 0.82, max: 1.32);
     final textScale = _effectiveTextScale(context);
-    return 145 * scale * (1 + (textScale - 1) * 0.12);
+    final size = 145 * scale * (1 + (textScale - 1) * 0.12);
+    // Landscape tablets are short: one carousel row should not take over a
+    // third of the screen. Portrait and phone heights never reach this cap.
+    final heightCap = MediaQuery.sizeOf(context).height * 0.24;
+    return size < heightCap ? size : heightCap;
   }
 
   double _exploreSectionHeight(BuildContext context) {
@@ -931,6 +935,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
               AppSliverHeader.tabRoot(
+                alignToContent: true,
                 title: widget.mode == HomeTabMode.search
                     ? context.l10n.mornyeSearch
                     : context.l10n.homeTitle,
@@ -956,10 +961,11 @@ class _HomeTabState extends ConsumerState<HomeTab>
               if (showSearchBar)
                 SliverToBoxAdapter(
                   child: Padding(
+                    // Centered with the search results on tablets.
                     padding: EdgeInsets.fromLTRB(
-                      16,
+                      16 + wideListInset(context),
                       (hasResults || showExplore) ? 8 : 32,
-                      16,
+                      16 + wideListInset(context),
                       (hasResults || showExplore) ? 8 : 16,
                     ),
                     child: _buildSearchBar(),

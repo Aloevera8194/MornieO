@@ -15,6 +15,7 @@ import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/screens/repo/extension_details_screen.dart';
 import 'package:spotiflac_android/services/extension_storage_service.dart';
+import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -93,6 +94,8 @@ class _RepoTabState extends ConsumerState<RepoTab> {
       );
     }
     final colorScheme = Theme.of(context).colorScheme;
+    // Controls share the centered column of the extension list on tablets.
+    final edge = 16 + wideListInset(context);
 
     return Scaffold(
       body: AppRefreshIndicator(
@@ -101,6 +104,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
         child: CustomScrollView(
           slivers: [
             AppSliverHeader.tabRoot(
+              alignToContent: true,
               title: context.l10n.storeTitle,
               actions: [
                 if (hasRegistryUrl)
@@ -125,7 +129,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
             else ...[
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                  padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
                   child: AppSearchField(
                     controller: _searchController,
                     hintText: context.l10n.storeSearch,
@@ -142,10 +146,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               SliverToBoxAdapter(
                 child: SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: edge, vertical: 8),
                   child: Row(
                     children: [
                       _CategoryChip(
@@ -207,10 +208,10 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               ),
 
               if (isLoading && extensions.isEmpty)
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: TrackListSkeleton(itemCount: 6),
+                    padding: EdgeInsets.fromLTRB(edge, 16, edge, 16),
+                    child: const TrackListSkeleton(itemCount: 6),
                   ),
                 )
               else if (error != null && extensions.isEmpty)
@@ -226,7 +227,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               else ...[
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                    padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
                     child: Text(
                       context.l10n.storeExtensionsCount(
                         filteredExtensions.length,
@@ -241,8 +242,8 @@ class _RepoTabState extends ConsumerState<RepoTab> {
                 if (context.isMornye)
                   SliverToBoxAdapter(
                     child: ExtensionRepoCard(
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: edge,
                         vertical: 4,
                       ),
                       child: Column(

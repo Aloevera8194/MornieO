@@ -4,11 +4,19 @@ import 'package:flutter/material.dart';
 /// is reserved for genuinely desktop-width windows; the old 600dp threshold
 /// made an iPad portrait layout look like a shrunken desktop app.
 const double navigationRailBreakpoint = 1440;
-const double defaultWideContentMaxWidth = 960;
-const double maxWideContentInset = 32;
+
+/// Material's expanded window class. Landscape tablets switch the Material
+/// theme to a navigation rail and Mornye to compact, centered chrome; portrait
+/// tablets stay below it.
+const double expandedLayoutBreakpoint = 840;
+const double defaultWideContentMaxWidth = 840;
 
 bool useNavigationRailForWidth(double width) =>
     width >= navigationRailBreakpoint;
+
+/// The Material theme follows Material's expanded window class.
+bool useMaterialNavigationRailForWidth(double width) =>
+    width >= expandedLayoutBreakpoint;
 
 /// Explicit horizontal safe spacing for controls drawn in full-bleed detail
 /// headers. iOS reports no left/right safe-area inset in portrait, so toolbar
@@ -81,15 +89,13 @@ class AdaptiveUiScaler extends StatelessWidget {
   }
 }
 
-/// Widest content span for a surface of [maxWidth]: content is never narrower
-/// than [contentMaxWidth], and the centering margin never exceeds 32dp per
-/// side so tablets retain near-full-width rows.
+/// Widest content span for a surface of [maxWidth]: lists, settings and
+/// detail content stop at [contentMaxWidth], a comfortable reading width, and
+/// center on wider tablet and landscape surfaces.
 double adaptiveContentMaxWidth(
   double maxWidth, {
   double contentMaxWidth = defaultWideContentMaxWidth,
-}) => maxWidth > contentMaxWidth + (maxWideContentInset * 2)
-    ? maxWidth - (maxWideContentInset * 2)
-    : contentMaxWidth;
+}) => maxWidth < contentMaxWidth ? maxWidth : contentMaxWidth;
 
 /// Horizontal inset that centers content of [maxWidth] at
 /// [adaptiveContentMaxWidth]; zero once it fits. Prefer this constraint-based
@@ -98,9 +104,7 @@ double adaptiveContentMaxWidth(
 double wideInsetForWidth(
   double maxWidth, {
   double contentMaxWidth = defaultWideContentMaxWidth,
-}) => maxWidth > contentMaxWidth
-    ? ((maxWidth - contentMaxWidth) / 2).clamp(0.0, maxWideContentInset)
-    : 0;
+}) => maxWidth > contentMaxWidth ? (maxWidth - contentMaxWidth) / 2 : 0;
 
 /// Horizontal inset that centers full-width list content on tablets/landscape;
 /// zero on phones, so rows stop stretching across the whole screen.

@@ -199,6 +199,12 @@ class _SettingsSearchTargetState extends State<SettingsSearchTarget> {
 bool settingsRowsConnected(BuildContext context) =>
     context.dependOnInheritedWidgetOfExactType<_ConnectedRowsScope>() != null;
 
+/// Horizontal margin of settings content on a surface [maxWidth] wide: the
+/// 16dp edge plus the wide-layout centering inset. Groups, section headers,
+/// info cards and page-level buttons share it so their edges line up.
+double settingsHorizontalInset(double maxWidth) =>
+    16 + (maxWidth.isFinite ? wideInsetForWidth(maxWidth) : 0);
+
 /// Corners of one row in an expressive connected list: the card radius at the
 /// [first] and [last] ends of the run, tight corners between rows.
 BorderRadius connectedRowRadius(
@@ -652,21 +658,28 @@ class SettingsSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final content = Padding(
-      padding: const EdgeInsets.fromLTRB(32, 24, 32, 8),
-      child: Text(
-        title,
-        style:
-            (context.isMornye
-                    ? Theme.of(context).textTheme.bodyLarge
-                    : Theme.of(context).textTheme.titleSmall)
-                ?.copyWith(
-                  color: context.isMornye
-                      ? Theme.of(context).colorScheme.onSurfaceVariant
-                      : Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-      ),
+    final label = Text(
+      title,
+      style:
+          (context.isMornye
+                  ? Theme.of(context).textTheme.bodyLarge
+                  : Theme.of(context).textTheme.titleSmall)
+              ?.copyWith(
+                color: context.isMornye
+                    ? Theme.of(context).colorScheme.onSurfaceVariant
+                    : Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+    );
+    // Aligned with the row content of the groups below at any width.
+    final content = LayoutBuilder(
+      builder: (context, constraints) {
+        final inset = settingsHorizontalInset(constraints.maxWidth) + 16;
+        return Padding(
+          padding: EdgeInsets.fromLTRB(inset, 24, inset, 8),
+          child: label,
+        );
+      },
     );
     return SettingsSearchTarget(label: title, child: content);
   }
@@ -907,22 +920,34 @@ class SettingsInfoCard extends StatelessWidget {
         ],
       ),
     );
-    return Padding(
-      padding:
-          margin ??
-          EdgeInsets.symmetric(
-            horizontal: tokens.gapLg,
-            vertical: tokens.gapXs,
-          ),
-      child: useGlass
-          ? MornyeGlassPanel.overlay(child: content)
-          : DecoratedBox(
-              decoration: BoxDecoration(
-                color: background,
-                borderRadius: tokens.borderRadiusCard,
-              ),
-              child: content,
+    final card = useGlass
+        ? MornyeGlassPanel.overlay(child: content)
+        : DecoratedBox(
+            decoration: BoxDecoration(
+              color: background,
+              borderRadius: tokens.borderRadiusCard,
             ),
+            child: content,
+          );
+    final resolved =
+        (margin ??
+                EdgeInsets.symmetric(
+                  horizontal: tokens.gapLg,
+                  vertical: tokens.gapXs,
+                ))
+            .resolve(Directionality.of(context));
+    // Wide layouts center groups; the card keeps the same edges.
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = settingsHorizontalInset(constraints.maxWidth) - 16;
+        return Padding(
+          padding: resolved.copyWith(
+            left: resolved.left + wide,
+            right: resolved.right + wide,
+          ),
+          child: card,
+        );
+      },
     );
   }
 }

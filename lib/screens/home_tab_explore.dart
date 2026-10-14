@@ -17,7 +17,12 @@ extension _HomeTabExploreUI on _HomeTabState {
         delegate: SliverChildBuilderDelegate((context, index) {
           if (hasGreeting && index == 0) {
             return Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              padding: EdgeInsets.fromLTRB(
+                16 + wideListInset(context),
+                12,
+                16 + wideListInset(context),
+                4,
+              ),
               child: Text(
                 greeting,
                 style:
@@ -57,11 +62,14 @@ extension _HomeTabExploreUI on _HomeTabState {
       return _buildYTMusicQuickPicksSection(section, colorScheme);
     }
 
+    // Titles and the first card line up with the centered column on tablets;
+    // the carousel itself still scrolls edge to edge.
+    final inset = wideListInset(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 20, 16, 12),
+          padding: EdgeInsets.fromLTRB(16 + inset, 20, 16 + inset, 12),
           child: Text(
             section.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -74,7 +82,7 @@ extension _HomeTabExploreUI on _HomeTabState {
           height: sectionHeight,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: 12 + inset),
             itemCount: section.items.length,
             itemBuilder: (context, index) {
               final item = section.items[index];
@@ -101,19 +109,20 @@ extension _HomeTabExploreUI on _HomeTabState {
   /// [ShimmerLoading] for the sweep effect.
   Widget _buildExploreSectionSkeleton({required bool isArtist}) {
     final cardSize = _exploreCardSize(context);
+    final inset = wideListInset(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 20, 16, 12),
-          child: SkeletonBox(width: 140, height: 20, borderRadius: 4),
+        Padding(
+          padding: EdgeInsets.fromLTRB(16 + inset, 20, 16 + inset, 12),
+          child: const SkeletonBox(width: 140, height: 20, borderRadius: 4),
         ),
         SizedBox(
           height: _exploreSectionHeight(context),
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: 12 + inset),
             itemCount: 6,
             itemBuilder: (context, index) => SizedBox(
               width: cardSize,

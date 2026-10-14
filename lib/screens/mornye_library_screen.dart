@@ -10,6 +10,7 @@ import 'package:spotiflac_android/screens/local_album_screen.dart';
 import 'package:spotiflac_android/services/album_completeness.dart';
 import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
 import 'package:spotiflac_android/services/library_database.dart';
+import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
@@ -234,6 +235,7 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final searchingLibrary = _overview && _query.isNotEmpty;
+    final listInset = wideListInset(context);
     final result = searchingLibrary
         ? const AsyncData(LibraryBrowseState([], hasMore: false))
         : ref.watch(libraryBrowseProvider(_request));
@@ -298,13 +300,22 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           if (_overview)
-            AppSliverHeader.tabRoot(title: title, actions: actions)
+            AppSliverHeader.tabRoot(
+              title: title,
+              actions: actions,
+              alignToContent: true,
+            )
           else
             AppSliverHeader.page(title: title, actions: actions),
           if (_showSearch)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                padding: EdgeInsets.fromLTRB(
+                  24 + listInset,
+                  8,
+                  24 + listInset,
+                  16,
+                ),
                 child: AppSearchField(
                   controller: _search,
                   autofocus: true,
@@ -327,7 +338,13 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
           if (!searchingLibrary) ...[
             if (_overview && _query.isEmpty)
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+                // Rows center at the reading width on tablets.
+                padding: EdgeInsets.fromLTRB(
+                  24 + listInset,
+                  0,
+                  24 + listInset,
+                  20,
+                ),
                 sliver: SliverList.list(
                   children: [
                     for (final category in [
@@ -378,7 +395,12 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
             if (_overview)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                  padding: EdgeInsets.fromLTRB(
+                    24 + listInset,
+                    8,
+                    24 + listInset,
+                    16,
+                  ),
                   child: Text(
                     _query.isEmpty
                         ? context.l10n.libraryRecentlyAdded
@@ -398,8 +420,8 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                     return Column(
                       children: [
                         ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 24,
+                          contentPadding: EdgeInsets.symmetric(
+                            horizontal: 24 + listInset,
                             vertical: 8,
                           ),
                           leading: ClipOval(
@@ -418,19 +440,25 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                             artist: entry.artist,
                           ),
                         ),
-                        const Divider(height: 1, indent: 96, endIndent: 24),
+                        Divider(
+                          height: 1,
+                          indent: 96 + listInset,
+                          endIndent: 24 + listInset,
+                        ),
                       ],
                     );
                   },
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24 + listInset),
                   sliver: SliverLayoutBuilder(
                     builder: (context, constraints) {
-                      final columns = (constraints.crossAxisExtent / 200)
+                      // ~160dp covers: two on phones, more columns rather
+                      // than giant covers on tablets.
+                      final columns = (constraints.crossAxisExtent / 160)
                           .floor()
-                          .clamp(2, 6);
+                          .clamp(2, 8);
                       final width =
                           (constraints.crossAxisExtent - 20 * (columns - 1)) /
                           columns;

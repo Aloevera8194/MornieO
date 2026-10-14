@@ -13,9 +13,13 @@ import 'package:spotiflac_android/utils/app_bar_layout.dart';
 class AppSliverHeader extends StatelessWidget {
   /// Root of a navigation tab: no back button, and the title stays aligned with
   /// the content margin at every collapse ratio.
-  const AppSliverHeader.tabRoot({super.key, required this.title, this.actions})
-    : leading = null,
-      _showLeading = false;
+  const AppSliverHeader.tabRoot({
+    super.key,
+    required this.title,
+    this.actions,
+    this.alignToContent = false,
+  }) : leading = null,
+       _showLeading = false;
 
   /// A pushed page: shows [leading] (a back button by default) and slides the
   /// title clear of it as the header collapses.
@@ -24,6 +28,7 @@ class AppSliverHeader extends StatelessWidget {
     required this.title,
     this.actions,
     this.leading,
+    this.alignToContent = true,
   }) : _showLeading = true;
 
   final String title;
@@ -31,6 +36,10 @@ class AppSliverHeader extends StatelessWidget {
 
   /// Overrides the default back button. Only used by the page variant.
   final Widget? leading;
+
+  /// Lines the expanded title up with content centered by [wideListInset] on
+  /// tablets. Full-bleed pages (carousels, grids) keep it at the screen edge.
+  final bool alignToContent;
 
   final bool _showLeading;
 
@@ -46,7 +55,14 @@ class AppSliverHeader extends StatelessWidget {
     final tokens = context.tokens;
     final colorScheme = Theme.of(context).colorScheme;
     final topPadding = normalizedHeaderTopPadding(context);
-    final maxHeight = tokens.headerExpandedHeight + topPadding;
+    // Short landscape windows give the large title less headroom so content
+    // starts higher. Portrait phones, even small ones, keep the full header.
+    final screenSize = MediaQuery.sizeOf(context);
+    final expandedHeight =
+        screenSize.height < screenSize.width && screenSize.height < 720
+        ? tokens.headerExpandedHeight - 24
+        : tokens.headerExpandedHeight;
+    final maxHeight = expandedHeight + topPadding;
     final edgeInset = detailHeaderEdgeInset(context);
 
     return SliverAppBar(
@@ -108,11 +124,13 @@ class AppSliverHeader extends StatelessWidget {
           final expandRatio = extentDelta > 0
               ? ((currentExtent - minExtent) / extentDelta).clamp(0.0, 1.0)
               : 0.0;
+          final contentMargin =
+              _contentMargin + (alignToContent ? wideListInset(context) : 0);
           final leftPadding = _showLeading
               ? (_leadingClearance + edgeInset) -
-                    (((_leadingClearance + edgeInset) - _contentMargin) *
+                    (((_leadingClearance + edgeInset) - contentMargin) *
                         expandRatio)
-              : _contentMargin;
+              : contentMargin;
           final fontSize =
               tokens.headerCollapsedTitleSize +
               (tokens.headerExpandedTitleSize -

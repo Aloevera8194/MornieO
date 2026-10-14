@@ -739,7 +739,7 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: 16 + wideListInset(context)),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
