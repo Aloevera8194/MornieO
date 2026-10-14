@@ -46,6 +46,8 @@ import 'package:spotiflac_android/widgets/mornye_player_background.dart';
 import 'package:spotiflac_android/widgets/mornye_player_artwork.dart';
 import 'package:spotiflac_android/widgets/mornye_artwork_contrast.dart';
 import 'package:spotiflac_android/widgets/mini_player.dart';
+import 'package:spotiflac_android/widgets/material_player_layout.dart';
+import 'package:spotiflac_android/widgets/player_metadata_title.dart';
 import 'package:spotiflac_android/widgets/playback_seek_slider.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
 
@@ -258,6 +260,44 @@ void main() {
     } while (tester.binding.hasScheduledFrame || lyricsRequests.isNotEmpty);
     return frames;
   }
+
+  testWidgets('Material track titles never overlap during rapid skips', (
+    tester,
+  ) async {
+    await pumpNowPlaying(tester);
+    mediaItems.add(item('first'));
+    await settlePlayer(tester);
+    mediaItems.add(item('second'));
+    await tester.pump();
+    var sawOutgoingTitle = false;
+    var visible = 0;
+    for (var frame = 0; frame < 60; frame++) {
+      if (frame == 7) mediaItems.add(item('third'));
+      await tester.pump(const Duration(milliseconds: 16));
+      final titles = find.descendant(
+        of: find.byType(MaterialPlayerLayout),
+        matching: find.byType(PlayerMetadataTitle),
+      );
+      expect(titles, findsAtLeast(1));
+      sawOutgoingTitle |= titles.evaluate().length > 1;
+      visible = 0;
+      for (final title in titles.evaluate()) {
+        var opacity = 1.0;
+        title.visitAncestorElements((element) {
+          final widget = element.widget;
+          if (widget is FadeTransition) opacity *= widget.opacity.value;
+          if (widget is Opacity) opacity *= widget.opacity;
+          return true;
+        });
+        if (opacity > 0.01) visible++;
+      }
+      expect(visible, lessThanOrEqualTo(1), reason: 'frame $frame');
+    }
+    expect(sawOutgoingTitle, isTrue);
+    expect(visible, 1);
+    await settlePlayer(tester);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('Material seek wave follows playback, buffering and pause', (
     tester,

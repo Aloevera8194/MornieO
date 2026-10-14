@@ -7,7 +7,6 @@ import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/routes/now_playing_route.dart';
 import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
@@ -183,75 +182,80 @@ class MaterialPlayerLayout extends StatelessWidget {
     BuildContext context, {
     bool compact = false,
   }) {
-    final expressive = materialExpressiveEnabled(context);
-    const fallback = AppMotionSpec(Duration(milliseconds: 350), Curves.linear);
+    final fallback = AppMotionSpec(
+      MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 350),
+      Curves.linear,
+    );
     final slide = AppMotion.spatial(context, fallback);
     final fade = AppMotion.effects(context, fallback);
     return [
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
-        child: AnimatedSwitcher(
-          duration: slide.duration,
-          // Expressive: a spatial spring moves the title while an effects
-          // spring fades it, so opacity never overshoots.
-          switchInCurve: expressive ? Curves.linear : Curves.easeOutCubic,
-          switchOutCurve: expressive ? Curves.linear : Curves.easeInCubic,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: expressive
-                ? animation.drive(CurveTween(curve: fade.curve))
-                : animation,
-            child: SlideTransition(
-              position: Tween(
-                begin: const Offset(0, 0.15),
-                end: Offset.zero,
-              ).chain(CurveTween(curve: slide.curve)).animate(animation),
-              child: child,
-            ),
-          ),
-          child: Row(
-            key: ValueKey(mediaItem.id),
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    PlayerMetadataTitle(
-                      mediaItem: mediaItem,
-                      metadata: metadata,
-                      style:
-                          (compact
-                                  ? Theme.of(context).textTheme.titleLarge
-                                  : Theme.of(context).textTheme.headlineSmall)
-                              ?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.onSurface,
-                              ),
-                      textAlign: TextAlign.center,
-                      maxLines: compact ? 1 : 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: compact ? 4 : 6),
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final track = ref
-                            .watch(playerCollectionTrackProvider(mediaItem))
-                            .value;
-                        return ClickableArtistName(
-                          artistName: mediaItem.artist ?? '',
-                          artistId: track?.artistId,
-                          extensionId: track?.source,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        );
-                      },
-                    ),
-                  ],
-                ),
+        child: ClipRect(
+          child: AnimatedSwitcher(
+            duration: slide.duration,
+            // Finish fading the old title before revealing the next one. This
+            // also keeps rapid skips from stacking several readable titles.
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation.drive(
+                CurveTween(curve: Interval(0.5, 1, curve: fade.curve)),
               ),
-            ],
+              child: SlideTransition(
+                position: Tween(begin: const Offset(0, 0.4), end: Offset.zero)
+                    .chain(
+                      CurveTween(curve: Interval(0.5, 1, curve: slide.curve)),
+                    )
+                    .animate(animation),
+                child: child,
+              ),
+            ),
+            child: Row(
+              key: ValueKey(mediaItem.id),
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      PlayerMetadataTitle(
+                        mediaItem: mediaItem,
+                        metadata: metadata,
+                        style:
+                            (compact
+                                    ? Theme.of(context).textTheme.titleLarge
+                                    : Theme.of(context).textTheme.headlineSmall)
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.onSurface,
+                                ),
+                        textAlign: TextAlign.center,
+                        maxLines: compact ? 1 : 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: compact ? 4 : 6),
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final track = ref
+                              .watch(playerCollectionTrackProvider(mediaItem))
+                              .value;
+                          return ClickableArtistName(
+                            artistName: mediaItem.artist ?? '',
+                            artistId: track?.artistId,
+                            extensionId: track?.source,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
