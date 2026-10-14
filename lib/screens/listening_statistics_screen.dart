@@ -3,7 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/screens/listening_rewind_screen.dart';
 import 'package:spotiflac_android/services/listening_statistics.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
@@ -106,6 +110,7 @@ class _ListeningStatisticsScreenState
                 ],
               ),
             ),
+            const SliverToBoxAdapter(child: ListeningRewindEntry()),
             SliverPadding(
               padding: const EdgeInsets.all(16),
               sliver: SliverToBoxAdapter(
@@ -181,20 +186,55 @@ class _ListeningStatisticsScreenState
     );
   }
 
+  /// Material rows form an expressive connected list; Mornye keeps plain rows.
+  Widget _connectedRow(
+    BuildContext context, {
+    required int index,
+    required int count,
+    required Widget child,
+  }) {
+    if (context.isMornye) return child;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(16, index == 0 ? 0 : 2, 16, 0),
+      child: Material(
+        color: settingsGroupColor(context),
+        clipBehavior: Clip.antiAlias,
+        borderRadius: connectedRowRadius(
+          context,
+          first: index == 0,
+          last: index == count - 1,
+        ),
+        child: child,
+      ),
+    );
+  }
+
   List<Widget> _summarySlivers(BuildContext context, ListeningSummary data) {
     final colors = Theme.of(context).colorScheme;
+    final mornye = context.isMornye;
     final artists = data.artists.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
+    final topArtists = artists.take(10).toList();
+    final topTracks = data.tracks.take(20).toList();
     final artistArtwork = data.artistArtwork;
     final days = data.days.entries.toList()
       ..sort((a, b) => a.key.compareTo(b.key));
+    final recentDays = days
+        .skip((days.length - 7).clamp(0, days.length))
+        .toList();
+    final peakDay = days.isEmpty
+        ? 0
+        : days.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    final textTheme = Theme.of(context).textTheme;
     return [
       SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Card(
+            // Material leads with the total as an emphasized hero figure.
+            color: mornye ? null : colors.primaryContainer,
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(mornye ? 20 : 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -202,7 +242,12 @@ class _ListeningStatisticsScreenState
                     context.l10n.listeningStatsMinutes(
                       (data.milliseconds / 60000).round(),
                     ),
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    style: mornye
+                        ? textTheme.headlineMedium
+                        : textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colors.onPrimaryContainer,
+                          ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -211,6 +256,11 @@ class _ListeningStatisticsScreenState
                       data.tracks.length,
                       data.days.length,
                     ),
+                    style: mornye
+                        ? null
+                        : textTheme.bodyLarge?.copyWith(
+                            color: colors.onPrimaryContainer,
+                          ),
                   ),
                 ],
               ),
@@ -236,9 +286,7 @@ class _ListeningStatisticsScreenState
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
               children: [
-                for (final day in days.skip(
-                  (days.length - 7).clamp(0, days.length),
-                ))
+                for (final day in recentDays)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 6),
                     child: Row(
@@ -253,15 +301,16 @@ class _ListeningStatisticsScreenState
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: LinearProgressIndicator(
-                            value:
-                                day.value /
-                                days
-                                    .map((e) => e.value)
-                                    .reduce((a, b) => a > b ? a : b),
-                            minHeight: 8,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          child: materialExpressiveEnabled(context)
+                              ? _ActivityBar(
+                                  fraction: day.value / peakDay,
+                                  peak: day.value == peakDay,
+                                )
+                              : LinearProgressIndicator(
+                                  value: day.value / peakDay,
+                                  minHeight: 8,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
                         ),
                         const SizedBox(width: 12),
                         Text('${(day.value / 60000).round()}'),
@@ -280,33 +329,38 @@ class _ListeningStatisticsScreenState
       ),
       SliverList.list(
         children: [
-          for (final artist in artists.take(10))
-            ListTile(
-              leading: ExcludeSemantics(
-                child: AppShapeClip(
-                  kind: AppShapes.artist,
-                  child: SizedBox.square(
-                    dimension: 48,
-                    child: artistArtwork[artist.key] == null
-                        ? ColoredBox(
-                            color: colors.surfaceContainerHighest,
-                            child: const Icon(Icons.person_outline),
-                          )
-                        : PlayerArtwork(
-                            artUri: artistArtwork[artist.key],
-                            colorScheme: colors,
-                            cacheWidth:
-                                (48 * MediaQuery.devicePixelRatioOf(context))
-                                    .ceil(),
-                            iconSize: 24,
-                          ),
+          for (final (index, artist) in topArtists.indexed)
+            _connectedRow(
+              context,
+              index: index,
+              count: topArtists.length,
+              child: ListTile(
+                leading: ExcludeSemantics(
+                  child: AppShapeClip(
+                    kind: AppShapes.artist,
+                    child: SizedBox.square(
+                      dimension: 48,
+                      child: artistArtwork[artist.key] == null
+                          ? ColoredBox(
+                              color: colors.surfaceContainerHighest,
+                              child: const Icon(Icons.person_outline),
+                            )
+                          : PlayerArtwork(
+                              artUri: artistArtwork[artist.key],
+                              colorScheme: colors,
+                              cacheWidth:
+                                  (48 * MediaQuery.devicePixelRatioOf(context))
+                                      .ceil(),
+                              iconSize: 24,
+                            ),
+                    ),
                   ),
                 ),
-              ),
-              title: Text(artist.key),
-              subtitle: Text(
-                context.l10n.listeningStatsMinutes(
-                  (artist.value / 60000).round(),
+                title: Text(artist.key),
+                subtitle: Text(
+                  context.l10n.listeningStatsMinutes(
+                    (artist.value / 60000).round(),
+                  ),
                 ),
               ),
             ),
@@ -319,43 +373,91 @@ class _ListeningStatisticsScreenState
       ),
       SliverList.list(
         children: [
-          for (final total in data.tracks.take(20))
-            ListTile(
-              leading: ExcludeSemantics(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SizedBox.square(
-                    dimension: 48,
-                    child: PlayerArtwork(
-                      artUri: total.track.artwork,
-                      colorScheme: Theme.of(context).colorScheme,
-                      cacheWidth: (48 * MediaQuery.devicePixelRatioOf(context))
-                          .ceil(),
-                      iconSize: 24,
+          for (final (index, total) in topTracks.indexed)
+            _connectedRow(
+              context,
+              index: index,
+              count: topTracks.length,
+              child: ListTile(
+                leading: ExcludeSemantics(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: SizedBox.square(
+                      dimension: 48,
+                      child: PlayerArtwork(
+                        artUri: total.track.artwork,
+                        colorScheme: Theme.of(context).colorScheme,
+                        cacheWidth:
+                            (48 * MediaQuery.devicePixelRatioOf(context))
+                                .ceil(),
+                        iconSize: 24,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              title: Text(
-                total.track.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text(
-                total.track.artist.trim().isEmpty
-                    ? context.l10n.unknownArtist
-                    : total.track.artist,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              trailing: Text(
-                context.l10n.listeningStatsMinutes(
-                  (total.milliseconds / 60000).round(),
+                title: Text(
+                  total.track.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  total.track.artist.trim().isEmpty
+                      ? context.l10n.unknownArtist
+                      : total.track.artist,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: Text(
+                  context.l10n.listeningStatsMinutes(
+                    (total.milliseconds / 60000).round(),
+                  ),
                 ),
               ),
             ),
         ],
       ),
     ];
+  }
+}
+
+/// One day of listening activity. The bar grows in on a spatial spring and the
+/// busiest day takes the primary color.
+class _ActivityBar extends StatelessWidget {
+  const _ActivityBar({required this.fraction, required this.peak});
+
+  final double fraction;
+  final bool peak;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final motion = AppMotion.spatial(
+      context,
+      const AppMotionSpec(Duration.zero, Curves.linear),
+    );
+    return Container(
+      height: 12,
+      decoration: ShapeDecoration(
+        color: colors.surfaceContainerHighest,
+        shape: const StadiumBorder(),
+      ),
+      alignment: AlignmentDirectional.centerStart,
+      child: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0, end: fraction.clamp(0.0, 1.0)),
+        duration: motion.duration,
+        curve: motion.curve,
+        builder: (context, value, _) => FractionallySizedBox(
+          // The spring may overshoot; keep the fill inside its track.
+          widthFactor: value.clamp(0.0, 1.0),
+          heightFactor: 1,
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              color: peak ? colors.primary : colors.secondary,
+              shape: const StadiumBorder(),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
