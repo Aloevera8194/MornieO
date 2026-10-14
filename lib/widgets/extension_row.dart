@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
@@ -35,7 +36,7 @@ class ExtensionAvatar extends StatelessWidget {
     final tokens = context.tokens;
     final colorScheme = Theme.of(context).colorScheme;
     final borderRadius = tokens.borderRadiusCover;
-    final fallback = Icon(
+    final fallback = AppIcon(
       fallbackIcon,
       color: foreground ?? colorScheme.onPrimaryContainer,
     );
