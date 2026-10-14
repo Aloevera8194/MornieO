@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
@@ -44,6 +45,7 @@ class DownloadServicePicker extends ConsumerStatefulWidget {
 
     showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       backgroundColor: mornye
           ? Colors.transparent
@@ -57,7 +59,9 @@ class DownloadServicePicker extends ConsumerStatefulWidget {
           : null,
       isScrollControlled: true,
       showDragHandle: !mornye,
+      // Explicit constraints replace the theme's, so repeat its tablet width.
       constraints: BoxConstraints(
+        maxWidth: 640,
         maxHeight: MediaQuery.sizeOf(context).height * 0.88,
       ),
       builder: (context) {

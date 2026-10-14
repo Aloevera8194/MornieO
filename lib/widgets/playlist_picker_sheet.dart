@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/library_collections_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -39,6 +40,7 @@ Future<void> showAddTracksToPlaylistSheet(
 
   await showModalBottomSheet<void>(
     context: context,
+    sheetAnimationStyle: AppMotion.surfaceEntrance(context),
     useRootNavigator: true,
     showDragHandle: !context.isMornye,
     backgroundColor: context.isMornye ? Colors.transparent : null,

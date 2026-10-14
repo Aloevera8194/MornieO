@@ -438,6 +438,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
     final colorScheme = Theme.of(context).colorScheme;
     await showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       backgroundColor: colorScheme.surfaceContainerHigh,
       builder: (ctx) => SafeArea(

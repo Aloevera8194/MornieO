@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
@@ -49,6 +50,7 @@ class TrackCollectionQuickActions extends ConsumerWidget {
     }
     showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: colorScheme.surfaceContainerHigh,

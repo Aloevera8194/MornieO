@@ -2,6 +2,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/isrc_utils.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
@@ -19,6 +20,7 @@ Future<void> showPlayerDetailsSheet(
   final metadataFuture = metadata.readDetails(mediaItem);
   return showModalBottomSheet<void>(
     context: context,
+    sheetAnimationStyle: AppMotion.surfaceEntrance(context),
     isScrollControlled: true,
     useRootNavigator: mornye,
     showDragHandle: !mornye,

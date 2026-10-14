@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/models/unified_library_item.dart';
 import 'package:spotiflac_android/providers/download_history_provider.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
@@ -97,6 +98,7 @@ Future<void> showBatchConvertSheet(
 
   await showModalBottomSheet<void>(
     context: modalContext,
+    sheetAnimationStyle: AppMotion.surfaceEntrance(modalContext),
     useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: modalContext.isMornye ? Colors.transparent : null,

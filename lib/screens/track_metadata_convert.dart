@@ -281,6 +281,7 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
 
     showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: context.isMornye ? Colors.transparent : null,
@@ -382,6 +383,7 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
 
       showModalBottomSheet<void>(
         context: this.context,
+        sheetAnimationStyle: AppMotion.surfaceEntrance(this.context),
         useRootNavigator: true,
         isScrollControlled: true,
         builder: (sheetContext) {

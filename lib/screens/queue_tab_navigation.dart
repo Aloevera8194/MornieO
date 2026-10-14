@@ -309,10 +309,10 @@ extension _QueueTabNavigation on _QueueTabState {
     final controller = TextEditingController();
     final formKey = GlobalKey<FormState>();
 
-    final playlistName = await showDialog<String>(
+    final playlistName = await showAppDialog<String>(
       context: context,
       builder: (dialogContext) {
-        return AlertDialog(
+        return AppAlertDialog(
           title: Text(dialogContext.l10n.collectionCreatePlaylist),
           content: Form(
             key: formKey,
@@ -336,12 +336,12 @@ extension _QueueTabNavigation on _QueueTabState {
             ),
           ),
           actions: [
-            ExpressiveButton(
-              text: true,
+            AppDialogAction(
               onPressed: () => Navigator.of(dialogContext).pop(),
               child: Text(dialogContext.l10n.dialogCancel),
             ),
-            ExpressiveButton(
+            AppDialogAction(
+              filled: true,
               onPressed: () {
                 if (formKey.currentState?.validate() != true) return;
                 Navigator.of(dialogContext).pop(controller.text.trim());

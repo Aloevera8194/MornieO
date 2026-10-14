@@ -1001,6 +1001,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
 
     showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: context.isMornye

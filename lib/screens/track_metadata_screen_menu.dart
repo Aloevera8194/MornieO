@@ -268,6 +268,7 @@ extension _TrackMetadataMenu on _TrackMetadataScreenState {
     }
     showModalBottomSheet<void>(
       context: screenContext,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(screenContext),
       useRootNavigator: true,
       backgroundColor: colorScheme.surfaceContainerHigh,
       isScrollControlled: true,

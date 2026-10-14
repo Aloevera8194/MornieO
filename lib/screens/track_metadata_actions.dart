@@ -56,6 +56,7 @@ extension _TrackMetadataFileActions on _TrackMetadataScreenState {
 
     final saved = await showModalBottomSheet<bool>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: context.isMornye

@@ -8,6 +8,7 @@ import 'package:spotiflac_android/services/app_navigation_service.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/extension_session_callback.dart';
 import 'package:spotiflac_android/utils/logger.dart';
+import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -298,15 +299,14 @@ Future<bool> showExtensionVerificationHelpDialog(
       });
 
   try {
-    await showDialog<void>(
+    await showAppDialog<void>(
       context: context,
-      useRootNavigator: true,
       barrierDismissible: false,
       builder: (dialogContext) {
         activeDialogContext = dialogContext;
         final dialogL10n = dialogContext.l10n;
         return StatefulBuilder(
-          builder: (dialogContext, setDialogState) => AlertDialog(
+          builder: (dialogContext, setDialogState) => AppAlertDialog(
             title: Text(title),
             content: Column(
               mainAxisSize: MainAxisSize.min,

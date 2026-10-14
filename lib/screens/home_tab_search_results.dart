@@ -177,6 +177,7 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
     final mornye = context.isMornye;
     showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: mornye
@@ -494,7 +495,8 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
               if (showSortButton)
                 SizedBox(
                   height: 32,
-                  child: TextButton.icon(
+                  child: ExpressiveButton(
+                    text: true,
                     onPressed: () => _showSortOptions(colorScheme),
                     icon: mornye
                         ? null
@@ -507,7 +509,11 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
                                 ? colorScheme.primary
                                 : colorScheme.onSurfaceVariant,
                           ),
-                    label: Text(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    child: Text(
                       _searchSortOption != HomeSearchSortOption.defaultOrder
                           ? _sortOptionLabel(_searchSortOption)
                           : context.l10n.libraryFilterSort,
@@ -518,10 +524,6 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
                             ? colorScheme.primary
                             : colorScheme.onSurfaceVariant,
                       ),
-                    ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      visualDensity: VisualDensity.compact,
                     ),
                   ),
                 ),

@@ -430,6 +430,7 @@ extension _HomeTabExploreUI on _HomeTabState {
 
     showModalBottomSheet<void>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       backgroundColor: colorScheme.surface,
       builder: (context) => SafeArea(

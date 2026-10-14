@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:spotiflac_android/controllers/metadata_editor_controller.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/metadata_cover_resources.dart';
@@ -120,6 +121,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
     FocusScope.of(context).unfocus();
     final selectedId = await showModalBottomSheet<String>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
@@ -202,6 +204,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
     final currentValue = _coverMaxDimension ?? 0;
     final selectedValue = await showModalBottomSheet<int>(
       context: context,
+      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
