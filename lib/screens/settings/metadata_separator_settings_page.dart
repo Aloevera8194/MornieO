@@ -4,6 +4,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/metadata_separators.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
@@ -49,13 +50,13 @@ class MetadataSeparatorSettingsPage extends ConsumerWidget {
                             separators.toJson()[field]!,
                           ),
                     onTap: () async {
-                      final value = await showAppModalBottomSheet<String>(
+                      final value = await showAppScrollableBottomSheet<String>(
                         context: context,
-                        useRootNavigator: true,
-                        isScrollControlled: true,
-                        builder: (_) => _SeparatorPicker(
+                        title: labels[field]!,
+                        builder: (_, controller) => _SeparatorPicker(
                           label: labels[field]!,
                           current: separators.toJson()[field]!,
+                          scrollController: controller,
                         ),
                       );
                       if (value != null && context.mounted) {
@@ -75,9 +76,14 @@ class MetadataSeparatorSettingsPage extends ConsumerWidget {
 }
 
 class _SeparatorPicker extends StatefulWidget {
-  const _SeparatorPicker({required this.label, required this.current});
+  const _SeparatorPicker({
+    required this.label,
+    required this.current,
+    required this.scrollController,
+  });
   final String label;
   final String current;
+  final ScrollController scrollController;
 
   @override
   State<_SeparatorPicker> createState() => _SeparatorPickerState();
@@ -113,60 +119,84 @@ class _SeparatorPickerState extends State<_SeparatorPicker> {
         (separator.isNotEmpty &&
             MetadataSeparators.validSeparator(separator) == separator);
     final example = '${widget.label} A, ${widget.label} B';
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            24,
-            20,
-            24,
-            24 + MediaQuery.viewInsetsOf(context).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(widget.label, style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 12),
-              for (var i = 0; i < labels.length; i++)
-                AppSheetOption(
-                  title: Text(labels[i]),
-                  trailing:
-                      (_selected == (i < _presets.length ? _presets[i] : null))
-                      ? const AppIcon(Icons.check)
-                      : null,
-                  onTap: () => setState(() {
-                    _selected = i < _presets.length ? _presets[i] : null;
-                  }),
-                ),
-              if (_selected == null)
-                TextField(
-                  controller: _custom,
-                  maxLength: 16,
-                  decoration: InputDecoration(
-                    labelText: context.l10n.metadataSeparatorCustom,
-                    errorText: valid || separator.isEmpty
-                        ? null
-                        : context.l10n.metadataSeparatorInvalid,
+    return SingleChildScrollView(
+      controller: widget.scrollController,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SettingsGroup(
+              children: [
+                for (var i = 0; i < labels.length; i++)
+                  SettingsItem(
+                    title: labels[i],
+                    trailing:
+                        (_selected ==
+                            (i < _presets.length ? _presets[i] : null))
+                        ? AppIcon(
+                            Icons.check,
+                            color: Theme.of(context).colorScheme.primary,
+                          )
+                        : const SizedBox.shrink(),
+                    showDivider: i != labels.length - 1,
+                    onTap: () => setState(() {
+                      _selected = i < _presets.length ? _presets[i] : null;
+                    }),
                   ),
-                  onChanged: (_) => setState(() {}),
-                ),
-              const SizedBox(height: 16),
-              Text(
-                context.l10n.metadataSeparatorPreview,
-                style: Theme.of(context).textTheme.labelLarge,
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_selected == null)
+                    TextField(
+                      controller: _custom,
+                      maxLength: 16,
+                      decoration: InputDecoration(
+                        labelText: context.l10n.metadataSeparatorCustom,
+                        errorText: valid || separator.isEmpty
+                            ? null
+                            : context.l10n.metadataSeparatorInvalid,
+                      ),
+                      onChanged: (_) => setState(() {}),
+                    ),
+                  const SizedBox(height: 16),
+                  AppContentCard(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.l10n.metadataSeparatorPreview,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            formatMetadataTagValue(
+                              example,
+                              valid ? separator : '',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ExpressiveButton(
+                    onPressed: valid
+                        ? () => Navigator.of(context).pop(separator)
+                        : null,
+                    child: Text(context.l10n.dialogSave),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(formatMetadataTagValue(example, valid ? separator : '')),
-              const SizedBox(height: 24),
-              ExpressiveButton(
-                onPressed: valid
-                    ? () => Navigator.of(context).pop(separator)
-                    : null,
-                child: Text(context.l10n.dialogSave),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

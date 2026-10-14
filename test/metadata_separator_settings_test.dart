@@ -7,6 +7,8 @@ import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/settings/metadata_separator_settings_page.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/settings_group.dart';
 
 class _Settings extends SettingsNotifier {
   @override
@@ -48,6 +50,14 @@ void main() {
           }
 
           await tap('Artist');
+          expect(find.byType(AppSheetHandle).hitTestable(), findsOneWidget);
+          expect(
+            find.descendant(
+              of: find.byType(AppBottomSheet),
+              matching: find.byType(SettingsGroup),
+            ),
+            findsOneWidget,
+          );
           await tap('Semicolon (;)');
           expect(find.text('Artist A; Artist B'), findsOneWidget);
           await tap('Save');
@@ -60,8 +70,16 @@ void main() {
           await tap('Custom separator');
           await tester.enterText(find.byType(TextField), ' | ');
           await tester.pumpAndSettle();
+          tester.view.viewInsets = FakeViewPadding(
+            bottom: size.height > size.width ? 300 : 150,
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(AppSheetHandle).hitTestable(), findsOneWidget);
+          expect(tester.takeException(), isNull);
           expect(find.text('Artist A | Artist B'), findsOneWidget);
           await tap('Save');
+          tester.view.viewInsets = const FakeViewPadding();
+          await tester.pumpAndSettle();
           expect(
             container.read(settingsProvider).metadataSeparators.artist,
             ' | ',
@@ -69,9 +87,11 @@ void main() {
           await tap('Artist');
           await tap('Slash (/)');
           // Dismissing a draft must not overwrite the saved preference.
-          await Navigator.of(
-            tester.element(find.byType(BottomSheet).first),
-          ).maybePop();
+          await tester.fling(
+            find.byType(AppSheetHandle),
+            Offset(0, size.height * 0.6),
+            1200,
+          );
           await tester.pumpAndSettle();
           expect(
             container.read(settingsProvider).metadataSeparators.artist,
