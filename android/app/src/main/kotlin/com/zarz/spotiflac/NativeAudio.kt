@@ -18,4 +18,9 @@ internal object NativeAudio {
     external fun readWavPack(handle: Long, frames: Int): ByteArray
     external fun seekWavPack(handle: Long, sample: Long)
     external fun closeWavPack(handle: Long)
+    external fun openFlac(path: String): Long
+    external fun infoFlac(handle: Long): LongArray
+    external fun readFlac(handle: Long, data: ByteBuffer, bits: Int): Int
+    external fun seekFlac(handle: Long, sample: Long)
+    external fun closeFlac(handle: Long)
 }

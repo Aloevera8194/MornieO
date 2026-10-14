@@ -70,6 +70,9 @@ void main() {
           yield LicenseEntryWithLineBreaks(const [
             'WavPack',
           ], await rootBundle.loadString('assets/licenses/wavpack.txt'));
+          yield LicenseEntryWithLineBreaks(const [
+            'libFLAC',
+          ], await rootBundle.loadString('assets/licenses/flac.txt'));
         }
       });
       _startupBenchmark?.observeFirstFrame();

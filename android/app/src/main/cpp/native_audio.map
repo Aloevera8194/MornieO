@@ -13,5 +13,10 @@
         Java_com_zarz_spotiflac_NativeAudio_readWavPack;
         Java_com_zarz_spotiflac_NativeAudio_seekWavPack;
         Java_com_zarz_spotiflac_NativeAudio_closeWavPack;
+        Java_com_zarz_spotiflac_NativeAudio_openFlac;
+        Java_com_zarz_spotiflac_NativeAudio_infoFlac;
+        Java_com_zarz_spotiflac_NativeAudio_readFlac;
+        Java_com_zarz_spotiflac_NativeAudio_seekFlac;
+        Java_com_zarz_spotiflac_NativeAudio_closeFlac;
     local: *;
 };
