@@ -408,44 +408,46 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
     String current,
   ) {
     final normalizedCurrent = normalizeAutoConvertFormat(current);
-    showAppBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
       title: context.l10n.downloadAutoConvertFormat,
       subtitle: context.l10n.downloadAutoConvertFormatSubtitle,
-      builder: (sheetContext) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final format in autoConvertFormats)
-            AppSheetOption(
-              leading: AppIcon(
-                format == 'opus'
-                    ? Icons.graphic_eq
-                    : format == 'aac'
-                    ? Icons.album_outlined
-                    : Icons.audiotrack,
+      builder: (sheetContext, controller) => SingleChildScrollView(
+        controller: controller,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final format in autoConvertFormats)
+              AppSheetOption(
+                leading: AppIcon(
+                  format == 'opus'
+                      ? Icons.graphic_eq
+                      : format == 'aac'
+                      ? Icons.album_outlined
+                      : Icons.audiotrack,
+                ),
+                title: Text(autoConvertFormatLabel(format)),
+                subtitle: Text(switch (format) {
+                  'aac' => context.l10n.downloadAutoConvertM4aSubtitle,
+                  'opus' => context.l10n.downloadAutoConvertOpusSubtitle,
+                  _ => context.l10n.downloadAutoConvertMp3Subtitle,
+                }),
+                trailing: normalizedCurrent == format
+                    ? AppIcon(
+                        Icons.check,
+                        color: Theme.of(sheetContext).colorScheme.primary,
+                      )
+                    : null,
+                onTap: () {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setAutoConvertFormat(format);
+                  Navigator.pop(sheetContext);
+                },
               ),
-              title: Text(autoConvertFormatLabel(format)),
-              subtitle: Text(switch (format) {
-                'aac' => context.l10n.downloadAutoConvertM4aSubtitle,
-                'opus' => context.l10n.downloadAutoConvertOpusSubtitle,
-                _ => context.l10n.downloadAutoConvertMp3Subtitle,
-              }),
-              trailing: normalizedCurrent == format
-                  ? AppIcon(
-                      Icons.check,
-                      color: Theme.of(sheetContext).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () {
-                ref
-                    .read(settingsProvider.notifier)
-                    .setAutoConvertFormat(format);
-                Navigator.pop(sheetContext);
-              },
-            ),
-          const SizedBox(height: 8),
-        ],
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
@@ -456,33 +458,35 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
     String current,
   ) {
     final normalizedCurrent = normalizeAutoConvertBitrate(current);
-    showAppBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
       title: context.l10n.downloadAutoConvertBitrate,
       subtitle: context.l10n.downloadAutoConvertBitrateSubtitle,
-      builder: (sheetContext) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final bitrate in autoConvertBitrates)
-            AppSheetOption(
-              leading: const AppIcon(Icons.speed_outlined),
-              title: Text(bitrate.replaceAll('k', ' kbps')),
-              trailing: normalizedCurrent == bitrate
-                  ? AppIcon(
-                      Icons.check,
-                      color: Theme.of(sheetContext).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () {
-                ref
-                    .read(settingsProvider.notifier)
-                    .setAutoConvertBitrate(bitrate);
-                Navigator.pop(sheetContext);
-              },
-            ),
-          const SizedBox(height: 8),
-        ],
+      builder: (sheetContext, controller) => SingleChildScrollView(
+        controller: controller,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final bitrate in autoConvertBitrates)
+              AppSheetOption(
+                leading: const AppIcon(Icons.speed_outlined),
+                title: Text(bitrate.replaceAll('k', ' kbps')),
+                trailing: normalizedCurrent == bitrate
+                    ? AppIcon(
+                        Icons.check,
+                        color: Theme.of(sheetContext).colorScheme.primary,
+                      )
+                    : null,
+                onTap: () {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setAutoConvertBitrate(bitrate);
+                  Navigator.pop(sheetContext);
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
@@ -493,33 +497,16 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
     String current,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
+      title: context.l10n.settingsDownloadNetwork,
+      subtitle: context.l10n.settingsDownloadNetworkSubtitle,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Text(
-                context.l10n.settingsDownloadNetwork,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Text(
-                context.l10n.settingsDownloadNetworkSubtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
             AppSheetOption(
               leading: const AppIcon(Icons.signal_cellular_alt),
               title: Text(context.l10n.settingsDownloadNetworkAny),
@@ -561,33 +548,16 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
     int current,
   ) {
     final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
+      title: context.l10n.settingsConcurrentDownloads,
+      subtitle: context.l10n.settingsConcurrentDownloadsSubtitle,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Text(
-                context.l10n.settingsConcurrentDownloads,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Text(
-                context.l10n.settingsConcurrentDownloadsSubtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
             for (final count in const [1, 2, 3])
               AppSheetOption(
                 leading: AppIcon(
@@ -809,14 +779,13 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
       'ZM',
       'ZW',
     ];
-    final colorScheme = Theme.of(context).colorScheme;
     final normalizedCurrent = current.trim().toUpperCase();
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      isScrollControlled: true,
-      builder: (context) => _RegionPickerSheet(
+      title: context.l10n.downloadSongLinkRegion,
+      subtitle: context.l10n.downloadSongLinkRegionDesc,
+      builder: (context, controller) => _RegionPickerSheet(
+        scrollController: controller,
         regions: regions,
         selected: normalizedCurrent,
         countryNameOf: (context, code) => _regionCountryName(context, code),
@@ -836,12 +805,14 @@ class _RegionPickerSheet extends StatefulWidget {
     required this.selected,
     required this.countryNameOf,
     required this.onSelected,
+    required this.scrollController,
   });
 
   final List<String> regions;
   final String selected;
   final String Function(BuildContext context, String code) countryNameOf;
   final ValueChanged<String> onSelected;
+  final ScrollController scrollController;
 
   @override
   State<_RegionPickerSheet> createState() => _RegionPickerSheetState();
@@ -871,70 +842,57 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
                 .contains(query);
           }).toList();
 
-    return SafeArea(
-      child: SizedBox(
-        height: MediaQuery.sizeOf(context).height * 0.7,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Text(
-                context.l10n.downloadSongLinkRegion,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-              child: Text(
-                context.l10n.downloadSongLinkRegionDesc,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: AppSearchField(
-                controller: _searchController,
-                onChanged: (value) => setState(() => _query = value),
-                hintText: MaterialLocalizations.of(context).searchFieldLabel,
-                clearTooltip: context.l10n.dialogClear,
-                onClear: () => setState(() => _query = ''),
-              ),
-            ),
-            Expanded(
-              child: matches.isEmpty
-                  ? Center(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: AppSearchField(
+            controller: _searchController,
+            onChanged: (value) => setState(() => _query = value),
+            hintText: MaterialLocalizations.of(context).searchFieldLabel,
+            clearTooltip: context.l10n.dialogClear,
+            onClear: () => setState(() => _query = ''),
+          ),
+        ),
+        Flexible(
+          child: matches.isEmpty
+              ? ListView(
+                  controller: widget.scrollController,
+                  shrinkWrap: true,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(24),
                       child: Text(
                         context.l10n.searchEmptyResultSubtitle,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: matches.length,
-                      itemBuilder: (context, index) {
-                        final code = matches[index];
-                        final isSelected = code == widget.selected;
-                        final countryName = widget.countryNameOf(context, code);
-                        return AppSheetOption(
-                          title: Text(countryName != code ? countryName : code),
-                          subtitle: countryName != code ? Text(code) : null,
-                          trailing: isSelected
-                              ? AppIcon(Icons.check, color: colorScheme.primary)
-                              : null,
-                          onTap: () => widget.onSelected(code),
-                        );
-                      },
                     ),
-            ),
-          ],
+                  ],
+                )
+              : ListView.builder(
+                  controller: widget.scrollController,
+                  shrinkWrap: true,
+                  itemCount: matches.length,
+                  itemBuilder: (context, index) {
+                    final code = matches[index];
+                    final isSelected = code == widget.selected;
+                    final countryName = widget.countryNameOf(context, code);
+                    return AppSheetOption(
+                      title: Text(countryName != code ? countryName : code),
+                      subtitle: countryName != code ? Text(code) : null,
+                      trailing: isSelected
+                          ? AppIcon(Icons.check, color: colorScheme.primary)
+                          : null,
+                      onTap: () => widget.onSelected(code),
+                    );
+                  },
+                ),
         ),
-      ),
+      ],
     );
   }
 }

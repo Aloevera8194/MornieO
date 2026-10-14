@@ -336,33 +336,16 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
 
   void _showAutoScanPicker(BuildContext context, String current) {
     final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
+      title: context.l10n.libraryAutoScan,
+      subtitle: context.l10n.libraryAutoScanSubtitle,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Text(
-                context.l10n.libraryAutoScan,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Text(
-                context.l10n.libraryAutoScanSubtitle,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
             _AutoScanOption(
               icon: Icons.block,
               title: context.l10n.libraryAutoScanOff,
@@ -445,24 +428,15 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
       ('artists', Icons.person, context.l10n.searchArtists),
       ('playlists', Icons.queue_music, context.l10n.searchPlaylists),
     ];
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
+      title: context.l10n.libraryDefaultView,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-              child: Text(
-                context.l10n.libraryDefaultView,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
             for (final (value, icon, label) in options)
               _AutoScanOption(
                 icon: icon,
@@ -532,24 +506,15 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
         context.l10n.libraryQualityLabelFileFormat,
       ),
     ];
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
+      title: context.l10n.trackAudioQuality,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
-              child: Text(
-                context.l10n.trackAudioQuality,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
             for (final (value, icon, label) in options)
               _AutoScanOption(
                 icon: icon,

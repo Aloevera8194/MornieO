@@ -30,7 +30,6 @@ const _alphabeticalSorts = {'a-z', 'z-a'};
 const _artistSorts = {'artist-asc', 'artist-desc'};
 const _albumSorts = {'album-asc', 'album-desc'};
 const _dateSorts = {'latest', 'oldest'};
-const _libraryOptionsSheetHeightFactor = 0.7;
 
 /// Sort choices offered by the Library sort sheet, in display order.
 const _librarySortModes = [
@@ -207,14 +206,7 @@ extension _QueueTabSections on _QueueTabState {
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
-    builder: (context) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: _libraryOptionsSheetHeightFactor,
-      maxChildSize: _libraryOptionsSheetHeightFactor,
-      minChildSize: 0.3,
-      snap: true,
-      builder: builder,
-    ),
+    builder: (context) => AppScrollableSheet(builder: builder),
   );
 
   Future<void> _showSortSheet(BuildContext context) async {

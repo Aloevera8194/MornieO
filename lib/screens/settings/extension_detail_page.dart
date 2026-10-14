@@ -1109,11 +1109,11 @@ class _SettingItemState extends State<_SettingItem> {
   }
 
   Future<void> _showOptions() async {
-    final value = await showAppBottomSheet<String>(
+    final value = await showAppScrollableBottomSheet<String>(
       context: context,
       title: widget.setting.label,
-      maxHeightFactor: 0.7,
-      builder: (sheetContext) => SingleChildScrollView(
+      builder: (sheetContext, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

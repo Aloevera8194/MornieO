@@ -958,63 +958,39 @@ class _LanguageSelector extends StatelessWidget {
 
   void _showLanguagePicker(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surface,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                context.l10n.appearanceLanguage,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      title: context.l10n.appearanceLanguage,
+      builder: (context, controller) => ListView.builder(
+        controller: controller,
+        shrinkWrap: true,
+        itemCount: supportedLanguageChoices.length,
+        itemBuilder: (context, index) {
+          final lang = supportedLanguageChoices[index];
+          final isSelected = currentLocale == lang.$1;
+          return AppSheetOption(
+            leading: AppIcon(
+              lang.$3,
+              color: isSelected
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
+            ),
+            title: Text(
+              lang.$2,
+              style: TextStyle(
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
-            const Divider(height: 1),
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: supportedLanguageChoices.length,
-                itemBuilder: (context, index) {
-                  final lang = supportedLanguageChoices[index];
-                  final isSelected = currentLocale == lang.$1;
-                  return AppSheetOption(
-                    leading: AppIcon(
-                      lang.$3,
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
-                    ),
-                    title: Text(
-                      lang.$2,
-                      style: TextStyle(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.onSurface,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.normal,
-                      ),
-                    ),
-                    trailing: isSelected
-                        ? AppIcon(Icons.check, color: colorScheme.primary)
-                        : null,
-                    onTap: () {
-                      onChanged(lang.$1);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
+            trailing: isSelected
+                ? AppIcon(Icons.check, color: colorScheme.primary)
+                : null,
+            onTap: () {
+              onChanged(lang.$1);
+              Navigator.pop(context);
+            },
+          );
+        },
       ),
     );
   }

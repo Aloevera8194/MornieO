@@ -229,34 +229,16 @@ class LyricsSettingsPage extends ConsumerWidget {
     WidgetRef ref,
     String current,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
+      title: context.l10n.lyricsMode,
+      subtitle: context.l10n.lyricsModeDescription,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Text(
-                context.l10n.lyricsMode,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Text(
-                context.l10n.lyricsModeDescription,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
             AppSheetOption(
               leading: const AppIcon(Icons.audiotrack),
               title: Text(context.l10n.lyricsModeEmbed),
@@ -301,39 +283,19 @@ class LyricsSettingsPage extends ConsumerWidget {
     WidgetRef ref,
     String currentLanguage,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
     final controller = TextEditingController(text: currentLanguage);
 
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          left: 24,
-          right: 24,
-          top: 24,
-          bottom: 24 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
+      title: context.l10n.downloadMusixmatchLanguage,
+      subtitle: context.l10n.downloadMusixmatchLanguageDesc,
+      builder: (context, scrollController) => SingleChildScrollView(
+        controller: scrollController,
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              context.l10n.downloadMusixmatchLanguage,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              context.l10n.downloadMusixmatchLanguageDesc,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 16),
             TextField(
               controller: controller,
               textInputAction: TextInputAction.done,

@@ -30,6 +30,167 @@ void main() {
           : ThemeData(brightness: brightness);
       final variant = 'Mornye: $mornye, $brightness';
 
+      testWidgets(
+        'short sheets fit their content and resize with options ($variant)',
+        (tester) async {
+          tester.view.physicalSize = const Size(390, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          final count = ValueNotifier(2);
+          addTearDown(count.dispose);
+          await tester.pumpWidget(
+            _app(
+              theme,
+              Builder(
+                builder: (context) => Scaffold(
+                  body: TextButton(
+                    child: const Text('Open options'),
+                    onPressed: () => showAppScrollableBottomSheet<void>(
+                      context: context,
+                      title: 'Options',
+                      builder: (context, controller) =>
+                          ValueListenableBuilder<int>(
+                            valueListenable: count,
+                            builder: (context, count, _) =>
+                                SingleChildScrollView(
+                                  controller: controller,
+                                  child: Column(
+                                    children: [
+                                      for (var i = 0; i < count; i++)
+                                        AppSheetOption(
+                                          title: Text('Option $i'),
+                                          onTap: () {},
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                          ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.tap(find.text('Open options'));
+          await tester.pumpAndSettle();
+          final sheet = find.byType(AppBottomSheet);
+          final shortHeight = tester.getSize(sheet).height;
+          expect(shortHeight, lessThan(844 * 0.5));
+          expect(
+            tester.getRect(sheet).bottom -
+                tester.getRect(find.text('Option 1')).bottom,
+            lessThan(40),
+          );
+          final scroll = find.descendant(
+            of: sheet,
+            matching: find.byType(SingleChildScrollView),
+          );
+          await tester.drag(scroll, const Offset(0, -250));
+          await tester.pumpAndSettle();
+          expect(tester.getSize(sheet).height, closeTo(shortHeight, 1));
+          count.value = 4;
+          await tester.pumpAndSettle();
+          expect(tester.getSize(sheet).height, greaterThan(shortHeight));
+          expect(tester.getSize(sheet).height, lessThan(844 * 0.85));
+          count.value = 40;
+          await tester.pumpAndSettle();
+          expect(tester.getSize(sheet).height, closeTo(844 * 0.85, 1));
+          await tester.drag(scroll, const Offset(0, -400));
+          await tester.pumpAndSettle();
+          count.value = 1;
+          await tester.pumpAndSettle();
+          expect(tester.getSize(sheet).height, lessThan(shortHeight));
+          expect(find.text('Option 0').hitTestable(), findsOneWidget);
+          await tester.fling(scroll, const Offset(0, 200), 1200);
+          await tester.pumpAndSettle();
+          expect(sheet, findsNothing);
+          expect(tester.takeException(), isNull);
+        },
+      );
+
+      testWidgets(
+        'scrollable sheet keeps its header and dismisses from body or handle ($variant)',
+        (tester) async {
+          tester.view.physicalSize = const Size(390, 844);
+          tester.view.devicePixelRatio = 1;
+          addTearDown(tester.view.reset);
+          int? selected;
+          await tester.pumpWidget(
+            _app(
+              theme,
+              Builder(
+                builder: (context) => Scaffold(
+                  body: TextButton(
+                    child: const Text('Open options'),
+                    onPressed: () async {
+                      selected = await showAppScrollableBottomSheet<int>(
+                        context: context,
+                        title: 'Options',
+                        builder: (context, controller) => SingleChildScrollView(
+                          controller: controller,
+                          child: Column(
+                            children: [
+                              for (var i = 0; i < 40; i++)
+                                AppSheetOption(
+                                  title: Text('Option $i'),
+                                  onTap: () => Navigator.pop(context, i),
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          );
+          Future<void> open() async {
+            await tester.tap(find.text('Open options'));
+            await tester.pumpAndSettle();
+            expect(
+              tester.getSize(find.byType(AppBottomSheet)).height,
+              closeTo(844 * 0.85, 1),
+            );
+            expect(find.byType(AppSheetHandle).hitTestable(), findsOneWidget);
+          }
+
+          await open();
+          final scroll = find.descendant(
+            of: find.byType(AppBottomSheet),
+            matching: find.byType(SingleChildScrollView),
+          );
+          await tester.drag(scroll, const Offset(0, -400));
+          await tester.pumpAndSettle();
+          expect(
+            tester.getSize(find.byType(AppBottomSheet)).height,
+            closeTo(844 * 0.95, 1),
+          );
+          expect(find.text('Options').hitTestable(), findsOneWidget);
+          expect(find.byType(AppSheetHandle).hitTestable(), findsOneWidget);
+          await tester.ensureVisible(find.text('Option 39'));
+          await tester.pumpAndSettle();
+          await tester.tap(find.text('Option 39'));
+          await tester.pumpAndSettle();
+          expect(selected, 39);
+          await open();
+          await tester.fling(scroll, const Offset(0, 400), 1200);
+          await tester.pumpAndSettle();
+          expect(find.byType(AppBottomSheet), findsNothing);
+          await open();
+          await tester.drag(scroll, const Offset(0, -400));
+          await tester.pumpAndSettle();
+          await tester.fling(
+            find.byType(AppSheetHandle),
+            const Offset(0, 300),
+            1200,
+          );
+          await tester.pumpAndSettle();
+          expect(find.byType(AppBottomSheet), findsNothing);
+          expect(tester.takeException(), isNull);
+        },
+      );
+
       testWidgets('sheet selects, disables and returns values ($variant)', (
         tester,
       ) async {

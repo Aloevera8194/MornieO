@@ -186,59 +186,36 @@ class MetadataSettingsPage extends ConsumerWidget {
     int currentMaxDimension,
   ) {
     const options = [0, 500, 1000, 1500, 2000];
-    final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      isScrollControlled: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                child: Text(
-                  context.l10n.optionsEmbeddedCoverSize,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+      title: context.l10n.optionsEmbeddedCoverSize,
+      subtitle: context.l10n.optionsEmbeddedCoverSizeDescription,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final maxDimension in options)
+              AppSheetOption(
+                leading: AppIcon(
+                  maxDimension == 0
+                      ? Icons.image_outlined
+                      : Icons.compress_outlined,
                 ),
+                title: Text(_getEmbeddedCoverSizeLabel(context, maxDimension)),
+                trailing: currentMaxDimension == maxDimension
+                    ? const AppIcon(Icons.check)
+                    : null,
+                onTap: () {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setEmbeddedCoverMaxDimension(maxDimension);
+                  Navigator.pop(context);
+                },
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-                child: Text(
-                  context.l10n.optionsEmbeddedCoverSizeDescription,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              for (final maxDimension in options)
-                AppSheetOption(
-                  leading: AppIcon(
-                    maxDimension == 0
-                        ? Icons.image_outlined
-                        : Icons.compress_outlined,
-                  ),
-                  title: Text(
-                    _getEmbeddedCoverSizeLabel(context, maxDimension),
-                  ),
-                  trailing: currentMaxDimension == maxDimension
-                      ? const AppIcon(Icons.check)
-                      : null,
-                  onTap: () {
-                    ref
-                        .read(settingsProvider.notifier)
-                        .setEmbeddedCoverMaxDimension(maxDimension);
-                    Navigator.pop(context);
-                  },
-                ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );
@@ -249,87 +226,62 @@ class MetadataSettingsPage extends ConsumerWidget {
     WidgetRef ref,
     String currentMode,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      // Three described options can exceed the default sheet height on
-      // small or landscape screens, as the cover-size picker above does.
-      isScrollControlled: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                child: Text(
-                  context.l10n.optionsArtistTagMode,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
+      title: context.l10n.optionsArtistTagMode,
+      subtitle: context.l10n.optionsArtistTagModeDescription,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppSheetOption(
+              leading: const AppIcon(Icons.segment_outlined),
+              title: Text(context.l10n.optionsArtistTagModeJoined),
+              subtitle: Text(context.l10n.optionsArtistTagModeJoinedSubtitle),
+              trailing: currentMode == artistTagModeJoined
+                  ? const AppIcon(Icons.check)
+                  : null,
+              onTap: () {
+                ref
+                    .read(settingsProvider.notifier)
+                    .setArtistTagMode(artistTagModeJoined);
+                Navigator.pop(context);
+              },
+            ),
+            AppSheetOption(
+              leading: const AppIcon(Icons.library_music_outlined),
+              title: Text(context.l10n.optionsArtistTagModeSplitVorbis),
+              subtitle: Text(
+                context.l10n.optionsArtistTagModeSplitVorbisSubtitle,
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                child: Text(
-                  context.l10n.optionsArtistTagModeDescription,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              AppSheetOption(
-                leading: const AppIcon(Icons.segment_outlined),
-                title: Text(context.l10n.optionsArtistTagModeJoined),
-                subtitle: Text(context.l10n.optionsArtistTagModeJoinedSubtitle),
-                trailing: currentMode == artistTagModeJoined
-                    ? const AppIcon(Icons.check)
-                    : null,
-                onTap: () {
-                  ref
-                      .read(settingsProvider.notifier)
-                      .setArtistTagMode(artistTagModeJoined);
-                  Navigator.pop(context);
-                },
-              ),
-              AppSheetOption(
-                leading: const AppIcon(Icons.library_music_outlined),
-                title: Text(context.l10n.optionsArtistTagModeSplitVorbis),
-                subtitle: Text(
-                  context.l10n.optionsArtistTagModeSplitVorbisSubtitle,
-                ),
-                trailing: currentMode == artistTagModeSplitVorbis
-                    ? const AppIcon(Icons.check)
-                    : null,
-                onTap: () {
-                  ref
-                      .read(settingsProvider.notifier)
-                      .setArtistTagMode(artistTagModeSplitVorbis);
-                  Navigator.pop(context);
-                },
-              ),
-              AppSheetOption(
-                leading: const AppIcon(Icons.person_outline),
-                title: Text(context.l10n.optionsArtistTagModePrimary),
-                subtitle: Text(
-                  context.l10n.optionsArtistTagModePrimarySubtitle,
-                ),
-                trailing: currentMode == artistTagModePrimary
-                    ? const AppIcon(Icons.check)
-                    : null,
-                onTap: () {
-                  ref
-                      .read(settingsProvider.notifier)
-                      .setArtistTagMode(artistTagModePrimary);
-                  Navigator.pop(context);
-                },
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+              trailing: currentMode == artistTagModeSplitVorbis
+                  ? const AppIcon(Icons.check)
+                  : null,
+              onTap: () {
+                ref
+                    .read(settingsProvider.notifier)
+                    .setArtistTagMode(artistTagModeSplitVorbis);
+                Navigator.pop(context);
+              },
+            ),
+            AppSheetOption(
+              leading: const AppIcon(Icons.person_outline),
+              title: Text(context.l10n.optionsArtistTagModePrimary),
+              subtitle: Text(context.l10n.optionsArtistTagModePrimarySubtitle),
+              trailing: currentMode == artistTagModePrimary
+                  ? const AppIcon(Icons.check)
+                  : null,
+              onTap: () {
+                ref
+                    .read(settingsProvider.notifier)
+                    .setArtistTagMode(artistTagModePrimary);
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );

@@ -343,7 +343,8 @@ void main() {
       expect(find.text('Shell navigation').hitTestable(), findsNothing);
       final sortSheet = find.byType(AppBottomSheet);
       final sheetHeight = tester.getSize(sortSheet).height;
-      expect(sheetHeight, lessThan(915 * 0.75));
+      expect(sheetHeight, lessThan(915 * 0.85));
+      expect(find.text('Genre (Z-A)').hitTestable(), findsOneWidget);
       final sheetScroll = find.descendant(
         of: sortSheet,
         matching: find.byType(SingleChildScrollView),
@@ -365,7 +366,16 @@ void main() {
       await tester.tap(find.text('Filters').hitTestable());
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
-      expect(tester.getSize(sortSheet).height, closeTo(sheetHeight, 1));
+      expect(tester.getSize(sortSheet).height, closeTo(915 * 0.85, 1));
+      expect(tester.getSize(sortSheet).height, greaterThan(sheetHeight));
+      await tester.drag(sheetScroll, const Offset(0, -200));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(tester.getSize(sortSheet).height, closeTo(915 * 0.95, 1));
+      // At full height, return the body to its top before swiping to dismiss.
+      await tester.drag(sheetScroll, const Offset(0, 200));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
       await tester.drag(sheetScroll, const Offset(0, 450));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
@@ -378,7 +388,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
       expect(find.byType(AppSheetHandle).hitTestable(), findsOneWidget);
       expect(find.text('Reset').hitTestable(), findsOneWidget);
-      await tester.drag(find.byType(AppSheetHandle), const Offset(0, 450));
+      await tester.fling(
+        find.byType(AppSheetHandle),
+        const Offset(0, 300),
+        1000,
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
       expect(sortSheet, findsNothing);

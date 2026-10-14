@@ -519,33 +519,16 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
     final settings = ref.read(settingsProvider);
     final isSafMode =
         settings.storageMode == 'saf' && settings.downloadTreeUri.isNotEmpty;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (ctx) => SafeArea(
+      title: context.l10n.setupDownloadLocationTitle,
+      subtitle: context.l10n.downloadLocationSubtitle,
+      builder: (ctx, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Text(
-                context.l10n.setupDownloadLocationTitle,
-                style: Theme.of(
-                  ctx,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Text(
-                context.l10n.downloadLocationSubtitle,
-                style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
             AppSheetOption(
               leading: AppIcon(
                 Icons.folder_special,
@@ -583,33 +566,16 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
 
   void _showIOSDirectoryOptions(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      builder: (ctx) => SafeArea(
+      title: context.l10n.setupDownloadLocationTitle,
+      subtitle: context.l10n.setupDownloadLocationIosMessage,
+      builder: (ctx, controller) => SingleChildScrollView(
+        controller: controller,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-              child: Text(
-                context.l10n.setupDownloadLocationTitle,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-              child: Text(
-                context.l10n.setupDownloadLocationIosMessage,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ),
             AppSheetOption(
               leading: AppIcon(
                 Icons.folder_special,
@@ -708,20 +674,27 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
     String? title,
     String? description,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     final save =
         onSave ?? ref.read(settingsProvider.notifier).setFilenameFormat;
 
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: colorScheme.surface,
-      builder: (context) => _FilenameFormatEditorSheet(
+      title: title ?? context.l10n.filenameFormat,
+      subtitle:
+          description ??
+          context.l10n.downloadFilenameDescription(
+            '{album}',
+            '{artist}',
+            '{date}',
+            '{disc}',
+            '{title}',
+            '{track}',
+            '{year}',
+          ),
+      builder: (context, controller) => _FilenameFormatEditorSheet(
         initialText: current,
         onSave: save,
-        title: title,
-        description: description,
+        scrollController: controller,
       ),
     );
   }
@@ -731,93 +704,69 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
     WidgetRef ref,
     String current,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      isScrollControlled: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.7,
-      ),
-      builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                child: Text(
-                  context.l10n.downloadAlbumFolderStructure,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
+      title: context.l10n.downloadAlbumFolderStructure,
+      subtitle: context.l10n.albumFolderStructureDescription,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final option in [
+              (
+                'artist_album',
+                context.l10n.albumFolderArtistAlbum,
+                context.l10n.albumFolderArtistAlbumSubtitle,
+                Icons.folder_outlined,
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                child: Text(
-                  context.l10n.albumFolderStructureDescription,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
+              (
+                'artist_year_album',
+                context.l10n.albumFolderArtistYearAlbum,
+                context.l10n.albumFolderArtistYearAlbumSubtitle,
+                Icons.calendar_today_outlined,
               ),
-              for (final option in [
-                (
-                  'artist_album',
-                  context.l10n.albumFolderArtistAlbum,
-                  context.l10n.albumFolderArtistAlbumSubtitle,
-                  Icons.folder_outlined,
-                ),
-                (
-                  'artist_year_album',
-                  context.l10n.albumFolderArtistYearAlbum,
-                  context.l10n.albumFolderArtistYearAlbumSubtitle,
-                  Icons.calendar_today_outlined,
-                ),
-                (
-                  'album_only',
-                  context.l10n.albumFolderAlbumOnly,
-                  context.l10n.albumFolderAlbumOnlySubtitle,
-                  Icons.album_outlined,
-                ),
-                (
-                  'year_album',
-                  context.l10n.albumFolderYearAlbum,
-                  context.l10n.albumFolderYearAlbumSubtitle,
-                  Icons.event_outlined,
-                ),
-                (
-                  'artist_album_singles',
-                  context.l10n.albumFolderArtistAlbumSingles,
-                  context.l10n.albumFolderArtistAlbumSinglesSubtitle,
-                  Icons.person_outlined,
-                ),
-                (
-                  'artist_album_flat',
-                  context.l10n.albumFolderArtistAlbumFlat,
-                  context.l10n.albumFolderArtistAlbumFlatSubtitle,
-                  Icons.person_outline_outlined,
-                ),
-              ])
-                AppSheetOption(
-                  leading: AppIcon(option.$4),
-                  title: Text(option.$2),
-                  subtitle: Text(option.$3),
-                  trailing: current == option.$1
-                      ? const AppIcon(Icons.check)
-                      : null,
-                  onTap: () {
-                    ref
-                        .read(settingsProvider.notifier)
-                        .setAlbumFolderStructure(option.$1);
-                    Navigator.pop(context);
-                  },
-                ),
-            ],
-          ),
+              (
+                'album_only',
+                context.l10n.albumFolderAlbumOnly,
+                context.l10n.albumFolderAlbumOnlySubtitle,
+                Icons.album_outlined,
+              ),
+              (
+                'year_album',
+                context.l10n.albumFolderYearAlbum,
+                context.l10n.albumFolderYearAlbumSubtitle,
+                Icons.event_outlined,
+              ),
+              (
+                'artist_album_singles',
+                context.l10n.albumFolderArtistAlbumSingles,
+                context.l10n.albumFolderArtistAlbumSinglesSubtitle,
+                Icons.person_outlined,
+              ),
+              (
+                'artist_album_flat',
+                context.l10n.albumFolderArtistAlbumFlat,
+                context.l10n.albumFolderArtistAlbumFlatSubtitle,
+                Icons.person_outline_outlined,
+              ),
+            ])
+              AppSheetOption(
+                leading: AppIcon(option.$4),
+                title: Text(option.$2),
+                subtitle: Text(option.$3),
+                trailing: current == option.$1
+                    ? const AppIcon(Icons.check)
+                    : null,
+                onTap: () {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setAlbumFolderStructure(option.$1);
+                  Navigator.pop(context);
+                },
+              ),
+          ],
         ),
       ),
     );
@@ -828,85 +777,61 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
     WidgetRef ref,
     String current,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showAppModalBottomSheet<void>(
+    showAppScrollableBottomSheet<void>(
       context: context,
-      useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
-      isScrollControlled: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.7,
-      ),
-      builder: (context) => SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                child: Text(
-                  context.l10n.downloadFolderOrganization,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
+      title: context.l10n.downloadFolderOrganization,
+      subtitle: context.l10n.folderOrganizationDescription,
+      builder: (context, controller) => SingleChildScrollView(
+        controller: controller,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            for (final option in [
+              (
+                'none',
+                context.l10n.folderOrganizationNone,
+                context.l10n.folderOrganizationNoneSubtitle,
+                'SpotiFLAC/Track.flac',
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                child: Text(
-                  context.l10n.folderOrganizationDescription,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
+              (
+                'playlist',
+                context.l10n.folderOrganizationByPlaylist,
+                context.l10n.folderOrganizationByPlaylistSubtitle,
+                'SpotiFLAC/Playlist Name/Track.flac',
               ),
-              for (final option in [
-                (
-                  'none',
-                  context.l10n.folderOrganizationNone,
-                  context.l10n.folderOrganizationNoneSubtitle,
-                  'SpotiFLAC/Track.flac',
-                ),
-                (
-                  'playlist',
-                  context.l10n.folderOrganizationByPlaylist,
-                  context.l10n.folderOrganizationByPlaylistSubtitle,
-                  'SpotiFLAC/Playlist Name/Track.flac',
-                ),
-                (
-                  'artist',
-                  context.l10n.folderOrganizationByArtist,
-                  context.l10n.folderOrganizationByArtistSubtitle,
-                  'SpotiFLAC/Artist Name/Track.flac',
-                ),
-                (
-                  'album',
-                  context.l10n.folderOrganizationByAlbum,
-                  context.l10n.folderOrganizationByAlbumSubtitle,
-                  'SpotiFLAC/Album Name/Track.flac',
-                ),
-                (
-                  'artist_album',
-                  context.l10n.folderOrganizationByArtistAlbum,
-                  context.l10n.folderOrganizationByArtistAlbumSubtitle,
-                  'SpotiFLAC/Artist/Album/Track.flac',
-                ),
-              ])
-                _FolderOption(
-                  title: option.$2,
-                  subtitle: option.$3,
-                  example: option.$4,
-                  isSelected: current == option.$1,
-                  onTap: () {
-                    ref
-                        .read(settingsProvider.notifier)
-                        .setFolderOrganization(option.$1);
-                    Navigator.pop(context);
-                  },
-                ),
-            ],
-          ),
+              (
+                'artist',
+                context.l10n.folderOrganizationByArtist,
+                context.l10n.folderOrganizationByArtistSubtitle,
+                'SpotiFLAC/Artist Name/Track.flac',
+              ),
+              (
+                'album',
+                context.l10n.folderOrganizationByAlbum,
+                context.l10n.folderOrganizationByAlbumSubtitle,
+                'SpotiFLAC/Album Name/Track.flac',
+              ),
+              (
+                'artist_album',
+                context.l10n.folderOrganizationByArtistAlbum,
+                context.l10n.folderOrganizationByArtistAlbumSubtitle,
+                'SpotiFLAC/Artist/Album/Track.flac',
+              ),
+            ])
+              _FolderOption(
+                title: option.$2,
+                subtitle: option.$3,
+                example: option.$4,
+                isSelected: current == option.$1,
+                onTap: () {
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setFolderOrganization(option.$1);
+                  Navigator.pop(context);
+                },
+              ),
+          ],
         ),
       ),
     );
@@ -961,14 +886,12 @@ class _FolderOption extends StatelessWidget {
 class _FilenameFormatEditorSheet extends StatefulWidget {
   final String initialText;
   final void Function(String) onSave;
-  final String? title;
-  final String? description;
+  final ScrollController scrollController;
 
   const _FilenameFormatEditorSheet({
     required this.initialText,
     required this.onSave,
-    this.title,
-    this.description,
+    required this.scrollController,
   });
 
   @override
@@ -1069,133 +992,98 @@ class _FilenameFormatEditorSheetState
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
-      child: SingleChildScrollView(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const AppSheetHandle(),
-                Text(
-                  widget.title ?? context.l10n.filenameFormat,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  widget.description ??
-                      context.l10n.downloadFilenameDescription(
-                        '{album}',
-                        '{artist}',
-                        '{date}',
-                        '{disc}',
-                        '{title}',
-                        '{track}',
-                        '{year}',
-                      ),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                TextField(
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    hintText: '{artist} - {title}',
-                    filled: true,
-                    fillColor: colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.3,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  autofocus: true,
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  context.l10n.downloadFilenameInsertTag,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: _basicTags
-                      .map((tag) => _tagChip(colorScheme, tag))
-                      .toList(),
-                ),
-                const SizedBox(height: 12),
-                AppSwitchListTile(
-                  value: _showAdvancedTags,
-                  onChanged: (value) =>
-                      setState(() => _showAdvancedTags = value),
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(context.l10n.filenameShowAdvancedTags),
-                  subtitle: Text(
-                    context.l10n.filenameShowAdvancedTagsDescription,
-                  ),
-                ),
-                if (_showAdvancedTags) ...[
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _advancedTags
-                        .map((tag) => _tagChip(colorScheme, tag))
-                        .toList(),
-                  ),
-                ],
-                const SizedBox(height: 32),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AppDialogAction(
-                        onPressed: () => Navigator.pop(context),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(context.l10n.dialogCancel),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: AppDialogAction(
-                        filled: true,
-                        onPressed: () {
-                          widget.onSave(_controller.text);
-                          Navigator.pop(context);
-                        },
-                        style: FilledButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Text(context.l10n.dialogSave),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-              ],
+    return SingleChildScrollView(
+      controller: widget.scrollController,
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _controller,
+            decoration: InputDecoration(
+              hintText: '{artist} - {title}',
+              filled: true,
+              fillColor: colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.3,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
             ),
+            autofocus: true,
           ),
-        ),
+          const SizedBox(height: 24),
+          Text(
+            context.l10n.downloadFilenameInsertTag,
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _basicTags
+                .map((tag) => _tagChip(colorScheme, tag))
+                .toList(),
+          ),
+          const SizedBox(height: 12),
+          AppSwitchListTile(
+            value: _showAdvancedTags,
+            onChanged: (value) => setState(() => _showAdvancedTags = value),
+            contentPadding: EdgeInsets.zero,
+            title: Text(context.l10n.filenameShowAdvancedTags),
+            subtitle: Text(context.l10n.filenameShowAdvancedTagsDescription),
+          ),
+          if (_showAdvancedTags) ...[
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _advancedTags
+                  .map((tag) => _tagChip(colorScheme, tag))
+                  .toList(),
+            ),
+          ],
+          const SizedBox(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: AppDialogAction(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(context.l10n.dialogCancel),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: AppDialogAction(
+                  filled: true,
+                  onPressed: () {
+                    widget.onSave(_controller.text);
+                    Navigator.pop(context);
+                  },
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(context.l10n.dialogSave),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+        ],
       ),
     );
   }
