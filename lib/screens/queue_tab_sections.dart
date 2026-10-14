@@ -30,6 +30,7 @@ const _alphabeticalSorts = {'a-z', 'z-a'};
 const _artistSorts = {'artist-asc', 'artist-desc'};
 const _albumSorts = {'album-asc', 'album-desc'};
 const _dateSorts = {'latest', 'oldest'};
+const _libraryOptionsSheetHeightFactor = 0.7;
 
 /// Sort choices offered by the Library sort sheet, in display order.
 const _librarySortModes = [
@@ -199,27 +200,66 @@ extension _QueueTabSections on _QueueTabState {
     );
   }
 
+  Future<T?> _showLibraryOptionsSheet<T>(
+    BuildContext context, {
+    required ScrollableWidgetBuilder builder,
+  }) => showAppModalBottomSheet<T>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    builder: (context) => DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: _libraryOptionsSheetHeightFactor,
+      maxChildSize: _libraryOptionsSheetHeightFactor,
+      minChildSize: 0.3,
+      snap: true,
+      builder: builder,
+    ),
+  );
+
   Future<void> _showSortSheet(BuildContext context) async {
-    final selected = await showAppBottomSheet<String>(
-      context: context,
-      title: context.l10n.libraryFilterSort,
-      builder: (sheetContext) => SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: sheetContext.tokens.gapLg),
-        child: SettingsGroup(
-          children: [
-            for (final mode in _librarySortModes)
-              SettingsItem(
-                title: _sortLabel(sheetContext, mode),
-                trailing: mode == _sortMode
-                    ? AppIcon(
-                        Icons.check,
-                        color: Theme.of(sheetContext).colorScheme.primary,
-                      )
-                    : null,
-                showDivider: mode != _librarySortModes.last,
-                onTap: () => Navigator.pop(sheetContext, mode),
-              ),
-          ],
+    final selected = await _showLibraryOptionsSheet<String>(
+      context,
+      builder: (sheetContext, scrollController) => AppBottomSheet(
+        title: sheetContext.l10n.libraryFilterSort,
+        child: SingleChildScrollView(
+          controller: scrollController,
+          padding: EdgeInsets.only(bottom: sheetContext.tokens.gapLg),
+          child: SettingsGroup(
+            children: [
+              for (final mode in _librarySortModes)
+                if (sheetContext.isMornye)
+                  SettingsItem(
+                    title: _sortLabel(sheetContext, mode),
+                    trailing: mode == _sortMode
+                        ? AppIcon(
+                            Icons.check,
+                            color: Theme.of(sheetContext).colorScheme.primary,
+                          )
+                        : const SizedBox.shrink(),
+                    showDivider: mode != _librarySortModes.last,
+                    onTap: () => Navigator.pop(sheetContext, mode),
+                  )
+                else
+                  ListTile(
+                    dense: true,
+                    minTileHeight: sheetContext.tokens.minTouchTarget,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: sheetContext.tokens.rowPaddingH,
+                    ),
+                    titleTextStyle: Theme.of(sheetContext).textTheme.bodyLarge,
+                    title: Text(_sortLabel(sheetContext, mode)),
+                    selected: mode == _sortMode,
+                    trailing: mode == _sortMode
+                        ? AppIcon(
+                            Icons.check,
+                            color: Theme.of(sheetContext).colorScheme.primary,
+                          )
+                        : null,
+                    onTap: () => Navigator.pop(sheetContext, mode),
+                  ),
+            ],
+          ),
         ),
       ),
     );

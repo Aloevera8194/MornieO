@@ -53,6 +53,7 @@ class AppBottomSheet extends StatelessWidget {
     required this.child,
     this.showHandle = true,
     this.title,
+    this.titleTrailing,
     this.subtitle,
     this.maxHeightFactor,
   });
@@ -63,6 +64,9 @@ class AppBottomSheet extends StatelessWidget {
   /// Leading title row. Rendered with the app's single sheet-title style
   /// instead of the three variants that had accumulated across sheets.
   final String? title;
+
+  /// Optional action beside [title], outside the scrolling body.
+  final Widget? titleTrailing;
 
   /// Secondary line under [title], e.g. the track a sheet is acting on.
   final String? subtitle;
@@ -88,11 +92,21 @@ class AppBottomSheet extends StatelessWidget {
               tokens.gapXl,
               subtitle == null ? tokens.gapSm : tokens.gapXs,
             ),
-            child: Text(
-              title!,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title!,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                if (titleTrailing != null) ...[
+                  SizedBox(width: tokens.gapSm),
+                  titleTrailing!,
+                ],
+              ],
             ),
           ),
         if (subtitle != null)
