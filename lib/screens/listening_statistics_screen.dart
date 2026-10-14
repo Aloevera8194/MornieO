@@ -8,12 +8,13 @@ import 'package:spotiflac_android/services/listening_statistics.dart';
 import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/animation_utils.dart'
+    show SkeletonBox;
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/app_shape.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
@@ -148,9 +149,7 @@ class _ListeningStatisticsScreenState
             ),
             ...summary.when(
               loading: () => [
-                const SliverToBoxAdapter(
-                  child: Center(child: AppLoadingIndicator()),
-                ),
+                SliverToBoxAdapter(child: _summarySkeleton(context)),
               ],
               error: (error, _) => [
                 SliverToBoxAdapter(
@@ -205,6 +204,100 @@ class _ListeningStatisticsScreenState
           last: index == count - 1,
         ),
         child: child,
+      ),
+    );
+  }
+
+  Widget _summarySkeleton(BuildContext context) {
+    final mornye = context.isMornye;
+    return ExcludeSemantics(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Card(
+              color: mornye
+                  ? null
+                  : Theme.of(context).colorScheme.primaryContainer,
+              child: Padding(
+                padding: EdgeInsets.all(mornye ? 20 : 24),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(width: 180, height: 44),
+                    SizedBox(height: 8),
+                    SkeletonBox(width: double.infinity, height: 20),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SettingsSectionHeader(title: context.l10n.listeningStatsActivity),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                for (var index = 0; index < 7; index++)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        SkeletonBox(width: 68, height: 20),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: SkeletonBox(
+                            width: double.infinity,
+                            height: 12,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        SkeletonBox(width: 24, height: 16),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          for (final artists in [true, false]) ...[
+            SettingsSectionHeader(
+              title: artists
+                  ? context.l10n.listeningStatsTopArtists
+                  : context.l10n.listeningStatsTopTracks,
+            ),
+            for (var index = 0; index < 3; index++)
+              _connectedRow(
+                context,
+                index: index,
+                count: 3,
+                child: ListTile(
+                  leading: artists
+                      ? const AppShapeClip(
+                          kind: AppShapes.artist,
+                          child: SkeletonBox(
+                            width: 48,
+                            height: 48,
+                            borderRadius: 0,
+                          ),
+                        )
+                      : const SkeletonBox(width: 48, height: 48),
+                  title: const Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: SkeletonBox(width: 160, height: 16),
+                  ),
+                  subtitle: const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: SkeletonBox(width: 88, height: 12),
+                    ),
+                  ),
+                  trailing: artists
+                      ? null
+                      : const SkeletonBox(width: 40, height: 12),
+                ),
+              ),
+          ],
+        ],
       ),
     );
   }
