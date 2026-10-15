@@ -6,11 +6,11 @@ import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus;
 import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_menu_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/utils/ordered_range_selection.dart';
@@ -349,12 +349,11 @@ class _LogScreenState extends State<LogScreen> {
                         tooltip: context.l10n.logCopyLogs,
                         onPressed: _copyLogs,
                       ),
-                      PopupMenuButton<String>(
+                      AppMenuButton<String>(
                         icon: const AppIcon(Icons.more_vert),
                         tooltip: MaterialLocalizations.of(
                           context,
                         ).showMenuTooltip,
-                        popUpAnimationStyle: AppMotion.surfaceEntrance(context),
                         onSelected: (value) {
                           switch (value) {
                             case 'share':
@@ -365,22 +364,16 @@ class _LogScreenState extends State<LogScreen> {
                               break;
                           }
                         },
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
+                        items: [
+                          AppMenuItem(
                             value: 'share',
-                            child: ListTile(
-                              leading: const AppIcon(Icons.share),
-                              title: Text(context.l10n.logShareLogs),
-                              contentPadding: EdgeInsets.zero,
-                            ),
+                            label: context.l10n.logShareLogs,
+                            leading: const AppIcon(Icons.share),
                           ),
-                          PopupMenuItem(
+                          AppMenuItem(
                             value: 'clear',
-                            child: ListTile(
-                              leading: const AppIcon(Icons.delete_outline),
-                              title: Text(context.l10n.logClearLogs),
-                              contentPadding: EdgeInsets.zero,
-                            ),
+                            label: context.l10n.logClearLogs,
+                            leading: const AppIcon(Icons.delete_outline),
                           ),
                         ],
                       ),

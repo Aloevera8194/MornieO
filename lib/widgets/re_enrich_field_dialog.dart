@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
+import 'package:spotiflac_android/widgets/app_checkbox.dart';
 import '../l10n/app_localizations.dart';
 import 'package:spotiflac_android/services/batch_metadata_re_enrich.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
@@ -420,7 +421,7 @@ class _ReEnrichFieldSheetState extends State<_ReEnrichFieldSheet> {
     IconData? icon,
   }) {
     if (!context.isMornye) {
-      return CheckboxListTile(
+      return AppCheckboxListTile(
         title: Text(title),
         value: value,
         onChanged: onChanged,

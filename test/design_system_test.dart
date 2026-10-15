@@ -811,24 +811,32 @@ void main() {
   });
 
   group('selection bar', () {
-    test('root-overlay mounting lives in exactly one place', () {
-      final offenders = _libSources()
-          .where(
-            (file) =>
-                file.readAsStringSync().contains('OverlayEntry(') &&
-                _basename(file) != 'selection_bottom_bar.dart',
-          )
-          .map(_basename)
-          .toList();
+    test(
+      'selection bars and menu popups use their dedicated overlay hosts',
+      () {
+        // Menus own their popup lifecycle; they are not selection bars.
+        const overlayHosts = {
+          'selection_bottom_bar.dart',
+          'app_menu_button.dart',
+        };
+        final offenders = _libSources()
+            .where(
+              (file) =>
+                  file.readAsStringSync().contains('OverlayEntry(') &&
+                  !overlayHosts.contains(_basename(file)),
+            )
+            .map(_basename)
+            .toList();
 
-      expect(
-        offenders,
-        isEmpty,
-        reason:
-            'Selection bars must mount through SelectionOverlayController so '
-            'they animate identically and clear the shell navigation bar.',
-      );
-    });
+        expect(
+          offenders,
+          isEmpty,
+          reason:
+              'Selection bars must mount through SelectionOverlayController so '
+              'they animate identically and clear the shell navigation bar.',
+        );
+      },
+    );
 
     testWidgets('shell host keeps modal routes above the selection bar', (
       tester,
