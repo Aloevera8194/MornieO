@@ -7,6 +7,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
@@ -1238,11 +1239,14 @@ class _SettingItemState extends State<_SettingItem> {
                   padding: const EdgeInsets.all(12),
                 ),
               )
-            : TextField(
+            : AppTextField(
                 controller: controller,
                 keyboardType: widget.setting.type == 'number'
                     ? TextInputType.number
                     : TextInputType.text,
+                hint:
+                    widget.setting.description ??
+                    context.l10n.extensionEnterValue,
                 decoration: InputDecoration(
                   hintText:
                       widget.setting.description ??

@@ -5,6 +5,7 @@ import 'package:spotiflac_android/models/metadata_separators.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
@@ -153,15 +154,13 @@ class _SeparatorPickerState extends State<_SeparatorPicker> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (_selected == null)
-                    TextField(
+                    AppTextField(
                       controller: _custom,
                       maxLength: 16,
-                      decoration: InputDecoration(
-                        labelText: context.l10n.metadataSeparatorCustom,
-                        errorText: valid || separator.isEmpty
-                            ? null
-                            : context.l10n.metadataSeparatorInvalid,
-                      ),
+                      label: context.l10n.metadataSeparatorCustom,
+                      errorText: valid || separator.isEmpty
+                          ? null
+                          : context.l10n.metadataSeparatorInvalid,
                       onChanged: (_) => setState(() {}),
                     ),
                   const SizedBox(height: 16),

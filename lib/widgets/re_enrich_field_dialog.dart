@@ -4,6 +4,7 @@ import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_checkbox.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import '../l10n/app_localizations.dart';
 import 'package:spotiflac_android/services/batch_metadata_re_enrich.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
@@ -289,10 +290,15 @@ class _ReEnrichFieldSheetState extends State<_ReEnrichFieldSheet> {
                                 ),
                               ],
                             )
-                          : TextField(
+                          : AppTextField(
                               controller:
                                   _manualControllers[manualBatchMetadataFields[index]],
                               onChanged: (_) => setState(() {}),
+                              outlined: true,
+                              label: _manualLabelFor(
+                                manualBatchMetadataFields[index],
+                                l10n,
+                              ),
                               decoration: InputDecoration(
                                 labelText: _manualLabelFor(
                                   manualBatchMetadataFields[index],

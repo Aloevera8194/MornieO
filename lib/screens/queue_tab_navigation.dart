@@ -316,12 +316,10 @@ extension _QueueTabNavigation on _QueueTabState {
           title: Text(dialogContext.l10n.collectionCreatePlaylist),
           content: Form(
             key: formKey,
-            child: TextFormField(
+            child: AppTextField(
               controller: controller,
               autofocus: true,
-              decoration: InputDecoration(
-                hintText: dialogContext.l10n.collectionPlaylistNameHint,
-              ),
+              hint: dialogContext.l10n.collectionPlaylistNameHint,
               validator: (value) {
                 final trimmed = value?.trim() ?? '';
                 if (trimmed.isEmpty) {
@@ -329,7 +327,7 @@ extension _QueueTabNavigation on _QueueTabState {
                 }
                 return null;
               },
-              onFieldSubmitted: (_) {
+              onSubmitted: (_) {
                 if (formKey.currentState?.validate() != true) return;
                 Navigator.of(dialogContext).pop(controller.text.trim());
               },

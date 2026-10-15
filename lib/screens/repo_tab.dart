@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons, CupertinoTextField;
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/extension_row.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
@@ -323,8 +324,12 @@ class _RepoTabState extends ConsumerState<RepoTab> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              TextField(
+              AppTextField(
                 controller: _repoUrlController,
+                outlined: true,
+                label: context.l10n.storeRepoUrlLabel,
+                hint: context.l10n.storeRepoUrlHint,
+                leading: const Icon(Icons.link),
                 decoration: InputDecoration(
                   hintText: context.l10n.storeRepoUrlHint,
                   labelText: context.l10n.storeRepoUrlLabel,
@@ -443,8 +448,12 @@ class _RepoTabState extends ConsumerState<RepoTab> {
                 padding: const EdgeInsets.all(12),
               )
             else
-              TextField(
+              AppTextField(
                 controller: changeUrlController,
+                outlined: true,
+                label: context.l10n.storeNewRepoUrlLabel,
+                hint: context.l10n.storeRepoUrlHint,
+                leading: const Icon(Icons.link),
                 decoration: InputDecoration(
                   hintText: context.l10n.storeRepoUrlHint,
                   labelText: context.l10n.storeNewRepoUrlLabel,

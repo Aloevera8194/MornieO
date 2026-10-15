@@ -6,6 +6,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/settings/lyrics_provider_priority_page.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
@@ -296,13 +297,11 @@ class LyricsSettingsPage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
+            AppTextField(
               controller: controller,
               textInputAction: TextInputAction.done,
-              decoration: InputDecoration(
-                labelText: context.l10n.downloadMusixmatchLanguageCode,
-                hintText: context.l10n.downloadMusixmatchLanguageHint,
-              ),
+              label: context.l10n.downloadMusixmatchLanguageCode,
+              hint: context.l10n.downloadMusixmatchLanguageHint,
             ),
             const SizedBox(height: 16),
             Builder(

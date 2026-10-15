@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/collection_scaffold.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/expressive_button_group.dart';
@@ -827,12 +828,10 @@ class _LibraryTracksFolderScreenState
           title: Text(dialogContext.l10n.collectionRenamePlaylist),
           content: Form(
             key: formKey,
-            child: TextFormField(
+            child: AppTextField(
               controller: controller,
               autofocus: true,
-              decoration: InputDecoration(
-                hintText: dialogContext.l10n.collectionPlaylistNameHint,
-              ),
+              hint: dialogContext.l10n.collectionPlaylistNameHint,
               validator: (value) {
                 final trimmed = value?.trim() ?? '';
                 if (trimmed.isEmpty) {
@@ -840,7 +839,7 @@ class _LibraryTracksFolderScreenState
                 }
                 return null;
               },
-              onFieldSubmitted: (_) {
+              onSubmitted: (_) {
                 if (formKey.currentState?.validate() != true) return;
                 Navigator.of(dialogContext).pop(controller.text.trim());
               },

@@ -44,6 +44,7 @@ void main() {
         coverPath: useFileUri ? cover!.uri.toString() : cover!.path,
         scannedAt: DateTime(2026),
       );
+      late ImageProvider<Object> artworkProvider;
       await tester.runAsync(() async {
         await tester.pumpWidget(
           ProviderScope(
@@ -55,10 +56,13 @@ void main() {
             ),
           ),
         );
-        await precacheImage(
-          FileImage(cover),
-          tester.element(find.byType(TrackMetadataScreen)),
+        final artwork = find.descendant(
+          of: find.byType(Hero),
+          matching: find.byType(Image),
         );
+        // Warm the actual resized decode; FileImage alone has a different key.
+        artworkProvider = tester.widget<Image>(artwork).image;
+        await precacheImage(artworkProvider, tester.element(artwork));
       });
       await tester.pumpAndSettle();
 
@@ -71,7 +75,7 @@ void main() {
       expect(find.byIcon(Icons.music_note), findsNothing);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
-      await FileImage(cover).evict();
+      await artworkProvider.evict();
     });
   }
 

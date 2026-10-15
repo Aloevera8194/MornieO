@@ -1,8 +1,11 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -974,6 +977,16 @@ class _FilenameFormatEditorSheetState
         onSelected: (_) => _insertTag(tag),
       );
     }
+    if (materialExpressiveEnabled(context)) {
+      // Inserting a tag is an action, not a selection: an assist chip.
+      return MaterialExpressiveScope(
+        child: M3EChip(
+          label: tag,
+          type: M3EChipType.assist,
+          onPressed: () => _insertTag(tag),
+        ),
+      );
+    }
     return ActionChip(
       label: Text(tag),
       onPressed: () => _insertTag(tag),
@@ -999,8 +1012,9 @@ class _FilenameFormatEditorSheetState
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextField(
+          AppTextField(
             controller: _controller,
+            hint: '{artist} - {title}',
             decoration: InputDecoration(
               hintText: '{artist} - {title}',
               filled: true,

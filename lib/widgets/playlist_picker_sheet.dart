@@ -11,6 +11,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
@@ -362,13 +363,11 @@ Future<String?> _promptPlaylistName(
         title: Text(dialogContext.l10n.collectionCreatePlaylist),
         content: Form(
           key: formKey,
-          child: TextFormField(
+          child: AppTextField(
             controller: controller,
             autofocus: true,
             textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              hintText: dialogContext.l10n.collectionPlaylistNameHint,
-            ),
+            hint: dialogContext.l10n.collectionPlaylistNameHint,
             validator: (value) {
               final trimmed = value?.trim() ?? '';
               if (trimmed.isEmpty) {
@@ -376,7 +375,7 @@ Future<String?> _promptPlaylistName(
               }
               return null;
             },
-            onFieldSubmitted: (_) {
+            onSubmitted: (_) {
               if (formKey.currentState?.validate() != true) return;
               Navigator.of(dialogContext).pop(controller.text.trim());
             },

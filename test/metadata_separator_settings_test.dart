@@ -68,7 +68,7 @@ void main() {
           expect(container.read(settingsProvider).metadataSeparators.genre, '');
           await tap('Artist');
           await tap('Custom separator');
-          await tester.enterText(find.byType(TextField), ' | ');
+          await tester.enterText(find.byType(EditableText), ' | ');
           await tester.pumpAndSettle();
           tester.view.viewInsets = FakeViewPadding(
             bottom: size.height > size.width ? 300 : 150,
