@@ -206,8 +206,9 @@ class _PlayerVolumeControlState extends ConsumerState<PlayerVolumeControl> {
                 onPointerCancel: (_) => release(),
                 child: AppSlider(
                   // Thinner than the default track: volume stays secondary
-                  // to the seek bar above it.
+                  // to the seek bar above it. The handle shrinks with it.
                   trackThickness: 8,
+                  thumbLength: 24,
                   value: value,
                   onChanged: enabled ? _setVolume : null,
                   onChangeEnd: _setVolume,

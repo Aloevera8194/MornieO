@@ -16,6 +16,7 @@ class AppSlider extends StatelessWidget {
     this.label,
     this.semanticFormatterCallback,
     this.trackThickness,
+    this.thumbLength,
   });
 
   final double value;
@@ -30,6 +31,10 @@ class AppSlider extends StatelessWidget {
   /// Expressive track height; a secondary control can sit thinner than the
   /// default extra-small track.
   final double? trackThickness;
+
+  /// Expressive handle height; shorten it together with a thinner track so
+  /// the handle stays in proportion.
+  final double? thumbLength;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +59,7 @@ class AppSlider extends StatelessWidget {
         label: label,
         semanticFormatterCallback: semanticFormatterCallback,
         trackThickness: trackThickness,
+        thumbLength: thumbLength,
         enabled: onChanged != null,
         onChanged: onChanged,
         onChangeEnd: onChangeEnd,
