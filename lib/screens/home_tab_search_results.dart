@@ -65,8 +65,9 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
     }
 
     if (isUrlNotRecognized) {
-      return Card(
+      return AppContentCard(
         elevation: 0,
+        mornyeSurface: false,
         color: colorScheme.errorContainer.withValues(alpha: 0.5),
         shape: RoundedRectangleBorder(
           borderRadius: context.tokens.borderRadiusCard,

@@ -14,6 +14,7 @@ import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/cover_palette.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
@@ -717,7 +718,7 @@ void main() {
         ),
       );
 
-      final card = tester.widget<Card>(find.byType(Card));
+      final card = tester.widget<AppContentCard>(find.byType(AppContentCard));
       expect(card.color, Colors.transparent);
     });
 
@@ -739,9 +740,9 @@ void main() {
         ),
       );
 
-      final cardRect = tester.getRect(find.byType(Card));
+      final cardRect = tester.getRect(find.byType(AppContentCard));
       final trailingRect = tester.getRect(find.byKey(trailingKey));
-      // Card's render box includes its 8dp flat-row margin; content itself is
+      // The card's render box includes its 8dp flat-row margin; content is
       // inset another 6dp from the painted card edge.
       expect(cardRect.right - trailingRect.right, 14);
     });

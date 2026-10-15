@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
@@ -47,9 +48,10 @@ class ErrorCard extends StatelessWidget {
         ? colorScheme.onErrorContainer
         : colorScheme.error;
 
-    return Card(
+    return AppContentCard(
       elevation: 0,
       color: background,
+      mornyeSurface: false,
       shape: RoundedRectangleBorder(borderRadius: tokens.borderRadiusCard),
       child: Padding(
         padding: EdgeInsets.all(tokens.gapLg),

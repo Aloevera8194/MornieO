@@ -7,6 +7,7 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/theme/app_motion.dart';
 import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
@@ -1145,8 +1146,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
       child: Column(
         children: [
           if (_selectedDirectory != null)
-            Card(
+            AppContentCard(
               color: colorScheme.secondaryContainer,
+              mornyeSurface: false,
               child: ListTile(
                 leading: Icon(
                   Icons.folder,

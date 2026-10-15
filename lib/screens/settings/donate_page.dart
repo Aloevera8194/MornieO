@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/donate_icons.dart';
@@ -125,8 +126,9 @@ class _MonthlyDonationGoalCard extends StatelessWidget {
       colorScheme.surface,
     );
 
-    return Card(
+    return AppContentCard(
       elevation: 0,
+      mornyeSurface: false,
       color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
@@ -260,8 +262,9 @@ class _DonateLinksCard extends StatelessWidget {
             colorScheme.surface,
           );
 
-    return Card(
+    return AppContentCard(
       elevation: 0,
+      mornyeSurface: false,
       color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       clipBehavior: Clip.antiAlias,
@@ -325,8 +328,9 @@ class _RecentSupportersCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
-    return Card(
+    return AppContentCard(
       elevation: 0,
+      mornyeSurface: false,
       color: Color.alphaBlend(
         (isDark ? Colors.white : Colors.black).withValues(
           alpha: isDark ? 0.08 : 0.04,
@@ -423,8 +427,9 @@ class _DonateNoticeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return AppContentCard(
       elevation: 0,
+      mornyeSurface: false,
       color: colorScheme.secondaryContainer.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(

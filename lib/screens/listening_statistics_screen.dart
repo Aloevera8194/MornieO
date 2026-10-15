@@ -13,6 +13,7 @@ import 'package:spotiflac_android/widgets/animation_utils.dart'
     show SkeletonBox;
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/app_shape.dart';
@@ -225,7 +226,8 @@ class _ListeningStatisticsScreenState
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Card(
+            child: AppContentCard(
+              mornyeSurface: false,
               color: mornye
                   ? null
                   : Theme.of(context).colorScheme.primaryContainer,
@@ -333,7 +335,8 @@ class _ListeningStatisticsScreenState
       SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Card(
+          child: AppContentCard(
+            mornyeSurface: false,
             // Material leads with the total as an emphasized hero figure.
             color: mornye ? null : colors.primaryContainer,
             child: Padding(

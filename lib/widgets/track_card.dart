@@ -3,6 +3,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
 /// How a [TrackCard] paints its container.
@@ -145,11 +146,13 @@ class TrackCard extends StatelessWidget {
     } else if (style == TrackCardStyle.flat || context.isMornye) {
       cardColor = Colors.transparent;
     } else {
-      cardColor = null; // Inherits cardTheme.color.
+      // The card theme's tone, which the expressive card does not read.
+      cardColor = theme.cardTheme.color;
     }
 
-    final card = Card(
+    final card = AppContentCard(
       elevation: 0,
+      mornyeSurface: false,
       // The two styles carry their own outer margin so no call site has to
       // repeat it: flat rows sit tight inside a collection list, filled cards
       // get the Material list margin.
@@ -165,63 +168,60 @@ class TrackCard extends StatelessWidget {
       color: cardColor,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: borderRadius),
-      child: InkWell(
-        onTap: onTap,
-        onLongPress: onLongPress,
-        borderRadius: borderRadius,
-        child: Stack(
-          children: [
-            if (background != null) Positioned.fill(child: background!),
-            Padding(
-              padding: contentPadding,
-              child: Row(
-                children: [
-                  if (isSelectionMode) ...[
-                    Semantics(
-                      checked: isSelected,
-                      label: isSelected
-                          ? context.l10n.a11yDeselectTrack
-                          : context.l10n.a11ySelectTrack,
-                      child: AnimatedSelectionCheckbox(
-                        visible: true,
-                        selected: isSelected,
-                        colorScheme: colorScheme,
-                        size: 24,
-                      ),
-                    ),
-                    SizedBox(width: tokens.gapMd),
-                  ],
-                  leading,
-                  SizedBox(width: tokens.gapMd),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 2),
-                          subtitle!,
-                        ],
-                      ],
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Stack(
+        children: [
+          if (background != null) Positioned.fill(child: background!),
+          Padding(
+            padding: contentPadding,
+            child: Row(
+              children: [
+                if (isSelectionMode) ...[
+                  Semantics(
+                    checked: isSelected,
+                    label: isSelected
+                        ? context.l10n.a11yDeselectTrack
+                        : context.l10n.a11ySelectTrack,
+                    child: AnimatedSelectionCheckbox(
+                      visible: true,
+                      selected: isSelected,
+                      colorScheme: colorScheme,
+                      size: 24,
                     ),
                   ),
-                  if (trailing != null && !isSelectionMode) ...[
-                    SizedBox(width: tokens.gapSm),
-                    trailing!,
-                  ],
+                  SizedBox(width: tokens.gapMd),
                 ],
-              ),
+                leading,
+                SizedBox(width: tokens.gapMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        subtitle!,
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing != null && !isSelectionMode) ...[
+                  SizedBox(width: tokens.gapSm),
+                  trailing!,
+                ],
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
     if (!context.isMornye) return card;

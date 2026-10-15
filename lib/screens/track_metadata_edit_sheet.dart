@@ -24,6 +24,7 @@ import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
@@ -2019,7 +2020,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                 child: content,
               ),
             )
-          : Card(
+          : AppContentCard(
               elevation: 0,
               margin: EdgeInsets.zero,
               color: settingsGroupColor(context),
