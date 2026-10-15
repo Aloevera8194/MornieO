@@ -7065,7 +7065,7 @@
   "@trackOptionCopyArtist": {
     "description": "Track menu action that copies the artist name"
   },
-  "trackOptionCopyTrackAndArtist": "Копіювання пісні та виконавця",
+  "trackOptionCopyTrackAndArtist": "Копіювати пісню та виконавця",
   "@trackOptionCopyTrackAndArtist": {
     "description": "Track menu action that copies the track title and artist"
   },
