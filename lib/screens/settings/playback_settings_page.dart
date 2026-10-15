@@ -12,7 +12,7 @@ import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/widgets/mornye_volume_control.dart';
+import 'package:spotiflac_android/widgets/player_volume_control.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/discord_presence_settings.dart';
 import 'package:spotiflac_android/widgets/automix_settings.dart';
@@ -354,7 +354,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                                     : context.l10n.usbVolumeUnavailable,
                               ),
                               if (volume?.available == true)
-                                MornyeVolumeControl(
+                                PlayerVolumeControl(
                                   foreground: colorScheme.onSurface,
                                 ),
                             ],

@@ -32,7 +32,7 @@ import 'package:spotiflac_android/utils/lyrics_parser.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/expressive_playback_transport.dart';
 import 'package:spotiflac_android/widgets/expressive_seek_track.dart';
-import 'package:spotiflac_android/widgets/mornye_volume_control.dart';
+import 'package:spotiflac_android/widgets/player_volume_control.dart';
 import 'package:spotiflac_android/widgets/lyric_gap_indicator.dart';
 import 'package:spotiflac_android/widgets/mornye_player_queue.dart';
 import 'package:spotiflac_android/widgets/mornye_playback_button.dart';
@@ -534,7 +534,7 @@ void main() {
             .hitTestable(at: Alignment.centerLeft)
             .first;
         final title = tester.getRect(titleFinder);
-        final volume = tester.getRect(find.byType(MornyeVolumeControl));
+        final volume = tester.getRect(find.byType(PlayerVolumeControl));
         expect(playingCover.width, playingCover.height);
         expect(playingCover.width, greaterThanOrEqualTo(393 * 0.84));
         expect(playingCover.left, greaterThan(0));
@@ -563,7 +563,7 @@ void main() {
         expect(pausedCover.center.dx, closeTo(playingCover.center.dx, 0.01));
         expect(pausedCover.center.dy, closeTo(playingCover.center.dy, 0.01));
         expect(tester.getRect(titleFinder), title);
-        expect(tester.getRect(find.byType(MornyeVolumeControl)), volume);
+        expect(tester.getRect(find.byType(PlayerVolumeControl)), volume);
 
         playbackEvents.add(PlaybackState(playing: true));
         await settlePlayer(tester);
@@ -621,7 +621,7 @@ void main() {
       );
       expect(
         tester
-            .widget<MornyeVolumeControl>(find.byType(MornyeVolumeControl))
+            .widget<PlayerVolumeControl>(find.byType(PlayerVolumeControl))
             .foreground,
         color,
       );
@@ -1149,7 +1149,7 @@ void main() {
           MornyePlaybackButton,
           CupertinoIcons.pause_fill,
         );
-        final volume = find.byType(MornyeVolumeControl);
+        final volume = find.byType(PlayerVolumeControl);
         await tester.tap(lyricsButton);
         await tester.pump();
         await completeLyrics(tester);
@@ -1301,7 +1301,7 @@ void main() {
       await tester.tap(findAppIcon(CupertinoIcons.quote_bubble));
       await settlePlayer(tester);
       await tester.pump(const Duration(seconds: 6));
-      expect(find.byType(MornyeVolumeControl).hitTestable(), findsOneWidget);
+      expect(find.byType(PlayerVolumeControl).hitTestable(), findsOneWidget);
       expect(
         findAppIcon(CupertinoIcons.quote_bubble).hitTestable(),
         findsOneWidget,
@@ -1937,12 +1937,12 @@ void main() {
       await tester.tap(findAppIcon(CupertinoIcons.quote_bubble));
       await settlePlayer(tester, const Duration(milliseconds: 16));
       expect(find.text('First lyric').hitTestable(), findsOneWidget);
-      final volume = tester.getRect(find.byType(MornyeVolumeControl));
+      final volume = tester.getRect(find.byType(PlayerVolumeControl));
       await tester.tap(findAppIcon(CupertinoIcons.list_bullet));
       await settlePlayer(tester, const Duration(milliseconds: 16));
       expect(find.byType(MornyePlayerQueue), findsOneWidget);
       expect(find.byType(BottomSheet), findsNothing);
-      expect(tester.getRect(find.byType(MornyeVolumeControl)), volume);
+      expect(tester.getRect(find.byType(PlayerVolumeControl)), volume);
       expect(tester.takeException(), isNull);
       await tester.tap(findAppIcon(CupertinoIcons.list_bullet));
       await tester.pump();
@@ -1953,7 +1953,7 @@ void main() {
       expect(find.byType(MornyePlayerQueue).hitTestable(), findsNothing);
       await settlePlayer(tester, const Duration(milliseconds: 16));
       expect(find.byType(MornyePlayerQueue), findsNothing);
-      expect(tester.getRect(find.byType(MornyeVolumeControl)), volume);
+      expect(tester.getRect(find.byType(PlayerVolumeControl)), volume);
     },
   );
 
@@ -1984,7 +1984,7 @@ void main() {
         final next = findAppIcon(CupertinoIcons.forward_fill);
         final previousBounds = tester.getRect(previous);
         final nextBounds = tester.getRect(next);
-        final volumeBounds = tester.getRect(find.byType(MornyeVolumeControl));
+        final volumeBounds = tester.getRect(find.byType(PlayerVolumeControl));
 
         playback.add(PlaybackState(playing: false));
         await settlePlayer(tester);
@@ -1998,7 +1998,7 @@ void main() {
         expect(tester.getRect(play), pauseBounds);
         expect(tester.getRect(previous), previousBounds);
         expect(tester.getRect(next), nextBounds);
-        expect(tester.getRect(find.byType(MornyeVolumeControl)), volumeBounds);
+        expect(tester.getRect(find.byType(PlayerVolumeControl)), volumeBounds);
 
         playback.add(PlaybackState(playing: true));
         await settlePlayer(tester);
@@ -2195,7 +2195,7 @@ void main() {
     expect(findAppIcon(CupertinoIcons.play_fill), findsOneWidget);
     expect(findAppIcon(CupertinoIcons.backward_fill), findsOneWidget);
     expect(findAppIcon(CupertinoIcons.forward_fill), findsOneWidget);
-    expect(find.byType(MornyeVolumeControl), findsOneWidget);
+    expect(find.byType(PlayerVolumeControl), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     final nextButton = find.widgetWithIcon(
@@ -2307,7 +2307,7 @@ void main() {
     mediaItems.add(item('first'));
     await settlePlayer(tester);
 
-    final volume = find.byType(MornyeVolumeControl);
+    final volume = find.byType(PlayerVolumeControl);
     final lyricsButton = findAppIcon(CupertinoIcons.quote_bubble);
     final slider = find.descendant(of: volume, matching: find.byType(Slider));
     expect(
@@ -2345,7 +2345,7 @@ void main() {
       await settlePlayer(tester);
 
       final artwork = find.byType(Hero);
-      final volume = find.byType(MornyeVolumeControl);
+      final volume = find.byType(PlayerVolumeControl);
       final artRect = tester.getRect(artwork);
       expect(artRect.width, closeTo(artRect.height, 0.1));
       expect(artRect.width, greaterThan(140));
@@ -2939,7 +2939,7 @@ void main() {
     final artwork = find.byType(Hero);
     final fullArtwork = tester.getRect(artwork);
     expect(fullArtwork.height, fullArtwork.width);
-    final volume = find.byType(MornyeVolumeControl);
+    final volume = find.byType(PlayerVolumeControl);
     final volumeRect = tester.getRect(volume);
     final play = findAppIcon(CupertinoIcons.play_fill);
     final playRect = tester.getRect(play);

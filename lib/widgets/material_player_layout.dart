@@ -13,6 +13,7 @@ import 'package:spotiflac_android/widgets/player_artwork.dart';
 import 'package:spotiflac_android/widgets/player_gesture_regions.dart';
 import 'package:spotiflac_android/widgets/player_metadata_title.dart';
 import 'package:spotiflac_android/widgets/player_playback_controls.dart';
+import 'package:spotiflac_android/widgets/player_volume_control.dart';
 
 class MaterialPlayerLayout extends StatelessWidget {
   const MaterialPlayerLayout({
@@ -166,7 +167,12 @@ class MaterialPlayerLayout extends StatelessWidget {
                 onOpenQueue: onOpenQueue,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: _metadataAndControls(context),
+                  // Short phones keep the room for artwork and lyrics; the
+                  // hardware buttons still set the volume there.
+                  children: _metadataAndControls(
+                    context,
+                    showVolume: constraints.maxHeight >= 600,
+                  ),
                 ),
               ),
             ],
@@ -176,11 +182,12 @@ class MaterialPlayerLayout extends StatelessWidget {
     );
   }
 
-  /// Title/artist, seek slider, and transport buttons — shared by the
+  /// Title/artist, seek slider, transport buttons and volume — shared by the
   /// portrait column and the landscape right pane.
   List<Widget> _metadataAndControls(
     BuildContext context, {
     bool compact = false,
+    bool showVolume = true,
   }) {
     final fallback = AppMotionSpec(
       MediaQuery.disableAnimationsOf(context)
@@ -269,6 +276,10 @@ class MaterialPlayerLayout extends StatelessWidget {
         metadata: metadata,
         compact: compact,
       ),
+      if (showVolume) ...[
+        SizedBox(height: compact ? 8 : 12),
+        const PlayerVolumeControl(),
+      ],
     ];
   }
 }

@@ -17,7 +17,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/widgets/mornye_player_artwork.dart';
 import 'package:spotiflac_android/widgets/mornye_player_layout.dart';
-import 'package:spotiflac_android/widgets/mornye_volume_control.dart';
+import 'package:spotiflac_android/widgets/player_volume_control.dart';
 
 import 'performance_probe.dart';
 

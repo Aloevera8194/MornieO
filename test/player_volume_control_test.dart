@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/widgets/mornye_volume_control.dart';
+import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/widgets/app_slider.dart';
+import 'package:spotiflac_android/widgets/player_volume_control.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -47,10 +49,12 @@ void main() {
             },
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          // The Mornye glass slider, which reports drag start itself.
+          theme: MornyeTheme.build(Brightness.dark),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: MornyeVolumeControl()),
+          home: const Scaffold(body: PlayerVolumeControl()),
         ),
       ),
     );
@@ -93,4 +97,65 @@ void main() {
     expect(slider().value, 0.3);
     expect(tester.takeException(), isNull);
   });
+
+  for (final reducedMotion in [false, true]) {
+    testWidgets(
+      'Material holds dragged volume (reduced motion: $reducedMotion)',
+      (tester) async {
+        final writes = <double>[];
+        final volumes = StreamController<double>();
+        addTearDown(volumes.close);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              systemVolumeProvider.overrideWith((ref) => volumes.stream),
+              systemVolumeWriterProvider.overrideWith(
+                (ref) =>
+                    (value) async => writes.add(value),
+              ),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: MediaQuery(
+                data: MediaQueryData(disableAnimations: reducedMotion),
+                child: const Scaffold(body: PlayerVolumeControl()),
+              ),
+            ),
+          ),
+        );
+        volumes.add(0.5);
+        await tester.pumpAndSettle();
+        AppSlider slider() => tester.widget(find.byType(AppSlider));
+        expect(slider().value, 0.5);
+
+        // A finger on the track: the write finishes and the system echoes an
+        // older level, but the thumb stays where the user put it.
+        final finger = await tester.startGesture(
+          tester.getCenter(find.byType(AppSlider)),
+        );
+        await finger.moveBy(const Offset(20, 0));
+        await tester.pump();
+        await finger.moveBy(const Offset(100, 0));
+        await tester.pump();
+        final draggedVolume = slider().value;
+        expect(draggedVolume, greaterThan(0.5));
+        expect(writes.last, draggedVolume);
+        volumes.add(0.6);
+        await tester.pump();
+        expect(slider().value, draggedVolume);
+
+        // Once the finger lifts the slider follows the system again.
+        await finger.up();
+        expect(writes.last, draggedVolume);
+        volumes.add(draggedVolume);
+        await tester.pumpAndSettle();
+        expect(slider().value, draggedVolume);
+        volumes.add(0.2);
+        await tester.pumpAndSettle();
+        expect(slider().value, 0.2);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }

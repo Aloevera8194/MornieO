@@ -12,7 +12,7 @@ import 'package:spotiflac_android/widgets/mornye_context_menu.dart';
 import 'package:spotiflac_android/widgets/mornye_landscape_player.dart';
 import 'package:spotiflac_android/widgets/mornye_player_favorite_button.dart';
 import 'package:spotiflac_android/widgets/mornye_player_queue.dart';
-import 'package:spotiflac_android/widgets/mornye_volume_control.dart';
+import 'package:spotiflac_android/widgets/player_volume_control.dart';
 import 'package:spotiflac_android/widgets/overflow_marquee.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
 import 'package:spotiflac_android/widgets/player_gesture_regions.dart';
@@ -389,7 +389,7 @@ class MornyePlayerLayout extends ConsumerWidget {
             lyricsOptions: showLyrics ? lyricsOptions : null,
             queue: MornyePlayerQueue(colorScheme: colorScheme),
             controls: controls(),
-            volume: const MornyeVolumeControl(),
+            volume: const PlayerVolumeControl(),
           );
         }
 
@@ -441,7 +441,7 @@ class MornyePlayerLayout extends ConsumerWidget {
                 SizedBox(height: volumeGap - transportShift),
                 AnimatedBuilder(
                   animation: artworkForeground,
-                  builder: (context, _) => MornyeVolumeControl(
+                  builder: (context, _) => PlayerVolumeControl(
                     key: artworkKeys.volume,
                     foreground: foreground('volume').onSurface,
                   ),
