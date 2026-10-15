@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
@@ -776,7 +777,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                                 textAlign: TextAlign.center,
                               ),
                             if (_isLoadingMoreAlbums)
-                              const CircularProgressIndicator.adaptive(),
+                              const AppLoadingIndicator(),
                           ],
                         ),
                       ),

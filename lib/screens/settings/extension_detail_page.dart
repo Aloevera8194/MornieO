@@ -1077,7 +1077,7 @@ class _SettingItemState extends State<_SettingItem> {
           trailing = const SizedBox(
             width: 24,
             height: 24,
-            child: CircularProgressIndicator.adaptive(strokeWidth: 2),
+            child: AppLoadingIndicator(size: 24, strokeWidth: 2),
           );
         }
         break;

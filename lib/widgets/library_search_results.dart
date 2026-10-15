@@ -23,6 +23,7 @@ import 'package:spotiflac_android/widgets/library_selection_playback_actions.dar
 import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 /// Slivers shared by Material's Library and Mornye's Library/Songs screens.
@@ -462,7 +463,7 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
         const SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsets.all(24),
-            child: Center(child: CircularProgressIndicator.adaptive()),
+            child: Center(child: AppLoadingIndicator()),
           ),
         ),
       );
