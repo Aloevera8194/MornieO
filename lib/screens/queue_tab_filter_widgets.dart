@@ -331,6 +331,21 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         if (rootLibrary && (filterMode == 'albums' || filterMode == 'singles'))
           SliverToBoxAdapter(child: _buildAlbumsModeToggle(context)),
 
+        // Rewind lives with the listening history it replays.
+        if (rootLibrary &&
+            filterMode == 'all' &&
+            _searchQuery.isEmpty &&
+            !context.isMornye &&
+            !_isSelectionMode &&
+            ref.watch(
+              settingsProvider.select((s) => s.listeningStatisticsEnabled),
+            ))
+          SliverToBoxAdapter(
+            child: ListeningRewindBanner(
+              margin: EdgeInsets.fromLTRB(edge, 8, edge, 4),
+            ),
+          ),
+
         if (totalTrackCount > 0 && filterMode == 'all')
           SliverToBoxAdapter(
             child: _countHeaderRow(

@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/library_browse_provider.dart';
+import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/downloaded_album_screen.dart';
+import 'package:spotiflac_android/screens/listening_rewind_screen.dart';
 import 'package:spotiflac_android/screens/local_album_screen.dart';
 import 'package:spotiflac_android/services/album_completeness.dart';
 import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
@@ -390,6 +392,22 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                       const Divider(height: 1, indent: 48),
                     ],
                   ],
+                ),
+              ),
+            // The seasonal Rewind, beside the listening history it replays.
+            if (_overview &&
+                _query.isEmpty &&
+                ref.watch(
+                  settingsProvider.select((s) => s.listeningStatisticsEnabled),
+                ))
+              SliverToBoxAdapter(
+                child: ListeningRewindBanner(
+                  margin: EdgeInsets.fromLTRB(
+                    24 + listInset,
+                    0,
+                    24 + listInset,
+                    16,
+                  ),
                 ),
               ),
             if (_overview)

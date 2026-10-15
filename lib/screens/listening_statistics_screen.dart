@@ -72,6 +72,8 @@ class _ListeningStatisticsScreenState
     try {
       await listeningRecorder.clear(ListeningStatisticsStore.instance.clear);
       ref.invalidate(listeningSummaryProvider);
+      ref.invalidate(listeningRewindProvider);
+      ref.invalidate(listeningRewindSpotlightProvider);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
