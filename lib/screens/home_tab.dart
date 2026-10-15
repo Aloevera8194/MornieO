@@ -44,6 +44,7 @@ import 'package:spotiflac_android/widgets/explore_featured_section.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
 import 'package:spotiflac_android/screens/track_metadata_screen.dart';
 import 'package:spotiflac_android/screens/album_screen.dart';
+import 'package:spotiflac_android/screens/collapsing_header_scroll_mixin.dart';
 import 'package:spotiflac_android/screens/artist_screen.dart';
 import 'package:spotiflac_android/screens/home_search_logic.dart';
 import 'package:spotiflac_android/services/csv_import_service.dart';

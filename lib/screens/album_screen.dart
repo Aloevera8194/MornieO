@@ -467,13 +467,9 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
             ),
           ),
         if (_isLoading)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: context.isMornye
-                  ? EdgeInsets.zero
-                  : const EdgeInsets.all(16),
-              child: const AlbumTrackListSkeleton(itemCount: 10),
-            ),
+          // The skeleton rows carry the list's own inset.
+          const SliverToBoxAdapter(
+            child: AlbumTrackListSkeleton(itemCount: 10),
           ),
         if (_error != null)
           SliverToBoxAdapter(

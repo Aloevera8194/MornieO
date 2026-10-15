@@ -714,6 +714,48 @@ class _LoadingOrErrorScaffold extends StatelessWidget {
           ),
         );
       }
+      if (!context.isMornye && collectionHeader) {
+        // The real header with the title and cover already known; only the
+        // rows that wait for the tracks are skeletons.
+        final cover = coverUrl;
+        final hasCover = cover != null && cover.isNotEmpty;
+        final colors = Theme.of(context).colorScheme;
+        return Scaffold(
+          body: CustomScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            slivers: [
+              AlbumDetailHeader(
+                title: title,
+                expandedHeight: collectionHeaderExpandedHeight(context),
+                showTitleInAppBar: false,
+                paletteSource: hasCover ? cover : null,
+                blurAndScrimBackground: hasCover,
+                background: hasCover
+                    ? CachedCoverImage(imageUrl: cover, fit: BoxFit.cover)
+                    : ColoredBox(color: colors.surfaceContainerHighest),
+                coverBuilder: (context, size) => hasCover
+                    ? CachedCoverImage(
+                        imageUrl: cover,
+                        width: size,
+                        height: size,
+                        fit: BoxFit.cover,
+                      )
+                    : ShimmerLoading(
+                        child: SkeletonBox(
+                          width: size,
+                          height: size,
+                          borderRadius: 0,
+                        ),
+                      ),
+                subtitle: CollectionHeaderSkeletonRows.subtitle(),
+                meta: CollectionHeaderSkeletonRows.meta(),
+                actions: CollectionHeaderSkeletonRows.actions(context),
+              ),
+              SliverToBoxAdapter(child: loadingBody),
+            ],
+          ),
+        );
+      }
       return Scaffold(
         appBar: AppBar(
           title: Text(title),

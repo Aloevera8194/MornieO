@@ -394,14 +394,8 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
 
   Widget _buildTrackList(BuildContext context, ColorScheme colorScheme) {
     if (_isLoading) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: context.isMornye
-              ? EdgeInsets.zero
-              : const EdgeInsets.all(16),
-          child: const TrackListSkeleton(itemCount: 8),
-        ),
-      );
+      // The skeleton rows carry the list's own inset.
+      return const SliverToBoxAdapter(child: TrackListSkeleton(itemCount: 8));
     }
 
     if (_error != null) {

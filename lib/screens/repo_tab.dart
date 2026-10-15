@@ -209,12 +209,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               ),
 
               if (isLoading && extensions.isEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(edge, 16, edge, 16),
-                    child: const TrackListSkeleton(itemCount: 6),
-                  ),
-                )
+                SliverToBoxAdapter(child: _RepoListSkeleton(edge: edge))
               else if (error != null && extensions.isEmpty)
                 SliverFillRemaining(child: _buildErrorState(error, colorScheme))
               else if (filteredExtensions.isEmpty)
@@ -727,6 +722,101 @@ class _CategoryChip extends ConsumerWidget {
       singleChoice: true,
       selected: isSelected,
       onSelected: (_) => onTap(),
+    );
+  }
+}
+
+/// The store list while the registry loads: real extension rows inside the
+/// same grouped surface, with only their contents shimmering.
+class _RepoListSkeleton extends StatelessWidget {
+  const _RepoListSkeleton({required this.edge});
+
+  /// Horizontal edge of the centered column, as the loaded list uses.
+  final double edge;
+
+  static const _count = 6;
+
+  @override
+  Widget build(BuildContext context) {
+    final tokens = context.tokens;
+    // Placeholders keep their contrast on the Material group surface.
+    final surface = context.isMornye ? null : settingsGroupColor(context);
+    final rows = [
+      for (var index = 0; index < _count; index++)
+        ExtensionRow(
+          showDivider: index < _count - 1,
+          avatar: ShimmerLoading(
+            surface: surface,
+            child: const SkeletonBox(
+              width: ExtensionAvatar.size,
+              height: ExtensionAvatar.size,
+              borderRadius: 12,
+            ),
+          ),
+          title: ShimmerLoading(
+            surface: surface,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: SkeletonBox(
+                      width: 110 + (index % 3) * 30,
+                      height: 16,
+                      borderRadius: 4,
+                    ),
+                  ),
+                ),
+                SizedBox(width: tokens.gapSm),
+                const SkeletonBox(width: 44, height: 18, borderRadius: 6),
+              ],
+            ),
+          ),
+          subtitle: ShimmerLoading(
+            surface: surface,
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 4),
+                SkeletonBox(
+                  width: double.infinity,
+                  height: 12,
+                  borderRadius: 4,
+                ),
+                SizedBox(height: 6),
+                FractionallySizedBox(
+                  widthFactor: 0.6,
+                  child: SkeletonBox(
+                    width: double.infinity,
+                    height: 12,
+                    borderRadius: 4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          trailing: Padding(
+            padding: EdgeInsets.only(left: tokens.gapMd),
+            child: ShimmerLoading(
+              surface: surface,
+              child: SkeletonBox(
+                width: 108,
+                height: tokens.minTouchTarget,
+                borderRadius: tokens.minTouchTarget / 2,
+              ),
+            ),
+          ),
+        ),
+    ];
+    if (context.isMornye) {
+      return ExtensionRepoCard(
+        margin: EdgeInsets.fromLTRB(edge, 12, edge, 4),
+        child: Column(mainAxisSize: MainAxisSize.min, children: rows),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: SettingsGroup(connected: true, children: rows),
     );
   }
 }
