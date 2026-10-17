@@ -217,6 +217,63 @@
   "upgradeIntroContinue": "Continue",
   "upgradeIntroDone": "Start listening",
   "upgradeIntroReplay": "What’s new in 5.0",
+  "whatsNewReplay": "What’s new in {version}",
+  "@whatsNewReplay": {
+    "description": "About page entry that replays the release tour",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewWelcomeTitle": "Welcome to\nSpotiFLAC-Mobile {version}",
+  "@whatsNewWelcomeTitle": {
+    "description": "First page title of the release tour",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewWelcomeBody": "A more expressive look, a more capable player and lyrics worth sharing.",
+  "whatsNewSummaryExpressiveBody": "New shapes, Material Symbols and spring motion across the app.",
+  "whatsNewSummaryPlayerTitle": "Built-in player",
+  "whatsNewSummaryPlayerBody": "Equalizer, full-screen covers and detailed audio information.",
+  "whatsNewSummaryLyricsBody": "Turn your favorite lines into a card for stories.",
+  "whatsNewThemeMaterialBody": "Material 3 Expressive, with your accent color, rounded shapes and lively motion.",
+  "whatsNewExpressiveTitle": "Material,\nmade expressive.",
+  "whatsNewExpressiveBody": "Material 3 Expressive now shapes the whole app, from icons to motion.",
+  "whatsNewSymbolsTitle": "Shapes and symbols",
+  "whatsNewSymbolsBody": "Rounded Material Symbols, expressive shapes and connected settings rows.",
+  "whatsNewMotionTitle": "Spring motion",
+  "whatsNewMotionBody": "Buttons, headers and progress move with natural, springy physics.",
+  "whatsNewLargeScreenTitle": "Room on bigger screens",
+  "whatsNewLargeScreenBody": "Tablet navigation and centered layouts make wide screens feel at home.",
+  "whatsNewPlayerTitle": "A player that\ndoes more.",
+  "whatsNewPlayerBody": "New ways to hear and see your music in the built-in player.",
+  "whatsNewEqualizerBody": "Shape your sound with a multiband EQ and presets. Find it in Settings → Playback.",
+  "whatsNewCoverTitle": "Full-screen cover",
+  "whatsNewCoverBody": "Let the artwork fill the top of the player. Choose it under Settings → Playback → Cover art.",
+  "whatsNewAudioInfoTitle": "Audio details",
+  "whatsNewAudioInfoBody": "Tap the quality label in the player to see the source, processing and output.",
+  "whatsNewHapticsBody": "Feel the beat through gentle vibration on downloaded and local songs. Off by default.",
+  "whatsNewLyricsTitle": "Lyrics worth\nsharing.",
+  "whatsNewLyricsBody": "Quote the lines you love and share them as a card.",
+  "whatsNewLyricCardsTitle": "Lyric cards",
+  "whatsNewLyricCardsBody": "Long-press a line, or open the player menu, then pick up to five lines and a background.",
+  "whatsNewLyricSyncTitle": "Smoother timing",
+  "whatsNewLyricSyncBody": "Timed vocals and background lines now transition more naturally.",
+  "whatsNewLyricFallbackTitle": "Lyrics stay available",
+  "whatsNewLyricFallbackBody": "When a lyrics provider is down, a SpotiFLAC fallback keeps lyrics coming.",
+  "whatsNewLibraryTitle": "Your library,\nrevisited.",
+  "whatsNewLibraryBody": "Easier to browse, with a look back at what you played.",
+  "whatsNewBrowseTitle": "Sectioned browsing",
+  "whatsNewBrowseBody": "Songs, albums, artists and playlists, with sections and fast scrolling.",
+  "whatsNewRewindBody": "Relive the highlights of recent weeks and months from your listening statistics.",
+  "whatsNewGreetingTitle": "A personal Home",
+  "whatsNewGreetingBody": "Home greets you by name, with a little variety each time.",
+  "whatsNewWidgetsTitle": "New widgets",
+  "whatsNewWidgetsBody": "Redesigned player and download widgets that follow your wallpaper colors.",
   "cacheMotionArtwork": "Offline motion covers",
   "cacheMotionArtworkDesc": "Album videos saved with downloads. Removing them keeps your music files and static covers.",
   "nowPlayingVolume": "Volume",

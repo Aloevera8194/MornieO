@@ -23,6 +23,14 @@ void main() {
       'MaterialIcons',
     )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();
     await (FontLoader(
+          'packages/material_symbols_icons/MaterialSymbolsRounded',
+        )..addFont(
+          rootBundle.load(
+            'packages/material_symbols_icons/lib/fonts/MaterialSymbolsRounded.ttf',
+          ),
+        ))
+        .load();
+    await (FontLoader(
       'Google Sans Flex',
     )..addFont(rootBundle.load('assets/fonts/GoogleSansFlex.ttf'))).load();
     await (FontLoader(
@@ -47,14 +55,15 @@ void main() {
             version: version,
             existingInstallation: existing,
           );
-      expect(pending('5.0.0'), isTrue);
-      expect(pending('5.0.1'), isTrue);
+      expect(pending('5.2.0'), isTrue);
+      expect(pending('5.3.1'), isTrue);
+      expect(pending('5.1.1'), isFalse);
       expect(pending('4.9.0'), isFalse);
       expect(pending('6.0.0'), isFalse);
-      expect(pending('5.0.0', existing: false), isFalse);
+      expect(pending('5.2.0', existing: false), isFalse);
       await UpgradeIntroService.markSeen(prefs);
       prefs = await SharedPreferences.getInstance();
-      expect(pending('5.0.0'), isFalse);
+      expect(pending('5.2.0'), isFalse);
       expect(prefs.getInt('settings_migration_version'), 11);
     },
   );
@@ -137,8 +146,8 @@ void main() {
       tester,
     ) async {
       await openTour(tester, brightness: brightness);
-      expect(find.text('Welcome to\nSpotiFLAC-Mobile 5.0'), findsOneWidget);
-      expect(find.byType(Image), findsNothing);
+      expect(find.text('Welcome to\nSpotiFLAC-Mobile 5.2'), findsOneWidget);
+      expect(find.bySemanticsLabel('1 / 6'), findsOneWidget);
       await capturePage(tester, '${brightness.name}-welcome');
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
@@ -146,20 +155,22 @@ void main() {
       await capturePage(tester, '${brightness.name}-themes');
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to\nSpotiFLAC-Mobile 5.0'), findsOneWidget);
-      for (var i = 0; i < 4; i++) {
+      expect(find.text('Welcome to\nSpotiFLAC-Mobile 5.2'), findsOneWidget);
+      const titles = [
+        'Make it\nyour own.',
+        'Material,\nmade expressive.',
+        'A player that\ndoes more.',
+        'Lyrics worth\nsharing.',
+        'Your library,\nrevisited.',
+      ];
+      for (var i = 0; i < titles.length; i++) {
         await tester.tap(find.text('Continue'));
         await tester.pumpAndSettle();
-        if (i == 1) {
-          expect(find.text('Get to know\nyour Library.'), findsOneWidget);
-          await capturePage(tester, '${brightness.name}-library');
-        }
-        if (i == 2) {
-          expect(find.text('A new engine.\nBuilt with Rust.'), findsOneWidget);
-          await capturePage(tester, '${brightness.name}-rust');
-        }
+        expect(find.text(titles[i]), findsOneWidget);
+        await capturePage(tester, '${brightness.name}-page${i + 2}');
       }
-      await capturePage(tester, '${brightness.name}-player');
+      expect(find.bySemanticsLabel('6 / 6'), findsOneWidget);
+      expect(find.text('Continue'), findsNothing);
       await tester.tap(find.text('Start listening'));
       await tester.pumpAndSettle();
       expect(find.byType(UpgradeIntroScreen), findsNothing);
@@ -183,9 +194,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(prefs.getString(kThemeStyleKey), 'mornye');
     expect(tester.element(find.byType(UpgradeIntroScreen)).isMornye, isTrue);
+    // Both styles walk through the same release pages.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('Recently Added.'), findsWidgets);
+    expect(find.text('Material,\nmade expressive.'), findsOneWidget);
+    expect(find.bySemanticsLabel('3 / 6'), findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     final material = find.byKey(const ValueKey('intro-theme-material'));
@@ -195,21 +208,11 @@ void main() {
     expect(prefs.getString(kThemeStyleKey), 'material');
     expect(tester.element(find.byType(UpgradeIntroScreen)).isMornye, isFalse);
     await capturePage(tester, 'material-themes');
-    await tester.tap(find.text('Continue'));
-    await tester.pumpAndSettle();
-    expect(find.text('A new engine.\nBuilt with Rust.'), findsOneWidget);
-    expect(find.text('Get to know\nyour Library.'), findsNothing);
-    expect(find.text('Set up\nyour player.'), findsNothing);
-    expect(find.bySemanticsLabel('3 / 3'), findsOneWidget);
-    expect(find.text('Continue'), findsNothing);
-    await capturePage(tester, 'material-rust');
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    expect(find.text('Make it\nyour own.'), findsOneWidget);
     await tester.drag(find.byType(PageView), const Offset(-500, 0));
     await tester.pumpAndSettle();
-    expect(find.text('A new engine.\nBuilt with Rust.'), findsOneWidget);
-    await tester.tap(find.text('Start listening'));
+    expect(find.text('Material,\nmade expressive.'), findsOneWidget);
+    expect(find.bySemanticsLabel('3 / 6'), findsOneWidget);
+    await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
     expect(prefs.getString(kThemeStyleKey), 'material');
     expect(tester.takeException(), isNull);

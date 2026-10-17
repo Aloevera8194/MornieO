@@ -11,6 +11,7 @@ import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/screens/upgrade_intro_screen.dart';
+import 'package:spotiflac_android/services/upgrade_intro_service.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -43,7 +44,9 @@ class AboutPage extends StatelessWidget {
                 children: [
                   SettingsItem(
                     icon: Icons.new_releases,
-                    title: context.l10n.upgradeIntroReplay,
+                    title: context.l10n.whatsNewReplay(
+                      UpgradeIntroService.tourVersion,
+                    ),
                     showDivider: false,
                     onTap: () =>
                         Navigator.of(context, rootNavigator: true).push<void>(
