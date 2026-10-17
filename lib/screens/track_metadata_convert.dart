@@ -104,58 +104,6 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
     };
   }
 
-  Map<String, String> _mapMetadataForTagEmbed(Map<String, dynamic> source) {
-    final mapped = <String, String>{};
-
-    void put(String key, dynamic value) {
-      final normalized = value?.toString().trim();
-      if (normalized == null || normalized.isEmpty) return;
-      mapped[key] = normalized;
-    }
-
-    put('TITLE', source['title']);
-    put('ARTIST', source['artist']);
-    put('ALBUM', source['album']);
-    put('ALBUMARTIST', source['album_artist']);
-    put('DATE', source['date']);
-    put('ISRC', source['isrc']);
-    put('GENRE', source['genre']);
-    put('ORGANIZATION', source['label']);
-    put('COPYRIGHT', source['copyright']);
-    put('COMPOSER', source['composer']);
-    put('COMMENT', source['comment']);
-    put('LYRICS', source['lyrics']);
-    put('UNSYNCEDLYRICS', source['lyrics']);
-    if (parseExplicitFlag(source['explicit']) == true) {
-      mapped['ITUNESADVISORY'] = '1';
-    }
-
-    final trackNumber = source['track_number'];
-    final totalTracks = source['total_tracks'];
-    if (trackNumber != null && trackNumber.toString() != '0') {
-      final trackTag =
-          totalTracks != null &&
-              totalTracks.toString().isNotEmpty &&
-              totalTracks.toString() != '0'
-          ? '${trackNumber.toString()}/${totalTracks.toString()}'
-          : trackNumber;
-      put('TRACKNUMBER', trackTag);
-    }
-    final discNumber = source['disc_number'];
-    final totalDiscs = source['total_discs'];
-    if (discNumber != null && discNumber.toString() != '0') {
-      final discTag =
-          totalDiscs != null &&
-              totalDiscs.toString().isNotEmpty &&
-              totalDiscs.toString() != '0'
-          ? '${discNumber.toString()}/${totalDiscs.toString()}'
-          : discNumber;
-      put('DISCNUMBER', discTag);
-    }
-
-    return mapped;
-  }
-
   String? _extractLossyBitrateLabel(String? quality) {
     if (quality == null || quality.isEmpty) return null;
     final match = RegExp(

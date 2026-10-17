@@ -528,7 +528,9 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
         try {
           final result = await PlatformBridge.readFileMetadata(workingPath);
           if (result['error'] == null) {
-            final mapped = _mapMetadataForTagEmbed(result);
+            // Map separately so a non-explicit file keeps the fallback advisory.
+            final mapped = <String, String>{};
+            mergePlatformMetadataForTagEmbed(target: mapped, source: result);
             metadata.addAll(mapped);
           }
         } catch (e) {
