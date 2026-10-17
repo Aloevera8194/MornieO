@@ -1164,15 +1164,6 @@ class MainActivity: FlutterFragmentActivity() {
                             }
                             result.success(response)
                         }
-                        "acquireDownloadDirectory" -> {
-                            val path = call.argument<String>("path") ?: ""
-                            withContext(Dispatchers.IO) {
-                                coreBackend.openDownloadDirectory(path).close()
-                            }
-                            // Go grants have process lifetime; Rust owns scoped tokens in its dispatcher.
-                            result.success("")
-                        }
-                        "releaseDownloadDirectory" -> result.success(null)
                         "getBackendImplementations" -> {
                             result.success(
                                 mapOf(
@@ -1182,21 +1173,6 @@ class MainActivity: FlutterFragmentActivity() {
                                     "downloads" to coreBackend.implementation,
                                 )
                             )
-                        }
-                        "buildFilename" -> {
-                            val template = call.argument<String>("template") ?: ""
-                            val metadata = call.argument<String>("metadata") ?: "{}"
-                            val response = withContext(Dispatchers.IO) {
-                                coreBackend.buildFilename(template, metadata)
-                            }
-                            result.success(response)
-                        }
-                        "sanitizeFilename" -> {
-                            val filename = call.argument<String>("filename") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                coreBackend.sanitizeFilename(filename)
-                            }
-                            result.success(response)
                         }
                         "pickSafTree" -> {
                             if (pendingSafTreeResult != null) {
