@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import com.spotiflac.backend.CancellationDomain
 import com.spotiflac.backend.CancellationRegistry
+import com.spotiflac.backend.DownloadState
 import com.spotiflac.backend.ExtensionManager
 import com.spotiflac.backend.ExtensionRepository
 import com.spotiflac.backend.LyricsRequest
@@ -88,6 +89,11 @@ internal object RustCoreBackend : CoreBackend {
     private fun owner(): ExtensionManager {
         return checkNotNull(manager) { "Rust backend is not initialized" }
     }
+
+    private fun <T> ExtensionManager.withDownloadState(block: (DownloadState) -> T): T =
+        environment().use { environment ->
+            environment.downloadState().use(block)
+        }
 
     private fun directoryAliases(value: String, sources: String, data: String): List<String> {
         require(File(value).isAbsolute) { "Output directories must be absolute" }
@@ -535,11 +541,7 @@ internal object RustCoreBackend : CoreBackend {
 
     override fun waitForDownloadProgressDelta(since: Long, timeoutMs: Long): String {
         val current = owner()
-        return current.environment().use { environment ->
-            environment.downloadState().use { state ->
-                state.waitProgressDelta(since, timeoutMs)
-            }
-        }
+        return current.withDownloadState { state -> state.waitProgressDelta(since, timeoutMs) }
     }
 
     override fun openDownloadProgress(): CoreDownloadProgress {
@@ -558,38 +560,22 @@ internal object RustCoreBackend : CoreBackend {
 
     override fun initItemProgress(itemId: String) {
         val current = owner()
-        current.environment().use { environment ->
-            environment.downloadState().use { state ->
-                state.initItemProgress(itemId)
-            }
-        }
+        current.withDownloadState { state -> state.initItemProgress(itemId) }
     }
 
     override fun clearItemProgress(itemId: String) {
         val current = owner()
-        current.environment().use { environment ->
-            environment.downloadState().use { state ->
-                state.clearItemProgress(itemId)
-            }
-        }
+        current.withDownloadState { state -> state.clearItemProgress(itemId) }
     }
 
     override fun cancelDownload(itemId: String) {
         val current = owner()
-        current.environment().use { environment ->
-            environment.downloadState().use { state ->
-                state.cancelDownload(itemId)
-            }
-        }
+        current.withDownloadState { state -> state.cancelDownload(itemId) }
     }
 
     override fun resetDownloadCancel(itemId: String) {
         val current = owner()
-        current.environment().use { environment ->
-            environment.downloadState().use { state ->
-                state.resetDownloadCancel(itemId)
-            }
-        }
+        current.withDownloadState { state -> state.resetDownloadCancel(itemId) }
     }
 
     override fun completeAuthCallback(state: String, code: String, sessionGrant: Boolean, onResolved: (String) -> Unit) {
@@ -876,30 +862,24 @@ internal object RustCoreBackend : CoreBackend {
                 completeSessionGrant(current, string("extension_id"), string("grant"))
                 true
             }
-            "getAllDownloadProgress" -> current.environment().use { environment ->
-                environment.downloadState().use { state -> state.allProgress() }
-            }
+            "getAllDownloadProgress" -> current.withDownloadState { state -> state.allProgress() }
             "cleanupConnections" -> current.environment().use { it.cleanupConnections(); null }
             "resetDownloadCancels", "cancelDownloads" -> {
                 val values = args["item_ids"] as? List<*> ?: error("Expected item_ids list")
                 val itemIds = values.map { it as? String ?: error("Expected string item ID") }
-                current.environment().use { environment ->
-                    environment.downloadState().use { state ->
-                        if (method == "cancelDownloads") state.cancelDownloads(itemIds)
-                        else state.resetDownloadCancels(itemIds)
-                    }
+                current.withDownloadState { state ->
+                    if (method == "cancelDownloads") state.cancelDownloads(itemIds)
+                    else state.resetDownloadCancels(itemIds)
                 }
                 null
             }
-            "clearItemProgress", "cancelDownload", "resetDownloadCancel" -> current.environment().use { environment ->
-                environment.downloadState().use { state ->
-                    when (method) {
-                        "clearItemProgress" -> state.clearItemProgress(string("item_id"))
-                        "cancelDownload" -> state.cancelDownload(string("item_id"))
-                        else -> state.resetDownloadCancel(string("item_id"))
-                    }
-                    null
+            "clearItemProgress", "cancelDownload", "resetDownloadCancel" -> current.withDownloadState { state ->
+                when (method) {
+                    "clearItemProgress" -> state.clearItemProgress(string("item_id"))
+                    "cancelDownload" -> state.cancelDownload(string("item_id"))
+                    else -> state.resetDownloadCancel(string("item_id"))
                 }
+                null
             }
             "getLyricsLRC", "getLyricsLRCWithSource" -> withMediaFiles(listOf(string("file_path"))) {
                 val request = lyricsRequest("file_path")
