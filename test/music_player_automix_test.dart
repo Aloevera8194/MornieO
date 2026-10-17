@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -10,6 +11,7 @@ import 'package:spotiflac_android/services/automix_analysis.dart';
 import 'package:spotiflac_android/services/automix_analyzer.dart';
 import 'package:spotiflac_android/services/music_player_service.dart';
 import 'package:spotiflac_android/services/music_playback_deck.dart';
+import 'package:spotiflac_android/services/music_haptics.dart';
 import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/services/playback_notification.dart';
 import 'package:spotiflac_android/models/automix_options.dart';
@@ -53,6 +55,20 @@ class _Analyzer extends AutoMixAnalyzer {
       );
     }
     return pending?.future;
+  }
+}
+
+class _HapticsAnalyzer extends MusicHapticsAnalyzer {
+  final paths = <String>[];
+
+  @override
+  Future<HapticTrack?> analyze(String path) async {
+    paths.add(path);
+    return HapticTrack(
+      Int32List.fromList(List.generate(20, (index) => (index + 1) * 150)),
+      Uint8List.fromList(List.filled(20, 255)),
+      Uint8List(20),
+    );
   }
 }
 
@@ -219,8 +235,13 @@ void main() {
   late _EffectRenderer effectRenderer;
   late MusicPlayerHandler handler;
   late AutoplayLibraryLoader autoplayLoader;
+  late _HapticsAnalyzer hapticsAnalyzer;
+  late List<String?> hapticSongs;
 
   setUp(() {
+    musicPlayerRuntime.configure(
+      musicPlayerRuntime.settings.copyWith(musicHaptics: false),
+    );
     setPlaybackAutomationOptions(
       enabled: true,
       pauseOnMute: false,
@@ -234,10 +255,14 @@ void main() {
     analyzer = _Analyzer();
     effectRenderer = _EffectRenderer();
     autoplayLoader = (_) async => _tracks;
+    hapticsAnalyzer = _HapticsAnalyzer();
+    hapticSongs = [];
     handler = MusicPlayerHandler(
       autoMixAnalyzer: analyzer,
       autoMixEffectRenderer: effectRenderer,
       autoplayLibraryLoader: (seed) => autoplayLoader(seed),
+      hapticsAnalyzer: hapticsAnalyzer,
+      hapticPulse: (_, _) async => hapticSongs.add(handler.mediaItem.value?.id),
     );
   });
 
@@ -310,6 +335,77 @@ void main() {
       expect(analyzer.calls, isEmpty);
     },
   );
+
+  group('music haptics transport', () {
+    void enableHaptics() => musicPlayerRuntime.configure(
+      musicPlayerRuntime.settings.copyWith(musicHaptics: true),
+    );
+
+    test('direct documents work without AutoMix resolved metadata', () async {
+      enableHaptics();
+      const source = 'content://music/document/first.flac';
+      handler.mediaItem.add(
+        const MediaItem(
+          id: 'document',
+          title: 'Document',
+          extras: {'source': source},
+        ),
+      );
+      handler.playbackState.add(
+        PlaybackState(
+          playing: true,
+          processingState: AudioProcessingState.ready,
+        ),
+      );
+      await _until(() => hapticSongs.isNotEmpty);
+      expect(hapticSongs.first, 'document');
+      expect(hapticsAnalyzer.paths, [source]);
+      // A subsequent AutoMix-style metadata update keeps the same analysis.
+      handler.mediaItem.add(
+        handler.mediaItem.value!.copyWith(
+          extras: {'source': source, 'resolvedSource': '/cache/first.flac'},
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      expect(hapticsAnalyzer.paths, [source]);
+    });
+
+    for (final autoMix in [false, true]) {
+      test(
+        'first song and manual skips retain haptics (AutoMix: $autoMix)',
+        () async {
+          enableHaptics();
+          setAutoMixEnabled(autoMix);
+          await handler.setQueueAndPlay(_tracks);
+          await _until(() => hapticSongs.contains('one'));
+          await handler.skipToNext();
+          await _until(() => hapticSongs.contains('two'));
+          final beforePrevious = hapticSongs.length;
+          await handler.skipToPrevious();
+          await _until(() => hapticSongs.skip(beforePrevious).contains('one'));
+          expect(hapticSongs.last, 'one');
+          expect(hapticsAnalyzer.paths, [
+            '/one.flac',
+            '/two.flac',
+            '/one.flac',
+          ]);
+        },
+      );
+    }
+
+    test(
+      'ordinary completion and a subsequent skip both keep haptics',
+      () async {
+        enableHaptics();
+        await handler.setQueueAndPlay(_tracks);
+        await _until(() => hapticSongs.contains('one'));
+        await native.event('music-player', 'audio.onComplete');
+        await _until(() => hapticSongs.contains('two'));
+        await handler.skipToNext();
+        await _until(() => hapticSongs.contains('three'));
+      },
+    );
+  });
 
   group('playback failures', () {
     test('runtime error stays on the song and Play retries it', () async {
@@ -1626,6 +1722,23 @@ void main() {
     await _until(() => (native.lastVolume(incoming) ?? 0) > 0);
     return incoming;
   }
+
+  test(
+    'haptics survives an AutoMix handoff followed by a manual skip',
+    () async {
+      musicPlayerRuntime.configure(
+        musicPlayerRuntime.settings.copyWith(musicHaptics: true),
+      );
+      await startMix();
+      await _until(() => hapticSongs.contains('two'));
+      await handler.skipToNext();
+      await _until(() => hapticSongs.contains('three'));
+      expect(
+        hapticsAnalyzer.paths,
+        containsAllInOrder(['/one.flac', '/two.flac', '/three.flac']),
+      );
+    },
+  );
 
   test('Previous after AutoMix handoff reloads the preceding audio', () async {
     final active = await startMix();

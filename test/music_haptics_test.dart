@@ -1,8 +1,13 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:spotiflac_android/services/audio_analysis_jobs.dart';
 import 'package:spotiflac_android/services/music_haptics.dart';
 
 Uint8List _pcm(double seconds, double Function(double time) sample) {
@@ -35,7 +40,16 @@ class _Analyzer extends MusicHapticsAnalyzer {
   }
 }
 
+class _PendingAnalyzer extends MusicHapticsAnalyzer {
+  final pending = <String, Completer<HapticTrack?>>{};
+
+  @override
+  Future<HapticTrack?> analyze(String path) =>
+      (pending[path] = Completer<HapticTrack?>()).future;
+}
+
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   test('a kick on every beat becomes one deep pulse per beat', () {
     final track = analyzeHapticPcm(_pcm(6, _hits(60, 0.5, 0.25)));
     expect(track.length, inInclusiveRange(11, 12));
@@ -97,5 +111,137 @@ void main() {
     haptics.update(null);
     expect(analyzer.paths, ['/music/song.flac']);
     haptics.dispose();
+  });
+
+  test(
+    'analysis finished during loading starts on the first ready state',
+    () async {
+      var state = PlaybackState(
+        playing: true,
+        processingState: AudioProcessingState.loading,
+      );
+      var pulses = 0;
+      final analyzer = _Analyzer(
+        HapticTrack(
+          Int32List.fromList([80]),
+          Uint8List.fromList([255]),
+          Uint8List.fromList([0]),
+        ),
+      );
+      final haptics = MusicHaptics(
+        state: () => state,
+        analyzer: analyzer,
+        pulse: (_, _) async => pulses++,
+      );
+      addTearDown(haptics.dispose);
+      haptics.update('/music/first.flac');
+      await Future<void>.delayed(Duration.zero);
+      expect(haptics.track, isNotNull);
+      expect(pulses, 0);
+      state = PlaybackState(
+        playing: true,
+        processingState: AudioProcessingState.ready,
+      );
+      haptics.update('/music/first.flac');
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      expect(pulses, 1);
+      expect(analyzer.paths, ['/music/first.flac']);
+    },
+  );
+
+  test(
+    'late analysis from a skipped song cannot replace the active pulses',
+    () async {
+      final state = PlaybackState(
+        playing: true,
+        processingState: AudioProcessingState.ready,
+      );
+      final analyzer = _PendingAnalyzer();
+      final haptics = MusicHaptics(
+        state: () => state,
+        analyzer: analyzer,
+        pulse: (_, _) async {},
+      );
+      addTearDown(haptics.dispose);
+      haptics.update('content://music/one');
+      haptics.update('content://music/two');
+      final latest = HapticTrack(Int32List(0), Uint8List(0), Uint8List(0));
+      analyzer.pending['content://music/two']!.complete(latest);
+      await Future<void>.delayed(Duration.zero);
+      analyzer.pending['content://music/one']!.complete(
+        HapticTrack(
+          Int32List.fromList([80]),
+          Uint8List.fromList([255]),
+          Uint8List(1),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(haptics.track, same(latest));
+    },
+  );
+
+  group('document analysis', () {
+    const channel = MethodChannel('com.zarz.spotiflac/backend');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    late Directory temporary;
+    late MusicHapticsAnalyzer analyzer;
+    late List<String> inputs;
+    var modified = 1;
+
+    setUp(() async {
+      temporary = await Directory.systemTemp.createTemp('haptics-test-');
+      inputs = [];
+      modified = 1;
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        expect(call.method, 'getSafFileModTimes');
+        final source =
+            (jsonDecode((call.arguments as Map)['uris'] as String) as List)
+                    .single
+                as String;
+        return {source: modified};
+      });
+      analyzer = MusicHapticsAnalyzer(
+        temporaryDirectory: () async => temporary,
+        jobs: AudioAnalysisJobs<bool>(
+          start: (arguments) async {
+            inputs.add(arguments[arguments.indexOf('-i') + 1]);
+            await File(
+              arguments.last,
+            ).writeAsBytes(_pcm(2, _hits(60, 0.5, 0.25)));
+            return (id: inputs.length, completed: Future.value(true));
+          },
+          cancel: (_) async {},
+        ),
+      );
+    });
+    tearDown(() async {
+      analyzer.dispose();
+      messenger.setMockMethodCallHandler(channel, null);
+      await temporary.delete(recursive: true);
+    });
+
+    test('document URI is decoded without a playback cache copy', () async {
+      const source = 'content://music/document/first.flac';
+      final first = await analyzer.analyze(source);
+      expect(first?.length, greaterThan(0));
+      expect(await analyzer.analyze(source), same(first));
+      expect(inputs, [source]);
+      modified++;
+      expect(await analyzer.analyze(source), isNot(same(first)));
+      expect(inputs, [source, source]);
+      expect(await temporary.list().toList(), isEmpty);
+    });
+
+    test(
+      'unknown modification time permits analysis without caching stale pulses',
+      () async {
+        modified = 0;
+        const source = 'content://music/document/unknown.flac';
+        expect((await analyzer.analyze(source))?.length, greaterThan(0));
+        expect((await analyzer.analyze(source))?.length, greaterThan(0));
+        expect(inputs, [source, source]);
+      },
+    );
   });
 }

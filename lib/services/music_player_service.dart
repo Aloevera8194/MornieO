@@ -576,10 +576,13 @@ class MusicPlayerHandler extends BaseAudioHandler
     final extras = mediaItem.value?.extras;
     final source = extras?['source']?.toString() ?? '';
     final resolved = extras?['resolvedSource']?.toString().trim() ?? '';
-    final path = resolved.isNotEmpty ? resolved : source;
+    final document = source.startsWith('content://');
+    // Use a stable document identity for both direct playback and AutoMix.
+    // Haptics opens its own SAF input; the player's descriptor is short-lived.
+    final path = document ? source : (resolved.isNotEmpty ? resolved : source);
     final local =
         path.isNotEmpty &&
-        !path.contains('://') &&
+        (document || !path.contains('://')) &&
         _settings.musicHaptics &&
         _settings.playerMode == 'internal';
     _haptics.update(local ? path : null);

@@ -4,11 +4,13 @@ import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/services/audio_analysis_jobs.dart';
+import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/logger.dart' show AppLogger;
 
 const musicHapticsSampleRate = 4000;
@@ -174,6 +176,18 @@ class MusicHapticsAnalyzer {
   static Future<({int id, Future<bool> completed})> _start(
     List<String> arguments,
   ) async {
+    final inputIndex = arguments.indexOf('-i') + 1;
+    if (inputIndex > 0 && arguments[inputIndex].startsWith('content://')) {
+      // Resolve only when this owned job starts. FFmpegKit opens and closes
+      // its own SAF descriptor, independently of the player's short lease.
+      final input = await FFmpegKitConfig.getSafParameterForRead(
+        arguments[inputIndex],
+      );
+      if (input == null || input.isEmpty) {
+        throw StateError('Unable to open haptics audio source');
+      }
+      arguments = List.of(arguments)..[inputIndex] = input;
+    }
     final done = Completer<bool>();
     final session = await FFmpegKit.executeWithArgumentsAsync(arguments, (
       session,
@@ -206,11 +220,28 @@ class MusicHapticsAnalyzer {
     final generation = _generation;
     Directory? work;
     try {
-      final stat = await File(path).stat();
-      if (stat.type != FileSystemEntityType.file) return null;
-      final key = '$path:${stat.size}:${stat.modified.microsecondsSinceEpoch}';
-      final cached = _cache.remove(key);
-      if (cached != null) return _cache[key] = cached;
+      String? key;
+      if (path.startsWith('content://')) {
+        // A document URI is not a filesystem path. Unknown modification times
+        // still allow analysis, but cannot safely identify a cached revision.
+        try {
+          final modified = (await PlatformBridge.getSafFileModTimes([
+            path,
+          ]))[path];
+          if (modified != null && modified > 0) key = '$path:$modified';
+        } catch (_) {
+          // Some document providers cannot report a modification timestamp.
+        }
+      } else {
+        final stat = await File(path).stat();
+        if (stat.type != FileSystemEntityType.file) return null;
+        key = '$path:${stat.size}:${stat.modified.microsecondsSinceEpoch}';
+      }
+      if (generation != _generation) return null;
+      if (key != null) {
+        final cached = _cache.remove(key);
+        if (cached != null) return _cache[key] = cached;
+      }
       work = await (await _temporaryDirectory()).createTemp('haptics-');
       if (generation != _generation) return null;
       final output = File('${work.path}/song.pcm');
@@ -248,7 +279,7 @@ class MusicHapticsAnalyzer {
       }
       final track = await compute(analyzeHapticPcm, await output.readAsBytes());
       if (generation != _generation) return null;
-      _cache[key] = track;
+      if (key != null) _cache[key] = track;
       while (_cache.length > 8) {
         _cache.remove(_cache.keys.first);
       }
