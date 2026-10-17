@@ -34,7 +34,13 @@ void main() {
       final args = Map<String, dynamic>.from(call.arguments as Map);
       final options = Map<String, dynamic>.from(args['options'] as Map);
       expect(options['resetOnError'], 'false');
+      expect(options['migrateOnAlgorithmChange'], 'true');
       expect(options['migrateWithBackup'], 'true');
+      expect(
+        options['keyCipherAlgorithm'],
+        'RSA_ECB_OAEPwithSHA_256andMGF1Padding',
+      );
+      expect(options['storageCipherAlgorithm'], 'AES_GCM_NoPadding');
       if (call.method == 'read') {
         if (readError != null) throw readError!;
         return values[args['key']];
@@ -139,6 +145,36 @@ void main() {
         (await ExtensionStorageService.prepare()).masterKey,
         values[keyName],
       );
+      expect(mutations, isEmpty);
+    },
+  );
+
+  test(
+    'failed cipher migration preserves encrypted files and the key',
+    () async {
+      final key = base64Encode(List.filled(32, 4));
+      values[keyName] = key;
+      final file = await seed(
+        'support/extension_data/example.provider/settings.enc',
+        [8, 9, 10],
+      );
+      readError = PlatformException(
+        code: 'Exception encountered',
+        message:
+            'Migration failed after algorithm change '
+            '(Invalid key, key type incompatible with cipher). '
+            'Enable resetOnError=true or call deleteAll().',
+      );
+      await expectLater(
+        ExtensionStorageService.prepare(),
+        throwsA(isA<PlatformException>()),
+      );
+      expect(mutations, isEmpty);
+      expect(values[keyName], key);
+      expect(await file.readAsBytes(), [8, 9, 10]);
+
+      readError = null;
+      expect((await ExtensionStorageService.prepare()).masterKey, key);
       expect(mutations, isEmpty);
     },
   );

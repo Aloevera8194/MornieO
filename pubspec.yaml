@@ -24,7 +24,9 @@ dependencies:
 
 # Storage & Persistence
   shared_preferences: ^2.5.6
-  flutter_secure_storage: ^11.0.0
+  # v11 removes legacy Android readers, breaking users who skip the v10 migration.
+  # Keep the compatibility release until old encrypted installs can be migrated.
+  flutter_secure_storage: 10.3.4
   spotiflac_discord:
     path: third_party/spotiflac_discord
   path_provider: ^2.1.6
@@ -89,6 +91,9 @@ dependencies:
   audio_session: ^0.2.4
 
 dependency_overrides:
+  # Retain the existing Apple keychain fixes while Android uses legacy migration.
+  # The v10 and v11 Apple option maps use the same platform interface contract.
+  flutter_secure_storage_darwin: 0.4.3
   # Per-player audio processing tap; upstream playback and session ownership stay intact.
   audioplayers_darwin:
     path: third_party/audioplayers_darwin
