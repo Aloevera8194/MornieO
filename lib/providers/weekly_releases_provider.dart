@@ -9,8 +9,16 @@ import 'package:spotiflac_android/utils/provider_resource_ids.dart';
 
 final weeklyReleasesProvider = FutureProvider.autoDispose
     .family<WeeklyReleaseFeed, bool>((ref, refresh) async {
-      final collections = ref.watch(libraryCollectionsProvider);
-      final extensions = ref.watch(extensionProvider);
+      final collections = ref.watch(
+        libraryCollectionsProvider.select(
+          (s) => (isLoaded: s.isLoaded, favoriteArtists: s.favoriteArtists),
+        ),
+      );
+      final extensions = ref.watch(
+        extensionProvider.select(
+          (s) => (isInitialized: s.isInitialized, extensions: s.extensions),
+        ),
+      );
       final preferred = ref.watch(
         settingsProvider.select((s) => s.searchProvider),
       );
