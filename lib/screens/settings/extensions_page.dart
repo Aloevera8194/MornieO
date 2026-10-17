@@ -434,55 +434,46 @@ String _extensionHealthLabel(BuildContext context, String status) {
   }
 }
 
-class _DownloadPriorityItem extends ConsumerWidget {
-  const _DownloadPriorityItem();
+class _ExtensionPriorityLink extends StatelessWidget {
+  const _ExtensionPriorityLink({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool enabled;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final extState = ref.watch(extensionProvider);
+  Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-
-    final hasDownloadExtensions = extState.extensions.any(
-      (e) => e.enabled && e.hasDownloadProvider,
-    );
 
     if (context.isMornye) {
       return Opacity(
-        opacity: hasDownloadExtensions ? 1 : 0.5,
+        opacity: enabled ? 1 : 0.5,
         child: SettingsItem(
-          icon: Icons.download,
-          title: context.l10n.extensionsDownloadPriority,
-          subtitle: hasDownloadExtensions
-              ? context.l10n.extensionsDownloadPrioritySubtitle
-              : context.l10n.extensionsNoDownloadProvider,
-          onTap: hasDownloadExtensions
-              ? () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const ProviderPriorityPage(),
-                  ),
-                )
-              : null,
+          icon: icon,
+          title: title,
+          subtitle: subtitle,
+          onTap: enabled ? onTap : null,
         ),
       );
     }
 
     final content = InkWell(
-      onTap: hasDownloadExtensions
-          ? () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => const ProviderPriorityPage(),
-              ),
-            )
-          : null,
+      onTap: enabled ? onTap : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Row(
           children: [
             AppIcon(
-              Icons.download,
-              color: hasDownloadExtensions
+              icon,
+              color: enabled
                   ? colorScheme.onSurfaceVariant
                   : colorScheme.outline,
             ),
@@ -492,16 +483,14 @@ class _DownloadPriorityItem extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    context.l10n.extensionsDownloadPriority,
+                    title,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: hasDownloadExtensions ? null : colorScheme.outline,
+                      color: enabled ? null : colorScheme.outline,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    hasDownloadExtensions
-                        ? context.l10n.extensionsDownloadPrioritySubtitle
-                        : context.l10n.extensionsNoDownloadProvider,
+                    subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -511,7 +500,7 @@ class _DownloadPriorityItem extends ConsumerWidget {
             ),
             AppIcon(
               Icons.chevron_right,
-              color: hasDownloadExtensions
+              color: enabled
                   ? colorScheme.onSurfaceVariant
                   : colorScheme.outline,
             ),
@@ -519,9 +508,31 @@ class _DownloadPriorityItem extends ConsumerWidget {
         ),
       ),
     );
-    return SettingsSearchTarget(
-      label: context.l10n.extensionsDownloadPriority,
-      child: content,
+    return SettingsSearchTarget(label: title, child: content);
+  }
+}
+
+class _DownloadPriorityItem extends ConsumerWidget {
+  const _DownloadPriorityItem();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final extState = ref.watch(extensionProvider);
+    final hasDownloadExtensions = extState.extensions.any(
+      (e) => e.enabled && e.hasDownloadProvider,
+    );
+
+    return _ExtensionPriorityLink(
+      icon: Icons.download,
+      title: context.l10n.extensionsDownloadPriority,
+      subtitle: hasDownloadExtensions
+          ? context.l10n.extensionsDownloadPrioritySubtitle
+          : context.l10n.extensionsNoDownloadProvider,
+      enabled: hasDownloadExtensions,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute<void>(builder: (_) => const ProviderPriorityPage()),
+      ),
     );
   }
 }
@@ -532,88 +543,24 @@ class _MetadataPriorityItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final extState = ref.watch(extensionProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     final hasMetadataExtensions = extState.extensions.any(
       (e) => e.enabled && e.hasMetadataProvider,
     );
 
-    if (context.isMornye) {
-      return Opacity(
-        opacity: hasMetadataExtensions ? 1 : 0.5,
-        child: SettingsItem(
-          icon: Icons.search,
-          title: context.l10n.extensionsMetadataPriority,
-          subtitle: hasMetadataExtensions
-              ? context.l10n.extensionsMetadataPrioritySubtitle
-              : context.l10n.extensionsNoMetadataProvider,
-          onTap: hasMetadataExtensions
-              ? () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const MetadataProviderPriorityPage(),
-                  ),
-                )
-              : null,
-        ),
-      );
-    }
-
-    final content = InkWell(
-      onTap: hasMetadataExtensions
-          ? () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => const MetadataProviderPriorityPage(),
-              ),
-            )
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            AppIcon(
-              Icons.search,
-              color: hasMetadataExtensions
-                  ? colorScheme.onSurfaceVariant
-                  : colorScheme.outline,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.extensionsMetadataPriority,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: hasMetadataExtensions ? null : colorScheme.outline,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    hasMetadataExtensions
-                        ? context.l10n.extensionsMetadataPrioritySubtitle
-                        : context.l10n.extensionsNoMetadataProvider,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AppIcon(
-              Icons.chevron_right,
-              color: hasMetadataExtensions
-                  ? colorScheme.onSurfaceVariant
-                  : colorScheme.outline,
-            ),
-          ],
+    return _ExtensionPriorityLink(
+      icon: Icons.search,
+      title: context.l10n.extensionsMetadataPriority,
+      subtitle: hasMetadataExtensions
+          ? context.l10n.extensionsMetadataPrioritySubtitle
+          : context.l10n.extensionsNoMetadataProvider,
+      enabled: hasMetadataExtensions,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => const MetadataProviderPriorityPage(),
         ),
       ),
-    );
-    return SettingsSearchTarget(
-      label: context.l10n.extensionsMetadataPriority,
-      child: content,
     );
   }
 }
@@ -624,88 +571,24 @@ class _DownloadFallbackItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final extState = ref.watch(extensionProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     final hasDownloadExtensions = extState.extensions.any(
       (e) => e.enabled && e.hasDownloadProvider,
     );
 
-    if (context.isMornye) {
-      return Opacity(
-        opacity: hasDownloadExtensions ? 1 : 0.5,
-        child: SettingsItem(
-          icon: Icons.alt_route,
-          title: context.l10n.extensionsFallbackTitle,
-          subtitle: hasDownloadExtensions
-              ? context.l10n.extensionsFallbackSubtitle
-              : context.l10n.extensionsNoDownloadProvider,
-          onTap: hasDownloadExtensions
-              ? () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => const DownloadFallbackExtensionsPage(),
-                  ),
-                )
-              : null,
-        ),
-      );
-    }
-
-    final content = InkWell(
-      onTap: hasDownloadExtensions
-          ? () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(
-                builder: (_) => const DownloadFallbackExtensionsPage(),
-              ),
-            )
-          : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            AppIcon(
-              Icons.alt_route,
-              color: hasDownloadExtensions
-                  ? colorScheme.onSurfaceVariant
-                  : colorScheme.outline,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.l10n.extensionsFallbackTitle,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: hasDownloadExtensions ? null : colorScheme.outline,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    hasDownloadExtensions
-                        ? context.l10n.extensionsFallbackSubtitle
-                        : context.l10n.extensionsNoDownloadProvider,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AppIcon(
-              Icons.chevron_right,
-              color: hasDownloadExtensions
-                  ? colorScheme.onSurfaceVariant
-                  : colorScheme.outline,
-            ),
-          ],
+    return _ExtensionPriorityLink(
+      icon: Icons.alt_route,
+      title: context.l10n.extensionsFallbackTitle,
+      subtitle: hasDownloadExtensions
+          ? context.l10n.extensionsFallbackSubtitle
+          : context.l10n.extensionsNoDownloadProvider,
+      enabled: hasDownloadExtensions,
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => const DownloadFallbackExtensionsPage(),
         ),
       ),
-    );
-    return SettingsSearchTarget(
-      label: context.l10n.extensionsFallbackTitle,
-      child: content,
     );
   }
 }
