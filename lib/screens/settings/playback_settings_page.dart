@@ -65,6 +65,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                   icon: Icons.open_in_new,
                   title: context.l10n.libraryExternalPlayer,
                   subtitle: context.l10n.libraryExternalPlayerSubtitle,
+                  selected: settings.playerMode == 'external',
                   trailing: settings.playerMode == 'external'
                       ? AppIcon(Icons.check, color: colorScheme.primary)
                       : null,
@@ -76,6 +77,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                   icon: Icons.play_circle_outline,
                   title: context.l10n.libraryBuiltInPreviewPlayer,
                   subtitle: context.l10n.libraryBuiltInPreviewPlayerSubtitle,
+                  selected: settings.playerMode == 'internal',
                   trailing: settings.playerMode == 'internal'
                       ? AppIcon(Icons.check, color: colorScheme.primary)
                       : null,

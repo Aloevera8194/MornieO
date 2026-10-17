@@ -245,6 +245,7 @@ class _LogScreenState extends State<LogScreen> {
             for (final level in _levels)
               SettingsItem(
                 title: level,
+                selected: level == _selectedLevel,
                 trailing: level == _selectedLevel
                     ? AppIcon(Icons.check, color: colorScheme.primary)
                     : null,

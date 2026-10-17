@@ -49,9 +49,11 @@ void main() {
     }
 
     for (final brightness in Brightness.values) {
-      for (final accent in MornyeAccent.values.where(
-        (accent) => accent != MornyeAccent.red,
-      )) {
+      // Grouped settings cells, where tinted action rows sit.
+      final cell = brightness == Brightness.dark
+          ? const Color(0xff1c1c1e)
+          : Colors.white;
+      for (final accent in MornyeAccent.values) {
         final scheme = MornyeTheme.build(
           brightness,
           accent: accent,
@@ -60,6 +62,11 @@ void main() {
           contrast(scheme.primary, scheme.surface),
           greaterThanOrEqualTo(4.5),
           reason: '$accent on $brightness',
+        );
+        expect(
+          contrast(scheme.primary, cell),
+          greaterThanOrEqualTo(4.5),
+          reason: '$accent on a $brightness grouped cell',
         );
         expect(
           contrast(scheme.onPrimary, scheme.primary),

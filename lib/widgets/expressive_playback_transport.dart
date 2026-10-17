@@ -206,30 +206,34 @@ class _ExpressivePlaybackTransportState
     );
     return Tooltip(
       message: tooltip,
-      child: MaterialExpressiveScope(
-        child: M3EIconButton(
-          icon: sized(icon),
-          selectedIcon: selectedIcon == null ? null : sized(selectedIcon),
-          isSelected: selected,
-          semanticLabel: tooltip,
-          onPressed: onPressed,
-          size: widget.compact ? M3EIconButtonSize.md : M3EIconButtonSize.lg,
-          shape: round
-              ? M3EIconButtonShapeVariant.round
-              : M3EIconButtonShapeVariant.square,
-          variant: M3EIconButtonVariant.filled,
-          matchParentConstraints: true,
-          inflateHitTarget: false,
-          decoration: M3EIconButtonDecoration(
-            foregroundColor: WidgetStateProperty.resolveWith(
-              (states) => states.contains(WidgetState.disabled)
-                  ? scheme.onSurface.withValues(alpha: 0.38)
-                  : foreground,
-            ),
-            backgroundColor: WidgetStateProperty.resolveWith(
-              (states) => states.contains(WidgetState.disabled)
-                  ? scheme.onSurface.withValues(alpha: 0.12)
-                  : background,
+      excludeFromSemantics: true,
+      // One labeled node instead of a label plus an unnamed tap target.
+      child: MergeSemantics(
+        child: MaterialExpressiveScope(
+          child: M3EIconButton(
+            icon: sized(icon),
+            selectedIcon: selectedIcon == null ? null : sized(selectedIcon),
+            isSelected: selected,
+            semanticLabel: tooltip,
+            onPressed: onPressed,
+            size: widget.compact ? M3EIconButtonSize.md : M3EIconButtonSize.lg,
+            shape: round
+                ? M3EIconButtonShapeVariant.round
+                : M3EIconButtonShapeVariant.square,
+            variant: M3EIconButtonVariant.filled,
+            matchParentConstraints: true,
+            inflateHitTarget: false,
+            decoration: M3EIconButtonDecoration(
+              foregroundColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.disabled)
+                    ? scheme.onSurface.withValues(alpha: 0.38)
+                    : foreground,
+              ),
+              backgroundColor: WidgetStateProperty.resolveWith(
+                (states) => states.contains(WidgetState.disabled)
+                    ? scheme.onSurface.withValues(alpha: 0.12)
+                    : background,
+              ),
             ),
           ),
         ),

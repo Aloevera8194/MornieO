@@ -46,10 +46,13 @@ extension _HomeTabRecentUI on _HomeTabState {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                context.l10n.homeRecent,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+              Semantics(
+                header: true,
+                child: Text(
+                  context.l10n.homeRecent,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ),
               if (uniqueItems.isNotEmpty)

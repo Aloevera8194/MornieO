@@ -539,6 +539,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
               ),
               title: Text(context.l10n.storageAutomaticFolder),
               subtitle: Text(context.l10n.storageAutomaticDownloadFolder),
+              selected: !isSafMode,
               trailing: !isSafMode ? const AppIcon(Icons.check) : null,
               onTap: () async {
                 Navigator.pop(ctx);
@@ -553,6 +554,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
               leading: AppIcon(Icons.folder_open, color: colorScheme.primary),
               title: Text(context.l10n.storageSafRecommended),
               subtitle: Text(context.l10n.storageDownloadFolderHint),
+              selected: isSafMode,
               trailing: isSafMode ? const AppIcon(Icons.check) : null,
               onTap: () async {
                 Navigator.pop(ctx);
@@ -759,6 +761,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 leading: AppIcon(option.$4),
                 title: Text(option.$2),
                 subtitle: Text(option.$3),
+                selected: current == option.$1,
                 trailing: current == option.$1
                     ? const AppIcon(Icons.check)
                     : null,
@@ -876,6 +879,7 @@ class _FolderOption extends StatelessWidget {
           ),
         ],
       ),
+      selected: isSelected,
       trailing: isSelected
           ? AppIcon(Icons.check_circle, color: colorScheme.primary)
           : AppIcon(Icons.circle_outlined, color: colorScheme.outline),

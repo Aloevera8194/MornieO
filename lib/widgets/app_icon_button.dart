@@ -176,28 +176,34 @@ class AppIconButton extends StatelessWidget {
             data: IconThemeData(size: iconSize),
             child: icon,
           );
-    final button = MaterialExpressiveScope(
-      child: M3EIconButton(
-        icon: sized(icon),
-        selectedIcon: selectedIcon == null ? null : sized(selectedIcon),
-        semanticLabel: tooltip,
-        onPressed: onPressed,
-        isSelected: isSelected,
-        variant: switch (_variant) {
-          _AppIconButtonVariant.standard => M3EIconButtonVariant.standard,
-          _AppIconButtonVariant.filled => M3EIconButtonVariant.filled,
-          _AppIconButtonVariant.tonal => M3EIconButtonVariant.tonal,
-          _AppIconButtonVariant.outlined => M3EIconButtonVariant.outlined,
-        },
-        decoration: M3EIconButtonDecoration(
-          foregroundColor: foreground,
-          backgroundColor: style?.backgroundColor,
-          overlayColor: style?.overlayColor,
-          side: style?.side,
+    // M3EIconButton labels an outer node and leaves its inner tap target
+    // unnamed; merge them so screen readers find one labeled button.
+    final button = MergeSemantics(
+      child: MaterialExpressiveScope(
+        child: M3EIconButton(
+          icon: sized(icon),
+          selectedIcon: selectedIcon == null ? null : sized(selectedIcon),
+          semanticLabel: tooltip,
+          onPressed: onPressed,
+          isSelected: isSelected,
+          variant: switch (_variant) {
+            _AppIconButtonVariant.standard => M3EIconButtonVariant.standard,
+            _AppIconButtonVariant.filled => M3EIconButtonVariant.filled,
+            _AppIconButtonVariant.tonal => M3EIconButtonVariant.tonal,
+            _AppIconButtonVariant.outlined => M3EIconButtonVariant.outlined,
+          },
+          decoration: M3EIconButtonDecoration(
+            foregroundColor: foreground,
+            backgroundColor: style?.backgroundColor,
+            overlayColor: style?.overlayColor,
+            side: style?.side,
+          ),
         ),
       ),
     );
     final message = tooltip;
-    return message == null ? button : Tooltip(message: message, child: button);
+    return message == null
+        ? button
+        : Tooltip(message: message, excludeFromSemantics: true, child: button);
   }
 }

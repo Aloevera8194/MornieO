@@ -204,6 +204,7 @@ class MetadataSettingsPage extends ConsumerWidget {
                       : Icons.compress_outlined,
                 ),
                 title: Text(_getEmbeddedCoverSizeLabel(context, maxDimension)),
+                selected: currentMaxDimension == maxDimension,
                 trailing: currentMaxDimension == maxDimension
                     ? const AppIcon(Icons.check)
                     : null,
@@ -240,6 +241,7 @@ class MetadataSettingsPage extends ConsumerWidget {
               leading: const AppIcon(Icons.segment_outlined),
               title: Text(context.l10n.optionsArtistTagModeJoined),
               subtitle: Text(context.l10n.optionsArtistTagModeJoinedSubtitle),
+              selected: currentMode == artistTagModeJoined,
               trailing: currentMode == artistTagModeJoined
                   ? const AppIcon(Icons.check)
                   : null,
@@ -256,6 +258,7 @@ class MetadataSettingsPage extends ConsumerWidget {
               subtitle: Text(
                 context.l10n.optionsArtistTagModeSplitVorbisSubtitle,
               ),
+              selected: currentMode == artistTagModeSplitVorbis,
               trailing: currentMode == artistTagModeSplitVorbis
                   ? const AppIcon(Icons.check)
                   : null,
@@ -270,6 +273,7 @@ class MetadataSettingsPage extends ConsumerWidget {
               leading: const AppIcon(Icons.person_outline),
               title: Text(context.l10n.optionsArtistTagModePrimary),
               subtitle: Text(context.l10n.optionsArtistTagModePrimarySubtitle),
+              selected: currentMode == artistTagModePrimary,
               trailing: currentMode == artistTagModePrimary
                   ? const AppIcon(Icons.check)
                   : null,

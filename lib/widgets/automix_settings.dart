@@ -47,6 +47,7 @@ class _AutoMixSettingsState extends ConsumerState<AutoMixSettings> {
                     AutoMixEffect.custom => Icons.tune,
                   }),
                   title: Text(names[effect]!),
+                  selected: effect == current,
                   trailing: effect == current
                       ? Icon(
                           Icons.check,
@@ -101,6 +102,7 @@ class _AutoMixSettingsState extends ConsumerState<AutoMixSettings> {
               max: max,
               divisions: divisions,
               label: value.toStringAsFixed(2),
+              semanticLabel: label,
               onChanged: enabled ? draft : null,
               onChangeEnd: enabled ? save : null,
             ),

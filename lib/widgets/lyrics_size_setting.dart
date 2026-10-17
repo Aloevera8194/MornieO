@@ -51,6 +51,7 @@ class LyricsSizeSetting extends ConsumerWidget {
             max: 1.4,
             divisions: 12,
             label: percent,
+            semanticLabel: context.l10n.lyricsTextSize,
             semanticFormatterCallback: (value) => '${(value * 100).round()}%',
             onChanged: (value) =>
                 notifier.setLyricsTextScale(value, persist: false),

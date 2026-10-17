@@ -982,6 +982,7 @@ class _LanguageSelector extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
+            selected: isSelected,
             trailing: isSelected
                 ? AppIcon(Icons.check, color: colorScheme.primary)
                 : null,

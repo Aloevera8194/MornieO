@@ -153,6 +153,8 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
           ])
             ListTile(
               title: Text(option.$2),
+              selected: _sort == option.$1,
+              selectedColor: Theme.of(context).colorScheme.onSurface,
               trailing: _sort == option.$1 ? const Icon(Icons.check) : null,
               onTap: () => Navigator.pop(context, option.$1),
             ),
@@ -183,6 +185,8 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
           ])
             ListTile(
               title: Text(option.$2),
+              selected: (_completeness ?? '') == option.$1,
+              selectedColor: Theme.of(context).colorScheme.onSurface,
               trailing: (_completeness ?? '') == option.$1
                   ? const Icon(Icons.check)
                   : null,
@@ -419,12 +423,14 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                     24 + listInset,
                     16,
                   ),
-                  child: Text(
-                    _query.isEmpty
-                        ? context.l10n.libraryRecentlyAdded
-                        : context.l10n.searchAlbums,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                  child: Semantics(
+                    header: true,
+                    child: Text(
+                      _query.isEmpty
+                          ? context.l10n.libraryRecentlyAdded
+                          : context.l10n.searchAlbums,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

@@ -597,11 +597,14 @@ class _DonationGoalProgress extends StatelessWidget {
         ),
         if (goal.showPercentage) ...[
           const SizedBox(width: 8),
-          Text(
-            percentage,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
+          // The progress bar already reads the percentage as its value.
+          ExcludeSemantics(
+            child: Text(
+              percentage,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

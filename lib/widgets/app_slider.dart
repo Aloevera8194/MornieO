@@ -17,6 +17,9 @@ class AppSlider extends StatelessWidget {
     this.semanticFormatterCallback,
     this.trackThickness,
     this.thumbLength,
+    this.centered = false,
+    this.vertical = false,
+    this.semanticLabel,
   });
 
   final double value;
@@ -36,10 +39,29 @@ class AppSlider extends StatelessWidget {
   /// the handle stays in proportion.
   final double? thumbLength;
 
+  /// Grows the active track from the middle of the range, for bipolar values
+  /// such as gain or balance.
+  final bool centered;
+
+  /// Lays the slider out bottom (min) to top (max).
+  final bool vertical;
+
+  /// What the slider adjusts, read before its value; [label] only names the
+  /// value bubble.
+  final String? semanticLabel;
+
   @override
   Widget build(BuildContext context) {
+    final slider = _buildSlider(context);
+    if (semanticLabel == null) return slider;
+    return MergeSemantics(
+      child: Semantics(label: semanticLabel, child: slider),
+    );
+  }
+
+  Widget _buildSlider(BuildContext context) {
     if (!materialExpressiveEnabled(context)) {
-      return Slider(
+      final slider = Slider(
         value: value,
         min: min,
         max: max,
@@ -49,21 +71,72 @@ class AppSlider extends StatelessWidget {
         onChanged: onChanged,
         onChangeEnd: onChangeEnd,
       );
+      return vertical ? RotatedBox(quarterTurns: 3, child: slider) : slider;
     }
-    return MaterialExpressiveScope(
-      child: M3ESlider(
-        value: value,
-        min: min,
-        max: max,
-        divisions: divisions,
-        label: label,
-        semanticFormatterCallback: semanticFormatterCallback,
-        trackThickness: trackThickness,
-        thumbLength: thumbLength,
-        enabled: onChanged != null,
-        onChanged: onChanged,
-        onChangeEnd: onChangeEnd,
-      ),
+    final enabled = onChanged != null;
+    final slider = MaterialExpressiveScope(
+      child: switch ((vertical, centered)) {
+        (true, true) => M3ESlider.verticalCentered(
+          value: value,
+          min: min,
+          max: max,
+          divisions: divisions,
+          label: label,
+          semanticFormatterCallback: semanticFormatterCallback,
+          trackThickness: trackThickness,
+          thumbLength: thumbLength,
+          enabled: enabled,
+          onChanged: onChanged,
+          onChangeEnd: onChangeEnd,
+        ),
+        (true, false) => M3ESlider.vertical(
+          value: value,
+          min: min,
+          max: max,
+          divisions: divisions,
+          label: label,
+          semanticFormatterCallback: semanticFormatterCallback,
+          trackThickness: trackThickness,
+          thumbLength: thumbLength,
+          enabled: enabled,
+          onChanged: onChanged,
+          onChangeEnd: onChangeEnd,
+        ),
+        (false, true) => M3ESlider.centered(
+          value: value,
+          min: min,
+          max: max,
+          divisions: divisions,
+          label: label,
+          semanticFormatterCallback: semanticFormatterCallback,
+          trackThickness: trackThickness,
+          thumbLength: thumbLength,
+          enabled: enabled,
+          onChanged: onChanged,
+          onChangeEnd: onChangeEnd,
+        ),
+        (false, false) => M3ESlider(
+          value: value,
+          min: min,
+          max: max,
+          divisions: divisions,
+          label: label,
+          semanticFormatterCallback: semanticFormatterCallback,
+          trackThickness: trackThickness,
+          thumbLength: thumbLength,
+          enabled: enabled,
+          onChanged: onChanged,
+          onChangeEnd: onChangeEnd,
+        ),
+      },
     );
+    // The expressive slider lays out 44 dp across; stretch it to the 48 dp
+    // touch target the standard Slider already has.
+    return vertical
+        ? ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 48),
+            child: slider,
+          )
+        : SizedBox(height: 48, child: slider);
   }
 }

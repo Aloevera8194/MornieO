@@ -223,6 +223,7 @@ extension _QueueTabSections on _QueueTabState {
                 if (sheetContext.isMornye)
                   SettingsItem(
                     title: _sortLabel(sheetContext, mode),
+                    selected: mode == _sortMode,
                     trailing: mode == _sortMode
                         ? AppIcon(
                             Icons.check,
@@ -273,6 +274,8 @@ extension _QueueTabSections on _QueueTabState {
         child: M3EButtonGroup(
           type: M3EButtonGroupType.connected,
           style: M3EButtonStyle.filled,
+          // Connected segments get no inflated target; keep 48 dp.
+          size: M3EButtonSize.sm.copyWith(height: 48),
           selectedIndex: selected,
           selectionRequired: true,
           onSelectedIndexChanged: (index) {
@@ -446,13 +449,16 @@ class _LibrarySectionHeader extends StatelessWidget {
       color: theme.scaffoldBackgroundColor,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-        child: Text(
-          label,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.primary,
+        child: Semantics(
+          header: true,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.primary,
+            ),
           ),
         ),
       ),

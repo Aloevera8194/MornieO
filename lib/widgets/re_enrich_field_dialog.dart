@@ -373,6 +373,8 @@ class _ReEnrichFieldSheetState extends State<_ReEnrichFieldSheet> {
         leading: Icon(icon),
         title: Text(title),
         subtitle: Text(subtitle),
+        selected: _mode == mode,
+        selectedColor: scheme.onSurface,
         trailing: _mode == mode
             ? Icon(Icons.check, color: scheme.primary)
             : null,

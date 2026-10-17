@@ -145,17 +145,20 @@ class AppSliverHeader extends StatelessWidget {
               right: tokens.gapLg,
               bottom: tokens.gapLg,
             ),
-            title: Text(
-              title,
-              // The title grows as the header expands; without a cap a long
-              // localized title overflowed instead of ellipsizing.
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.bold,
-                letterSpacing: context.isMornye ? -0.7 * expandRatio : null,
-                color: colorScheme.onSurface,
+            title: Semantics(
+              header: true,
+              child: Text(
+                title,
+                // The title grows as the header expands; without a cap a long
+                // localized title overflowed instead of ellipsizing.
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: context.isMornye ? -0.7 * expandRatio : null,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
           );

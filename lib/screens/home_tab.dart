@@ -1285,11 +1285,14 @@ class _HomeTabState extends ConsumerState<HomeTab>
     final rowHeight = _recentDownloadsRowHeight(context);
     final header = Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        context.l10n.homeRecent,
-        style: Theme.of(
-          context,
-        ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+      child: Semantics(
+        header: true,
+        child: Text(
+          context.l10n.homeRecent,
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
       ),
     );
 

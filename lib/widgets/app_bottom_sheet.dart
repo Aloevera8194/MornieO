@@ -354,6 +354,7 @@ class AppSheetOption extends StatelessWidget {
     this.onTap,
     this.contentPadding,
     this.enabled = true,
+    this.selected,
   });
 
   final Widget title;
@@ -364,21 +365,37 @@ class AppSheetOption extends StatelessWidget {
   final EdgeInsetsGeometry? contentPadding;
   final bool enabled;
 
+  /// Announces a checkmark choice's state to screen readers; null for
+  /// options that are actions rather than choices.
+  final bool? selected;
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     if (!context.isMornye) {
       return ListTile(
-        title: title,
+        title: this.title,
         subtitle: subtitle,
         leading: leading == null ? null : symbolIconWidget(leading!),
         trailing: trailing == null ? null : symbolIconWidget(trailing!),
         onTap: onTap,
         contentPadding: contentPadding,
         enabled: enabled,
+        // The checkmark already shows the choice; selection only feeds
+        // screen readers, so the row keeps its ordinary text color.
+        selected: selected ?? false,
+        selectedColor: scheme.onSurface,
       );
     }
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    // Annotated on the title so it merges into the option's button node.
+    final title = selected == null
+        ? this.title
+        : Semantics(
+            selected: selected,
+            inMutuallyExclusiveGroup: true,
+            child: this.title,
+          );
     Widget adaptedIcon(Widget widget, double size) {
       final (icon, color) = switch (widget) {
         Icon(:final icon?, :final color) => (icon, color),

@@ -432,6 +432,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
                   'opus' => context.l10n.downloadAutoConvertOpusSubtitle,
                   _ => context.l10n.downloadAutoConvertMp3Subtitle,
                 }),
+                selected: normalizedCurrent == format,
                 trailing: normalizedCurrent == format
                     ? AppIcon(
                         Icons.check,
@@ -471,6 +472,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
               AppSheetOption(
                 leading: const AppIcon(Icons.speed_outlined),
                 title: Text(bitrate.replaceAll('k', ' kbps')),
+                selected: normalizedCurrent == bitrate,
                 trailing: normalizedCurrent == bitrate
                     ? AppIcon(
                         Icons.check,
@@ -511,6 +513,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
               leading: const AppIcon(Icons.signal_cellular_alt),
               title: Text(context.l10n.settingsDownloadNetworkAny),
               subtitle: Text(context.l10n.downloadNetworkAnySubtitle),
+              selected: current == 'any',
               trailing: current == 'any'
                   ? AppIcon(Icons.check, color: colorScheme.primary)
                   : null,
@@ -525,6 +528,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
               leading: const AppIcon(Icons.wifi),
               title: Text(context.l10n.settingsDownloadNetworkWifiOnly),
               subtitle: Text(context.l10n.downloadNetworkWifiOnlySubtitle),
+              selected: current == 'wifi_only',
               trailing: current == 'wifi_only'
                   ? AppIcon(Icons.check, color: colorScheme.primary)
                   : null,
@@ -572,6 +576,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
                       ? context.l10n.concurrentDownloadsOne
                       : context.l10n.concurrentDownloadsCount(count),
                 ),
+                selected: current == count,
                 trailing: current == count
                     ? AppIcon(Icons.check, color: colorScheme.primary)
                     : null,
@@ -884,6 +889,7 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
                     return AppSheetOption(
                       title: Text(countryName != code ? countryName : code),
                       subtitle: countryName != code ? Text(code) : null,
+                      selected: isSelected,
                       trailing: isSelected
                           ? AppIcon(Icons.check, color: colorScheme.primary)
                           : null,
@@ -921,6 +927,7 @@ class _QualityOption extends StatelessWidget {
       icon: icon,
       title: title,
       subtitle: subtitle,
+      selected: isSelected,
       trailing: isSelected
           ? AppIcon(Icons.check, color: colorScheme.primary)
           : null,

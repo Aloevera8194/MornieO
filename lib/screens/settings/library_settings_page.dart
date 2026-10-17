@@ -1557,6 +1557,7 @@ class _AutoScanOption extends StatelessWidget {
     return AppSheetOption(
       leading: AppIcon(icon),
       title: Text(title),
+      selected: selected,
       trailing: selected
           ? AppIcon(Icons.check, color: colorScheme.primary)
           : null,

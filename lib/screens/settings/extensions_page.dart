@@ -847,6 +847,7 @@ class _SearchProviderSelector extends ConsumerWidget {
                   ext.searchBehavior?.placeholder ??
                       ctx.l10n.extensionsCustomSearch,
                 ),
+                selected: settings.searchProvider == ext.id,
                 trailing: settings.searchProvider == ext.id
                     ? AppIcon(Icons.check_circle, color: colorScheme.primary)
                     : AppIcon(
@@ -1004,6 +1005,8 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
               leading: AppIcon(Icons.block, color: colorScheme.error),
               title: Text(ctx.l10n.extensionsHomeFeedOff),
               subtitle: Text(ctx.l10n.extensionsHomeFeedOffSubtitle),
+              selected:
+                  settings.homeFeedProvider == AppSettings.homeFeedProviderOff,
               trailing:
                   settings.homeFeedProvider == AppSettings.homeFeedProviderOff
                   ? AppIcon(Icons.check_circle, color: colorScheme.primary)
@@ -1030,6 +1033,7 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
                 leading: AppIcon(Icons.extension, color: colorScheme.secondary),
                 title: Text(ext.displayName),
                 subtitle: Text(ctx.l10n.extensionsHomeFeedUse(ext.displayName)),
+                selected: settings.homeFeedProvider == ext.id,
                 trailing: settings.homeFeedProvider == ext.id
                     ? AppIcon(Icons.check_circle, color: colorScheme.primary)
                     : AppIcon(

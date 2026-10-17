@@ -38,6 +38,7 @@ import 'package:material_3_expressive/material_3_expressive.dart'
         M3EButtonGroup,
         M3EButtonGroupAction,
         M3EButtonGroupType,
+        M3EButtonSize,
         M3EButtonStyle;
 import 'package:spotiflac_android/providers/library_browse_provider.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';

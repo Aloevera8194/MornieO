@@ -220,6 +220,7 @@ class _AccountFormDialogState extends State<_AccountFormDialog> {
                 selected: option == _choices[key],
                 child: AppSheetOption(
                   title: Text(option),
+                  selected: option == _choices[key],
                   trailing: option == _choices[key]
                       ? const Icon(Icons.check)
                       : null,

@@ -409,6 +409,10 @@ class SettingsItem extends StatelessWidget {
   final VoidCallback? onTap;
   final bool showDivider;
 
+  /// Announces a checkmark choice's state to screen readers; null for rows
+  /// that are not choices.
+  final bool? selected;
+
   const SettingsItem({
     super.key,
     this.icon,
@@ -421,6 +425,7 @@ class SettingsItem extends StatelessWidget {
     this.trailing,
     this.onTap,
     this.showDivider = true,
+    this.selected,
   });
 
   @override
@@ -431,84 +436,90 @@ class SettingsItem extends StatelessWidget {
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
-          onTap: onTap,
-          splashColor: colorScheme.primary.withValues(alpha: 0.12),
-          highlightColor: Colors.transparent,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: context.tokens.rowPaddingH,
-              vertical: context.tokens.rowPaddingV,
-            ),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: context.tokens.rowMinHeight,
+        Semantics(
+          selected: selected,
+          inMutuallyExclusiveGroup: selected != null,
+          child: InkWell(
+            onTap: onTap,
+            splashColor: colorScheme.primary.withValues(alpha: 0.12),
+            highlightColor: Colors.transparent,
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: context.tokens.rowPaddingH,
+                vertical: context.tokens.rowPaddingV,
               ),
-              child: Row(
-                children: [
-                  if (showIcon) ...[
-                    AppIcon.adaptive(
-                      icon!,
-                      color: iconColor ?? colorScheme.onSurfaceVariant,
-                      size: 24,
-                    ),
-                    SizedBox(width: context.tokens.rowIconGap),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                title,
-                                style: Theme.of(context).textTheme.bodyLarge,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: context.tokens.rowMinHeight,
+                ),
+                child: Row(
+                  children: [
+                    if (showIcon) ...[
+                      AppIcon.adaptive(
+                        icon!,
+                        color: iconColor ?? colorScheme.onSurfaceVariant,
+                        size: 24,
+                      ),
+                      SizedBox(width: context.tokens.rowIconGap),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  title,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
                               ),
-                            ),
-                            if (titleTrailing != null) ...[
-                              const SizedBox(width: 8),
-                              titleTrailing!,
+                              if (titleTrailing != null) ...[
+                                const SizedBox(width: 8),
+                                titleTrailing!,
+                              ],
                             ],
-                          ],
-                        ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle!,
-                            style:
-                                (context.isMornye
-                                        ? Theme.of(context).textTheme.bodySmall
-                                        : Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium)
-                                    ?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
                           ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle!,
+                              style:
+                                  (context.isMornye
+                                          ? Theme.of(
+                                              context,
+                                            ).textTheme.bodySmall
+                                          : Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium)
+                                      ?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
+                            ),
+                          ],
+                          if (footer != null) ...[
+                            const SizedBox(height: 8),
+                            footer!,
+                          ],
                         ],
-                        if (footer != null) ...[
-                          const SizedBox(height: 8),
-                          footer!,
-                        ],
-                      ],
+                      ),
                     ),
-                  ),
-                  if (trailing != null) ...[
-                    const SizedBox(width: 8),
-                    trailing!,
-                  ] else if (onTap != null) ...[
-                    const SizedBox(width: 8),
-                    AppIcon(
-                      context.isMornye
-                          ? CupertinoIcons.chevron_forward
-                          : Icons.chevron_right,
-                      size: context.tokens.rowChevronSize,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    if (trailing != null) ...[
+                      const SizedBox(width: 8),
+                      trailing!,
+                    ] else if (onTap != null) ...[
+                      const SizedBox(width: 8),
+                      AppIcon(
+                        context.isMornye
+                            ? CupertinoIcons.chevron_forward
+                            : Icons.chevron_right,
+                        size: context.tokens.rowChevronSize,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),
@@ -561,75 +572,77 @@ class SettingsSwitchItem extends StatelessWidget {
     final content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Opacity(
-          opacity: isDisabled ? 0.5 : 1.0,
-          child: InkWell(
-            onTap: isDisabled ? null : () => onChanged!(!value),
-            splashColor: colorScheme.primary.withValues(alpha: 0.12),
-            highlightColor: Colors.transparent,
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: context.tokens.rowPaddingH,
-                vertical: context.tokens.rowPaddingVCompact,
-              ),
-              child: Row(
-                children: [
-                  if (showIcon) ...[
-                    AppIcon(
-                      icon,
-                      color: isDisabled
-                          ? colorScheme.outline
-                          : colorScheme.onSurfaceVariant,
-                      size: 24,
-                    ),
-                    SizedBox(width: context.tokens.rowIconGap),
-                  ],
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Flexible(
-                              child: Text(
-                                title,
-                                style: Theme.of(context).textTheme.bodyLarge
-                                    ?.copyWith(
-                                      color: isDisabled
-                                          ? colorScheme.outline
-                                          : null,
-                                    ),
-                              ),
-                            ),
-                            if (titleTrailing != null) ...[
-                              const SizedBox(width: 8),
-                              titleTrailing!,
-                            ],
-                          ],
-                        ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            subtitle!,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: isDisabled
-                                      ? colorScheme.outline
-                                      : colorScheme.onSurfaceVariant,
+        // One focus stop that reads the title, subtitle and on/off state.
+        MergeSemantics(
+          child: Opacity(
+            opacity: isDisabled ? 0.5 : 1.0,
+            child: InkWell(
+              onTap: isDisabled ? null : () => onChanged!(!value),
+              splashColor: colorScheme.primary.withValues(alpha: 0.12),
+              highlightColor: Colors.transparent,
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: context.tokens.rowPaddingH,
+                  vertical: context.tokens.rowPaddingVCompact,
+                ),
+                child: Row(
+                  children: [
+                    if (showIcon) ...[
+                      AppIcon(
+                        icon,
+                        color: isDisabled
+                            ? colorScheme.outline
+                            : colorScheme.onSurfaceVariant,
+                        size: 24,
+                      ),
+                      SizedBox(width: context.tokens.rowIconGap),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  title,
+                                  style: Theme.of(context).textTheme.bodyLarge
+                                      ?.copyWith(
+                                        color: isDisabled
+                                            ? colorScheme.outline
+                                            : null,
+                                      ),
                                 ),
+                              ),
+                              if (titleTrailing != null) ...[
+                                const SizedBox(width: 8),
+                                titleTrailing!,
+                              ],
+                            ],
                           ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              subtitle!,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: isDisabled
+                                        ? colorScheme.outline
+                                        : colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  AppSwitch(
-                    value: value,
-                    semanticLabel: title,
-                    onChanged: isDisabled ? null : onChanged,
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    AppSwitch(
+                      value: value,
+                      onChanged: isDisabled ? null : onChanged,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -677,7 +690,7 @@ class SettingsSectionHeader extends StatelessWidget {
         final inset = settingsHorizontalInset(constraints.maxWidth) + 16;
         return Padding(
           padding: EdgeInsets.fromLTRB(inset, 24, inset, 8),
-          child: label,
+          child: Semantics(header: true, child: label),
         );
       },
     );
@@ -744,7 +757,11 @@ class SettingsChoiceChip extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: theme.textTheme.bodyMedium?.copyWith(
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        color: foreground,
+        // Like an iOS segment, the filled chip marks the choice; accent text
+        // on Mornye's grey fill falls below readable contrast.
+        color: context.isMornye && isSelected
+            ? colorScheme.onSurface
+            : foreground,
       ),
     );
 
@@ -778,18 +795,23 @@ class SettingsChoiceChip extends StatelessWidget {
                 : colorScheme.primaryContainer)
           : unselectedColor,
       borderRadius: borderRadius,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: borderRadius,
-        child: ConstrainedBox(
-          // Keeps every chip a comfortable tap target regardless of layout.
-          constraints: BoxConstraints(minHeight: tokens.minTouchTarget),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              vertical: tokens.gapMd,
-              horizontal: tokens.gapMd,
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        inMutuallyExclusiveGroup: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: borderRadius,
+          child: ConstrainedBox(
+            // Keeps every chip a comfortable tap target regardless of layout.
+            constraints: BoxConstraints(minHeight: tokens.minTouchTarget),
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: tokens.gapMd,
+                horizontal: tokens.gapMd,
+              ),
+              child: content,
             ),
-            child: content,
           ),
         ),
       ),
