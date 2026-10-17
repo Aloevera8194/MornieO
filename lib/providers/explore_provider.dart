@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/models/settings.dart';
+import 'package:spotiflac_android/services/explore_cache_store.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
@@ -279,8 +280,6 @@ class ExploreNotifier extends Notifier<ExploreState> {
           decodeCache ?? ((raw) => compute(_decodeExploreCache, raw));
 
   final Future<Map<String, Object?>> Function(String) _decodeCache;
-  static const _cacheKey = 'explore_home_feed_cache';
-  static const _cacheTsKey = 'explore_home_feed_ts';
   int _homeFeedRequestId = 0;
   int? _activeHomeFeedRequestId;
   int _cacheRestoreGeneration = 0;
@@ -311,8 +310,9 @@ class ExploreNotifier extends Notifier<ExploreState> {
 
       final prefs = await SharedPreferences.getInstance();
       if (!_isCacheRestoreValid(generation)) return;
-      final cached = prefs.getString(_cacheKey);
-      final cachedTs = prefs.getInt(_cacheTsKey);
+      final snapshot = ExploreCacheStore(prefs).read();
+      final cached = snapshot.payload;
+      final cachedTs = snapshot.timestampMs;
       if (cached == null || cached.isEmpty) return;
 
       final cachePayload = await _decodeCache(cached);
@@ -360,8 +360,7 @@ class ExploreNotifier extends Notifier<ExploreState> {
       try {
         final prefs = await SharedPreferences.getInstance();
         if (!_isCacheRestoreValid(generation)) return;
-        await prefs.remove(_cacheKey);
-        await prefs.remove(_cacheTsKey);
+        await ExploreCacheStore(prefs).clear();
         _log.d('Removed invalid explore cache');
       } catch (clearError) {
         _log.w('Failed to remove invalid explore cache: $clearError');
@@ -397,8 +396,7 @@ class ExploreNotifier extends Notifier<ExploreState> {
         'provider_id': providerId,
         'sections': normalizedSections,
       });
-      await prefs.setString(_cacheKey, encoded);
-      await prefs.setInt(_cacheTsKey, DateTime.now().millisecondsSinceEpoch);
+      await ExploreCacheStore(prefs).write(encoded);
     } catch (e) {
       _log.w('Failed to save explore cache: $e');
     }

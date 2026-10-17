@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -17,6 +16,7 @@ import 'package:spotiflac_android/services/cover_cache_manager.dart';
 import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
 import 'package:spotiflac_android/services/motion_artwork_store.dart';
 import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
+import 'package:spotiflac_android/services/explore_cache_store.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
@@ -35,10 +35,6 @@ class CacheManagementPage extends ConsumerStatefulWidget {
 }
 
 class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
-  // Keep in sync with ExploreNotifier keys.
-  static const String _exploreCacheKey = 'explore_home_feed_cache';
-  static const String _exploreCacheTsKey = 'explore_home_feed_ts';
-
   _CacheOverview? _overview;
   bool _isLoading = true;
   String? _busyAction;
@@ -104,15 +100,7 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
     );
 
     final prefs = await prefsFuture;
-    final explorePayload = prefs.getString(_exploreCacheKey);
-    final exploreTs = prefs.getInt(_exploreCacheTsKey);
-    var exploreBytes = 0;
-    if (explorePayload != null && explorePayload.isNotEmpty) {
-      exploreBytes += utf8.encode(explorePayload).length;
-    }
-    if (exploreTs != null) {
-      exploreBytes += 8;
-    }
+    final exploreBytes = ExploreCacheStore(prefs).read().sizeBytes;
     final hasExploreCache = exploreBytes > 0;
 
     final appCacheStats = await appCacheStatsFuture;
@@ -234,8 +222,7 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
 
   Future<void> _clearExploreCache() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_exploreCacheKey);
-    await prefs.remove(_exploreCacheTsKey);
+    await ExploreCacheStore(prefs).clear();
   }
 
   Future<void> _clearTrackCache() async {
