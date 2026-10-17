@@ -18,6 +18,7 @@ import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:spotiflac_android/widgets/local_library_artwork_builder.dart';
 import 'package:spotiflac_android/widgets/library_search_results.dart';
 
 enum MornyeLibraryPage { overview, albums, artists }
@@ -598,14 +599,6 @@ class _LibraryBrowseArtworkState extends State<_LibraryBrowseArtwork> {
   @override
   Widget build(BuildContext context) {
     final entry = widget.entry;
-    final embedded = entry.cover?.isNotEmpty == true
-        ? null
-        : DownloadedEmbeddedCoverResolver.resolve(
-            entry.samplePath,
-            onChanged: () {
-              if (mounted) setState(() {});
-            },
-          );
     Widget fallback(BuildContext context) => ColoredBox(
       color: Theme.of(context).colorScheme.surfaceContainerHighest,
       child: Center(
@@ -616,6 +609,23 @@ class _LibraryBrowseArtworkState extends State<_LibraryBrowseArtwork> {
         ),
       ),
     );
+    if (entry.source == 'local') {
+      return LocalLibraryArtworkBuilder(
+        coverPath: entry.cover,
+        filePath: entry.samplePath,
+        builder: (context, cover) => cover == null
+            ? fallback(context)
+            : LocalOrNetworkCoverImage(url: cover, placeholder: fallback),
+      );
+    }
+    final embedded = entry.cover?.isNotEmpty == true
+        ? null
+        : DownloadedEmbeddedCoverResolver.resolve(
+            entry.samplePath,
+            onChanged: () {
+              if (mounted) setState(() {});
+            },
+          );
     final cover = entry.cover?.isNotEmpty == true ? entry.cover! : embedded;
     return cover == null
         ? fallback(context)

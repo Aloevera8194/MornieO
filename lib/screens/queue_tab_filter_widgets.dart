@@ -1059,29 +1059,33 @@ extension _QueueTabFilterWidgets on _QueueTabState {
     _GroupedLocalAlbum album,
     ColorScheme colorScheme,
   ) {
-    return _buildAlbumGridItemCore(
-      context: context,
-      albumName: album.albumName,
-      artistName: album.artistName,
-      trackCount: album.displayTrackCount,
-      completeness: album.completeness,
-      colorScheme: colorScheme,
-      coverWidget: album.coverPath != null
-          ? Image.file(
-              File(album.coverPath!),
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-              cacheWidth: 300,
-              cacheHeight: 300,
-              errorBuilder: (context, error, stackTrace) =>
-                  _albumPlaceholder(colorScheme),
-            )
-          : null,
-      badgeColor: colorScheme.tertiaryContainer,
-      badgeTextColor: colorScheme.onTertiaryContainer,
-      badgeIcon: Icons.folder,
-      onTap: () => _navigateToLocalAlbum(album),
+    return LocalLibraryArtworkBuilder(
+      coverPath: album.coverPath,
+      filePath: album.sampleFilePath,
+      builder: (context, coverPath) => _buildAlbumGridItemCore(
+        context: context,
+        albumName: album.albumName,
+        artistName: album.artistName,
+        trackCount: album.displayTrackCount,
+        completeness: album.completeness,
+        colorScheme: colorScheme,
+        coverWidget: coverPath != null
+            ? Image.file(
+                File(coverPath),
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+                cacheWidth: 300,
+                cacheHeight: 300,
+                errorBuilder: (context, error, stackTrace) =>
+                    _albumPlaceholder(colorScheme),
+              )
+            : null,
+        badgeColor: colorScheme.tertiaryContainer,
+        badgeTextColor: colorScheme.onTertiaryContainer,
+        badgeIcon: Icons.folder,
+        onTap: () => _navigateToLocalAlbum(album),
+      ),
     );
   }
 

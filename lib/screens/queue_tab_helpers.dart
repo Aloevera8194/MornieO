@@ -32,6 +32,7 @@ class _GroupedLocalAlbum {
   final String albumName;
   final String artistName;
   final String? coverPath;
+  final String sampleFilePath;
   final List<LocalLibraryItem> tracks;
   final int? trackCount;
   final AlbumCompleteness? completeness;
@@ -43,6 +44,7 @@ class _GroupedLocalAlbum {
     required this.albumName,
     required this.artistName,
     this.coverPath,
+    required this.sampleFilePath,
     required this.tracks,
     this.trackCount,
     this.completeness,
@@ -434,6 +436,7 @@ final _queueLibraryPageProvider = FutureProvider.autoDispose
                 albumName: row['album_name'] as String? ?? '',
                 artistName: row['artist_name'] as String? ?? '',
                 coverPath: row['cover_path'] as String?,
+                sampleFilePath: row['sample_file_path'] as String? ?? '',
                 tracks: const [],
                 trackCount: (row['track_count'] as num?)?.toInt() ?? 0,
                 completeness: AlbumCompleteness.fromRow(row),
