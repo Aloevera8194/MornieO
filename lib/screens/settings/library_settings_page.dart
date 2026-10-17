@@ -335,7 +335,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
   }
 
   void _showAutoScanPicker(BuildContext context, String current) {
-    final colorScheme = Theme.of(context).colorScheme;
     showAppScrollableBottomSheet<void>(
       context: context,
       title: context.l10n.libraryAutoScan,
@@ -350,7 +349,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
               icon: Icons.block,
               title: context.l10n.libraryAutoScanOff,
               selected: current == 'off',
-              colorScheme: colorScheme,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -362,7 +360,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
               icon: Icons.open_in_new,
               title: context.l10n.libraryAutoScanOnOpen,
               selected: current == 'on_open',
-              colorScheme: colorScheme,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -374,7 +371,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
               icon: Icons.today,
               title: context.l10n.libraryAutoScanDaily,
               selected: current == 'daily',
-              colorScheme: colorScheme,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -386,7 +382,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
               icon: Icons.date_range,
               title: context.l10n.libraryAutoScanWeekly,
               selected: current == 'weekly',
-              colorScheme: colorScheme,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -419,7 +414,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
   }
 
   void _showDefaultViewPicker(BuildContext context, String current) {
-    final colorScheme = Theme.of(context).colorScheme;
     final options = [
       ('last', Icons.history, context.l10n.libraryDefaultViewLastUsed),
       ('all', Icons.music_note, context.l10n.searchSongs),
@@ -442,7 +436,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                 icon: icon,
                 title: label,
                 selected: current == value,
-                colorScheme: colorScheme,
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)
@@ -476,7 +469,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
   }
 
   void _showQualityLabelModePicker(BuildContext context, String current) {
-    final colorScheme = Theme.of(context).colorScheme;
     final options = [
       (
         AppSettings.libraryQualityLabelBitrate,
@@ -520,7 +512,6 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                 icon: icon,
                 title: label,
                 selected: current == value,
-                colorScheme: colorScheme,
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)
@@ -1541,26 +1532,21 @@ class _AutoScanOption extends StatelessWidget {
   final IconData icon;
   final String title;
   final bool selected;
-  final ColorScheme colorScheme;
   final VoidCallback onTap;
 
   const _AutoScanOption({
     required this.icon,
     required this.title,
     required this.selected,
-    required this.colorScheme,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AppSheetOption(
+    return AppSheetOption.choice(
       leading: AppIcon(icon),
       title: Text(title),
       selected: selected,
-      trailing: selected
-          ? AppIcon(Icons.check, color: colorScheme.primary)
-          : null,
       onTap: onTap,
     );
   }

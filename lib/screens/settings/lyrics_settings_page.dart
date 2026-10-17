@@ -240,36 +240,31 @@ class LyricsSettingsPage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.audiotrack),
               title: Text(context.l10n.lyricsModeEmbed),
               subtitle: Text(context.l10n.lyricsModeEmbedSubtitle),
               selected: current == 'embed',
-              trailing: current == 'embed' ? const AppIcon(Icons.check) : null,
               onTap: () {
                 ref.read(settingsProvider.notifier).setLyricsMode('embed');
                 Navigator.pop(context);
               },
             ),
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.insert_drive_file_outlined),
               title: Text(context.l10n.lyricsModeExternal),
               subtitle: Text(context.l10n.lyricsModeExternalSubtitle),
               selected: current == 'external',
-              trailing: current == 'external'
-                  ? const AppIcon(Icons.check)
-                  : null,
               onTap: () {
                 ref.read(settingsProvider.notifier).setLyricsMode('external');
                 Navigator.pop(context);
               },
             ),
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.library_music_outlined),
               title: Text(context.l10n.lyricsModeBoth),
               subtitle: Text(context.l10n.lyricsModeBothSubtitle),
               selected: current == 'both',
-              trailing: current == 'both' ? const AppIcon(Icons.check) : null,
               onTap: () {
                 ref.read(settingsProvider.notifier).setLyricsMode('both');
                 Navigator.pop(context);

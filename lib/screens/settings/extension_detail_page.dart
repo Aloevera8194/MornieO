@@ -1119,11 +1119,9 @@ class _SettingItemState extends State<_SettingItem> {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final option in widget.setting.options ?? <String>[])
-              AppSheetOption(
+              AppSheetOption.choice(
                 title: Text(option),
-                trailing: option == widget.value
-                    ? const AppIcon(CupertinoIcons.check_mark)
-                    : null,
+                selected: option == widget.value,
                 onTap: () => Navigator.pop(sheetContext, option),
               ),
           ],

@@ -532,7 +532,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: AppIcon(
                 Icons.folder_special,
                 color: colorScheme.primary,
@@ -540,7 +540,6 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
               title: Text(context.l10n.storageAutomaticFolder),
               subtitle: Text(context.l10n.storageAutomaticDownloadFolder),
               selected: !isSafMode,
-              trailing: !isSafMode ? const AppIcon(Icons.check) : null,
               onTap: () async {
                 Navigator.pop(ctx);
                 final defaultDir = await _getDefaultAndroidDirectory();
@@ -550,12 +549,11 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 notifier.setDownloadTreeUri('');
               },
             ),
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: AppIcon(Icons.folder_open, color: colorScheme.primary),
               title: Text(context.l10n.storageSafRecommended),
               subtitle: Text(context.l10n.storageDownloadFolderHint),
               selected: isSafMode,
-              trailing: isSafMode ? const AppIcon(Icons.check) : null,
               onTap: () async {
                 Navigator.pop(ctx);
                 await _pickSafTreeAndSave();
@@ -757,14 +755,11 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 Icons.person_outline_outlined,
               ),
             ])
-              AppSheetOption(
+              AppSheetOption.choice(
                 leading: AppIcon(option.$4),
                 title: Text(option.$2),
                 subtitle: Text(option.$3),
                 selected: current == option.$1,
-                trailing: current == option.$1
-                    ? const AppIcon(Icons.check)
-                    : null,
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)

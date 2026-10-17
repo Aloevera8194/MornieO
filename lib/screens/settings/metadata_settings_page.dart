@@ -197,7 +197,7 @@ class MetadataSettingsPage extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (final maxDimension in options)
-              AppSheetOption(
+              AppSheetOption.choice(
                 leading: AppIcon(
                   maxDimension == 0
                       ? Icons.image_outlined
@@ -205,9 +205,6 @@ class MetadataSettingsPage extends ConsumerWidget {
                 ),
                 title: Text(_getEmbeddedCoverSizeLabel(context, maxDimension)),
                 selected: currentMaxDimension == maxDimension,
-                trailing: currentMaxDimension == maxDimension
-                    ? const AppIcon(Icons.check)
-                    : null,
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)
@@ -237,14 +234,11 @@ class MetadataSettingsPage extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.segment_outlined),
               title: Text(context.l10n.optionsArtistTagModeJoined),
               subtitle: Text(context.l10n.optionsArtistTagModeJoinedSubtitle),
               selected: currentMode == artistTagModeJoined,
-              trailing: currentMode == artistTagModeJoined
-                  ? const AppIcon(Icons.check)
-                  : null,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -252,16 +246,13 @@ class MetadataSettingsPage extends ConsumerWidget {
                 Navigator.pop(context);
               },
             ),
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.library_music_outlined),
               title: Text(context.l10n.optionsArtistTagModeSplitVorbis),
               subtitle: Text(
                 context.l10n.optionsArtistTagModeSplitVorbisSubtitle,
               ),
               selected: currentMode == artistTagModeSplitVorbis,
-              trailing: currentMode == artistTagModeSplitVorbis
-                  ? const AppIcon(Icons.check)
-                  : null,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -269,14 +260,11 @@ class MetadataSettingsPage extends ConsumerWidget {
                 Navigator.pop(context);
               },
             ),
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.person_outline),
               title: Text(context.l10n.optionsArtistTagModePrimary),
               subtitle: Text(context.l10n.optionsArtistTagModePrimarySubtitle),
               selected: currentMode == artistTagModePrimary,
-              trailing: currentMode == artistTagModePrimary
-                  ? const AppIcon(Icons.check)
-                  : null,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)

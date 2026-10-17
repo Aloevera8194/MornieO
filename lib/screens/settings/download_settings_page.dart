@@ -486,7 +486,6 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
     WidgetRef ref,
     String current,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
     showAppScrollableBottomSheet<void>(
       context: context,
       title: context.l10n.settingsDownloadNetwork,
@@ -497,14 +496,11 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.signal_cellular_alt),
               title: Text(context.l10n.settingsDownloadNetworkAny),
               subtitle: Text(context.l10n.downloadNetworkAnySubtitle),
               selected: current == 'any',
-              trailing: current == 'any'
-                  ? AppIcon(Icons.check, color: colorScheme.primary)
-                  : null,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -512,14 +508,11 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
                 Navigator.pop(context);
               },
             ),
-            AppSheetOption(
+            AppSheetOption.choice(
               leading: const AppIcon(Icons.wifi),
               title: Text(context.l10n.settingsDownloadNetworkWifiOnly),
               subtitle: Text(context.l10n.downloadNetworkWifiOnlySubtitle),
               selected: current == 'wifi_only',
-              trailing: current == 'wifi_only'
-                  ? AppIcon(Icons.check, color: colorScheme.primary)
-                  : null,
               onTap: () {
                 ref
                     .read(settingsProvider.notifier)
@@ -870,13 +863,10 @@ class _RegionPickerSheetState extends State<_RegionPickerSheet> {
                     final code = matches[index];
                     final isSelected = code == widget.selected;
                     final countryName = widget.countryNameOf(context, code);
-                    return AppSheetOption(
+                    return AppSheetOption.choice(
                       title: Text(countryName != code ? countryName : code),
                       subtitle: countryName != code ? Text(code) : null,
                       selected: isSelected,
-                      trailing: isSelected
-                          ? AppIcon(Icons.check, color: colorScheme.primary)
-                          : null,
                       onTap: () => widget.onSelected(code),
                     );
                   },
