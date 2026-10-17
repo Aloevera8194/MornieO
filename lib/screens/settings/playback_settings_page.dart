@@ -47,6 +47,31 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
         false;
   }
 
+  /// Learning cannot be restored once cleared, so a stray tap must not wipe it.
+  Future<void> _confirmResetLearning() async {
+    final confirmed =
+        await showAppDialog<bool>(
+          context: context,
+          builder: (context) => AppAlertDialog(
+            title: Text(context.l10n.autoplayResetLearningConfirmTitle),
+            content: Text(context.l10n.autoplayResetLearningConfirmMessage),
+            actions: [
+              AppDialogAction(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(context.l10n.dialogCancel),
+              ),
+              AppDialogAction(
+                isDestructive: true,
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(context.l10n.autoplayResetLearningConfirm),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+    if (confirmed) await resetAutoplayLearning();
+  }
+
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
@@ -160,7 +185,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                   SettingsItem(
                     icon: Icons.restart_alt,
                     title: context.l10n.autoplayResetLearning,
-                    onTap: resetAutoplayLearning,
+                    onTap: _confirmResetLearning,
                     showDivider: false,
                   ),
               ],

@@ -112,21 +112,18 @@ void main() {
       '${durations[(durations.length * .95).floor()]} us; model parameters 65536 bytes.',
     );
   });
-  test(
-    'cold start is neutral and personalization is an independent opt-in',
-    () {
-      final model = AutoplayPreferenceModel();
-      expect(model.preference(_rock, at: _at), 0.5);
-      expect(model.rankAdjustment(_rock, previous: _jazz, at: _at), 0);
-      expect(AppSettings.fromJson({}).autoplayPersonalization, isFalse);
-      final settings = const AppSettings().copyWith(
-        autoplayPersonalization: true,
-      );
-      final restored = AppSettings.fromJson(settings.toJson());
-      expect(restored.autoplayPersonalization, isTrue);
-      expect(restored.autoplay, isFalse);
-    },
-  );
+  test('cold start is neutral and personalization is on independently', () {
+    final model = AutoplayPreferenceModel();
+    expect(model.preference(_rock, at: _at), 0.5);
+    expect(model.rankAdjustment(_rock, previous: _jazz, at: _at), 0);
+    expect(AppSettings.fromJson({}).autoplayPersonalization, isTrue);
+    final settings = const AppSettings().copyWith(
+      autoplayPersonalization: false,
+    );
+    final restored = AppSettings.fromJson(settings.toJson());
+    expect(restored.autoplayPersonalization, isFalse);
+    expect(restored.autoplay, isFalse);
+  });
 
   test('learning favors engagement, transfers genre and handles context', () {
     final model = AutoplayPreferenceModel();

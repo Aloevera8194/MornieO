@@ -50,24 +50,33 @@ void main() {
         scrollable: find.byType(Scrollable).first,
       );
       await tester.pumpAndSettle();
-      expect(find.text('Reset recommendation learning'), findsNothing);
+      // On by default; the reset action belongs to the enabled state.
+      expect(container.read(settingsProvider).autoplayPersonalization, isTrue);
+      expect(find.text('Reset recommendation learning'), findsOneWidget);
+      // A stray tap only asks; cancelling keeps what was learned.
+      await tester.tap(find.text('Reset recommendation learning'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reset recommendation learning?'), findsOneWidget);
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+      expect(find.text('Reset recommendation learning?'), findsNothing);
       await tester.tap(label);
       await tester.pumpAndSettle();
-      expect(container.read(settingsProvider).autoplayPersonalization, isTrue);
+      expect(container.read(settingsProvider).autoplayPersonalization, isFalse);
       expect(container.read(settingsProvider).autoplay, isFalse);
       final prefs = await SharedPreferences.getInstance();
       expect(
         AppSettings.fromJson(
           jsonDecode(prefs.getString('app_settings')!) as Map<String, dynamic>,
         ).autoplayPersonalization,
-        isTrue,
+        isFalse,
       );
-      expect(find.text('Reset recommendation learning'), findsOneWidget);
+      expect(find.text('Reset recommendation learning'), findsNothing);
       await tester.ensureVisible(label);
       await tester.pumpAndSettle();
       await tester.tap(label);
       await tester.pumpAndSettle();
-      expect(container.read(settingsProvider).autoplayPersonalization, isFalse);
+      expect(container.read(settingsProvider).autoplayPersonalization, isTrue);
       final l10n = AppLocalizations.of(tester.element(label));
       expect(
         SettingsSearchCatalog(l10n).playback.any(
