@@ -6938,26 +6938,6 @@
       }
     }
   },
-  "settingsGroupInterface": "Расширения и внешний вид",
-  "@settingsGroupInterface": {
-    "description": "Settings group covering look and feel"
-  },
-  "settingsGroupContent": "Содержимое и метаданные",
-  "@settingsGroupContent": {
-    "description": "Settings group covering the library, metadata and lyrics"
-  },
-  "settingsGroupDownloads": "Загрузки и файлы",
-  "@settingsGroupDownloads": {
-    "description": "Settings group covering download behaviour and storage"
-  },
-  "settingsGroupSystem": "Система",
-  "@settingsGroupSystem": {
-    "description": "Settings group covering app-level data, cache and logs"
-  },
-  "settingsGroupHelp": "О сервисе и поддержка",
-  "@settingsGroupHelp": {
-    "description": "Settings group covering the about page and donations"
-  },
   "libraryFilterMetadataMissingLyrics": "Текст отсутствует",
   "@libraryFilterMetadataMissingLyrics": {
     "description": "Filter option for tracks without embedded or sidecar lyrics"

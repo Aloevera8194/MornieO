@@ -6938,26 +6938,6 @@
       }
     }
   },
-  "settingsGroupInterface": "Extensions & Apparence",
-  "@settingsGroupInterface": {
-    "description": "Settings group covering look and feel"
-  },
-  "settingsGroupContent": "Contenu & Métadonnées",
-  "@settingsGroupContent": {
-    "description": "Settings group covering the library, metadata and lyrics"
-  },
-  "settingsGroupDownloads": "Téléchargements & Fichiers",
-  "@settingsGroupDownloads": {
-    "description": "Settings group covering download behaviour and storage"
-  },
-  "settingsGroupSystem": "Système",
-  "@settingsGroupSystem": {
-    "description": "Settings group covering app-level data, cache and logs"
-  },
-  "settingsGroupHelp": "À propos & Assistance",
-  "@settingsGroupHelp": {
-    "description": "Settings group covering the about page and donations"
-  },
   "libraryFilterMetadataMissingLyrics": "Paroles manquantes",
   "@libraryFilterMetadataMissingLyrics": {
     "description": "Filter option for tracks without embedded or sidecar lyrics"

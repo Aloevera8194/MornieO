@@ -4267,11 +4267,6 @@
   },
   "settingsSearchHint": "Pesquisar configurações",
   "settingsSearchNoResults": "Nenhuma configuração corresponde a \"{query}\"",
-  "settingsGroupInterface": "Extensões e aparência",
-  "settingsGroupContent": "Conteúdo e metadados",
-  "settingsGroupDownloads": "Downloads e arquivos",
-  "settingsGroupSystem": "Sistema",
-  "settingsGroupHelp": "Sobre e suporte",
   "nowPlayingPreviousTrack": "Faixa anterior",
   "nowPlayingNextTrack": "Próxima faixa"
 }
