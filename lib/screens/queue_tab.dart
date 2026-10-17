@@ -319,7 +319,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   String? _filterFormat;
   String? _filterMetadata;
   String _sortMode = 'latest';
-  String _libraryQualityLabelMode = AppSettings.libraryQualityLabelBitrate;
+  String _libraryQualityLabelMode = AppSettings.libraryQualityLabelBitDepthOnly;
   double _libraryGridExtent = _libraryGridDefaultExtent;
   double? _libraryGridPinchStartExtent;
   final Map<String, int> _libraryPageOffsetByFilter = {};

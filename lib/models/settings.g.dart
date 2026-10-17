@@ -79,7 +79,7 @@ AppSettings _$AppSettingsFromJson(Map<String, dynamic> json) => AppSettings(
   defaultLibraryView: json['defaultLibraryView'] as String? ?? 'last',
   libraryQualityLabelMode:
       json['libraryQualityLabelMode'] as String? ??
-      AppSettings.libraryQualityLabelBitrate,
+      AppSettings.libraryQualityLabelBitDepthOnly,
   askQualityBeforeDownload: json['askQualityBeforeDownload'] as bool? ?? true,
   enableLogging: json['enableLogging'] as bool? ?? false,
   useExtensionProviders: json['useExtensionProviders'] as bool? ?? true,

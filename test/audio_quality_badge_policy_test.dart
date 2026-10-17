@@ -138,7 +138,7 @@ void main() {
       );
     });
 
-    test('uses measured bitrate by default', () {
+    test('defaults to bit depth and keeps the bitrate mode', () {
       expect(
         buildLibraryAudioQualityLabel(
           mode: AppSettings.libraryQualityLabelBitrate,
@@ -151,6 +151,12 @@ void main() {
       );
       expect(
         normalizeLibraryQualityLabelMode('unsupported'),
+        AppSettings.libraryQualityLabelBitDepthOnly,
+      );
+      expect(
+        normalizeLibraryQualityLabelMode(
+          AppSettings.libraryQualityLabelBitrate,
+        ),
         AppSettings.libraryQualityLabelBitrate,
       );
       expect(

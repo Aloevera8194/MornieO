@@ -1082,7 +1082,7 @@ void main() {
       expect(settings.autoConvertBitrate, '320k');
       expect(
         settings.libraryQualityLabelMode,
-        AppSettings.libraryQualityLabelBitrate,
+        AppSettings.libraryQualityLabelBitDepthOnly,
       );
     });
 

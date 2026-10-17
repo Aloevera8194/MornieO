@@ -219,7 +219,7 @@ class AppSettings {
     this.historyViewMode = 'grid',
     this.historyFilterMode = 'all',
     this.defaultLibraryView = 'last',
-    this.libraryQualityLabelMode = AppSettings.libraryQualityLabelBitrate,
+    this.libraryQualityLabelMode = AppSettings.libraryQualityLabelBitDepthOnly,
     this.askQualityBeforeDownload = true,
     this.enableLogging = false,
     this.useExtensionProviders = true,

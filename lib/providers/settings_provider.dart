@@ -18,7 +18,7 @@ import 'package:spotiflac_android/utils/logger.dart';
 const _settingsKey = 'app_settings';
 const _settingsCorruptBackupKey = 'app_settings_corrupt_backup';
 const _migrationVersionKey = 'settings_migration_version';
-const _currentMigrationVersion = 11;
+const _currentMigrationVersion = 12;
 const _spotifyClientSecretKey = 'spotify_client_secret';
 const _retiredBuiltInProviderIds = {'deezer', 'qobuz', 'tidal', 'youtube'};
 final _log = AppLogger('SettingsProvider');
@@ -306,6 +306,15 @@ class SettingsNotifier extends Notifier<AppSettings> {
       if (!state.useExtensionProviders) {
         state = state.copyWith(useExtensionProviders: true);
       }
+      // Migration 12: Library badges return to bit depth ("24-bit") by
+      // default; the bitrate default was persisted for every existing user.
+      if (lastMigration < 12 &&
+          state.libraryQualityLabelMode ==
+              AppSettings.libraryQualityLabelBitrate) {
+        state = state.copyWith(
+          libraryQualityLabelMode: AppSettings.libraryQualityLabelBitDepthOnly,
+        );
+      }
       await prefs.setInt(_migrationVersionKey, _currentMigrationVersion);
       await _saveSettings();
     }
@@ -435,7 +444,9 @@ class SettingsNotifier extends Notifier<AppSettings> {
         AppSettings.libraryQualityLabelBitDepth,
       AppSettings.libraryQualityLabelBitDepthBitrate =>
         AppSettings.libraryQualityLabelBitDepthBitrate,
-      _ => AppSettings.libraryQualityLabelBitrate,
+      AppSettings.libraryQualityLabelBitrate =>
+        AppSettings.libraryQualityLabelBitrate,
+      _ => AppSettings.libraryQualityLabelBitDepthOnly,
     };
   }
 

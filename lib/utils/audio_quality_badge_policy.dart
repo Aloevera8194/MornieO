@@ -19,7 +19,9 @@ String normalizeLibraryQualityLabelMode(String? mode) {
       AppSettings.libraryQualityLabelBitDepth,
     AppSettings.libraryQualityLabelBitDepthBitrate =>
       AppSettings.libraryQualityLabelBitDepthBitrate,
-    _ => AppSettings.libraryQualityLabelBitrate,
+    AppSettings.libraryQualityLabelBitrate =>
+      AppSettings.libraryQualityLabelBitrate,
+    _ => AppSettings.libraryQualityLabelBitDepthOnly,
   };
 }
 
