@@ -16,6 +16,9 @@ Desktop.ini
 CLAUDE.md
 AGENTS.md
 
+# Local release notes, screenshots and promo assets
+/output/
+
 # Flutter and Dart
 .dart_tool/
 .fvm/
