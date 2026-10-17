@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/models/download_history.dart';
@@ -1211,27 +1212,49 @@ Set<String> mergeVisibleHistoryLookupKeys({
   return keys;
 }
 
+class _VisibleHistoryBatchExistsNotifier extends Notifier<Set<String>> {
+  _VisibleHistoryBatchExistsNotifier(this.request);
+
+  final HistoryBatchLookupRequest request;
+
+  @override
+  Set<String> build() {
+    final history = ref.watch(downloadHistoryProvider);
+    final persistedKeys = ref
+        .watch(downloadHistoryBatchExistsProvider(request))
+        .maybeWhen(
+          skipLoadingOnReload: true,
+          skipLoadingOnRefresh: true,
+          data: (keys) => keys,
+          orElse: () => const <String>{},
+        );
+    return mergeVisibleHistoryLookupKeys(
+      state: history,
+      request: request,
+      persistedKeys: persistedKeys,
+    );
+  }
+
+  @override
+  bool updateShouldNotify(Set<String> previous, Set<String> next) =>
+      !setEquals(previous, next);
+}
+
+final _visibleHistoryBatchExistsProvider = NotifierProvider.autoDispose
+    .family<
+      _VisibleHistoryBatchExistsNotifier,
+      Set<String>,
+      HistoryBatchLookupRequest
+    >(_VisibleHistoryBatchExistsNotifier.new);
+
 /// UI-facing history lookup that keeps the last database result visible while
 /// a batch query reloads and immediately merges downloads persisted in memory.
 /// This prevents completed tracks from losing their Play action until the
 /// remainder of a large download batch finishes.
 final downloadHistoryVisibleBatchExistsProvider = Provider.autoDispose
-    .family<Set<String>, HistoryBatchLookupRequest>((ref, request) {
-      final state = ref.watch(downloadHistoryProvider);
-      final persistedKeys = ref
-          .watch(downloadHistoryBatchExistsProvider(request))
-          .maybeWhen(
-            skipLoadingOnReload: true,
-            skipLoadingOnRefresh: true,
-            data: (keys) => keys,
-            orElse: () => const <String>{},
-          );
-      return mergeVisibleHistoryLookupKeys(
-        state: state,
-        request: request,
-        persistedKeys: persistedKeys,
-      );
-    });
+    .family<Set<String>, HistoryBatchLookupRequest>(
+      (ref, request) => ref.watch(_visibleHistoryBatchExistsProvider(request)),
+    );
 
 class DownloadedAlbumTracksRequest {
   final String albumName;
