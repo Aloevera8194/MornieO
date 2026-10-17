@@ -113,7 +113,11 @@ Future<bool> openPendingExtensionVerification(
     onAuthUri?.call(uri);
 
     final launched = await _awaitVerificationStepOrCancellation(
-      _launchVerificationUrl(uri, browserMode),
+      _launchVerificationUrl(
+        uri,
+        browserMode,
+        cancellationSignal: cancellationSignal,
+      ),
       cancellationSignal,
     );
 
@@ -130,6 +134,7 @@ Future<bool> openPendingExtensionVerification(
         uri,
         browserMode: browserMode,
         immediateFailure: true,
+        cancellationSignal: cancellationSignal,
       );
     }
     return launched;
@@ -158,6 +163,7 @@ Timer? scheduleExtensionVerificationHelpDialog(
   Uri? authUri, {
   String browserMode = 'in_app_first',
   Duration delay = const Duration(seconds: 20),
+  Future<void>? cancellationSignal,
 }) {
   final normalizedExtensionId = extensionId.trim();
   if (normalizedExtensionId.isEmpty || authUri == null) return null;
@@ -168,13 +174,15 @@ Timer? scheduleExtensionVerificationHelpDialog(
         normalizedExtensionId,
         authUri,
         browserMode: browserMode,
+        cancellationSignal: cancellationSignal,
       ),
     );
   });
 }
 
 /// Opens a pending extension verification challenge and waits (up to 3
-/// minutes) for its grant result, returning whether it succeeded. When
+/// minutes, including pending lookup and browser launch) for its grant result,
+/// returning whether it succeeded. When
 /// [cancellationSignal] completes, all local waiting resources are released
 /// and the method returns false without waiting for the timeout.
 ///
@@ -211,6 +219,20 @@ Future<bool> openVerificationAndAwaitGrant(
 
   Uri? authUri;
   Timer? helpDialogTimer;
+  final stopped = Completer<void>();
+  void stop() {
+    if (!stopped.isCompleted) stopped.complete();
+  }
+
+  if (cancellationSignal != null) {
+    unawaited(cancellationSignal.then((_) => stop()));
+  }
+  // The browser or manual-help dialog may never return. Bound the complete
+  // foreground flow, not only the grant wait reached after opening the page.
+  final deadline = Timer(extensionVerificationGrantTimeout, () {
+    _log.w('Timed out waiting for verification grant: $normalizedExtensionId');
+    stop();
+  });
 
   try {
     final opened = await _awaitVerificationStepOrCancellation(
@@ -218,9 +240,9 @@ Future<bool> openVerificationAndAwaitGrant(
         normalizedExtensionId,
         browserMode: browserMode,
         onAuthUri: (uri) => authUri = uri,
-        cancellationSignal: cancellationSignal,
+        cancellationSignal: stopped.future,
       ),
-      cancellationSignal,
+      stopped.future,
     );
     if (opened != true) return false;
 
@@ -228,12 +250,13 @@ Future<bool> openVerificationAndAwaitGrant(
       normalizedExtensionId,
       authUri,
       browserMode: browserMode,
+      cancellationSignal: stopped.future,
     );
 
     final event = await _awaitVerificationStepOrCancellation(
       grantCompleter.future,
-      cancellationSignal,
-    ).timeout(extensionVerificationGrantTimeout);
+      stopped.future,
+    );
     if (event == null) {
       _log.i('Stopped waiting for verification grant: $normalizedExtensionId');
       return false;
@@ -243,7 +266,9 @@ Future<bool> openVerificationAndAwaitGrant(
     _log.w('Timed out waiting for verification grant: $normalizedExtensionId');
     return false;
   } finally {
+    deadline.cancel();
     helpDialogTimer?.cancel();
+    stop();
     await grantSub.cancel();
   }
 }
@@ -266,6 +291,7 @@ Future<bool> showExtensionVerificationHelpDialog(
   Uri authUri, {
   String browserMode = 'in_app_first',
   bool immediateFailure = false,
+  Future<void>? cancellationSignal,
 }) async {
   final context = AppNavigationService.rootNavigatorKey.currentContext;
   if (context == null) {
@@ -282,6 +308,25 @@ Future<bool> showExtensionVerificationHelpDialog(
       : l10n.extensionVerificationHelpMessageWaiting;
   final normalizedExtensionId = extensionId.trim();
   BuildContext? activeDialogContext;
+  var closeRequested = false;
+  void closeDialog() {
+    closeRequested = true;
+    final dialogContext = activeDialogContext;
+    if (dialogContext == null || !dialogContext.mounted) return;
+    final route = ModalRoute.of(dialogContext);
+    if (route == null || !route.isActive) return;
+    final navigator = Navigator.of(dialogContext, rootNavigator: true);
+    if (route.isCurrent) {
+      navigator.pop();
+    } else {
+      // A newer dialog may be above this one; dismiss only our own route.
+      navigator.removeRoute(route);
+    }
+  }
+
+  if (cancellationSignal != null) {
+    unawaited(cancellationSignal.then((_) => closeDialog()));
+  }
   var clipboardGrantInFlight = false;
   late final StreamSubscription<ExtensionSessionGrantEvent> grantSub;
   grantSub = PlatformBridge.extensionSessionGrantEvents()
@@ -290,12 +335,10 @@ Future<bool> showExtensionVerificationHelpDialog(
             event.success && event.extensionId.trim() == normalizedExtensionId,
       )
       .listen((_) {
-        final dialogContext = activeDialogContext;
-        if (dialogContext == null || !dialogContext.mounted) return;
         _log.i(
           'Closing verification help dialog after $normalizedExtensionId grant',
         );
-        Navigator.of(dialogContext, rootNavigator: true).pop();
+        closeDialog();
       });
 
   try {
@@ -304,6 +347,9 @@ Future<bool> showExtensionVerificationHelpDialog(
       barrierDismissible: false,
       builder: (dialogContext) {
         activeDialogContext = dialogContext;
+        if (closeRequested) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => closeDialog());
+        }
         final dialogL10n = dialogContext.l10n;
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) => AppAlertDialog(
@@ -384,7 +430,13 @@ Future<bool> showExtensionVerificationHelpDialog(
                 onPressed: clipboardGrantInFlight
                     ? null
                     : () {
-                        unawaited(_launchVerificationUrl(authUri, browserMode));
+                        unawaited(
+                          _launchVerificationUrl(
+                            authUri,
+                            browserMode,
+                            cancellationSignal: cancellationSignal,
+                          ),
+                        );
                       },
                 child: Text(dialogL10n.extensionVerificationOpenBrowser),
               ),
@@ -462,7 +514,15 @@ Future<bool> launchExtensionAuthUrl(Uri uri, {required String browserMode}) {
   return _launchVerificationUrl(uri, browserMode);
 }
 
-Future<bool> _launchVerificationUrl(Uri uri, String browserMode) async {
+Future<bool> _launchVerificationUrl(
+  Uri uri,
+  String browserMode, {
+  Future<void>? cancellationSignal,
+}) async {
+  var cancelled = false;
+  if (cancellationSignal != null) {
+    unawaited(cancellationSignal.then((_) => cancelled = true));
+  }
   if (Platform.isIOS && uri.scheme == 'https') {
     try {
       if (await PlatformBridge.startIosWebAuthSession(uri.toString())) {
@@ -483,6 +543,7 @@ Future<bool> _launchVerificationUrl(Uri uri, String browserMode) async {
       : LaunchMode.inAppBrowserView;
 
   for (final mode in [firstMode, fallbackMode]) {
+    if (cancelled) return false;
     try {
       if (await launchUrl(uri, mode: mode)) return true;
     } on PlatformException catch (error) {
