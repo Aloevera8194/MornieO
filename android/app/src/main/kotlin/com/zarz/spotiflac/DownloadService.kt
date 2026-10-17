@@ -52,6 +52,7 @@ class DownloadService : Service() {
         private const val CHANNEL_ID = "download_channel"
         private const val ALERT_CHANNEL_ID = "download_alerts_v1"
         private const val NOTIFICATION_ID = 1001
+        private const val WIDGET_PROGRESS_INTERVAL_MS = 1000L
         private const val DOWNLOAD_RESULT_NOTIFICATION_ID = 1
         private const val VERIFICATION_REQUIRED_NOTIFICATION_ID = 4
         private const val WAKELOCK_TAG = "SpotiFLAC:DownloadWakeLock"
@@ -345,8 +346,10 @@ class DownloadService : Service() {
     internal var currentStatus = "preparing"
     internal var queueCount = 0
     // Signature of the last home-screen widget push; keeps widget updates
-    // event-driven (track/status/queue changes, 25% steps), never per byte.
+    // event-driven (track/status/queue changes, throttled percent ticks),
+    // never per byte.
     private var widgetSignature = ""
+    private var lastWidgetPushAt = 0L
     // NotificationManager updates are also deduplicated by the visible
     // notification state. Progress writers can report many byte-level changes
     // that render the same percentage/text.
@@ -1592,31 +1595,33 @@ class DownloadService : Service() {
         } else {
             -1
         }
-        val bucket = if (percent < 0) -1 else percent / 25
-        val signature = "$currentTrackName|$currentStatus|$queueCount|$bucket"
+        val event = "$currentTrackName|$currentStatus|$queueCount"
+        val signature = "$event|$percent"
         if (signature == widgetSignature) return
+        // Track, status and queue changes publish at once; percent ticks are
+        // spaced so the widget moves in small steps without per-byte IPC.
+        val now = SystemClock.elapsedRealtime()
+        if (widgetSignature.startsWith("$event|") && percent in 1..99 &&
+            now - lastWidgetPushAt < WIDGET_PROGRESS_INTERVAL_MS) return
         widgetSignature = signature
+        lastWidgetPushAt = now
 
         val subtitle = when (currentStatus) {
             "verification_required" -> "Verification required"
             "rate_limited" -> "Rate limited, retrying..."
             "waiting_wifi" -> "Waiting for Wi-Fi..."
             "finalizing" -> "Finalizing..."
-            else -> buildString {
-                append(currentArtistName)
-                if (queueCount > 1) {
-                    if (isNotEmpty()) append(" • ")
-                    append("$queueCount in queue")
-                }
-            }
+            // The widget shows the queue as its own chip.
+            else -> currentArtistName
         }
         try {
             DownloadQueueWidgetProvider.push(
                 this,
                 running = true,
-                title = currentTrackName.ifEmpty { "Downloading..." },
+                title = currentTrackName,
                 subtitle = subtitle,
                 percent = percent,
+                queued = queueCount,
             )
         } catch (e: Exception) {
             android.util.Log.w("DownloadService", "Widget update failed: ${e.message}")

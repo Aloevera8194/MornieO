@@ -146,7 +146,7 @@
         <activity
             android:name=".PlayerWidgetConfigurationActivity"
             android:exported="true"
-            android:theme="@android:style/Theme.DeviceDefault.Dialog">
+            android:theme="@style/WidgetConfigTheme">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>
@@ -166,6 +166,7 @@
 
         <receiver
             android:name=".DownloadQueueWidgetProvider"
+            android:label="@string/download_widget_name"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
