@@ -45,6 +45,9 @@ class _CollectionEntry {
 class _FilterChip extends ConsumerWidget {
   final String label;
 
+  /// Leading glyph; it fills in while the tab is selected.
+  final IconData icon;
+
   /// Items in the tab; null hides the count.
   final int? count;
   final bool isSelected;
@@ -52,6 +55,7 @@ class _FilterChip extends ConsumerWidget {
 
   const _FilterChip({
     required this.label,
+    required this.icon,
     required this.count,
     required this.isSelected,
     required this.onTap,
@@ -61,10 +65,20 @@ class _FilterChip extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final mornye = context.isMornye;
+    final glyph = AppIcon.adaptive(
+      icon,
+      size: 18,
+      fill: isSelected ? 1 : 0,
+      color: mornye
+          ? (isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant)
+          : null,
+    );
 
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        glyph,
+        const SizedBox(width: 8),
         Text(
           label,
           style: mornye
@@ -141,6 +155,7 @@ class _FilterChip extends ConsumerWidget {
 
     return AppChoiceChip(
       label: Text(label),
+      icon: glyph,
       count: count,
       singleChoice: true,
       selected: isSelected,

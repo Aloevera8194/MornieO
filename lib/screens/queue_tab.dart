@@ -1609,13 +1609,18 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           final activePage = _pageIndexFor(historyFilterMode);
-                          Widget tab(int index, String label, int? count) =>
-                              _FilterChip(
-                                label: label,
-                                count: count,
-                                isSelected: activePage == index,
-                                onTap: () => _animateToFilterPage(index),
-                              );
+                          Widget tab(
+                            int index,
+                            IconData icon,
+                            String label,
+                            int? count,
+                          ) => _FilterChip(
+                            label: label,
+                            icon: icon,
+                            count: count,
+                            isSelected: activePage == index,
+                            onTap: () => _animateToFilterPage(index),
+                          );
                           return ScrollEdgeFade(
                             axis: Axis.horizontal,
                             size: 48,
@@ -1638,22 +1643,30 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                                   children: [
                                     tab(
                                       0,
+                                      Icons.music_note_outlined,
                                       context.l10n.searchSongs,
                                       queueCounts.allTrackCount,
                                     ),
                                     const SizedBox(width: 8),
                                     tab(
                                       1,
+                                      Icons.album_outlined,
                                       context.l10n.historyFilterAlbums,
                                       queueCounts.albumCount,
                                     ),
                                     const SizedBox(width: 8),
                                     // Artist totals need a full scan; the
                                     // tab shows none rather than a guess.
-                                    tab(2, context.l10n.searchArtists, null),
+                                    tab(
+                                      2,
+                                      Icons.person_outline,
+                                      context.l10n.searchArtists,
+                                      null,
+                                    ),
                                     const SizedBox(width: 8),
                                     tab(
                                       3,
+                                      Icons.queue_music_outlined,
                                       context.l10n.searchPlaylists,
                                       _getVisibleCollectionEntries(
                                         collectionState,
