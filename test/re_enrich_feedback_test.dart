@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/services/local_track_batch_actions.dart';
@@ -12,13 +11,7 @@ import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/re_enrich_review_sheet.dart';
 import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
-
-  @override
-  Future<void> syncLyricsSettingsToBackend({AppSettings? settings}) async {}
-}
+import 'support/re_enrich_settings.dart';
 
 void main() {
   for (final mornye in [false, true]) {
@@ -92,7 +85,9 @@ void main() {
           Future<void>? action;
           await tester.pumpWidget(
             ProviderScope(
-              overrides: [settingsProvider.overrideWith(_Settings.new)],
+              overrides: [
+                settingsProvider.overrideWith(ReEnrichTestSettings.new),
+              ],
               child: MaterialApp(
                 theme: mornye
                     ? MornyeTheme.build(Brightness.dark)

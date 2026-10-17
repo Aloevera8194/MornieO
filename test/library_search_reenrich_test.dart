@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/models/unified_library_item.dart';
 import 'package:spotiflac_android/providers/library_search_provider.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
@@ -18,13 +17,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/library_search_results.dart';
 import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
-
-  @override
-  Future<void> syncLyricsSettingsToBackend({AppSettings? settings}) async {}
-}
+import 'support/re_enrich_settings.dart';
 
 class _Library extends LocalLibraryNotifier {
   @override
@@ -72,7 +65,7 @@ void main() {
           await tester.pumpWidget(
             ProviderScope(
               overrides: [
-                settingsProvider.overrideWith(_Settings.new),
+                settingsProvider.overrideWith(ReEnrichTestSettings.new),
                 localLibraryProvider.overrideWith(_Library.new),
                 librarySearchProvider.overrideWith(
                   (ref, request) async =>
