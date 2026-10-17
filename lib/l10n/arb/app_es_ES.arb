@@ -6426,11 +6426,11 @@
   "@libraryExternalPlayerSubtitle": {
     "description": "Subtitle for external player option"
   },
-  "libraryBuiltInPreviewPlayer": "Reproductor de vista previa integrado",
+  "libraryBuiltInPreviewPlayer": "Reproductor integrado",
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "Vistas previas rápidas y locales dentro de SpotiFLAC Mobile",
+  "libraryBuiltInPreviewPlayerSubtitle": "Reproduce tu música directamente en SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
   },

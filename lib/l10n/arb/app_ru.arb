@@ -6425,11 +6425,11 @@
   "@libraryExternalPlayerSubtitle": {
     "description": "Subtitle for external player option"
   },
-  "libraryBuiltInPreviewPlayer": "Встроенный плеер для предпросмотра",
+  "libraryBuiltInPreviewPlayer": "Встроенный плеер",
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "Быстрое предварительное прослушивание внутри SpotiFLAC Mobile",
+  "libraryBuiltInPreviewPlayerSubtitle": "Слушайте музыку прямо в SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
   },

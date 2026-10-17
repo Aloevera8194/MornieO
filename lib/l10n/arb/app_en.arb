@@ -14,6 +14,7 @@
   "networkErrorTimeout": "The server did not respond in time. Check the connection and try again.",
   "networkErrorAuthentication": "The server rejected the sign-in. Check the username, password and domain. Leave the domain blank unless your server requires one.",
   "networkErrorPermission": "This account is not allowed to open this share or folder. Check its read permissions on the server.",
+  "networkErrorLocalPermission": "Local network access is not allowed. Allow Nearby devices for SpotiFLAC Mobile in Android app settings, then try again.",
   "networkErrorShare": "The share or folder was not found. For SMB, use the server's shared folder name after its address, such as smb://server/Music/.",
   "networkErrorProtocol": "The server and this SMB client could not agree on a supported protocol. Enable SMB2 or SMB3 on the server. SMB1 is not supported.",
   "networkErrorAddress": "Check the server address. Use smb://server/share/ for SMB, or an http:// or https:// address for WebDAV and HTTP.",
@@ -6489,11 +6490,11 @@
   "@libraryExternalPlayerSubtitle": {
     "description": "Subtitle for external player option"
   },
-  "libraryBuiltInPreviewPlayer": "Built-in preview player",
+  "libraryBuiltInPreviewPlayer": "Built-in player",
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "Quick local previews inside SpotiFLAC Mobile",
+  "libraryBuiltInPreviewPlayerSubtitle": "Play your music right inside SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
   },
@@ -7089,6 +7090,14 @@
     "description": "Selected state of the compact favorite action"
   },
   "autoMixDescription": "Blend songs with beat matching and pitch-preserving tempo adjustment. Uses crossfade when beats cannot be matched.",
+  "musicHaptics": "Music haptics",
+  "@musicHaptics": {
+    "description": "Setting that vibrates the phone along with the music"
+  },
+  "musicHapticsDescription": "Vibrate along with the beat of downloaded and local songs",
+  "@musicHapticsDescription": {
+    "description": "Subtitle of the music haptics setting"
+  },
   "autoMixOn": "AutoMix on",
   "autoMixOff": "AutoMix off",
   "autoplayOn": "Autoplay on",
@@ -7098,6 +7107,9 @@
   "autoplayPersonalization": "Personalized autoplay",
   "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
   "autoplayResetLearning": "Reset recommendation learning",
+  "autoplayResetLearningConfirmTitle": "Reset recommendation learning?",
+  "autoplayResetLearningConfirmMessage": "Autoplay forgets what it learned from your listening and skips. This can't be undone.",
+  "autoplayResetLearningConfirm": "Reset",
   "profileTitle": "Profile",
   "profileSetUp": "Set up your profile",
   "profileEdit": "Edit name and photo",
@@ -7261,6 +7273,188 @@
   "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
   "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
   "appearanceCustomFontReset": "Use theme font",
+  "equalizerTitle": "Equalizer",
+  "equalizerDescription": "5–31 bands, tone controls, preamp and dynamics",
+  "equalizerEnable": "Enable equalizer",
+  "equalizerBands": "Bands",
+  "equalizerTone": "Tone & stereo",
+  "equalizerPreamp": "Preamp",
+  "equalizerBass": "Bass",
+  "equalizerTreble": "Treble",
+  "equalizerBalance": "Balance",
+  "equalizerDynamics": "Dynamics",
+  "equalizerHeadroom": "Automatic headroom",
+  "equalizerHeadroomDescription": "Reduce input gain to make room for boosted frequencies.",
+  "equalizerLimiter": "Peak limiter",
+  "equalizerLimiterDescription": "Keep peaks below −0.5 dBFS to reduce clipping.",
+  "equalizerCompressor": "Compressor",
+  "equalizerCompressorDescription": "Reduce the difference between quiet and loud passages.",
+  "equalizerThreshold": "Threshold",
+  "equalizerRatio": "Ratio",
+  "equalizerAttack": "Attack",
+  "equalizerRelease": "Release",
+  "equalizerPresets": "Presets",
+  "equalizerSavePreset": "Save preset",
+  "equalizerPresetName": "Preset name",
+  "equalizerImport": "Import preset",
+  "equalizerExport": "Share preset",
+  "equalizerImportInvalid": "Choose a valid SpotiFLAC equalizer preset (JSON, up to 64 KB).",
+  "equalizerSaved": "Preset saved",
+  "equalizerResetTitle": "Reset equalizer?",
+  "equalizerResetDescription": "Restore a flat curve, default tone and dynamics settings. Saved presets are kept.",
+  "equalizerBypass": "Bit-perfect, Direct USB and exclusive Hi-Res outputs bypass EQ. Disable bit-perfect output to use EQ. External players manage their own effects.",
+  "equalizerCurve": "EQ curve (estimated)",
+  "equalizerCurveDescription": "The curve shows band gains; the exact response depends on the output engine.",
+  "equalizerEffectivePreamp": "Input gain after headroom",
+  "equalizerDeletePreset": "Delete preset",
+  "equalizerCustom": "Custom",
+  "equalizerManagePresets": "Manage presets",
+  "lyricsShareTitle": "Share lyrics",
+  "@lyricsShareTitle": {
+    "description": "Screen that turns selected lyric lines into an image for stories"
+  },
+  "lyricsShareSelectHint": "Select up to {count} lines",
+  "@lyricsShareSelectHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsShareLimit": "You can share up to {count} lines",
+  "@lyricsShareLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsShareAction": "Share",
+  "lyricsShareError": "Couldn't create the lyrics image",
+  "lyricsShareBackgroundArtwork": "Artwork",
+  "lyricsShareBackgroundColor": "Cover color",
+  "lyricsShareBackgroundDark": "Dark",
+  "lyricsShareBackgroundLight": "Light",
+  "audioInfoTitle": "Audio info",
+  "@audioInfoTitle": {
+    "description": "Sheet with technical details of the playing track, opened from the quality badge"
+  },
+  "audioInfoSource": "Source file",
+  "audioInfoSignal": "Signal",
+  "audioInfoLoudness": "Loudness",
+  "audioInfoProcessing": "Processing",
+  "audioInfoOutput": "Output",
+  "audioInfoAnalysis": "Spectrum and level analysis",
+  "audioInfoQuality": "Quality",
+  "audioInfoHiResLossless": "Hi-Res Lossless",
+  "audioInfoLossless": "Lossless",
+  "audioInfoLossy": "Lossy",
+  "audioInfoFormat": "Format",
+  "audioInfoCodec": "Codec",
+  "audioInfoSampleRate": "Sample rate",
+  "audioInfoBitDepth": "Bit depth",
+  "audioInfoChannels": "Channels",
+  "audioInfoChannelCount": "{count, plural, =1{Mono} =2{Stereo} other{{count} channels}}",
+  "@audioInfoChannelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioInfoBitrate": "Bitrate",
+  "audioInfoDuration": "Duration",
+  "audioInfoFileSize": "File size",
+  "audioInfoCompression": "Compression",
+  "audioInfoCompressionValue": "{percent}% of uncompressed size",
+  "@audioInfoCompressionValue": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoLocation": "Location",
+  "audioInfoLocationLocal": "Device storage",
+  "audioInfoLocationShared": "Shared folder",
+  "audioInfoLocationNetwork": "Network storage",
+  "audioInfoPcmRate": "Uncompressed data rate",
+  "audioInfoFrequencyRange": "Frequency range",
+  "audioInfoFrequencyRangeValue": "Up to {frequency} (Nyquist)",
+  "@audioInfoFrequencyRangeValue": {
+    "placeholders": {
+      "frequency": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoDynamicRange": "Theoretical dynamic range",
+  "audioInfoSamples": "Samples per channel",
+  "audioInfoTrackGain": "Track gain",
+  "audioInfoTrackPeak": "Track peak",
+  "audioInfoAlbumGain": "Album gain",
+  "audioInfoAlbumPeak": "Album peak",
+  "audioInfoNoGainTags": "No ReplayGain tags",
+  "audioInfoApplied": "Applied {gain}",
+  "@audioInfoApplied": {
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoOn": "On",
+  "audioInfoOff": "Off",
+  "audioInfoBypassed": "Bypassed by direct output",
+  "audioInfoPlayer": "Player",
+  "audioInfoPlayerValue": "SpotiFLAC built-in player",
+  "audioInfoSignalPath": "Signal path",
+  "audioInfoPathSystem": "System mixer",
+  "audioInfoPathDirect": "Direct USB, bypasses the system mixer",
+  "audioInfoPathExclusive": "Exclusive output, bypasses the system mixer",
+  "audioInfoDecoder": "Decoder",
+  "audioInfoHardware": "Hardware",
+  "audioInfoSoftware": "Software",
+  "audioInfoBands": "{count} bands",
+  "@audioInfoBands": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioInfoTempo": "Tempo",
+  "audioInfoResampling": "Resampling",
+  "audioInfoResamplingNone": "None, rates match",
+  "audioInfoBitPerfect": "Bit-perfect",
+  "audioInfoBitPerfectActive": "Yes, unaltered samples",
+  "audioInfoBitPerfectNo": "No, mixed by the system",
+  "audioInfoDevice": "Device",
+  "audioInfoDeviceType": "{type, select, speaker{Phone speaker} earpiece{Earpiece} wired_headphones{Wired headphones} wired_headset{Wired headset} line{Line out} bluetooth{Bluetooth} bluetooth_le{Bluetooth LE Audio} usb{USB audio} usb_headset{USB headset} hdmi{HDMI} dock{Dock} cast{Cast} hearing_aid{Hearing aid} airplay{AirPlay} car{Car audio} other{Other}}",
+  "@audioInfoDeviceType": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoOutputRate": "Output sample rate",
+  "audioInfoOutputFormat": "Output format",
+  "audioInfoDeviceRates": "Device sample rates",
+  "audioInfoDeviceFormats": "Device formats",
+  "audioInfoAnyRate": "Any",
+  "audioInfoBuffer": "Mixer buffer",
+  "audioInfoLatency": "Output latency",
+  "audioInfoLowLatency": "Low-latency audio",
+  "audioInfoProAudio": "Pro audio",
+  "audioInfoSupported": "Supported",
+  "audioInfoNotSupported": "Not supported",
+  "audioInfoSpatial": "Spatial audio",
+  "audioInfoHeadTracking": "Head tracking",
+  "audioInfoUnavailable": "Unavailable",
+  "audioInfoFixedVolume": "Controlled by the device",
+  "audioInfoCopy": "Copy report",
+  "audioInfoCopied": "Audio info copied",
   "lyricsTextSize": "Lyrics text size",
   "lyricsTextPreview": "Follow every line of your favorite song",
   "optionsEmbeddedCoverSizeOriginal": "Original resolution",
