@@ -8,7 +8,6 @@ import com.zarz.spotiflac.SafDownloadHandler.normalizeExt
 import com.zarz.spotiflac.NativeFinalizationPolicy.applyQualityVariantFilenameLabel
 import com.zarz.spotiflac.NativeFinalizationPolicy.artistTagValue
 import com.zarz.spotiflac.NativeFinalizationPolicy.metadataTagValue
-import com.zarz.spotiflac.NativeFinalizationPolicy.authoritativeAlbumArtist
 import com.zarz.spotiflac.NativeFinalizationPolicy.formatIndexTag
 import com.zarz.spotiflac.NativeFinalizationPolicy.logicalOutputFileName
 import com.zarz.spotiflac.NativeFinalizationPolicy.removeQualityVariantStagingLabel
@@ -251,11 +250,7 @@ internal fun NativeDownloadFinalizer.embedBasicMetadata(context: Context, path: 
     val album = resultString(input, "album").ifBlank {
         trackString(input, "albumName", requestString(input, "album_name"))
     }
-    val albumArtist = authoritativeAlbumArtist(
-        requestValue = requestString(input, "album_artist"),
-        trackValue = trackString(input, "albumArtist", ""),
-        providerResultValue = resultString(input, "album_artist"),
-    )
+    val albumArtist = resolvedAlbumArtist(input)
     val date = resultString(input, "release_date").ifBlank {
         resultString(input, "date").ifBlank {
             trackString(input, "releaseDate", requestString(input, "release_date"))
