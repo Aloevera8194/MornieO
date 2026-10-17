@@ -239,6 +239,20 @@ class SettingsSearchCatalog {
       ],
       playback = [
         SettingsSearchEntry(
+          icon: Icons.equalizer,
+          title: l10n.equalizerTitle,
+          subtitle: l10n.equalizerDescription,
+          keywords: const [
+            'eq',
+            'equalizer',
+            'bass',
+            'treble',
+            'preamp',
+            'compressor',
+            'limiter',
+          ],
+        ),
+        SettingsSearchEntry(
           icon: Icons.playlist_play_rounded,
           title: l10n.autoplayFromLibrary,
           subtitle: l10n.autoplayDescription,

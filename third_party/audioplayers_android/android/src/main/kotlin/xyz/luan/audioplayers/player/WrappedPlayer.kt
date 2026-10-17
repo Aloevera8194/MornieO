@@ -24,6 +24,11 @@ class WrappedPlayer internal constructor(
 ) {
     private var player: PlayerWrapper? = null
 
+    fun setEqualizer(configuration: Map<String, Any?>) {
+        val output = player as? MediaPlayerWrapper
+        if (output != null) output.setEqualizer(configuration)
+    }
+
     var source: Source? = null
         set(value) {
             if (field != value) {

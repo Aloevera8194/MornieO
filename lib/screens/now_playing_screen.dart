@@ -15,6 +15,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/routes/now_playing_route.dart';
 import 'package:spotiflac_android/screens/downloaded_album_screen.dart';
 import 'package:spotiflac_android/screens/local_album_screen.dart';
+import 'package:spotiflac_android/screens/equalizer_screen.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
@@ -925,6 +926,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                     onTap: () => Navigator.of(sheetContext).pop('sleepTimer'),
                   ),
                   SettingsItem(
+                    icon: Icons.equalizer,
+                    title: sheetContext.l10n.equalizerTitle,
+                    onTap: () => Navigator.of(sheetContext).pop('equalizer'),
+                  ),
+                  SettingsItem(
                     icon: Icons.open_in_new,
                     title: sheetContext.l10n.nowPlayingOpenInExternalPlayer,
                     trailing: AppIcon(
@@ -981,6 +987,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         break;
       case 'sleepTimer':
         await _showSleepTimerSheet(context, controller, colorScheme);
+        break;
+      case 'equalizer':
+        await Navigator.of(context).push<void>(
+          MaterialPageRoute(builder: (_) => const EqualizerScreen()),
+        );
         break;
       case 'external':
         await _openExternally(source);

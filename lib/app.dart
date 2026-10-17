@@ -8,6 +8,7 @@ import 'package:spotiflac_android/screens/main_shell.dart';
 import 'package:spotiflac_android/screens/setup_screen.dart';
 import 'package:spotiflac_android/screens/tutorial_screen.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/providers/equalizer_provider.dart';
 import 'package:spotiflac_android/services/app_navigation_service.dart';
 import 'package:spotiflac_android/services/app_orientation.dart';
 import 'package:spotiflac_android/theme/dynamic_color_wrapper.dart';
@@ -167,6 +168,7 @@ class SpotiFLACApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(equalizerProvider.select((value) => value.settings.enabled));
     final router = ref.watch(_routerProvider);
     final localeString = ref.watch(settingsProvider.select((s) => s.locale));
     final heroAnimationsEnabled = ref.watch(

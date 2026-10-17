@@ -10,6 +10,24 @@ class MediaPlayerWrapper(
     private val wrappedPlayer: WrappedPlayer,
 ) : PlayerWrapper {
     private val mediaPlayer = createMediaPlayer(wrappedPlayer)
+    private var equalizer: PlaybackEqualizer? = null
+
+    fun setEqualizer(configuration: Map<String, Any?>) {
+        if (Build.VERSION.SDK_INT < 28) {
+            check(configuration["enabled"] != true) { "Equalizer requires Android 9 or later" }
+            return
+        }
+        if (configuration["enabled"] == true && equalizer == null) {
+            equalizer = PlaybackEqualizer(mediaPlayer.audioSessionId)
+        }
+        try {
+            equalizer?.configure(configuration)
+        } catch (error: Exception) {
+            equalizer?.close()
+            equalizer = null
+            throw error
+        }
+    }
 
     private fun createMediaPlayer(wrappedPlayer: WrappedPlayer): MediaPlayer {
         val mediaPlayer = MediaPlayer().apply {
@@ -69,6 +87,8 @@ class MediaPlayerWrapper(
     }
 
     override fun release() {
+        if (Build.VERSION.SDK_INT >= 28) equalizer?.close()
+        equalizer = null
         mediaPlayer.reset()
         mediaPlayer.release()
     }
@@ -89,6 +109,8 @@ class MediaPlayerWrapper(
     }
 
     override fun reset() {
+        if (Build.VERSION.SDK_INT >= 28) equalizer?.close()
+        equalizer = null
         mediaPlayer.reset()
     }
 

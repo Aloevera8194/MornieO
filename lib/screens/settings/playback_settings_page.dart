@@ -8,6 +8,7 @@ import 'package:spotiflac_android/services/music_playback_deck.dart';
 import 'package:spotiflac_android/services/music_player_service.dart'
     show resetAutoplayLearning;
 import 'package:spotiflac_android/screens/listening_statistics_screen.dart';
+import 'package:spotiflac_android/screens/equalizer_screen.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
@@ -122,6 +123,14 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
           SliverToBoxAdapter(
             child: SettingsGroup(
               children: [
+                SettingsItem(
+                  icon: Icons.equalizer,
+                  title: context.l10n.equalizerTitle,
+                  subtitle: context.l10n.equalizerDescription,
+                  onTap: () => Navigator.of(context).push<void>(
+                    MaterialPageRoute(builder: (_) => const EqualizerScreen()),
+                  ),
+                ),
                 SettingsSwitchItem(
                   icon: Icons.graphic_eq,
                   title: context.l10n.libraryPlaybackNormalization,
