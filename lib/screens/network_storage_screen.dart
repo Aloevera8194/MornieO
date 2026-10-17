@@ -893,6 +893,8 @@ String _networkErrorMessage(BuildContext context, NetworkStorageError error) =>
       NetworkStorageError.authentication =>
         context.l10n.networkErrorAuthentication,
       NetworkStorageError.permission => context.l10n.networkErrorPermission,
+      NetworkStorageError.localNetworkPermission =>
+        context.l10n.networkErrorLocalPermission,
       NetworkStorageError.missingShare => context.l10n.networkErrorShare,
       NetworkStorageError.incompatible => context.l10n.networkErrorProtocol,
       NetworkStorageError.invalidAddress => context.l10n.networkErrorAddress,

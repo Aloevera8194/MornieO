@@ -1002,6 +1002,9 @@ class MainActivity: FlutterFragmentActivity() {
         onBackPressedDispatcher.addCallback(this, flutterBackCallback!!)
 
         val messenger = flutterEngine.dartExecutor.binaryMessenger
+        if (!flutterEngine.plugins.has(LocalNetworkPlugin::class.java)) {
+            flutterEngine.plugins.add(LocalNetworkPlugin())
+        }
         if (!flutterEngine.plugins.has(UsbBitPerfectPlugin::class.java)) {
             flutterEngine.plugins.add(UsbBitPerfectPlugin())
         }

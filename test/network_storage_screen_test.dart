@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/screens/network_storage_screen.dart';
+import 'package:spotiflac_android/services/local_network_access.dart';
 import 'package:spotiflac_android/services/network_certificate.dart';
 import 'package:spotiflac_android/services/network_storage_service.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -101,6 +102,44 @@ void main() {
     expect(await service.connections(), isEmpty);
   });
   for (final mornye in [false, true]) {
+    testWidgets('local permission denial can be retried (Mornye: $mornye)', (
+      tester,
+    ) async {
+      final service = _NetworkFixture()
+        ..error = const LocalNetworkPermissionException();
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            theme: mornye
+                ? MornyeTheme.build(Brightness.dark)
+                : ThemeData(useMaterial3: true),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: NetworkStorageScreen(
+              service: service,
+              connection: const NetworkConnection(
+                id: 'nas',
+                name: 'NAS',
+                protocol: NetworkProtocol.smb,
+                address: 'smb://nas.local/music/',
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Allow Nearby devices'), findsOneWidget);
+      expect(
+        find.textContaining('The server rejected the sign-in'),
+        findsNothing,
+      );
+      service.error = null;
+      await tester.tap(find.text('Retry'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Allow Nearby devices'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets(
       'certificate trust requires a tap and stays on its server (Mornye: $mornye)',
       (tester) async {

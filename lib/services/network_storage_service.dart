@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:html/parser.dart' as html;
+import 'package:spotiflac_android/services/local_network_access.dart';
 import 'package:spotiflac_android/services/network_certificate.dart';
 import 'package:spotiflac_android/services/network_smb_client.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
@@ -193,8 +194,10 @@ class NetworkStorageService {
   NetworkStorageService({
     Future<String?> Function()? read,
     Future<void> Function(String)? write,
+    Future<void> Function(Uri)? ensureAccess,
   }) : _read = read ?? (() => _storage.read(key: _key)),
-       _write = write ?? ((value) => _storage.write(key: _key, value: value));
+       _write = write ?? ((value) => _storage.write(key: _key, value: value)),
+       _ensureAccess = ensureAccess ?? LocalNetworkAccess.instance.ensureAccess;
   static final instance = NetworkStorageService();
   static const _storage = FlutterSecureStorage(
     aOptions: secureStorageAndroidOptions,
@@ -202,6 +205,7 @@ class NetworkStorageService {
   static const _key = 'network_storage_connections_v1';
   final Future<String?> Function() _read;
   final Future<void> Function(String) _write;
+  final Future<void> Function(Uri) _ensureAccess;
   static const timeout = Duration(seconds: 20);
   Future<List<NetworkConnection>>? _loading;
   List<NetworkConnection>? _connections;
@@ -296,7 +300,8 @@ class NetworkStorageService {
       throw const FormatException('Invalid network source');
     }
     final path = networkPath(uri.pathSegments.join('/'));
-    await connection(uri.host);
+    final c = await connection(uri.host);
+    await _ensureAccess(networkTarget(c, path));
     _server ??= HttpServer.bind(InternetAddress.loopbackIPv4, 0).then((server) {
       server.listen((request) => unawaited(_serve(request)));
       return server;
@@ -317,6 +322,7 @@ class NetworkStorageService {
   }
 
   Future<NetworkSmbClient> _smb(NetworkConnection c, Uri target) async {
+    await _ensureAccess(target);
     var expired = false;
     final pending = NetworkSmbClient.connect(
       target,
@@ -390,6 +396,7 @@ class NetworkStorageService {
     void Function()? checkpoint,
     void Function(int)? progress,
   }) async {
+    await _ensureAccess(uri);
     NetworkCertificateException? rejectedCertificate;
     client.badCertificateCallback = (certificate, host, port) {
       if (uri.scheme != 'https' ||
@@ -519,6 +526,7 @@ class NetworkStorageService {
     final target = networkTarget(c, path);
     if (c.protocol == NetworkProtocol.smb) {
       if (target.pathSegments.every((s) => s.isEmpty)) {
+        await _ensureAccess(target);
         final shares = await NetworkSmbClient.shares(
           target,
           username: c.username,

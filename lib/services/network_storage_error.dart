@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_smb2/dart_smb2.dart';
+import 'package:spotiflac_android/services/local_network_access.dart';
 import 'package:spotiflac_android/services/network_certificate.dart';
 
 enum NetworkStorageError {
@@ -9,6 +10,7 @@ enum NetworkStorageError {
   timeout,
   authentication,
   permission,
+  localNetworkPermission,
   missingShare,
   incompatible,
   invalidAddress,
@@ -18,6 +20,9 @@ enum NetworkStorageError {
 
 /// Classify transport failures without exposing URLs, usernames or passwords.
 NetworkStorageError classifyNetworkStorageError(Object error) {
+  if (error is LocalNetworkPermissionException) {
+    return NetworkStorageError.localNetworkPermission;
+  }
   if (error is NetworkCertificateException || error is HandshakeException) {
     return NetworkStorageError.certificate;
   }
