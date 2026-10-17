@@ -418,7 +418,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final format in autoConvertFormats)
-              AppSheetOption(
+              AppSheetOption.choice(
                 leading: AppIcon(
                   format == 'opus'
                       ? Icons.graphic_eq
@@ -433,12 +433,6 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
                   _ => context.l10n.downloadAutoConvertMp3Subtitle,
                 }),
                 selected: normalizedCurrent == format,
-                trailing: normalizedCurrent == format
-                    ? AppIcon(
-                        Icons.check,
-                        color: Theme.of(sheetContext).colorScheme.primary,
-                      )
-                    : null,
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)
@@ -469,16 +463,10 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             for (final bitrate in autoConvertBitrates)
-              AppSheetOption(
+              AppSheetOption.choice(
                 leading: const AppIcon(Icons.speed_outlined),
                 title: Text(bitrate.replaceAll('k', ' kbps')),
                 selected: normalizedCurrent == bitrate,
-                trailing: normalizedCurrent == bitrate
-                    ? AppIcon(
-                        Icons.check,
-                        color: Theme.of(sheetContext).colorScheme.primary,
-                      )
-                    : null,
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)
@@ -551,7 +539,6 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
     WidgetRef ref,
     int current,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
     showAppScrollableBottomSheet<void>(
       context: context,
       title: context.l10n.settingsConcurrentDownloads,
@@ -563,7 +550,7 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             for (final count in const [1, 2, 3])
-              AppSheetOption(
+              AppSheetOption.choice(
                 leading: AppIcon(
                   count == 1
                       ? Icons.looks_one_outlined
@@ -577,9 +564,6 @@ class _DownloadSettingsPageState extends ConsumerState<DownloadSettingsPage> {
                       : context.l10n.concurrentDownloadsCount(count),
                 ),
                 selected: current == count,
-                trailing: current == count
-                    ? AppIcon(Icons.check, color: colorScheme.primary)
-                    : null,
                 onTap: () {
                   ref
                       .read(settingsProvider.notifier)

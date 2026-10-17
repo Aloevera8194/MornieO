@@ -2,14 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/models/settings.dart';
+import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/screens/settings/download_settings_page.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
 import 'package:spotiflac_android/services/update_checker.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:spotiflac_android/theme/material_symbols.dart';
+import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_announcement_dialog.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/update_dialog.dart';
 
@@ -22,6 +29,11 @@ Widget _app(ThemeData theme, Widget home) => ProviderScope(
   ),
 );
 
+class _ChoiceSettings extends SettingsNotifier {
+  @override
+  AppSettings build() => const AppSettings(autoConvertDownloads: true);
+}
+
 void main() {
   for (final mornye in [false, true]) {
     for (final brightness in Brightness.values) {
@@ -29,6 +41,185 @@ void main() {
           ? MornyeTheme.build(brightness)
           : ThemeData(brightness: brightness);
       final variant = 'Mornye: $mornye, $brightness';
+
+      testWidgets('choice rows preserve adaptive appearance ($variant)', (
+        tester,
+      ) async {
+        final semantics = tester.ensureSemantics();
+        try {
+          await tester.pumpWidget(
+            _app(
+              theme,
+              Scaffold(
+                body: Column(
+                  children: [
+                    for (final selected in [false, true]) ...[
+                      AppSheetOption(
+                        title: Text('Legacy $selected'),
+                        subtitle: const Text('Subtitle'),
+                        leading: const AppIcon(Icons.speed_outlined),
+                        selected: selected,
+                        trailing: selected
+                            ? AppIcon(
+                                Icons.check,
+                                color: theme.colorScheme.primary,
+                              )
+                            : null,
+                        onTap: () {},
+                      ),
+                      AppSheetOption.choice(
+                        title: Text('Choice $selected'),
+                        subtitle: const Text('Subtitle'),
+                        leading: const AppIcon(Icons.speed_outlined),
+                        selected: selected,
+                        onTap: () {},
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+          for (final selected in [false, true]) {
+            Finder row(String name) => find.ancestor(
+              of: find.text('$name $selected'),
+              matching: find.byType(AppSheetOption),
+            );
+            Finder icons(String name) =>
+                find.descendant(of: row(name), matching: find.byType(Icon));
+            expect(
+              tester.getSize(row('Choice')),
+              tester.getSize(row('Legacy')),
+            );
+            final legacyIcons = tester
+                .widgetList<Icon>(icons('Legacy'))
+                .toList();
+            final choiceIcons = tester
+                .widgetList<Icon>(icons('Choice'))
+                .toList();
+            expect(choiceIcons.length, selected ? 2 : 1);
+            for (var i = 0; i < choiceIcons.length; i++) {
+              expect(choiceIcons[i].icon, legacyIcons[i].icon);
+              expect(choiceIcons[i].color, legacyIcons[i].color);
+              expect(
+                tester.getSize(icons('Choice').at(i)),
+                tester.getSize(icons('Legacy').at(i)),
+              );
+            }
+            expect(
+              tester.getSemantics(find.text('Choice $selected')),
+              isSemantics(isSelected: selected, hasTapAction: true),
+            );
+            if (mornye) {
+              expect(
+                tester.getSemantics(find.text('Choice $selected')),
+                isSemantics(isInMutuallyExclusiveGroup: true),
+              );
+            }
+          }
+          expect(tester.takeException(), isNull);
+        } finally {
+          semantics.dispose();
+        }
+      });
+
+      testWidgets('download choices update and dismiss ($variant)', (
+        tester,
+      ) async {
+        SharedPreferences.setMockInitialValues({});
+        tester.view.physicalSize = const Size(412, 1800);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final semantics = tester.ensureSemantics();
+        try {
+          // A page-local accent must survive capture by the root modal route.
+          final pageTheme = theme.copyWith(
+            colorScheme: theme.colorScheme.copyWith(primary: Colors.green),
+          );
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [settingsProvider.overrideWith(_ChoiceSettings.new)],
+              child: _app(
+                theme,
+                Theme(
+                  data: pageTheme,
+                  child: const MornyeSettingsTheme(
+                    child: DownloadSettingsPage(),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final container = ProviderScope.containerOf(
+            tester.element(find.byType(DownloadSettingsPage)),
+          );
+          final check = mornye
+              ? mornyeIconFor(Icons.check)
+              : materialSymbolFor(Icons.check)!.icon;
+          for (final (picker, initial, next) in [
+            ('Output format', 'MP3', 'Opus'),
+            ('Output quality', '320 kbps', '192 kbps'),
+            (
+              'Concurrent downloads',
+              '1 track at a time',
+              'Up to 3 tracks at once',
+            ),
+          ]) {
+            Future<void> open() async {
+              await tester.ensureVisible(find.text(picker));
+              await tester.pumpAndSettle();
+              await tester.tap(find.text(picker));
+              await tester.pumpAndSettle();
+            }
+
+            Finder option(String label) => find.descendant(
+              of: find.byType(AppBottomSheet),
+              matching: find.text(label),
+            );
+            await open();
+            expect(
+              tester.getSemantics(option(initial)),
+              isSemantics(isSelected: true, hasTapAction: true),
+            );
+            expect(
+              tester.getSemantics(option(next)),
+              isSemantics(isSelected: false, hasTapAction: true),
+            );
+            final checkmark = find.descendant(
+              of: find.byType(AppBottomSheet),
+              matching: find.byIcon(check),
+            );
+            expect(checkmark, findsOneWidget);
+            expect(tester.widget<Icon>(checkmark).color, Colors.green);
+            expect(tester.getSize(checkmark), Size.square(mornye ? 20 : 24));
+            await tester.tap(option(next));
+            await tester.pumpAndSettle();
+            expect(find.byType(AppBottomSheet), findsNothing);
+            final settings = container.read(settingsProvider);
+            switch (picker) {
+              case 'Output format':
+                expect(settings.autoConvertFormat, 'opus');
+              case 'Output quality':
+                expect(settings.autoConvertBitrate, '192k');
+              case 'Concurrent downloads':
+                expect(settings.concurrentDownloads, 3);
+            }
+            await open();
+            expect(
+              tester.getSemantics(option(next)),
+              isSemantics(isSelected: true),
+            );
+            // Selecting the current option must still invoke its dismissal.
+            await tester.tap(option(next));
+            await tester.pumpAndSettle();
+            expect(find.byType(AppBottomSheet), findsNothing);
+          }
+          expect(tester.takeException(), isNull);
+        } finally {
+          semantics.dispose();
+        }
+      });
 
       testWidgets(
         'short sheets fit their content and resize with options ($variant)',

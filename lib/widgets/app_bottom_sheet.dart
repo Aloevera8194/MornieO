@@ -355,7 +355,20 @@ class AppSheetOption extends StatelessWidget {
     this.contentPadding,
     this.enabled = true,
     this.selected,
-  });
+  }) : _isChoice = false;
+
+  /// A choice with the sheet's adaptive checkmark and selection semantics.
+  const AppSheetOption.choice({
+    super.key,
+    required this.title,
+    required bool this.selected,
+    required VoidCallback this.onTap,
+    this.subtitle,
+    this.leading,
+  }) : trailing = null,
+       contentPadding = null,
+       enabled = true,
+       _isChoice = true;
 
   final Widget title;
   final Widget? subtitle;
@@ -364,6 +377,7 @@ class AppSheetOption extends StatelessWidget {
   final VoidCallback? onTap;
   final EdgeInsetsGeometry? contentPadding;
   final bool enabled;
+  final bool _isChoice;
 
   /// Announces a checkmark choice's state to screen readers; null for
   /// options that are actions rather than choices.
@@ -373,12 +387,17 @@ class AppSheetOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final trailing = _isChoice
+        ? selected == true
+              ? AppIcon(Icons.check, color: scheme.primary)
+              : null
+        : this.trailing;
     if (!context.isMornye) {
       return ListTile(
         title: this.title,
         subtitle: subtitle,
         leading: leading == null ? null : symbolIconWidget(leading!),
-        trailing: trailing == null ? null : symbolIconWidget(trailing!),
+        trailing: trailing == null ? null : symbolIconWidget(trailing),
         onTap: onTap,
         contentPadding: contentPadding,
         enabled: enabled,
@@ -450,7 +469,7 @@ class AppSheetOption extends StatelessWidget {
           ),
           if (trailing != null) ...[
             const SizedBox(width: 12),
-            adaptedIcon(trailing!, 20),
+            adaptedIcon(trailing, 20),
           ],
         ],
       ),
