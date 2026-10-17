@@ -12,7 +12,6 @@ extension _DownloadQueueProgress on DownloadQueueNotifier {
     // Native progress maps are only read here, so view them without copying
     // the queue map and every item map on each tick.
     final items = rawItems is Map ? rawItems : const <Object?, Object?>{};
-    final currentItems = state.items;
     final lookup = state.lookup;
     _progressTracker.pruneLogs(lookup);
     final queuedCount = lookup.queuedCount;
@@ -93,17 +92,7 @@ extension _DownloadQueueProgress on DownloadQueueNotifier {
     }
 
     if (replacements.isNotEmpty) {
-      final updatedItems = ChunkedList<DownloadItem>.from(
-        currentItems,
-      ).updated(replacements);
-      state = state.copyWith(
-        items: updatedItems,
-        lookup: state.lookup.updatedForIndices(
-          previousItems: currentItems,
-          nextItems: updatedItems,
-          changedIndices: replacements.keys,
-        ),
-      );
+      state = state.withItemReplacements(replacements);
     }
 
     if (hasFinalizingItem && finalizingTrackName != null) {

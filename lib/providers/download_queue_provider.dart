@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:convert';
 import 'dart:io';
-import 'package:spotiflac_android/utils/chunked_list.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
@@ -1095,17 +1094,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
       return;
     }
 
-    final updatedItems = ChunkedList<DownloadItem>.from(
-      items,
-    ).updated({index: next});
-    state = state.copyWith(
-      items: updatedItems,
-      lookup: state.lookup.updatedForIndices(
-        previousItems: items,
-        nextItems: updatedItems,
-        changedIndices: [index],
-      ),
-    );
+    state = state.withItemReplacements({index: next});
 
     if (Platform.isAndroid && status == DownloadStatus.finalizing) {
       PlatformBridge.clearItemProgress(id).catchError((_) {});
@@ -1147,15 +1136,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
     }
     if (changes.isEmpty) return;
 
-    final updatedItems = ChunkedList<DownloadItem>.from(items).updated(changes);
-    state = state.copyWith(
-      items: updatedItems,
-      lookup: state.lookup.updatedForIndices(
-        previousItems: items,
-        nextItems: updatedItems,
-        changedIndices: changes.keys,
-      ),
-    );
+    state = state.withItemReplacements(changes);
     _saveQueueToStorage();
   }
 

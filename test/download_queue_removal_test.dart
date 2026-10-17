@@ -86,20 +86,12 @@ void main() {
         expect(state.withoutItem('absent'), same(state));
         if (state.items.isNotEmpty && tick % 3 == 0) {
           final changed = random.nextInt(state.items.length);
-          final next = ChunkedList<DownloadItem>.from(state.items).updated({
+          state = state.withItemReplacements({
             changed: state.items[changed].copyWith(
               status: DownloadStatus.values[random.nextInt(6)],
               progress: tick / 270,
             ),
           });
-          state = state.copyWith(
-            items: next,
-            lookup: state.lookup.updatedForIndices(
-              previousItems: state.items,
-              nextItems: next,
-              changedIndices: [changed],
-            ),
-          );
           _check(state);
         }
       }

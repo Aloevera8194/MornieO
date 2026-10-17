@@ -285,6 +285,22 @@ class DownloadQueueState {
       ? lookup._queuedPositions.indices.map((index) => items[index])
       : items.where((item) => item.status == DownloadStatus.queued);
 
+  /// Replaces items and updates their lookup from this same queue snapshot.
+  DownloadQueueState withItemReplacements(Map<int, DownloadItem> replacements) {
+    if (replacements.isEmpty) return this;
+    final nextItems = ChunkedList<DownloadItem>.from(
+      items,
+    ).updated(replacements);
+    return copyWith(
+      items: nextItems,
+      lookup: lookup.updatedForIndices(
+        previousItems: items,
+        nextItems: nextItems,
+        changedIndices: replacements.keys,
+      ),
+    );
+  }
+
   DownloadQueueState withoutItem(String id) {
     final index = lookup.indexByItemId[id];
     if (lookup.indexByItemId.length != items.length ||
