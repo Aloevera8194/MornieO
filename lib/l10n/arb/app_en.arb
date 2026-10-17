@@ -7253,6 +7253,30 @@
   "profileRemovePhoto": "Remove photo",
   "profilePhotoError": "Choose a valid image smaller than 20 MB.",
   "profileSaveError": "Could not save your profile. Please try again.",
+  "homeGreetingMorning1": "Good morning",
+  "homeGreetingMorning2": "Rise and shine",
+  "homeGreetingMorning3": "Fresh start",
+  "homeGreetingAfternoon1": "Good afternoon",
+  "homeGreetingAfternoon2": "Afternoon groove",
+  "homeGreetingAfternoon3": "Keep the vibe going",
+  "homeGreetingEvening1": "Good evening",
+  "homeGreetingEvening2": "Time to unwind",
+  "homeGreetingEvening3": "Golden hour",
+  "homeGreetingNight1": "Good night",
+  "homeGreetingNight2": "Late-night session",
+  "homeGreetingNight3": "Quiet hours",
+  "homeGreetingNamed": "{greeting}, {name}",
+  "@homeGreetingNamed": {
+    "description": "Home greeting followed by the first name from the user's profile",
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "artistUpcomingConcerts": "Upcoming Concerts",
   "artistAllUpcomingConcerts": "All Upcoming Concerts",
   "artistNoUpcomingConcerts": "No upcoming concerts.",

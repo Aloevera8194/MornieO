@@ -40,6 +40,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/providers/recent_access_provider.dart';
 import 'package:spotiflac_android/providers/explore_provider.dart';
+import 'package:spotiflac_android/providers/user_profile_provider.dart';
 import 'package:spotiflac_android/widgets/explore_featured_section.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
 import 'package:spotiflac_android/screens/track_metadata_screen.dart';
@@ -58,6 +59,7 @@ import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/utils/editorial_notes.dart';
+import 'package:spotiflac_android/utils/home_greeting.dart';
 import 'package:spotiflac_android/screens/playlist_screen.dart';
 import 'package:spotiflac_android/screens/downloaded_album_screen.dart';
 import 'package:spotiflac_android/widgets/download_service_picker.dart';
@@ -1079,13 +1081,20 @@ class _HomeTabState extends ConsumerState<HomeTab>
                     final exploreSections = ref.watch(
                       exploreProvider.select((s) => s.sections),
                     );
-                    final exploreGreeting = ref.watch(
-                      exploreProvider.select((s) => s.greeting),
+                    // The feed decides whether a greeting shows; its words
+                    // are localized here and address the profile name.
+                    final showGreeting =
+                        ref.watch(exploreProvider.select((s) => s.greeting)) !=
+                        null;
+                    final profileName = ref.watch(
+                      userProfileProvider.select((p) => p.value?.name ?? ''),
                     );
                     return SliverMainAxisGroup(
                       slivers: _buildExploreSections(
                         exploreSections,
-                        exploreGreeting,
+                        showGreeting
+                            ? homeGreeting(context.l10n, name: profileName)
+                            : null,
                         colorScheme,
                       ),
                     );
