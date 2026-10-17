@@ -263,42 +263,7 @@ class CoverPalette {
           final data = await info.image.toByteData(
             format: ui.ImageByteFormat.rawStraightRgba,
           );
-          if (data == null) {
-            result.complete(null);
-            return;
-          }
-          var red = 0.0;
-          var green = 0.0;
-          var blue = 0.0;
-          var weight = 0.0;
-          for (var index = 0; index < data.lengthInBytes; index += 4) {
-            final alpha = data.getUint8(index + 3) / 255;
-            red += data.getUint8(index) * alpha;
-            green += data.getUint8(index + 1) * alpha;
-            blue += data.getUint8(index + 2) * alpha;
-            weight += alpha;
-          }
-          if (weight == 0) {
-            result.complete(null);
-            return;
-          }
-          red /= weight;
-          green /= weight;
-          blue /= weight;
-          // A very dark navy pixel can have high HSL saturation despite being
-          // visually black. Compare channel differences before using its hue.
-          final spread =
-              math.max(red, math.max(green, blue)) -
-              math.min(red, math.min(green, blue));
-          if (spread < 16) {
-            final gray = (red * 0.2126 + green * 0.7152 + blue * 0.0722)
-                .round();
-            result.complete(Color.fromARGB(255, gray, gray, gray));
-          } else {
-            result.complete(
-              Color.fromARGB(255, red.round(), green.round(), blue.round()),
-            );
-          }
+          result.complete(data == null ? null : coverSourceColor(data));
         } catch (_) {
           result.complete(null);
         } finally {
@@ -313,6 +278,91 @@ class CoverPalette {
     stream.addListener(listener);
     return result.future;
   }
+}
+
+/// The colour a cover reads as, from straight RGBA pixels.
+///
+/// A plain average turns a dark cover with one clear colour into gray: black
+/// pixels outweigh a pale avocado strip covering a third of the art. When at
+/// least [minimumCoverage] of the pixels share a visible hue, that hue's
+/// average wins, weighted by colourfulness. Otherwise the average is used,
+/// and near-monochrome art stays neutral instead of acquiring a seed hue.
+@visibleForTesting
+Color? coverSourceColor(ByteData data, {double minimumCoverage = 0.12}) {
+  const bins = 24;
+  final binWeight = List<double>.filled(bins, 0);
+  final binRed = List<double>.filled(bins, 0);
+  final binGreen = List<double>.filled(bins, 0);
+  final binBlue = List<double>.filled(bins, 0);
+  var red = 0.0;
+  var green = 0.0;
+  var blue = 0.0;
+  var weight = 0.0;
+  var chromatic = 0.0;
+  for (var index = 0; index + 3 < data.lengthInBytes; index += 4) {
+    final alpha = data.getUint8(index + 3) / 255;
+    if (alpha == 0) continue;
+    final r = data.getUint8(index);
+    final g = data.getUint8(index + 1);
+    final b = data.getUint8(index + 2);
+    red += r * alpha;
+    green += g * alpha;
+    blue += b * alpha;
+    weight += alpha;
+    final high = math.max(r, math.max(g, b));
+    final chroma = high - math.min(r, math.min(g, b));
+    // Dark pixels have unstable hues, as in the navy-black case below.
+    if (chroma < 20 || high < 48) continue;
+    chromatic += alpha;
+    final hue = HSVColor.fromColor(Color.fromARGB(255, r, g, b)).hue;
+    final bin = (hue / (360 / bins)).floor() % bins;
+    final w = alpha * chroma;
+    binWeight[bin] += w;
+    binRed[bin] += r * w;
+    binGreen[bin] += g * w;
+    binBlue[bin] += b * w;
+  }
+  if (weight == 0) return null;
+  if (chromatic / weight >= minimumCoverage) {
+    var best = 0;
+    var bestWeight = -1.0;
+    for (var bin = 0; bin < bins; bin++) {
+      final total =
+          binWeight[(bin + bins - 1) % bins] +
+          binWeight[bin] +
+          binWeight[(bin + 1) % bins];
+      if (total > bestWeight) {
+        best = bin;
+        bestWeight = total;
+      }
+    }
+    var r = 0.0, g = 0.0, b = 0.0, w = 0.0;
+    for (final bin in [(best + bins - 1) % bins, best, (best + 1) % bins]) {
+      r += binRed[bin];
+      g += binGreen[bin];
+      b += binBlue[bin];
+      w += binWeight[bin];
+    }
+    return Color.fromARGB(
+      255,
+      (r / w).round(),
+      (g / w).round(),
+      (b / w).round(),
+    );
+  }
+  red /= weight;
+  green /= weight;
+  blue /= weight;
+  // A very dark navy pixel can have high HSL saturation despite being
+  // visually black. Compare channel differences before using its hue.
+  final spread =
+      math.max(red, math.max(green, blue)) -
+      math.min(red, math.min(green, blue));
+  if (spread < 16) {
+    final gray = (red * 0.2126 + green * 0.7152 + blue * 0.0722).round();
+    return Color.fromARGB(255, gray, gray, gray);
+  }
+  return Color.fromARGB(255, red.round(), green.round(), blue.round());
 }
 
 /// Exposes the header's effective [ColorScheme] to descendants.

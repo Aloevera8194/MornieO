@@ -47,7 +47,7 @@ class MornyePlayerBackground extends StatelessWidget {
           // Carry the cover's muted colour through the controls instead of
           // fading bright artwork into a nearly black, flat surface.
           final backdrop = dominant.withSaturation(
-            dominant.saturation.clamp(0.0, 0.12),
+            dominant.saturation.clamp(0.0, 0.2),
           );
           final motion = MediaQuery.disableAnimationsOf(context)
               ? Duration.zero
