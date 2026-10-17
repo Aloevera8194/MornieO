@@ -1,43 +1,160 @@
 {
   "networkDownloadDestination": "Network download destination",
+  "@networkDownloadDestination": {
+    "description": "Files settings item that opens network storage to choose a folder for downloaded music"
+  },
   "networkUseForDownloads": "Download to this folder",
+  "@networkUseForDownloads": {
+    "description": "Action to select the current network folder as the download destination; also the settings subtitle when no network destination is selected"
+  },
   "networkDownloadSelected": "Selected download destination",
+  "@networkDownloadSelected": {
+    "description": "Status label replacing the download destination action when the current network folder is already selected"
+  },
   "networkUseLocalDownloads": "Use local download folder",
+  "@networkUseLocalDownloads": {
+    "description": "Files settings action that clears the network download destination and returns downloads to the local folder"
+  },
   "networkDownloadAccessFailed": "Could not write to this folder.",
+  "@networkDownloadAccessFailed": {
+    "description": "Snackbar prefix when the write-access check fails while selecting a network download folder; followed by a specific network error message"
+  },
   "networkUploading": "Uploading to network storage",
+  "@networkUploading": {
+    "description": "Download queue status during upload of prepared audio to the network destination; a progress percentage may follow"
+  },
   "networkDownloadDescription": "Prepare songs on this device, then upload them to your NAS. Keep the app open until the upload finishes. Retry reuses prepared audio. Existing files are kept; new downloads with the same name get a numbered suffix.",
+  "@networkDownloadDescription": {
+    "description": "Help below the network download destination action explaining local preparation, upload, retry behavior, and preservation of existing files; NAS means network-attached storage"
+  },
   "networkAddToLibrary": "Add folder to Library",
+  "@networkAddToLibrary": {
+    "description": "Action that adds the current network folder as a Library source and starts scanning it"
+  },
   "networkLibraryAdded": "Folder added to Library",
+  "@networkLibraryAdded": {
+    "description": "Status label replacing the add-to-Library action after the network folder has been added as a source; does not mean scanning has finished"
+  },
   "networkLibraryDescription": "Scan this folder and its subfolders. Music stays on your server; metadata and artwork are saved on this device. Manage or rescan it in Local Library settings.",
+  "@networkLibraryDescription": {
+    "description": "Help below the add-to-Library action explaining recursive scanning, local metadata and artwork storage, and management in Local Library settings"
+  },
   "networkStorage": "Network storage",
+  "@networkStorage": {
+    "description": "Title and navigation label for the screen used to manage network connections and browse remote music folders"
+  },
   "networkErrorUnreachable": "The server could not be reached. Check that this phone can access its network and that the file-sharing service is running. For SMB, port 445 must be reachable.",
+  "@networkErrorUnreachable": {
+    "description": "Network access error for an unreachable server, with connection troubleshooting and the SMB port requirement"
+  },
   "networkErrorTimeout": "The server did not respond in time. Check the connection and try again.",
+  "@networkErrorTimeout": {
+    "description": "Network access error when a server operation exceeds its time limit"
+  },
   "networkErrorAuthentication": "The server rejected the sign-in. Check the username, password and domain. Leave the domain blank unless your server requires one.",
+  "@networkErrorAuthentication": {
+    "description": "Network access error when the server rejects credentials; domain refers to the optional SMB authentication domain"
+  },
   "networkErrorPermission": "This account is not allowed to open this share or folder. Check its read permissions on the server.",
+  "@networkErrorPermission": {
+    "description": "Network access error when the server denies account permissions for a shared folder; distinct from the device's local network permission"
+  },
   "networkErrorLocalPermission": "Local network access is not allowed. Allow Nearby devices for SpotiFLAC Mobile in Android app settings, then try again.",
+  "@networkErrorLocalPermission": {
+    "description": "Network access error when Android denies local network permission; Nearby devices is the Android app permission setting"
+  },
   "networkErrorShare": "The share or folder was not found. For SMB, use the server's shared folder name after its address, such as smb://server/Music/.",
+  "@networkErrorShare": {
+    "description": "Network access error for a missing share or folder; share means an SMB shared folder and the example illustrates its URL path"
+  },
   "networkErrorProtocol": "The server and this SMB client could not agree on a supported protocol. Enable SMB2 or SMB3 on the server. SMB1 is not supported.",
+  "@networkErrorProtocol": {
+    "description": "Network access error for incompatible SMB protocol versions; preserve the version names SMB1, SMB2, and SMB3"
+  },
   "networkErrorAddress": "Check the server address. Use smb://server/share/ for SMB, or an http:// or https:// address for WebDAV and HTTP.",
+  "@networkErrorAddress": {
+    "description": "Network access error for an invalid address, with URL scheme examples for SMB, WebDAV, and HTTP connections"
+  },
   "networkConnections": "Saved connections",
+  "@networkConnections": {
+    "description": "Section heading above the list of saved network storage connections"
+  },
   "networkServer": "Server",
+  "@networkServer": {
+    "description": "Connection form section heading above the display name and server or audio URL fields"
+  },
   "networkCredentials": "Sign in (optional)",
+  "@networkCredentials": {
+    "description": "Connection form section heading for optional server credentials"
+  },
   "networkRefresh": "Refresh",
+  "@networkRefresh": {
+    "description": "Toolbar tooltip for reloading saved connections or the current network folder listing"
+  },
   "networkStorageDescription": "Connect to your NAS or music server and browse its folders. Your sign-in details are stored securely on this device.",
+  "@networkStorageDescription": {
+    "description": "Introduction shown in the empty connections screen and connection form, explaining remote folder browsing and secure local credential storage; NAS means network-attached storage"
+  },
   "networkAddConnection": "Add connection",
+  "@networkAddConnection": {
+    "description": "Action label, toolbar tooltip, and form title for adding a network storage connection"
+  },
   "networkEditConnection": "Edit connection",
+  "@networkEditConnection": {
+    "description": "Edit button tooltip and form title for changing an existing network storage connection"
+  },
   "networkConnectionName": "Name",
+  "@networkConnectionName": {
+    "description": "Required connection form field for a user-chosen display name identifying the saved connection"
+  },
   "networkAddress": "Server or audio URL",
+  "@networkAddress": {
+    "description": "Required connection form field for the server or direct audio URL, using the scheme appropriate to the selected protocol"
+  },
   "networkProtocol": "Protocol",
+  "@networkProtocol": {
+    "description": "Connection form section heading for choosing SMB, WebDAV, or HTTP / HTTPS"
+  },
   "networkUsername": "Username (optional)",
+  "@networkUsername": {
+    "description": "Optional connection form field for the server account username"
+  },
   "networkPassword": "Password (optional)",
+  "@networkPassword": {
+    "description": "Optional connection form field for the server account password, with input characters hidden"
+  },
   "networkDomain": "Domain (optional)",
+  "@networkDomain": {
+    "description": "Optional connection form field shown only for SMB; refers to the authentication domain, not the server's internet domain name"
+  },
   "networkConnectSave": "Connect and save",
+  "@networkConnectSave": {
+    "description": "Connection form action that checks access to the network source before saving the connection"
+  },
   "networkErrorCertificate": "The server's HTTPS certificate could not be verified. Edit this connection to review and trust its certificate, or check the server's HTTPS configuration.",
+  "@networkErrorCertificate": {
+    "description": "Network access error for HTTPS certificate verification failure, directing the user to review the certificate in the connection form; unrelated to SMB authentication"
+  },
   "networkCertificatePrompt": "This server uses an untrusted HTTPS certificate. Routers and NAS devices often use self-signed certificates. Verify the server address and SHA-256 fingerprint before trusting it. Trust applies only to this certificate on this server; a changed certificate requires approval again.",
+  "@networkCertificatePrompt": {
+    "description": "Connection form warning shown above the HTTPS origin and certificate SHA-256 fingerprint; approval trusts only that fingerprint for this connection's HTTPS origin, not a global certificate authority or an SMB server"
+  },
   "networkTrustCertificate": "Trust certificate and retry",
+  "@networkTrustCertificate": {
+    "description": "Action approving the displayed certificate SHA-256 fingerprint for this connection's HTTPS origin and retrying connect-and-save; does not grant global certificate trust"
+  },
   "networkRemoveConnection": "Remove connection",
+  "@networkRemoveConnection": {
+    "description": "Connection form action that removes the saved connection and its credentials, without deleting files on the server"
+  },
   "networkNoFiles": "No supported music files or folders found.",
+  "@networkNoFiles": {
+    "description": "Empty folder message when the network listing contains no directories or supported audio files"
+  },
   "networkConnectionError": "Could not access the network source. Check the server address, credentials, and connection, then retry.",
+  "@networkConnectionError": {
+    "description": "Fallback network access error when the failure has no more specific classification"
+  },
   "extensionAccountTitle": "Extension account",
   "extensionAccountInvalidForm": "The extension returned an invalid account form.",
   "extensionAccountRestartLogin": "Restart account login to continue.",
