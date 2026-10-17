@@ -25,6 +25,7 @@ class MaterialPlayerLayout extends StatelessWidget {
     required this.showLyrics,
     required this.lyricsBuilder,
     required this.onOpenQueue,
+    this.fullScreenArtwork = false,
   });
 
   final MediaItem mediaItem;
@@ -35,75 +36,90 @@ class MaterialPlayerLayout extends StatelessWidget {
   final WidgetBuilder lyricsBuilder;
   final VoidCallback onOpenQueue;
 
+  /// The page backdrop paints the cover; this area only keeps its gestures.
+  final bool fullScreenArtwork;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        Widget artworkAt(double artSize) => Center(
-          child: PlayerArtworkDragRegion(
-            child: Hero(
-              tag: kNowPlayingArtworkHeroTag,
-              // Expressive rest: paused artwork settles smaller and rounder.
-              child: Consumer(
-                builder: (context, ref, artwork) {
-                  final resting =
-                      !ref.watch(playbackPlayingProvider) &&
-                      !ref.watch(playbackLoadingProvider);
-                  final motion = AppMotion.spatialSlow(
-                    context,
-                    AppMotionSpec(
-                      MediaQuery.disableAnimationsOf(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 500),
-                      Curves.easeOutBack,
-                    ),
-                  );
-                  return AnimatedScale(
-                    scale: resting ? 0.9 : 1,
-                    duration: motion.duration,
-                    curve: motion.curve,
-                    child: TweenAnimationBuilder<double>(
-                      tween: Tween(end: resting ? 40 : 20),
-                      duration: motion.duration,
-                      curve: motion.curve,
-                      builder: (context, radius, artwork) => ClipRRect(
-                        borderRadius: BorderRadius.circular(radius),
-                        child: artwork,
+        Widget artworkAt(double artSize) => fullScreenArtwork
+            ? const PlayerArtworkDragRegion(
+                child: ColoredBox(
+                  color: Colors.transparent,
+                  child: SizedBox.expand(),
+                ),
+              )
+            : Center(
+                child: PlayerArtworkDragRegion(
+                  child: Hero(
+                    tag: kNowPlayingArtworkHeroTag,
+                    // Expressive rest: paused artwork settles smaller and rounder.
+                    child: Consumer(
+                      builder: (context, ref, artwork) {
+                        final resting =
+                            !ref.watch(playbackPlayingProvider) &&
+                            !ref.watch(playbackLoadingProvider);
+                        final motion = AppMotion.spatialSlow(
+                          context,
+                          AppMotionSpec(
+                            MediaQuery.disableAnimationsOf(context)
+                                ? Duration.zero
+                                : const Duration(milliseconds: 500),
+                            Curves.easeOutBack,
+                          ),
+                        );
+                        return AnimatedScale(
+                          scale: resting ? 0.9 : 1,
+                          duration: motion.duration,
+                          curve: motion.curve,
+                          child: TweenAnimationBuilder<double>(
+                            tween: Tween(end: resting ? 40 : 20),
+                            duration: motion.duration,
+                            curve: motion.curve,
+                            builder: (context, radius, artwork) => ClipRRect(
+                              borderRadius: BorderRadius.circular(radius),
+                              child: artwork,
+                            ),
+                            child: artwork,
+                          ),
+                        );
+                      },
+                      child: SizedBox(
+                        width: artSize,
+                        height: artSize,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 450),
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: Tween(
+                                    begin: 0.94,
+                                    end: 1.0,
+                                  ).animate(animation),
+                                  child: child,
+                                ),
+                              ),
+                          child: PlayerArtwork(
+                            key: ValueKey(
+                              mediaItem.artUri?.toString() ?? mediaItem.id,
+                            ),
+                            artUri: mediaItem.artUri?.toString(),
+                            colorScheme: colorScheme,
+                            cacheWidth:
+                                (artSize *
+                                        MediaQuery.devicePixelRatioOf(context))
+                                    .round(),
+                          ),
+                        ),
                       ),
-                      child: artwork,
-                    ),
-                  );
-                },
-                child: SizedBox(
-                  width: artSize,
-                  height: artSize,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 450),
-                    switchInCurve: Curves.easeOutCubic,
-                    switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: ScaleTransition(
-                        scale: Tween(begin: 0.94, end: 1.0).animate(animation),
-                        child: child,
-                      ),
-                    ),
-                    child: PlayerArtwork(
-                      key: ValueKey(
-                        mediaItem.artUri?.toString() ?? mediaItem.id,
-                      ),
-                      artUri: mediaItem.artUri?.toString(),
-                      colorScheme: colorScheme,
-                      cacheWidth:
-                          (artSize * MediaQuery.devicePixelRatioOf(context))
-                              .round(),
                     ),
                   ),
                 ),
-              ),
-            ),
-          ),
-        );
+              );
 
         Widget visual() => AnimatedSwitcher(
           duration: MediaQuery.disableAnimationsOf(context)

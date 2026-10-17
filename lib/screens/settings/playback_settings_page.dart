@@ -245,6 +245,42 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
             ),
           ),
           SliverToBoxAdapter(
+            child: SettingsSectionHeader(title: context.l10n.playerCoverStyle),
+          ),
+          SliverToBoxAdapter(
+            child: SettingsGroup(
+              children: [
+                for (final (style, icon, title, subtitle) in [
+                  (
+                    'default',
+                    Icons.crop_square,
+                    context.l10n.playerCoverStyleDefault,
+                    context.l10n.playerCoverStyleDefaultDescription,
+                  ),
+                  (
+                    'fullscreen',
+                    Icons.fullscreen,
+                    context.l10n.playerCoverStyleFullScreen,
+                    context.l10n.playerCoverStyleFullScreenDescription,
+                  ),
+                ])
+                  SettingsItem(
+                    icon: icon,
+                    title: title,
+                    subtitle: subtitle,
+                    selected: settings.playerCoverStyle == style,
+                    trailing: settings.playerCoverStyle == style
+                        ? AppIcon(Icons.check, color: colorScheme.primary)
+                        : null,
+                    onTap: () => ref
+                        .read(settingsProvider.notifier)
+                        .setPlayerCoverStyle(style),
+                    showDivider: style != 'fullscreen',
+                  ),
+              ],
+            ),
+          ),
+          SliverToBoxAdapter(
             child: SettingsSectionHeader(title: context.l10n.motionArtwork),
           ),
           SliverToBoxAdapter(

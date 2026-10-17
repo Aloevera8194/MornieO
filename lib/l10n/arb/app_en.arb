@@ -7090,6 +7090,26 @@
     "description": "Selected state of the compact favorite action"
   },
   "autoMixDescription": "Blend songs with beat matching and pitch-preserving tempo adjustment. Uses crossfade when beats cannot be matched.",
+  "playerCoverStyle": "Cover art",
+  "@playerCoverStyle": {
+    "description": "Settings section choosing how the player shows cover art"
+  },
+  "playerCoverStyleDefault": "Default",
+  "@playerCoverStyleDefault": {
+    "description": "Cover art style: artwork card above the controls"
+  },
+  "playerCoverStyleDefaultDescription": "Artwork as a card above the controls",
+  "@playerCoverStyleDefaultDescription": {
+    "description": "Subtitle of the default cover art style"
+  },
+  "playerCoverStyleFullScreen": "Full screen",
+  "@playerCoverStyleFullScreen": {
+    "description": "Cover art style: artwork fills the top of the player"
+  },
+  "playerCoverStyleFullScreenDescription": "Artwork fills the top of the player and fades into a blur. Motion artwork is always full screen in Mornye",
+  "@playerCoverStyleFullScreenDescription": {
+    "description": "Subtitle of the full screen cover art style"
+  },
   "musicHaptics": "Music haptics",
   "@musicHaptics": {
     "description": "Setting that vibrates the phone along with the music"

@@ -295,6 +295,12 @@ class SettingsSearchCatalog {
           keywords: const ['replaygain', 'volume'],
         ),
         SettingsSearchEntry(
+          icon: Icons.fullscreen,
+          title: l10n.playerCoverStyle,
+          subtitle: l10n.playerCoverStyleFullScreenDescription,
+          keywords: const ['artwork', 'cover', 'full screen', 'immersive'],
+        ),
+        SettingsSearchEntry(
           icon: Icons.vibration,
           title: l10n.musicHaptics,
           subtitle: l10n.musicHapticsDescription,

@@ -5,6 +5,9 @@ import 'package:spotiflac_android/utils/artist_utils.dart';
 
 part 'settings.g.dart';
 
+String playerCoverStyleFromJson(Object? value) =>
+    value == 'fullscreen' ? 'fullscreen' : 'default';
+
 @JsonSerializable(explicitToJson: true)
 class AppSettings {
   static const String homeFeedProviderOff = '__off__';
@@ -66,6 +69,8 @@ class AppSettings {
   final bool autoplay;
   final bool autoplayPersonalization;
   final bool musicHaptics;
+  @JsonKey(fromJson: playerCoverStyleFromJson)
+  final String playerCoverStyle; // 'default' or 'fullscreen'
   final bool isFirstLaunch;
   final bool checkForUpdates;
   final String updateChannel;
@@ -201,6 +206,7 @@ class AppSettings {
     this.autoplay = false,
     this.autoplayPersonalization = true,
     this.musicHaptics = false,
+    this.playerCoverStyle = 'default',
     this.isFirstLaunch = true,
     this.checkForUpdates = true,
     this.updateChannel = 'stable',
@@ -311,6 +317,7 @@ class AppSettings {
     bool? autoplay,
     bool? autoplayPersonalization,
     bool? musicHaptics,
+    String? playerCoverStyle,
     bool? isFirstLaunch,
     bool? checkForUpdates,
     String? updateChannel,
@@ -421,6 +428,7 @@ class AppSettings {
       autoplayPersonalization:
           autoplayPersonalization ?? this.autoplayPersonalization,
       musicHaptics: musicHaptics ?? this.musicHaptics,
+      playerCoverStyle: playerCoverStyle ?? this.playerCoverStyle,
       isFirstLaunch: isFirstLaunch ?? this.isFirstLaunch,
       checkForUpdates: checkForUpdates ?? this.checkForUpdates,
       updateChannel: updateChannel ?? this.updateChannel,

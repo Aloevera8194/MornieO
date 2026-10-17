@@ -19,6 +19,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/library_collections_provider.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
+import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
 import 'package:spotiflac_android/providers/player_artwork_video_provider.dart';
 import 'package:spotiflac_android/services/motion_artwork_store.dart';
@@ -47,6 +48,8 @@ import 'package:spotiflac_android/widgets/mornye_player_artwork.dart';
 import 'package:spotiflac_android/widgets/mornye_artwork_contrast.dart';
 import 'package:spotiflac_android/widgets/mini_player.dart';
 import 'package:spotiflac_android/widgets/material_player_layout.dart';
+import 'package:spotiflac_android/widgets/material_player_backdrop.dart';
+import 'package:spotiflac_android/widgets/mornye_player_layout.dart';
 import 'package:spotiflac_android/widgets/player_metadata_title.dart';
 import 'package:spotiflac_android/widgets/playback_seek_slider.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
@@ -298,6 +301,77 @@ void main() {
     await settlePlayer(tester);
     expect(tester.takeException(), isNull);
   });
+
+  for (final mornye in [false, true]) {
+    testWidgets('cover style switches live and survives rotation ($mornye)', (
+      tester,
+    ) async {
+      await pumpNowPlaying(
+        tester,
+        theme: mornye ? MornyeTheme.build(Brightness.dark) : AppTheme.light(),
+        size: const Size(390, 844),
+      );
+      mediaItems.add(item('first'));
+      await settlePlayer(tester);
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(NowPlayingScreen)),
+      );
+      container
+          .read(settingsProvider.notifier)
+          .setPlayerCoverStyle('fullscreen');
+      await settlePlayer(tester);
+      if (mornye) {
+        expect(
+          tester
+              .widget<MornyePlayerLayout>(find.byType(MornyePlayerLayout))
+              .insetArtwork,
+          isFalse,
+        );
+        expect(
+          tester
+              .widget<MornyePlayerBackground>(
+                find.byType(MornyePlayerBackground),
+              )
+              .artwork,
+          isNotNull,
+        );
+      } else {
+        expect(find.byType(MaterialPlayerBackdrop), findsOneWidget);
+        expect(
+          tester
+              .widget<MaterialPlayerLayout>(find.byType(MaterialPlayerLayout))
+              .fullScreenArtwork,
+          isTrue,
+        );
+      }
+      tester.view.physicalSize = const Size(844, 390);
+      await settlePlayer(tester);
+      if (!mornye) {
+        expect(find.byType(MaterialPlayerBackdrop), findsNothing);
+        expect(
+          tester
+              .widget<MaterialPlayerLayout>(find.byType(MaterialPlayerLayout))
+              .fullScreenArtwork,
+          isFalse,
+        );
+      }
+      expect(tester.takeException(), isNull);
+      tester.view.physicalSize = const Size(390, 844);
+      await settlePlayer(tester);
+      container.read(settingsProvider.notifier).setPlayerCoverStyle('default');
+      await settlePlayer(tester);
+      expect(find.byType(MaterialPlayerBackdrop), findsNothing);
+      if (mornye) {
+        expect(
+          tester
+              .widget<MornyePlayerLayout>(find.byType(MornyePlayerLayout))
+              .insetArtwork,
+          isTrue,
+        );
+      }
+      expect(tester.takeException(), isNull);
+    });
+  }
 
   testWidgets('Material seek wave follows playback, buffering and pause', (
     tester,

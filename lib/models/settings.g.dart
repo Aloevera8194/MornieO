@@ -61,6 +61,9 @@ AppSettings _$AppSettingsFromJson(Map<String, dynamic> json) => AppSettings(
   autoplay: json['autoplay'] as bool? ?? false,
   autoplayPersonalization: json['autoplayPersonalization'] as bool? ?? true,
   musicHaptics: json['musicHaptics'] as bool? ?? false,
+  playerCoverStyle: json['playerCoverStyle'] == null
+      ? 'default'
+      : playerCoverStyleFromJson(json['playerCoverStyle']),
   isFirstLaunch: json['isFirstLaunch'] as bool? ?? true,
   checkForUpdates: json['checkForUpdates'] as bool? ?? true,
   updateChannel: json['updateChannel'] as String? ?? 'stable',
@@ -184,6 +187,7 @@ Map<String, dynamic> _$AppSettingsToJson(
   'autoplay': instance.autoplay,
   'autoplayPersonalization': instance.autoplayPersonalization,
   'musicHaptics': instance.musicHaptics,
+  'playerCoverStyle': instance.playerCoverStyle,
   'isFirstLaunch': instance.isFirstLaunch,
   'checkForUpdates': instance.checkForUpdates,
   'updateChannel': instance.updateChannel,

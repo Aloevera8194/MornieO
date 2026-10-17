@@ -10,12 +10,16 @@ class MornyePlayerBackground extends StatelessWidget {
     this.artwork,
     this.squareArtwork = true,
     this.artworkAspectRatio,
+    this.fadeStart = 0.58,
   });
 
   final Uri? artUri;
   final Widget? artwork;
   final bool squareArtwork;
   final double? artworkAspectRatio;
+
+  /// Fraction of the artwork's height that stays sharp before fading out.
+  final double fadeStart;
 
   @override
   Widget build(BuildContext context) {
@@ -98,11 +102,15 @@ class MornyePlayerBackground extends StatelessWidget {
                       : MediaQuery.sizeOf(context).height * 0.66,
                   child: ShaderMask(
                     blendMode: BlendMode.dstIn,
-                    shaderCallback: (bounds) => const LinearGradient(
+                    shaderCallback: (bounds) => LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      stops: [0, 0.58, 1],
-                      colors: [Colors.white, Colors.white, Colors.transparent],
+                      stops: [0, fadeStart, 1],
+                      colors: const [
+                        Colors.white,
+                        Colors.white,
+                        Colors.transparent,
+                      ],
                     ).createShader(bounds),
                     child: HeroMode(
                       // The compact header owns the route hero while the

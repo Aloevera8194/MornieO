@@ -34,6 +34,7 @@ import 'package:spotiflac_android/widgets/player_artwork.dart';
 import 'package:spotiflac_android/widgets/player_gesture_regions.dart';
 import 'package:spotiflac_android/widgets/player_queue_sheet.dart';
 import 'package:spotiflac_android/widgets/player_details_sheet.dart';
+import 'package:spotiflac_android/widgets/material_player_backdrop.dart';
 import 'package:spotiflac_android/widgets/material_player_layout.dart';
 import 'package:spotiflac_android/widgets/mornye_player_layout.dart';
 import 'package:spotiflac_android/widgets/player_lyrics_controls.dart';
@@ -213,7 +214,28 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             : null);
     final squareArtwork =
         motionArtwork == null || (motionRatio != null && motionRatio >= 0.95);
-    if (motionArtwork == null && _artworkForeground.value.isNotEmpty) {
+    final fullScreenCover = ref.watch(
+      settingsProvider.select((s) => s.playerCoverStyle == 'fullscreen'),
+    );
+    // Motion artwork is always full-bleed in Mornye; still covers follow the
+    // cover style setting through the same layout, as a square video would.
+    final fullBleed = mornye && (motionArtwork != null || fullScreenCover);
+    final screen = MediaQuery.sizeOf(context);
+    // A still cover is cropped at the sides to reach down to the title, as
+    // in the Material full-screen style; landscape keeps the square card.
+    final stillFullBleed = fullBleed && motionArtwork == null;
+    final artworkRatio = stillFullBleed
+        ? _landscape || screen.height <= 0
+              ? 1.0
+              : (screen.width / (screen.height * 0.56)).clamp(0.5, 1.0)
+        : motionRatio;
+    // Two-pane landscape keeps its side-by-side cover.
+    final materialFullScreen =
+        !mornye &&
+        fullScreenCover &&
+        MediaQuery.orientationOf(context) == Orientation.portrait;
+    final overCover = materialFullScreen && _currentPage != 1;
+    if (!fullBleed && _artworkForeground.value.isNotEmpty) {
       _artworkForeground.value = {};
     }
     Widget artwork() => MornyePlayerArtwork(
@@ -253,7 +275,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             ? _expandedArtworkKey
             : _currentPage != 0
             ? _compactArtworkKey
-            : motionArtwork != null
+            : fullBleed
             ? _motionArtworkKey
             : _expandedArtworkKey;
         final box = key.currentContext?.findRenderObject();
@@ -285,14 +307,20 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           );
 
     final player = Scaffold(
-      backgroundColor: mornye ? Colors.transparent : colorScheme.surface,
+      backgroundColor: mornye || materialFullScreen
+          ? Colors.transparent
+          : colorScheme.surface,
       appBar: _FadingAppBar(
         opacity: contentOpacity,
         child: AppBar(
-          backgroundColor: mornye ? Colors.transparent : colorScheme.surface,
-          foregroundColor: colorScheme.onSurface,
+          backgroundColor: mornye || materialFullScreen
+              ? Colors.transparent
+              : colorScheme.surface,
+          foregroundColor: overCover ? Colors.white : colorScheme.onSurface,
           surfaceTintColor: Colors.transparent,
-          systemOverlayStyle: mornye ? SystemUiOverlayStyle.light : null,
+          systemOverlayStyle: mornye || overCover
+              ? SystemUiOverlayStyle.light
+              : null,
           toolbarHeight: mornye
               ? (MediaQuery.orientationOf(context) == Orientation.landscape
                     ? 0
@@ -314,12 +342,19 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                           ),
                         ),
                       )
-              : Text(context.l10n.nowPlayingTitle),
+              : Text(
+                  context.l10n.nowPlayingTitle,
+                  // The app theme's title style carries its own colour.
+                  style: overCover
+                      ? const TextStyle(color: Colors.white)
+                      : null,
+                ),
           centerTitle: true,
           leading: mornye
               ? null
               : AppIconButton(
                   tooltip: context.l10n.nowPlayingMinimize,
+                  color: overCover ? Colors.white : null,
                   icon: const AppIcon(Icons.keyboard_arrow_down),
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
@@ -328,10 +363,12 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
               : [
                   AppIconButton(
                     tooltip: context.l10n.nowPlayingUpNext,
+                    color: overCover ? Colors.white : null,
                     icon: const AppIcon(Icons.queue_music),
                     onPressed: () => _showQueueSheet(colorScheme),
                   ),
                   AppIconButton(
+                    color: overCover ? Colors.white : null,
                     tooltip: MaterialLocalizations.of(
                       context,
                     ).moreButtonTooltip,
@@ -362,8 +399,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                           colorScheme: colorScheme,
                           page: _currentPage,
                           motionArtwork: artwork(),
-                          artworkAspectRatio: motionRatio,
-                          insetArtwork: motionArtwork == null,
+                          artworkAspectRatio: artworkRatio,
+                          insetArtwork: !fullBleed,
                           artworkTopInset:
                               MediaQuery.paddingOf(context).top + 36,
                           artworkKeys: (
@@ -401,6 +438,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         seekPreview: _seekPreview,
                         colorScheme: colorScheme,
                         showLyrics: _currentPage == 1,
+                        fullScreenArtwork: materialFullScreen,
                         lyricsBuilder: (_) =>
                             _lyricsSection(colorScheme, isActive: true),
                         onOpenQueue: () => _showQueueSheet(colorScheme),
@@ -495,7 +533,20 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         ),
       ),
     );
-    if (!mornye) return player;
+    if (!mornye) {
+      if (!materialFullScreen) return player;
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          MaterialPlayerBackdrop(
+            mediaItem: mediaItem,
+            colorScheme: colorScheme,
+            showArtwork: _currentPage != 1,
+          ),
+          player,
+        ],
+      );
+    }
     return HeroMode(
       // A route Hero renders outside the panel's gradient and slide, briefly
       // exposing a detached rectangle. Keep Mornye artwork inside its panel.
@@ -506,8 +557,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           fit: StackFit.expand,
           children: [
             MornyeArtworkContrast(
-              enabled:
-                  motionArtwork != null && !_landscape && _currentPage == 0,
+              enabled: fullBleed && !_landscape && _currentPage == 0,
               targets: {
                 'header': _artworkHeaderKey,
                 'controls': _artworkControlsKey,
@@ -520,9 +570,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
               child: MornyePlayerBackground(
                 artUri: mediaItem.artUri,
                 squareArtwork: squareArtwork,
-                artworkAspectRatio: motionRatio,
-                artwork:
-                    motionArtwork != null && !_landscape && _currentPage == 0
+                artworkAspectRatio: artworkRatio,
+                fadeStart: stillFullBleed ? 0.72 : 0.58,
+                artwork: fullBleed && !_landscape && _currentPage == 0
                     ? PlayerTransitionArtwork(
                         artworkKey: _motionArtworkKey,
                         child: Hero(

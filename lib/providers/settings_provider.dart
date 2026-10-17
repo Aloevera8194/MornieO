@@ -655,6 +655,11 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _saveSettings();
   }
 
+  void setPlayerCoverStyle(String style) {
+    state = state.copyWith(playerCoverStyle: playerCoverStyleFromJson(style));
+    _saveSettings();
+  }
+
   void setUsbBitPerfect(bool enabled) {
     state = state.copyWith(usbBitPerfect: enabled);
     _saveSettings();

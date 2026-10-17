@@ -7224,6 +7224,26 @@
     "description": "Selected state of the compact favorite action"
   },
   "autoMixDescription": "Padukan musik dengan pencocokan bit dan penyesuaian tempo. Menggunakan crossfade bila beat tidak dapat dicocokkan.",
+  "playerCoverStyle": "Cover art",
+  "@playerCoverStyle": {
+    "description": "Settings section choosing how the player shows cover art"
+  },
+  "playerCoverStyleDefault": "Default",
+  "@playerCoverStyleDefault": {
+    "description": "Cover art style: artwork card above the controls"
+  },
+  "playerCoverStyleDefaultDescription": "Artwork berupa kartu di atas kontrol",
+  "@playerCoverStyleDefaultDescription": {
+    "description": "Subtitle of the default cover art style"
+  },
+  "playerCoverStyleFullScreen": "Layar penuh",
+  "@playerCoverStyleFullScreen": {
+    "description": "Cover art style: artwork fills the top of the player"
+  },
+  "playerCoverStyleFullScreenDescription": "Artwork memenuhi bagian atas player lalu memudar menjadi blur. Artwork bergerak di Mornye selalu layar penuh",
+  "@playerCoverStyleFullScreenDescription": {
+    "description": "Subtitle of the full screen cover art style"
+  },
   "musicHaptics": "Haptik musik",
   "@musicHaptics": {
     "description": "Setting that vibrates the phone along with the music"
