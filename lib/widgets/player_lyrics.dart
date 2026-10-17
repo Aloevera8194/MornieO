@@ -4,6 +4,7 @@ import 'dart:ui' show BoxHeightStyle, ImageFilter;
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show ValueListenable, listEquals;
+import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/rendering.dart'
     show OverflowBoxFit, RenderAbstractViewport, ScrollDirection;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,6 +35,9 @@ class SyncedLyricsView extends ConsumerStatefulWidget {
   final bool showPronunciation;
   final bool showTranslation;
 
+  /// Long-pressing a sung line starts sharing it.
+  final ValueChanged<LyricLine>? onLongPressLine;
+
   const SyncedLyricsView({
     super.key,
     required this.lyrics,
@@ -43,6 +47,7 @@ class SyncedLyricsView extends ConsumerStatefulWidget {
     required this.isActive,
     required this.showPronunciation,
     required this.showTranslation,
+    this.onLongPressLine,
   });
 
   @override
@@ -62,6 +67,9 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
   late List<GlobalKey> _lineKeys;
   int _active = -1;
   Set<int> _activeLines = {};
+
+  /// The line the view scrolls to; see [_focusFor].
+  int _focus = -1;
   Duration _activeTransitionPosition = Duration.zero;
   bool _playing = false;
   bool _loading = false;
@@ -198,7 +206,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     _hasStarted = false;
     _lineExtents = null;
     _lineLayoutKey = null;
-    _lines = lyricsTimelineWithGaps(widget.lyrics.lines);
+    _lines = lyricsWithDisplayEnds(lyricsTimelineWithGaps(widget.lyrics.lines));
     _rowReveal.stop();
     _revealFrom = _revealTo = [
       for (final line in _lines)
@@ -234,6 +242,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     _loading = ref.read(playbackLoadingProvider);
     _active = _activeIndexAt(position);
     _activeLines = activeLyricIndices(_lines, position, _active);
+    _focus = _focusFor(_active, _activeLines, position);
     _updateRowVisibility(immediate: true);
     _activeTransitionPosition = position;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -306,31 +315,46 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     return LyricsParser.activeIndex(_lines, position);
   }
 
+  /// The scroll anchor for [active]. When the next line starts while the
+  /// previous one is still being sung, the view holds on the earlier line
+  /// until its timed end, so both stay fully visible instead of the unfinished
+  /// one scrolling away. Only the directly preceding lead line can hold.
+  int _focusFor(int active, Set<int> activeLines, Duration position) {
+    if (active < 0) return -1;
+    final focus = _displayLayout.focusForLine[active];
+    final start = _lines[focus].time;
+    for (var i = focus - 1; i >= 0; i--) {
+      final line = _lines[i];
+      if (line.isBackground || line.time >= start) continue;
+      if (line.text.isEmpty) return focus;
+      final end = line.end;
+      final held = _displayLayout.focusForLine[i];
+      return activeLines.contains(i) && end != null && end > position
+          ? held
+          : focus;
+    }
+    return focus;
+  }
+
   void _setActiveLine(int active, {required Duration position}) {
     if (!mounted) return;
     final activeLines = activeLyricIndices(_lines, position, active);
     final indexChanged = active != _active;
-    final previousFocus = _active < 0
-        ? -1
-        : _displayLayout.focusForLine[_active];
+    final previousFocus = _focus;
     if (!indexChanged &&
         activeLines.length == _activeLines.length &&
         activeLines.containsAll(_activeLines)) {
       return;
     }
+    final focus = _focusFor(active, activeLines, position);
     setState(() {
       _active = active;
       _activeLines = activeLines;
+      _focus = focus;
       _activeTransitionPosition = position;
-      _updateRowVisibility(
-        sameFocus:
-            active >= 0 && _displayLayout.focusForLine[active] == previousFocus,
-      );
+      _updateRowVisibility(sameFocus: focus >= 0 && focus == previousFocus);
     });
-    if (!indexChanged ||
-        (active >= 0 && _displayLayout.focusForLine[active] == previousFocus)) {
-      return;
-    }
+    if (focus == previousFocus) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && active == _active) unawaited(_maybeAutoScroll(active));
     });
@@ -468,7 +492,9 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
         !_scroll.hasClients) {
       return;
     }
-    index = _displayLayout.focusForLine[index];
+    index = index == _active && _focus >= 0
+        ? _focus
+        : _displayLayout.focusForLine[index];
     final row = _displayLayout.rowForLine[index];
     final duration = immediate || MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
@@ -539,7 +565,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     }
     if (!mounted ||
         _userScrolling ||
-        (_active >= 0 && index != _displayLayout.focusForLine[_active]) ||
+        (_active >= 0 && index != _focus) ||
         index >= _lineKeys.length) {
       return;
     }
@@ -671,10 +697,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                         !listEquals(_layoutRowVisibility, rowVisibility))) &&
                 previousExtents.length == _lineExtents!.length &&
                 _scroll.hasClients) {
-              var anchor = _active < 0
-                  ? 0
-                  : _displayLayout.rowForLine[_displayLayout
-                        .focusForLine[_active]];
+              var anchor = _focus < 0 ? 0 : _displayLayout.rowForLine[_focus];
               if (_userScrolling) {
                 anchor = 0;
                 var extent = 0.0;
@@ -847,9 +870,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                 ),
               );
               if (mornye) {
-                final activeLead = active < 0
-                    ? -1
-                    : _displayLayout.focusForLine[active];
+                final activeLead = active < 0 ? -1 : _focus;
                 final distance = activeLead < 0
                     ? row + 1
                     : (_displayLayout.rowForLine[leadIndex] -
@@ -899,6 +920,12 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                   child: GestureDetector(
                     onTap: () =>
                         ref.read(musicPlayerControllerProvider).seek(line.time),
+                    onLongPress: widget.onLongPressLine == null
+                        ? null
+                        : () {
+                            HapticFeedback.mediumImpact();
+                            widget.onLongPressLine!(line);
+                          },
                     child: AnimatedScale(
                       scale: isActive ? 1.0 : 0.96,
                       alignment: !mornye
@@ -932,29 +959,37 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     TextAlign align,
     Widget child,
   ) {
+    final alignment = align == TextAlign.right
+        ? Alignment.topRight
+        : align == TextAlign.center
+        ? Alignment.topCenter
+        : Alignment.topLeft;
+    // A fixed-extent row is already shrinking. Measure its contents at full
+    // height so fitting does not scale it twice.
+    final fullHeight = OverflowBox(
+      minHeight: 0,
+      maxHeight: double.infinity,
+      fit: OverflowBoxFit.deferToChild,
+      alignment: Alignment.topCenter,
+      child: child,
+    );
     return KeyedSubtree(
       key: _lineKeys[index],
       child: !_lines[index].isBackground && _lines[index].text.isNotEmpty
           ? child
           : IgnorePointer(
               ignoring: visibility < 1,
-              child: LyricSupplementTransition(
-                visibility: visibility,
-                alignment: align == TextAlign.right
-                    ? Alignment.topRight
-                    : align == TextAlign.center
-                    ? Alignment.topCenter
-                    : Alignment.topLeft,
-                // A fixed-extent row is already shrinking. Measure its
-                // contents at full height so fitting does not scale it twice.
-                child: OverflowBox(
-                  minHeight: 0,
-                  maxHeight: double.infinity,
-                  fit: OverflowBoxFit.deferToChild,
-                  alignment: Alignment.topCenter,
-                  child: child,
-                ),
-              ),
+              child: _lines[index].isBackground
+                  ? LyricBackingTransition(
+                      visibility: visibility,
+                      alignment: alignment,
+                      child: fullHeight,
+                    )
+                  : LyricSupplementTransition(
+                      visibility: visibility,
+                      alignment: alignment,
+                      child: fullHeight,
+                    ),
             ),
     );
   }
@@ -1550,6 +1585,9 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
                   ? (textScaler.scale(widget.style.fontSize ?? 24) * 0.05)
                         .clamp(0.0, 2.0)
                   : 0,
+              glowSigma: widget.liftEnabled
+                  ? textScaler.scale(widget.style.fontSize ?? 24) * 0.2
+                  : 0,
             ),
           ),
         );
@@ -1567,6 +1605,9 @@ class _TimedLyricSweepPainter extends CustomPainter {
   final TextPainter highlightedPainter;
   final double highlightLift;
 
+  /// Blur radius of the glow behind held words; 0 disables it.
+  final double glowSigma;
+
   _TimedLyricSweepPainter({
     required this.segmentBoxes,
     required this.starts,
@@ -1576,6 +1617,7 @@ class _TimedLyricSweepPainter extends CustomPainter {
     required this.pendingPainter,
     required this.highlightedPainter,
     required this.highlightLift,
+    required this.glowSigma,
   }) : super(repaint: repaint);
 
   @override
@@ -1583,6 +1625,7 @@ class _TimedLyricSweepPainter extends CustomPainter {
     final pendingPaths = <double, Path>{};
     final completedPaths = <double, Path>{};
     final partialBoxes = <(Rect, double, double, double)>[];
+    final glows = <(Path, double, double)>[];
     final position = currentPosition();
     for (var index = 0; index < segmentBoxes.length; index++) {
       final timed = index < starts.length && index < ends.length;
@@ -1603,6 +1646,14 @@ class _TimedLyricSweepPainter extends CustomPainter {
                   end: ends[index],
                 )
           : 0.0;
+      final glow = glowSigma > 0 && timed && value > 0
+          ? syncedLyricSegmentGlow(
+              position: position,
+              start: starts[index],
+              end: ends[index],
+            )
+          : 0.0;
+      final glowPath = glow > 0.01 ? Path() : null;
       var consumed = 0.0;
       for (final box in boxes) {
         if (box.width <= 0) continue;
@@ -1612,10 +1663,22 @@ class _TimedLyricSweepPainter extends CustomPainter {
         // Keep the color sweep continuous across wrapping and font fallback,
         // independently of the movement shared by the whole word.
         final revealWidth = width * value - consumed;
-        final feather = ((highlightLift > 0 ? width : box.width) * 0.18).clamp(
-          3.0,
-          10.0,
+        // A wide, soft leading edge reads as a smooth flow, not a wipe.
+        final feather = ((highlightLift > 0 ? width : box.width) * 0.3).clamp(
+          4.0,
+          16.0,
         );
+        // Only the sung part glows, so unsung letters never light up early.
+        if (glowPath != null && revealWidth > 0) {
+          glowPath.addRect(
+            Rect.fromLTRB(
+              box.left,
+              box.top,
+              box.left + revealWidth.clamp(0.0, box.width),
+              box.bottom,
+            ),
+          );
+        }
         if (value > 0 && revealWidth >= box.width) {
           completedPaths.putIfAbsent(lift, Path.new).addRect(box);
         } else if (value > 0 && revealWidth > -feather) {
@@ -1623,6 +1686,7 @@ class _TimedLyricSweepPainter extends CustomPainter {
         }
         consumed += box.width;
       }
+      if (glowPath != null) glows.add((glowPath, lift, glow));
     }
 
     // Move both colors together, so a raised highlight never leaves a dim
@@ -1633,6 +1697,27 @@ class _TimedLyricSweepPainter extends CustomPainter {
       }
     } else {
       pendingPainter.paint(canvas, Offset.zero);
+    }
+
+    // A blurred copy of the sung letters behind them. Usually at most one
+    // held word glows, so the extra layer stays cheap.
+    for (final (clip, lift, glow) in glows) {
+      final bounds = clip.getBounds().inflate(glowSigma * 3);
+      canvas.save();
+      canvas.translate(0, -lift);
+      canvas.saveLayer(
+        bounds,
+        Paint()
+          ..color = Color.fromRGBO(0, 0, 0, 0.55 * glow)
+          ..imageFilter = ImageFilter.blur(
+            sigmaX: glowSigma,
+            sigmaY: glowSigma,
+          ),
+      );
+      canvas.clipPath(clip, doAntiAlias: false);
+      highlightedPainter.paint(canvas, Offset.zero);
+      canvas.restore();
+      canvas.restore();
     }
     for (final entry in completedPaths.entries) {
       _paintLiftedText(canvas, highlightedPainter, entry.value, entry.key);
@@ -1688,6 +1773,7 @@ class _TimedLyricSweepPainter extends CustomPainter {
         oldDelegate.ends != ends ||
         oldDelegate.currentPosition != currentPosition ||
         oldDelegate.highlightLift != highlightLift ||
+        oldDelegate.glowSigma != glowSigma ||
         oldDelegate.pendingPainter != pendingPainter ||
         oldDelegate.highlightedPainter != highlightedPainter;
   }

@@ -3,6 +3,49 @@ import 'package:spotiflac_android/utils/lyrics_parser.dart';
 import 'package:spotiflac_android/utils/lyrics_timeline.dart';
 
 void main() {
+  group('display ends for an unanchored final word', () {
+    List<LyricLine> display(String lrc) => lyricsWithDisplayEnds(
+      lyricsTimelineWithGaps(LyricsParser.parse(lrc).lines),
+    );
+
+    test('a close next line receives the remaining time', () {
+      final lines = display('''
+[00:01.00]<00:01.00>Hold <00:01.40>on
+[00:04.50]<00:04.50>Next<00:05.00>
+''');
+      expect(lines.first.words.last.end, const Duration(milliseconds: 4500));
+      expect(lines.first.end, const Duration(milliseconds: 4500));
+    });
+
+    test('a distant next line ends the word from the line pace', () {
+      final lines = display('''
+[00:01.00]<00:01.00>Hold <00:01.40>on
+[00:20.00]<00:20.00>Next<00:21.00>
+''');
+      // 400 ms per word, held 2.5 times as long as a typical word.
+      expect(lines.first.words.last.end, const Duration(milliseconds: 2400));
+    });
+
+    test('explicit word and line ends are kept', () {
+      final lines = display('''
+[00:01.00]<00:01.00>Hold <00:01.40>on<00:02.00>
+[00:03.00]<00:03.00>Next<00:03.50>
+''');
+      expect(lines.first.words.last.end, const Duration(seconds: 2));
+      expect(lines.first.end, const Duration(seconds: 2));
+    });
+
+    test('a blank timestamp bounds the final word', () {
+      final lines = display('''
+[00:01.00]<00:01.00>Hold <00:01.40>on
+[00:03.00]
+[00:12.00]<00:12.00>Next<00:13.00>
+''');
+      expect(lines[0].words.last.end, const Duration(seconds: 3));
+      expect(lines[1].text, isEmpty);
+    });
+  });
+
   test('simultaneous untimed singers share highlighting and scroll focus', () {
     final lines = LyricsParser.parse('''
 [00:01.00]v1:Lead

@@ -3756,6 +3756,60 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('an unfinished line holds the view while the next starts '
+        '($mornye)', (tester) async {
+      metadataOverrides['lyrics'] =
+          '[00:01.00]<00:01.00>Long <00:02.00>held<00:06.00>\n'
+          '[00:04.00]<00:04.00>Next<00:05.00>\n'
+          '[00:09.00]<00:09.00>Later<00:10.00>';
+      final playback = StreamController<PlaybackState>.broadcast();
+      addTearDown(playback.close);
+      await pumpNowPlaying(
+        tester,
+        theme: mornye ? MornyeTheme.build(Brightness.dark) : null,
+        size: const Size(390, 844),
+        playbackEvents: playback.stream,
+      );
+      mediaItems.add(item('first'));
+      await settlePlayer(tester);
+      await tester.tap(
+        mornye
+            ? findAppIcon(CupertinoIcons.quote_bubble)
+            : find.byKey(const ValueKey('material-lyrics-toggle')),
+      );
+      await settlePlayer(tester);
+
+      Finder timed(String text) => find.descendant(
+        of: find.byWidgetPredicate(
+          (widget) => widget is Semantics && widget.properties.label == text,
+        ),
+        matching: find.byType(CustomPaint),
+      );
+      Future<void> seek(int milliseconds) async {
+        playback.add(
+          PlaybackState(
+            playing: false,
+            processingState: AudioProcessingState.ready,
+            updatePosition: Duration(milliseconds: milliseconds),
+          ),
+        );
+        await settlePlayer(tester);
+      }
+
+      await seek(3500);
+      final held = tester.getTopLeft(timed('Long held')).dy;
+      await seek(4500);
+      // Both lines keep their word sweep, and the view does not move.
+      expect(timed('Long held'), findsOneWidget);
+      expect(timed('Next'), findsOneWidget);
+      expect(tester.getTopLeft(timed('Long held')).dy, held);
+      await seek(6500);
+      expect(timed('Long held'), findsNothing);
+      expect(timed('Next'), findsOneWidget);
+      expect(tester.getTopLeft(timed('Next')).dy, lessThan(held + 1));
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets(
       'original and romanization follow word timing and pauses ($mornye)',
       (tester) async {

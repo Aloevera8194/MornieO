@@ -16,9 +16,11 @@ import 'package:spotiflac_android/routes/now_playing_route.dart';
 import 'package:spotiflac_android/screens/downloaded_album_screen.dart';
 import 'package:spotiflac_android/screens/local_album_screen.dart';
 import 'package:spotiflac_android/screens/equalizer_screen.dart';
+import 'package:spotiflac_android/screens/lyrics_share_screen.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:spotiflac_android/utils/lyrics_parser.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
@@ -664,7 +666,19 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     options: showOptions && isActive && !_landscape
         ? _autoHidingLyricsControls(_lyricsOptionsButton(colorScheme))
         : null,
+    onShareLyrics: _shareLyrics,
   );
+
+  Future<void> _shareLyrics([LyricLine? line]) async {
+    final mediaItem = ref.read(currentMediaItemProvider).value;
+    if (mediaItem == null || _trackMetadata.lyrics.isEmpty) return;
+    await openLyricsShare(
+      context,
+      mediaItem: mediaItem,
+      lyrics: _trackMetadata.lyrics,
+      initial: line,
+    );
+  }
 
   Widget _lyricsOptionsButton(ColorScheme colorScheme) => ListenableBuilder(
     listenable: _trackMetadata,
@@ -896,6 +910,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             builder: (_) => MornyePlayerActionsSheet(
               mediaItem: mediaItem,
               sleepTimerSubtitle: sleepTimerSubtitle,
+              canShareLyrics: !_trackMetadata.lyrics.isEmpty,
             ),
           )
         : await showAppBottomSheet<String>(
@@ -919,6 +934,13 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                     title: sheetContext.l10n.nowPlayingDetails,
                     onTap: () => Navigator.of(sheetContext).pop('details'),
                   ),
+                  if (!_trackMetadata.lyrics.isEmpty)
+                    SettingsItem(
+                      icon: Icons.format_quote_outlined,
+                      title: sheetContext.l10n.lyricsShareTitle,
+                      onTap: () =>
+                          Navigator.of(sheetContext).pop('shareLyrics'),
+                    ),
                   SettingsItem(
                     icon: Icons.bedtime_outlined,
                     title: sheetContext.l10n.nowPlayingSleepTimer,
@@ -974,6 +996,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
         break;
       case 'album':
         await _goToCurrentAlbum(mediaItem: mediaItem, source: source);
+        break;
+      case 'shareLyrics':
+        await _shareLyrics();
         break;
       case 'details':
         unawaited(

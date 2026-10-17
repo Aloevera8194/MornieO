@@ -133,3 +133,96 @@ List<LyricLine> lyricsTimelineWithGaps(List<LyricLine> lines) {
   // intentionally omitted, and credits stay after the last sung line.
   return List.unmodifiable(timeline);
 }
+
+/// Gives every word-timed line a known end for the player. Enhanced LRC often
+/// omits the closing timestamp after the final word, which used to stop its
+/// sweep after a fixed moment while the word was still being held.
+///
+/// A following line within [nearGap] receives the remaining time, so the last
+/// word keeps sweeping slowly into it. A distant line usually follows a break:
+/// the word then ends after a duration derived from the line's own pace.
+/// Apply after [lyricsTimelineWithGaps]; countdown rows never use estimates.
+List<LyricLine> lyricsWithDisplayEnds(
+  List<LyricLine> timeline, {
+  Duration nearGap = const Duration(seconds: 4),
+}) {
+  final result = <LyricLine>[];
+  for (var i = 0; i < timeline.length; i++) {
+    final line = timeline[i];
+    final last = line.words.lastOrNull;
+    if (line.text.isEmpty || last == null) {
+      result.add(line);
+      continue;
+    }
+    var end = line.end;
+    if (last.end != null && (end == null || last.end! > end)) end = last.end;
+    var words = line.words;
+    if (last.end == null || last.end! <= last.time) {
+      // An explicit line end still bounds an untimed final word.
+      final estimate = end != null && end > last.time
+          ? end
+          : _estimatedFinalWordEnd(
+              line.words,
+              _nextBoundary(timeline, i),
+              nearGap,
+            );
+      words = [
+        ...line.words.take(line.words.length - 1),
+        LyricWord(time: last.time, end: estimate, text: last.text),
+      ];
+      if (end == null || end < estimate) end = estimate;
+    }
+    if (end == line.end && identical(words, line.words)) {
+      result.add(line);
+      continue;
+    }
+    result.add(
+      LyricLine(
+        time: line.time,
+        end: end,
+        text: line.text,
+        words: words,
+        romanization: line.romanization,
+        romanizationWords: line.romanizationWords,
+        translation: line.translation,
+        voice: line.voice,
+        isBackground: line.isBackground,
+        vocalGroup: line.vocalGroup,
+      ),
+    );
+  }
+  return List.unmodifiable(result);
+}
+
+/// The next lead line or countdown after [index]; backing parts and singers
+/// starting together do not end a line.
+Duration? _nextBoundary(List<LyricLine> lines, int index) {
+  final start = lines[index].time;
+  for (var i = index + 1; i < lines.length; i++) {
+    final line = lines[i];
+    if (!line.isBackground && line.time > start) return line.time;
+  }
+  return null;
+}
+
+Duration _estimatedFinalWordEnd(
+  List<LyricWord> words,
+  Duration? next,
+  Duration nearGap,
+) {
+  final start = words.last.time;
+  final paces = <int>[
+    for (var i = 0; i + 1 < words.length; i++)
+      ((words[i].end ?? words[i + 1].time) - words[i].time).inMilliseconds,
+  ].where((value) => value > 0).toList()..sort();
+  final pace = paces.isEmpty ? 600 : paces[paces.length ~/ 2];
+  // A final word is usually held longer than the line's typical syllable.
+  final estimate =
+      start + Duration(milliseconds: (pace * 2.5).clamp(700, 3000).round());
+  if (next == null) return estimate;
+  if (next <= start) {
+    return start + Duration(milliseconds: pace.clamp(150, 400));
+  }
+  if (next - start <= nearGap) return next;
+  return estimate;
+}

@@ -54,6 +54,21 @@ void main() {
     );
   });
 
+  test('only held words glow, rising while sung and fading after', () {
+    double glowAt(int position, {required int end}) => syncedLyricSegmentGlow(
+      position: Duration(milliseconds: position),
+      start: const Duration(seconds: 1),
+      end: Duration(milliseconds: end),
+    );
+
+    expect(glowAt(1300, end: 1500), 0);
+    expect(glowAt(1100, end: 4000), 0);
+    expect(glowAt(1800, end: 4000), inExclusiveRange(0, 1));
+    expect(glowAt(3000, end: 4000), 1);
+    expect(glowAt(4250, end: 4000), inExclusiveRange(0, 1));
+    expect(glowAt(4600, end: 4000), 0);
+  });
+
   group('smooth timed lyric highlight', () {
     double liftAt(int position, {int end = 1500}) => syncedLyricSegmentLift(
       position: Duration(milliseconds: position),
