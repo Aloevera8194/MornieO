@@ -91,6 +91,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   bool _lyricsControlsHidden = false;
   bool _lyricsOptionsOpen = false;
   bool _audioOutputOpen = false;
+  bool _sharingLyrics = false;
   double _lyricsScrollDistance = 0;
   Timer? _lyricsIdleTimer;
   final _lyricsPointers = <int, Offset>{};
@@ -720,13 +721,54 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   );
 
   Future<void> _shareLyrics([LyricLine? line]) async {
+    if (_sharingLyrics) return;
     final mediaItem = ref.read(currentMediaItemProvider).value;
-    if (mediaItem == null || _trackMetadata.lyrics.isEmpty) return;
-    await openLyricsShare(
-      context,
-      mediaItem: mediaItem,
-      lyrics: _trackMetadata.lyrics,
-      initial: line,
+    if (mediaItem == null) return;
+    _sharingLyrics = true;
+    try {
+      // The menu offers sharing before the lyrics page has read the file, so
+      // read it now (including an unresolved document) and wait for parsing.
+      if (_trackMetadata.lyrics.isEmpty) {
+        await _trackMetadata.load(mediaItem, inspectUnresolvedContentUri: true);
+        await _untilMetadataLoaded();
+      }
+      if (!mounted ||
+          ref.read(currentMediaItemProvider).value?.id != mediaItem.id) {
+        return;
+      }
+      if (_trackMetadata.lyrics.isEmpty) {
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(content: Text(context.l10n.nowPlayingNoLyrics)),
+          );
+        return;
+      }
+      await openLyricsShare(
+        context,
+        mediaItem: mediaItem,
+        lyrics: _trackMetadata.lyrics,
+        initial: line,
+      );
+    } finally {
+      _sharingLyrics = false;
+    }
+  }
+
+  /// Completes once a load already in flight (started elsewhere) finishes.
+  Future<void> _untilMetadataLoaded() {
+    if (!_trackMetadata.loading) return Future.value();
+    final done = Completer<void>();
+    void listener() {
+      if (_trackMetadata.loading || done.isCompleted) return;
+      _trackMetadata.removeListener(listener);
+      done.complete();
+    }
+
+    _trackMetadata.addListener(listener);
+    return done.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () => _trackMetadata.removeListener(listener),
     );
   }
 
@@ -960,7 +1002,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             builder: (_) => MornyePlayerActionsSheet(
               mediaItem: mediaItem,
               sleepTimerSubtitle: sleepTimerSubtitle,
-              canShareLyrics: !_trackMetadata.lyrics.isEmpty,
             ),
           )
         : await showAppBottomSheet<String>(
@@ -984,13 +1025,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                     title: sheetContext.l10n.nowPlayingDetails,
                     onTap: () => Navigator.of(sheetContext).pop('details'),
                   ),
-                  if (!_trackMetadata.lyrics.isEmpty)
-                    SettingsItem(
-                      icon: Icons.format_quote_outlined,
-                      title: sheetContext.l10n.lyricsShareTitle,
-                      onTap: () =>
-                          Navigator.of(sheetContext).pop('shareLyrics'),
-                    ),
+                  SettingsItem(
+                    icon: Icons.format_quote_outlined,
+                    title: sheetContext.l10n.lyricsShareTitle,
+                    onTap: () => Navigator.of(sheetContext).pop('shareLyrics'),
+                  ),
                   SettingsItem(
                     icon: Icons.bedtime_outlined,
                     title: sheetContext.l10n.nowPlayingSleepTimer,

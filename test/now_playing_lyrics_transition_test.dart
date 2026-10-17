@@ -27,6 +27,7 @@ import 'package:spotiflac_android/services/network_metadata_service.dart';
 import 'package:spotiflac_android/services/network_storage_service.dart';
 import 'package:video_player/video_player.dart';
 import 'package:spotiflac_android/screens/now_playing_screen.dart';
+import 'package:spotiflac_android/screens/lyrics_share_screen.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/utils/lyrics_parser.dart';
@@ -3058,6 +3059,45 @@ void main() {
     await settlePlayer(tester);
     expect(tester.getRect(artwork), fullArtwork);
     expect(find.text('Second lyric').hitTestable(), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('sharing reads document lyrics before opening the lyrics page', (
+    tester,
+  ) async {
+    await pumpNowPlaying(tester);
+    mediaItems.add(item('first'));
+    await settlePlayer(tester);
+    expect(metadataReads, isEmpty);
+
+    await tester.tap(findAppIcon(Icons.more_vert));
+    await settlePlayer(tester);
+    await tester.tap(find.text('Share lyrics'));
+    await settlePlayer(tester);
+
+    expect(metadataReads, ['content://library/first.flac']);
+    expect(find.byType(LyricsShareScreen), findsOneWidget);
+    expect(find.text('First lyric'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a track change cancels a pending lyrics share', (tester) async {
+    await pumpNowPlaying(tester);
+    mediaItems.add(item('first'));
+    await settlePlayer(tester);
+
+    await tester.tap(findAppIcon(Icons.more_vert));
+    await settlePlayer(tester);
+    await tester.tap(find.text('Share lyrics'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(lyricsRequests, isNotEmpty);
+
+    mediaItems.add(item('second'));
+    await tester.pump();
+    await settlePlayer(tester);
+
+    expect(find.byType(LyricsShareScreen), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
