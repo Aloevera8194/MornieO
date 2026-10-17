@@ -65,6 +65,7 @@ class AppSettings {
   final bool dapExclusive;
   final bool autoplay;
   final bool autoplayPersonalization;
+  final bool musicHaptics;
   final bool isFirstLaunch;
   final bool checkForUpdates;
   final String updateChannel;
@@ -199,6 +200,7 @@ class AppSettings {
     this.dapExclusive = false,
     this.autoplay = false,
     this.autoplayPersonalization = true,
+    this.musicHaptics = false,
     this.isFirstLaunch = true,
     this.checkForUpdates = true,
     this.updateChannel = 'stable',
@@ -308,6 +310,7 @@ class AppSettings {
     bool? dapExclusive,
     bool? autoplay,
     bool? autoplayPersonalization,
+    bool? musicHaptics,
     bool? isFirstLaunch,
     bool? checkForUpdates,
     String? updateChannel,
@@ -417,6 +420,7 @@ class AppSettings {
       autoplay: autoplay ?? this.autoplay,
       autoplayPersonalization:
           autoplayPersonalization ?? this.autoplayPersonalization,
+      musicHaptics: musicHaptics ?? this.musicHaptics,
       isFirstLaunch: isFirstLaunch ?? this.isFirstLaunch,
       checkForUpdates: checkForUpdates ?? this.checkForUpdates,
       updateChannel: updateChannel ?? this.updateChannel,

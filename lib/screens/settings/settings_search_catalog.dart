@@ -295,6 +295,12 @@ class SettingsSearchCatalog {
           keywords: const ['replaygain', 'volume'],
         ),
         SettingsSearchEntry(
+          icon: Icons.vibration,
+          title: l10n.musicHaptics,
+          subtitle: l10n.musicHapticsDescription,
+          keywords: const ['haptic', 'vibrate', 'vibration', 'beat', 'getar'],
+        ),
+        SettingsSearchEntry(
           icon: Icons.volume_off_outlined,
           title: l10n.playbackPauseOnMute,
           subtitle: l10n.playbackPauseOnMuteDescription,

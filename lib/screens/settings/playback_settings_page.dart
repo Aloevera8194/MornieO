@@ -142,6 +142,16 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                       .setPlaybackNormalization(value),
                 ),
                 SettingsSwitchItem(
+                  icon: Icons.vibration,
+                  title: context.l10n.musicHaptics,
+                  subtitle: context.l10n.musicHapticsDescription,
+                  value: settings.musicHaptics,
+                  enabled: settings.playerMode == 'internal',
+                  onChanged: (value) => ref
+                      .read(settingsProvider.notifier)
+                      .setMusicHaptics(value),
+                ),
+                SettingsSwitchItem(
                   icon: Icons.compare_arrows,
                   title: 'AutoMix',
                   subtitle: context.l10n.autoMixDescription,

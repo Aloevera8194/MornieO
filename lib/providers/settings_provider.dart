@@ -650,6 +650,11 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _saveSettings();
   }
 
+  void setMusicHaptics(bool enabled) {
+    state = state.copyWith(musicHaptics: enabled);
+    _saveSettings();
+  }
+
   void setUsbBitPerfect(bool enabled) {
     state = state.copyWith(usbBitPerfect: enabled);
     _saveSettings();
