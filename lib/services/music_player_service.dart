@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:audio_service/audio_service.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/widgets.dart'
     show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
@@ -346,6 +345,7 @@ class MusicPlayerHandler extends BaseAudioHandler
   Future<void>? _disposeFuture;
   bool _initialized = false;
   bool _sourceReady = false;
+  Object? _playbackError;
   Future<void>? _activePlayOperation;
   Future<void> _sourceChangeTail = Future<void>.value();
   Timer? _sleepTimer;
@@ -637,27 +637,36 @@ class MusicPlayerHandler extends BaseAudioHandler
       getPosition: player.getCurrentPosition,
     );
     _playerSubscriptions[player] = [
-      player.onPlayerStateChanged.listen((state) {
-        if (!identical(player, _player)) return;
-        if (state == PlayerState.paused && player.needsSourceReload) {
-          _userPaused = true;
-          _pausedByInterruption = false;
-          _playbackAutomation.cancelPendingActions();
-        }
-        if (_switchingGeneration != 0 &&
-            (state == PlayerState.stopped ||
-                state == PlayerState.completed ||
-                state == PlayerState.disposed)) {
-          return;
-        }
-        if (state == PlayerState.completed && _shouldIgnoreComplete) {
-          if (_userPaused || _interruptionActive) {
-            _broadcastState(playerState: PlayerState.paused);
+      player.onPlayerStateChanged.listen(
+        (state) {
+          if (!identical(player, _player)) return;
+          if (state == PlayerState.paused && player.needsSourceReload) {
+            _userPaused = true;
+            _pausedByInterruption = false;
+            _playbackAutomation.cancelPendingActions();
           }
-          return;
-        }
-        _broadcastState(playerState: state);
-      }),
+          if (_switchingGeneration != 0 &&
+              (state == PlayerState.stopped ||
+                  state == PlayerState.completed ||
+                  state == PlayerState.disposed)) {
+            return;
+          }
+          if (state == PlayerState.completed && _shouldIgnoreComplete) {
+            if (_userPaused || _interruptionActive) {
+              _broadcastState(playerState: PlayerState.paused);
+            }
+            return;
+          }
+          _broadcastState(playerState: state);
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          // Preparation errors are handled by _loadIndex, including the SAF
+          // fallback. Runtime failures must not look like successful completion.
+          if (_sourceReady || _switchingGeneration == 0) {
+            _reportPlaybackError(player, error, stackTrace);
+          }
+        },
+      ),
       player.onPositionChanged.listen((position) {
         if (identical(player, _player)) _handlePositionChanged(position);
       }),
@@ -672,6 +681,34 @@ class MusicPlayerHandler extends BaseAudioHandler
         if (identical(player, _player)) unawaited(_handlePlayerComplete());
       }),
     ];
+  }
+
+  void _reportPlaybackError(
+    MusicPlaybackDeck player,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    if (_disposed || !identical(player, _player) || _playbackError != null) {
+      return;
+    }
+    _sourceReady = false;
+    _playbackError = error;
+    _userPaused = true;
+    _pausedByInterruption = false;
+    _playbackAutomation.cancelPendingActions();
+    _log.e('Playback failed for ${mediaItem.value?.title}', error, stackTrace);
+    _broadcastState(playerState: PlayerState.stopped);
+    final generation = _playRequestGeneration;
+    unawaited(
+      _serializeSourceChange(() async {
+        if (_disposed || generation != _playRequestGeneration) return;
+        await _autoMix.cancel();
+        if (_disposed || generation != _playRequestGeneration) return;
+        await player.stop();
+      }).catchError((Object error) {
+        _log.w('Could not stop failed playback: $error');
+      }),
+    );
   }
 
   Future<void> _disposeDeck(MusicPlaybackDeck player) async {
@@ -811,7 +848,10 @@ class MusicPlayerHandler extends BaseAudioHandler
   }
 
   bool get _shouldIgnoreComplete =>
-      _switchingGeneration != 0 || _interruptionActive || _userPaused;
+      _switchingGeneration != 0 ||
+      _interruptionActive ||
+      _userPaused ||
+      _playbackError != null;
 
   Future<void> _pauseForFocusLoss({required String reason}) async {
     _log.i('Pausing internal player because of $reason');
@@ -886,7 +926,8 @@ class MusicPlayerHandler extends BaseAudioHandler
 
   void _broadcastState({PlayerState? playerState, bool? loading}) {
     final state = playerState ?? _player.state;
-    final playing = state == PlayerState.playing;
+    final failed = _playbackError != null;
+    final playing = !failed && state == PlayerState.playing;
 
     playbackState.add(
       playbackState.value.copyWith(
@@ -903,9 +944,13 @@ class MusicPlayerHandler extends BaseAudioHandler
           MediaAction.skipToNext,
         },
         androidCompactActionIndices: const [1, 2, 3],
-        processingState: (loading == true)
+        processingState: failed
+            ? AudioProcessingState.error
+            : (loading == true)
             ? AudioProcessingState.loading
             : _mapProcessingState(state),
+        errorCode: failed ? 1 : null,
+        errorMessage: _playbackError?.toString(),
         playing: playing,
         queueIndex: _index >= 0 ? _index : null,
         speed: _autoMix.rate,
@@ -1465,6 +1510,7 @@ class MusicPlayerHandler extends BaseAudioHandler
     }
     final generation = ++_playRequestGeneration;
     _sourceReady = false;
+    _playbackError = null;
     // Advance the requested index synchronously so consecutive Next taps do
     // not all target the same song while AutoMix/source preparation awaits.
     _index = index;
@@ -1598,8 +1644,11 @@ class MusicPlayerHandler extends BaseAudioHandler
       return;
     }
     if (resolved == null) {
-      _log.e('No playable source for ${media.title}');
-      _broadcastState(playerState: PlayerState.stopped);
+      _reportPlaybackError(
+        _player,
+        StateError('Audio file is unavailable'),
+        StackTrace.current,
+      );
       return;
     }
 
@@ -1696,11 +1745,9 @@ class MusicPlayerHandler extends BaseAudioHandler
       // Some files do not emit onDurationChanged reliably (stuck at 0:00);
       // poll the engine for the real duration as a fallback.
       unawaited(_ensureDurationKnown(media, generation));
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (!_isCurrentPlayRequest(generation, media)) return;
-      _sourceReady = false;
-      _log.e('Playback failed for ${media.title}: $e');
-      _broadcastState(playerState: PlayerState.stopped);
+      _reportPlaybackError(_player, e, stackTrace);
     } finally {
       if (playbackLease != null) {
         await PlatformBridge.closeContentUriPlaybackLease(playbackLease.token);
@@ -1921,9 +1968,13 @@ class MusicPlayerHandler extends BaseAudioHandler
       if (generation != _playRequestGeneration || _disposed) return;
       try {
         await _player.resume();
-      } on PlatformException {
-        if (!_player.needsSourceReload) rethrow;
-        _broadcastState(playerState: PlayerState.paused);
+      } catch (error, stackTrace) {
+        if (generation != _playRequestGeneration || _disposed) return;
+        if (_player.needsSourceReload) {
+          _broadcastState(playerState: PlayerState.paused);
+        } else {
+          _reportPlaybackError(_player, error, stackTrace);
+        }
         return;
       }
       if (generation != _playRequestGeneration || _disposed) {
@@ -2045,6 +2096,7 @@ class MusicPlayerHandler extends BaseAudioHandler
     await _player.stop();
     if (generation != _playRequestGeneration || _disposed) return;
     _sourceReady = false;
+    _playbackError = null;
     _activeResolvedPath = null;
     await _cleanupPendingResolvedPaths();
     if (generation != _playRequestGeneration || _disposed) return;

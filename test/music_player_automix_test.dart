@@ -69,6 +69,9 @@ class _AudioNative {
   final sourceContents = <String, String>{};
   final preparedContents = <String, String>{};
   final sourceGates = <String, Completer<void>>{};
+  final sourceFailures = <String>{};
+  final resumeFailures = <String>{};
+  bool failResumeMethod = false;
   final resumedSources = <String>[];
   Completer<void>? resumeGate;
   final resumeGates = <String, Completer<void>>{};
@@ -103,6 +106,10 @@ class _AudioNative {
           case 'setSourceUrl':
             final source = args['url']! as String;
             await sourceGates[source]?.future;
+            if (sourceFailures.contains(source)) {
+              unawaited(error(id));
+              return null;
+            }
             // Android caches equal URLs, including recycled SAF descriptors.
             if (sources[id] != source) {
               sources[id] = source;
@@ -117,6 +124,13 @@ class _AudioNative {
           case 'resume':
             await resumeGate?.future;
             await resumeGates[id]?.future;
+            if (failResumeMethod) {
+              throw PlatformException(code: 'AndroidAudioError');
+            }
+            if (resumeFailures.contains(id)) {
+              await error(id);
+              return null;
+            }
             playing.add(id);
             resumedSources.add(sources[id]!);
             if (id.startsWith('music-mix-') || id.startsWith('music-effect-')) {
@@ -152,6 +166,18 @@ class _AudioNative {
         'event': name,
         'value': ?value,
       }),
+      (_) {},
+    );
+  }
+
+  Future<void> error(String id) async {
+    await messenger.handlePlatformMessage(
+      'xyz.luan/audioplayers/events/$id',
+      const StandardMethodCodec().encodeErrorEnvelope(
+        code: 'AndroidAudioError',
+        message: 'Audio output failed',
+        details: 'MEDIA_ERROR_SYSTEM',
+      ),
       (_) {},
     );
   }
@@ -284,6 +310,117 @@ void main() {
       expect(analyzer.calls, isEmpty);
     },
   );
+
+  group('playback failures', () {
+    test('runtime error stays on the song and Play retries it', () async {
+      await handler.setQueueAndPlay(_tracks);
+      await native.error('music-player');
+      await _until(
+        () =>
+            handler.playbackState.value.processingState ==
+                AudioProcessingState.error &&
+            native.playing.isEmpty,
+      );
+      expect(handler.playbackState.value.playing, isFalse);
+      expect(
+        handler.playbackState.value.errorMessage,
+        contains('Audio output'),
+      );
+      expect(handler.mediaItem.value?.id, 'one');
+
+      // Even a late completion from a failed output must not advance the queue.
+      await native.event('music-player', 'audio.onComplete');
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      expect(handler.playbackState.value.queueIndex, 0);
+      expect(
+        handler.playbackState.value.processingState,
+        AudioProcessingState.error,
+      );
+
+      await handler.play();
+      expect(handler.playbackState.value.playing, isTrue);
+      expect(handler.playbackState.value.errorMessage, isNull);
+      expect(handler.playbackState.value.errorCode, isNull);
+      expect(native.resumedSources, ['/one.flac', '/one.flac']);
+      await native.event('music-player', 'audio.onComplete');
+      await _until(() => handler.playbackState.value.queueIndex == 1);
+    });
+
+    test('source failure is reported and can be retried', () async {
+      native.sourceFailures.add('/one.flac');
+      await handler.setQueueAndPlay(_tracks);
+      expect(
+        handler.playbackState.value.processingState,
+        AudioProcessingState.error,
+      );
+      expect(handler.playbackState.value.playing, isFalse);
+      expect(handler.playbackState.value.queueIndex, 0);
+      expect(native.resumedSources, isEmpty);
+
+      native.sourceFailures.clear();
+      await handler.play();
+      expect(handler.playbackState.value.playing, isTrue);
+      expect(handler.mediaItem.value?.id, 'one');
+      expect(handler.playbackState.value.errorMessage, isNull);
+    });
+
+    test('error during resume cannot be overwritten by ready state', () async {
+      native.resumeFailures.add('music-player');
+      await handler.setQueueAndPlay(_tracks);
+      await _until(
+        () =>
+            handler.playbackState.value.processingState ==
+            AudioProcessingState.error,
+      );
+      expect(handler.playbackState.value.playing, isFalse);
+      expect(handler.playbackState.value.queueIndex, 0);
+      native.resumeFailures.clear();
+      await handler.skipToNext();
+      expect(handler.mediaItem.value?.id, 'two');
+      expect(handler.playbackState.value.playing, isTrue);
+      expect(handler.playbackState.value.errorMessage, isNull);
+    });
+
+    test(
+      'failed resume from pause reports an error without throwing',
+      () async {
+        await handler.setQueueAndPlay(_tracks);
+        await handler.pause();
+        native.resumeFailures.add('music-player');
+        await handler.play();
+        await _until(
+          () =>
+              handler.playbackState.value.processingState ==
+              AudioProcessingState.error,
+        );
+        expect(
+          handler.playbackState.value.processingState,
+          AudioProcessingState.error,
+        );
+        expect(handler.playbackState.value.playing, isFalse);
+        expect(handler.mediaItem.value?.id, 'one');
+        native.resumeFailures.clear();
+        await handler.play();
+        expect(handler.playbackState.value.playing, isTrue);
+        expect(handler.playbackState.value.errorMessage, isNull);
+      },
+    );
+
+    test('resume method failure is reported without escaping Play', () async {
+      await handler.setQueueAndPlay(_tracks);
+      await handler.pause();
+      native.failResumeMethod = true;
+      await handler.play();
+      expect(
+        handler.playbackState.value.processingState,
+        AudioProcessingState.error,
+      );
+      expect(handler.playbackState.value.playing, isFalse);
+      native.failResumeMethod = false;
+      await handler.play();
+      expect(handler.playbackState.value.playing, isTrue);
+    });
+  });
 
   group('automatic playback on system volume', () {
     const events = MethodChannel(

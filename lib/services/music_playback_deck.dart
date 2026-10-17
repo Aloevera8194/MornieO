@@ -85,12 +85,24 @@ class MusicPlaybackDeck {
       _ordinary.onPlayerStateChanged.listen((value) {
         if (!_direct) _states.add(value);
       }),
-      _ordinary.onDurationChanged.listen((value) {
-        if (!_direct) _durations.add(value);
-      }),
-      _ordinary.onPlayerComplete.listen((_) {
-        if (!_direct) _completions.add(null);
-      }),
+      _ordinary.eventStream.listen(
+        (event) {
+          if (_direct || _disposed) return;
+          switch (event.eventType) {
+            case AudioEventType.duration:
+              _durations.add(event.duration!);
+            case AudioEventType.complete:
+              _completions.add(null);
+            default:
+              break;
+          }
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          if (_direct || _disposed) return;
+          _ordinaryError = AsyncError(error, stackTrace);
+          _states.addError(error, stackTrace);
+        },
+      ),
     ]);
   }
 
@@ -151,6 +163,7 @@ class MusicPlaybackDeck {
   final _positions = StreamController<Duration>.broadcast();
   final _completions = StreamController<void>.broadcast();
   final _subscriptions = <StreamSubscription<dynamic>>[];
+  AsyncError? _ordinaryError;
   StreamSubscription<dynamic>? _nativeSubscription;
   StreamSubscription<Duration>? _positionSubscription;
   Timer? _timer;
@@ -306,6 +319,7 @@ class MusicPlaybackDeck {
     // /proc/self/fd number for a different SAF file, so URL equality must not
     // reuse the previous MediaPlayer or its pending preparation callbacks.
     await _ordinary.release();
+    _ordinaryError = null;
     await _ordinary.setSource(source);
     await _syncEqualizer();
   }
@@ -341,7 +355,19 @@ class MusicPlaybackDeck {
   }
 
   Future<void> resume() async {
-    if (!_direct) return _ordinary.resume();
+    if (!_direct) {
+      void checkError() {
+        final failure = _ordinaryError;
+        if (failure != null) {
+          Error.throwWithStackTrace(failure.error, failure.stackTrace);
+        }
+      }
+
+      checkError();
+      await _ordinary.resume();
+      checkError();
+      return;
+    }
     if (_volumeBlocked) {
       usbAudioStatus.value = const UsbAudioStatus(reason: 'volume_unavailable');
       throw UsbOutputUnavailable(

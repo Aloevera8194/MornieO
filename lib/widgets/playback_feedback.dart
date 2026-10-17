@@ -23,6 +23,24 @@ class _PlaybackFeedbackState extends ConsumerState<PlaybackFeedback> {
   @override
   void initState() {
     super.initState();
+    ref.listenManual(
+      playbackStateProvider.select((state) => state.value?.errorMessage),
+      (previous, message) {
+        if (message == null ||
+            message == previous ||
+            !mounted ||
+            WidgetsBinding.instance.lifecycleState !=
+                AppLifecycleState.resumed) {
+          return;
+        }
+        showAppSnackBar(
+          context,
+          content: Text(
+            context.l10n.snackbarCannotOpenFile(context.friendlyError(message)),
+          ),
+        );
+      },
+    );
     ref.listenManual(musicPlayerRuntimeProvider, (_, runtime) {
       final revision = ++_subscriptionRevision;
       unawaited(_subscription?.cancel());
