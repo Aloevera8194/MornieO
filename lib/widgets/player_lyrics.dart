@@ -1461,6 +1461,10 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
   Locale? _cachedLocale;
   Color? _cachedPendingColor;
   Color? _cachedHighlightedColor;
+  List<String>? _cachedSegments;
+  List<List<Rect>>? _cachedSegmentBoxes;
+  double? _cachedMinWidth;
+  double? _cachedMaxWidth;
 
   void _ensurePainters(
     String text,
@@ -1481,6 +1485,7 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
 
     _pendingPainter?.dispose();
     _highlightedPainter?.dispose();
+    _cachedSegmentBoxes = null;
     _pendingPainter = TextPainter(
       text: TextSpan(
         text: text,
@@ -1511,6 +1516,42 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
     _cachedHighlightedColor = widget.highlightedColor;
   }
 
+  List<List<Rect>> _segmentBoxes(double minWidth, double maxWidth) {
+    if (_cachedSegmentBoxes != null &&
+        _cachedMinWidth == minWidth &&
+        _cachedMaxWidth == maxWidth &&
+        listEquals(_cachedSegments, widget.segments)) {
+      return _cachedSegmentBoxes!;
+    }
+
+    final segmentBoxes = <List<Rect>>[];
+    var segmentOffset = 0;
+    for (final segment in widget.segments) {
+      final segmentEnd = segmentOffset + segment.length;
+      // Select the whole timed word, keeping paragraph shaping and wrapping
+      // intact. All of its text runs share the same vertical movement.
+      final boxes = _highlightedPainter!
+          .getBoxesForSelection(
+            TextSelection(baseOffset: segmentOffset, extentOffset: segmentEnd),
+            boxHeightStyle: BoxHeightStyle.max,
+          )
+          .map((box) => box.toRect())
+          .toList();
+      boxes.sort((a, b) {
+        final row = a.top.compareTo(b.top);
+        return row == 0 ? a.left.compareTo(b.left) : row;
+      });
+      segmentBoxes.add(boxes);
+      segmentOffset = segmentEnd;
+    }
+    // Snapshot contents: callers can rebuild equal lists or mutate boundaries
+    // without changing the joined text. Timing is supplied separately below.
+    _cachedSegments = List<String>.of(widget.segments);
+    _cachedMinWidth = minWidth;
+    _cachedMaxWidth = maxWidth;
+    return _cachedSegmentBoxes = segmentBoxes;
+  }
+
   @override
   void dispose() {
     _pendingPainter?.dispose();
@@ -1531,43 +1572,16 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
         final maxWidth = constraints.hasBoundedWidth
             ? constraints.maxWidth
             : double.infinity;
+        final minWidth = constraints.hasBoundedWidth ? maxWidth : 0.0;
         final pendingPainter = _pendingPainter!
-          ..layout(
-            minWidth: constraints.hasBoundedWidth ? maxWidth : 0,
-            maxWidth: maxWidth,
-          );
+          ..layout(minWidth: minWidth, maxWidth: maxWidth);
         final highlightedPainter = _highlightedPainter!
-          ..layout(
-            minWidth: constraints.hasBoundedWidth ? maxWidth : 0,
-            maxWidth: maxWidth,
-          );
+          ..layout(minWidth: minWidth, maxWidth: maxWidth);
         final width = constraints.hasBoundedWidth
             ? constraints.maxWidth
             : pendingPainter.width;
         final height = pendingPainter.height;
-        final segmentBoxes = <List<Rect>>[];
-        var segmentOffset = 0;
-        for (final segment in widget.segments) {
-          final segmentEnd = segmentOffset + segment.length;
-          // Select the whole timed word, keeping paragraph shaping and wrapping
-          // intact. All of its text runs share the same vertical movement.
-          final boxes = highlightedPainter
-              .getBoxesForSelection(
-                TextSelection(
-                  baseOffset: segmentOffset,
-                  extentOffset: segmentEnd,
-                ),
-                boxHeightStyle: BoxHeightStyle.max,
-              )
-              .map((box) => box.toRect())
-              .toList();
-          boxes.sort((a, b) {
-            final row = a.top.compareTo(b.top);
-            return row == 0 ? a.left.compareTo(b.left) : row;
-          });
-          segmentBoxes.add(boxes);
-          segmentOffset = segmentEnd;
-        }
+        final segmentBoxes = _segmentBoxes(minWidth, maxWidth);
 
         return Semantics(
           label: widget.semanticsLabel,
