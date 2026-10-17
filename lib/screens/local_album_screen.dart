@@ -636,83 +636,53 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(context.l10n.trackEditMetadata),
         ),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            const spacing = 8.0;
-            final columns = (constraints.maxWidth / 320).floor().clamp(2, 4);
-            final itemWidth =
-                (constraints.maxWidth - spacing * (columns - 1)) / columns;
-            final actions = <Widget>[];
-
-            if (flacEligibleCount > 0) {
-              actions.add(
-                SelectionActionButton(
-                  icon: Icons.download_for_offline_outlined,
-                  label: '${context.l10n.queueFlacAction} ($flacEligibleCount)',
-                  onPressed: () => _queueSelectedAsFlac(tracks),
-                  colorScheme: colorScheme,
-                ),
-              );
-            }
-
-            actions.add(
+        SelectionActionGrid(
+          children: [
+            if (flacEligibleCount > 0)
               SelectionActionButton(
-                icon: Icons.auto_fix_high_outlined,
-                label: '${context.l10n.trackReEnrich} ($selectedCount)',
-                onPressed: selectedCount > 0
-                    ? () => _reEnrichSelected(tracks)
-                    : null,
+                icon: Icons.download_for_offline_outlined,
+                label: '${context.l10n.queueFlacAction} ($flacEligibleCount)',
+                onPressed: () => _queueSelectedAsFlac(tracks),
                 colorScheme: colorScheme,
               ),
-            );
-
-            actions.add(
+            SelectionActionButton(
+              icon: Icons.auto_fix_high_outlined,
+              label: '${context.l10n.trackReEnrich} ($selectedCount)',
+              onPressed: selectedCount > 0
+                  ? () => _reEnrichSelected(tracks)
+                  : null,
+              colorScheme: colorScheme,
+            ),
+            SelectionActionButton(
+              icon: Icons.swap_horiz,
+              label: context.l10n.selectionConvertCount(selectedCount),
+              onPressed: selectedCount > 0
+                  ? () => showBatchConvertSheet(
+                      this.context,
+                      ref,
+                      _selectedUnifiedItems(tracks),
+                      onExitSelectionMode: exitSelectionMode,
+                    )
+                  : null,
+              colorScheme: colorScheme,
+            ),
+            for (final remove in [false, true])
               SelectionActionButton(
-                icon: Icons.swap_horiz,
-                label: context.l10n.selectionConvertCount(selectedCount),
+                icon: remove ? Icons.remove_circle_outline : Icons.graphic_eq,
+                label: remove
+                    ? context.l10n.selectionRemoveReplayGainCount(selectedCount)
+                    : context.l10n.selectionReplayGainCount(selectedCount),
                 onPressed: selectedCount > 0
-                    ? () => showBatchConvertSheet(
+                    ? () => runBatchReplayGain(
                         this.context,
-                        ref,
                         _selectedUnifiedItems(tracks),
                         onExitSelectionMode: exitSelectionMode,
+                        remove: remove,
                       )
                     : null,
                 colorScheme: colorScheme,
               ),
-            );
-
-            for (final remove in [false, true]) {
-              actions.add(
-                SelectionActionButton(
-                  icon: remove ? Icons.remove_circle_outline : Icons.graphic_eq,
-                  label: remove
-                      ? context.l10n.selectionRemoveReplayGainCount(
-                          selectedCount,
-                        )
-                      : context.l10n.selectionReplayGainCount(selectedCount),
-                  onPressed: selectedCount > 0
-                      ? () => runBatchReplayGain(
-                          this.context,
-                          _selectedUnifiedItems(tracks),
-                          onExitSelectionMode: exitSelectionMode,
-                          remove: remove,
-                        )
-                      : null,
-                  colorScheme: colorScheme,
-                ),
-              );
-            }
-
-            return Wrap(
-              spacing: spacing,
-              runSpacing: spacing,
-              children: [
-                for (final action in actions)
-                  SizedBox(width: itemWidth, child: action),
-              ],
-            );
-          },
+          ],
         ),
 
         const SizedBox(height: 8),
