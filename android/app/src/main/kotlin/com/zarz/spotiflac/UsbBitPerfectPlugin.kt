@@ -24,6 +24,7 @@ import java.nio.ByteBuffer
 class UsbBitPerfectPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, EventChannel.StreamHandler {
     private lateinit var methods: MethodChannel
     private lateinit var events: EventChannel
+    private lateinit var route: MethodChannel
     private var engine: UsbPcmPlayback? = null
     private var direct: UsbDirectPlayback? = null
     private var useDirect = false
@@ -39,6 +40,19 @@ class UsbBitPerfectPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Even
         methods.setMethodCallHandler(this)
         events.setStreamHandler(this)
         appContext = binding.applicationContext
+        route = MethodChannel(binding.binaryMessenger, "com.zarz.spotiflac/audio_route")
+        route.setMethodCallHandler { call, result ->
+            if (call.method != "read") return@setMethodCallHandler result.notImplemented()
+            val path = call.argument<String>("path")
+            // Opening an extractor touches storage; keep it off the main thread.
+            Thread {
+                val info = runCatching { AudioRouteInfo.read(appContext, path) }
+                main.post {
+                    info.onSuccess(result::success)
+                        .onFailure { result.error("audio_route", it.message, null) }
+                }
+            }.start()
+        }
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -97,6 +111,7 @@ class UsbBitPerfectPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, Even
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         methods.setMethodCallHandler(null)
         events.setStreamHandler(null)
+        route.setMethodCallHandler(null)
         sink = null
         direct?.dispose()
         direct = null

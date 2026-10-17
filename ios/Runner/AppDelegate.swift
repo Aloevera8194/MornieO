@@ -25,6 +25,7 @@ import UniformTypeIdentifiers
     private var backendChannel: FlutterMethodChannel?
     private var concertCalendar: ConcertCalendarBridge?
     private var playbackNotification: PlaybackNotificationBridge?
+    private var audioRouteInfo: AudioRouteInfoBridge?
     private let coreBackend: CoreBackend = createCoreBackend()
     private var pendingSessionGrantEvents: [[String: Any]] = []
 
@@ -115,6 +116,7 @@ import UniformTypeIdentifiers
 
         GeneratedPluginRegistrant.register(with: registry)
         playbackNotification = PlaybackNotificationBridge(messenger: messenger)
+        audioRouteInfo = AudioRouteInfoBridge(messenger: messenger)
         registry.registrar(forPlugin: "AudioOutputView")?.register(
             AudioOutputViewFactory(messenger: messenger),
             withId: "com.zarz.spotiflac/audio_output"

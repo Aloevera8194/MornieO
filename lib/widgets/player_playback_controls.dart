@@ -12,6 +12,7 @@ import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/audio_info_sheet.dart';
 import 'package:spotiflac_android/widgets/automix_status_badge.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/expressive_playback_transport.dart';
@@ -362,7 +363,8 @@ class _QualityBadge extends StatelessWidget {
     final text = metadata.qualityLabel;
     if (text == null || text.isEmpty) return const SizedBox.shrink();
     final mornye = context.isMornye;
-    return Container(
+    final radius = BorderRadius.circular(20);
+    final badge = Container(
       padding: EdgeInsets.symmetric(
         horizontal: mornye ? 8 : 10,
         vertical: mornye ? 2 : 5,
@@ -371,7 +373,7 @@ class _QualityBadge extends StatelessWidget {
           ? null
           : BoxDecoration(
               color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: radius,
             ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -395,6 +397,23 @@ class _QualityBadge extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+    final label = context.l10n.audioInfoTitle;
+    return Semantics(
+      button: true,
+      label: label,
+      child: Tooltip(
+        message: label,
+        excludeFromSemantics: true,
+        child: Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: () => showAudioInfoSheet(context, metadata: metadata),
+            child: badge,
+          ),
+        ),
       ),
     );
   }

@@ -115,6 +115,24 @@ void setUsbOutputOptions({
   ),
 );
 
+/// Gain and rate the player applies to the current track.
+class PlaybackProcessing {
+  const PlaybackProcessing({
+    required this.normalizationGain,
+    required this.direct,
+    required this.autoMixRate,
+  });
+
+  /// Linear volume from ReplayGain normalization; 1 when none applies.
+  final double normalizationGain;
+
+  /// A direct USB or exclusive path that bypasses the system mixer and DSP.
+  final bool direct;
+
+  /// AutoMix tempo matching; 1 outside a transition.
+  final double autoMixRate;
+}
+
 /// Refreshes gain tags after a successful file update, including SAF copies.
 void refreshPlaybackNormalization(String source) {
   final handler = musicPlayerRuntime.handler;
@@ -1012,6 +1030,14 @@ class MusicPlayerHandler extends BaseAudioHandler
       displayName: displayName,
     );
   }
+
+  /// What the active output path applies to the playing track, for the
+  /// audio information sheet.
+  PlaybackProcessing get processing => PlaybackProcessing(
+    normalizationGain: _normalizationVolume,
+    direct: _player.isDirect,
+    autoMixRate: _autoMix.rate,
+  );
 
   /// Re-applies normalization to the playing track when the setting flips.
   void reapplyNormalization() {

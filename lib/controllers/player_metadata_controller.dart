@@ -30,6 +30,10 @@ class PlayerMetadataController extends ChangeNotifier {
   bool _disposed = false;
 
   String? get source => _requestKey?.$2;
+
+  /// The path the current metadata was probed from: the resolved copy of a
+  /// document, or the source itself.
+  String? get filePath => _loadedPath;
   Map<String, dynamic>? _metadata;
   ParsedLyrics _lyrics = ParsedLyrics.empty;
   bool _loading = false;
