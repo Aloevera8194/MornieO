@@ -35,6 +35,7 @@ jobs:
               - 'third_party/spotiflac_discord/**'
               - 'lib/**'
               - 'test/**'
+              - 'integration_test/**'
               - 'android/app/src/test/resources/**'
               - 'assets/**'
               - 'pubspec.yaml'
