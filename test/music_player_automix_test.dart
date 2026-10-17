@@ -636,6 +636,23 @@ void main() {
       expect(deck.needsSourceReload, isTrue);
     });
 
+    test('failed first DoP start pauses without normal playback', () async {
+      transport = 'dop';
+      failResume = true;
+      await deck.setSource(
+        DeviceFileSource('/one.dsf'),
+        preferBitPerfect: true,
+        allowDop: true,
+      );
+      await expectLater(deck.resume(), throwsA(isA<UsbDsdUnavailable>()));
+      expect(deck.state, PlayerState.paused);
+      expect(deck.needsSourceReload, isTrue);
+      expect(usbAudioStatus.value.reason, 'dsd_unsupported');
+      expect(native.sources['usb-test'], isNull);
+      expect(native.playing, isEmpty);
+      expect(usbCalls, ['prepare', 'resume']);
+    });
+
     test('DSD without a DAC never loads a normal audio source', () async {
       fallbackReason = 'no_usb';
       await expectLater(
@@ -743,6 +760,8 @@ void main() {
         await expectLater(deck.resume(), throwsA(isA<UsbOutputUnavailable>()));
         expect(native.sources['usb-test'], isNull);
         expect(native.playing, isEmpty);
+        expect(deck.state, PlayerState.paused);
+        expect(deck.needsSourceReload, isTrue);
         expect(usbAudioStatus.value.reason, 'route_changed');
       },
     );
@@ -755,14 +774,21 @@ void main() {
           preferBitPerfect: true,
         );
         await deck.resume();
+        var statusChanges = 0;
+        void onStatusChanged() => statusChanges++;
+        usbAudioStatus.addListener(onStatusChanged);
+        addTearDown(() => usbAudioStatus.removeListener(onStatusChanged));
         await event('paused');
         await _until(() => deck.state == PlayerState.paused);
         expect(native.playing, isEmpty);
         expect(usbAudioStatus.value.reason, 'route_changed');
+        expect(statusChanges, 1);
         position = 19000;
         expect(deck.needsSourceReload, isTrue);
         await expectLater(deck.resume(), throwsA(isA<PlatformException>()));
         expect(native.playing, isEmpty);
+        expect(deck.state, PlayerState.paused);
+        expect(statusChanges, 1);
         expect(await deck.getCurrentPosition(), const Duration(seconds: 19));
       },
     );

@@ -334,6 +334,12 @@ class MusicPlaybackDeck {
     if (!_disposed) _states.add(value);
   }
 
+  void _pauseLostRoute(UsbAudioStatus status) {
+    _routeLost = true;
+    _setState(PlayerState.paused);
+    usbAudioStatus.value = status;
+  }
+
   Future<void> resume() async {
     if (!_direct) return _ordinary.resume();
     if (_volumeBlocked) {
@@ -351,23 +357,17 @@ class MusicPlaybackDeck {
     } on PlatformException {
       if (token != _token || !_direct || _disposed) return;
       if (_preparedStatus.driver == 'usb_direct') {
-        _routeLost = true;
-        _setState(PlayerState.paused);
-        usbAudioStatus.value = const UsbAudioStatus(reason: 'route_changed');
+        _pauseLostRoute(const UsbAudioStatus(reason: 'route_changed'));
         throw UsbOutputUnavailable(
           'Direct USB output changed; reconnect before playing',
         );
       }
       if (_nativeStarted) {
-        _routeLost = true;
-        _setState(PlayerState.paused);
-        usbAudioStatus.value = const UsbAudioStatus(reason: 'route_changed');
+        _pauseLostRoute(const UsbAudioStatus(reason: 'route_changed'));
         rethrow;
       }
       if (_preparedStatus.transport != 'pcm') {
-        _routeLost = true;
-        _setState(PlayerState.paused);
-        usbAudioStatus.value = const UsbAudioStatus(reason: 'dsd_unsupported');
+        _pauseLostRoute(const UsbAudioStatus(reason: 'dsd_unsupported'));
         throw UsbDsdUnavailable();
       }
       final source = _source;
