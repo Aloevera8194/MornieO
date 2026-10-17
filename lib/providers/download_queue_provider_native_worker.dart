@@ -44,11 +44,6 @@ class _NativeWorkerRequestContext {
   }
 }
 
-class _NativeWorkerStartupTimeout implements Exception {
-  @override
-  String toString() => 'Native worker did not publish run snapshot';
-}
-
 extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
   Future<bool> _recoverNativeWorkerStorageFailure({
     required _NativeWorkerRequestContext context,
@@ -756,34 +751,31 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
         }
       }();
 
-      final runStartWait = Stopwatch()..start();
-      var lastStateSerial = 0;
-      while (true) {
-        final snapshot = await PlatformBridge.getNativeDownloadWorkerSnapshot(
-          sinceStateSerial: lastStateSerial,
-        );
-        if (!_isNativeWorkerSnapshotForRun(snapshot, runId)) {
-          lastStateSerial = 0;
-          if (runStartWait.elapsed > const Duration(seconds: 30)) {
-            throw _NativeWorkerStartupTimeout();
-          }
-          await Future<void>.delayed(const Duration(milliseconds: 250));
-          continue;
-        }
-        await _applyAndroidNativeWorkerSnapshot(
-          snapshot,
-          contexts,
-          reconciledIds,
-          settings,
-        );
-        lastStateSerial = _snapshotStateSerial(snapshot, lastStateSerial);
-        if (snapshot['is_running'] != true) {
-          preparationStopRequested = true;
-          await _clearNativeWorkerRunId(runId);
-          break;
-        }
-        await Future<void>.delayed(const Duration(seconds: 1));
+      final exit =
+          await NativeDownloadWorkerMonitor(
+            readSnapshot: PlatformBridge.getNativeDownloadWorkerSnapshot,
+            matchesRun: (snapshot) =>
+                _isNativeWorkerSnapshotForRun(snapshot, runId),
+            isServiceAlive: _isNativeWorkerServiceAlive,
+          ).run(
+            onSnapshot: (snapshot) async {
+              if (snapshot['is_running'] != true) {
+                preparationStopRequested = true;
+              }
+              await _applyAndroidNativeWorkerSnapshot(
+                snapshot,
+                contexts,
+                reconciledIds,
+                settings,
+              );
+            },
+          );
+      preparationStopRequested = true;
+      if (exit == NativeDownloadWorkerExit.serviceLost) {
+        _log.w('Native worker run $runId lost its service; reclaiming queue');
+        _requeueInFlightNativeWorkerItems(contexts.keys.toSet());
       }
+      await _clearNativeWorkerRunId(runId);
     } catch (e, stack) {
       preparationStopRequested = true;
       if (isForegroundServiceStartNotAllowed(e)) {
@@ -794,7 +786,7 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
         state = state.copyWith(isProcessing: false, currentDownload: null);
         return true;
       }
-      if (e is _NativeWorkerStartupTimeout) {
+      if (e is NativeDownloadWorkerStartupTimeout) {
         _log.w(
           'Android native worker did not publish a matching snapshot; cancelling native worker and falling back to Dart queue',
         );
