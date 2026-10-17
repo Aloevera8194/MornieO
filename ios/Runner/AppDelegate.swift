@@ -47,7 +47,7 @@ import UniformTypeIdentifiers
 
     /// Strong reference to the in-flight ASWebAuthenticationSession; the
     /// session is deallocated (and its sheet dismissed) without it.
-    private var activeWebAuthSession: AnyObject?
+    private var activeWebAuthSession: ASWebAuthenticationSession?
 
     override func application(
         _ application: UIApplication,
@@ -375,10 +375,6 @@ import UniformTypeIdentifiers
         callbackScheme: String,
         result: @escaping FlutterResult
     ) {
-        guard #available(iOS 13.0, *) else {
-            result(false)
-            return
-        }
         guard let url = URL(string: urlString), url.scheme?.lowercased() == "https" else {
             result(false)
             return
@@ -746,7 +742,6 @@ import UniformTypeIdentifiers
     }
 }
 
-@available(iOS 13.0, *)
 extension AppDelegate: ASWebAuthenticationPresentationContextProviding {
     func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
         return activeWindow ?? ASPresentationAnchor()
