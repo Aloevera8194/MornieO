@@ -5330,6 +5330,14 @@
   "@extensionsHomeFeedProvider": {
     "description": "Extensions page - label for home feed provider selector"
   },
+  "extensionsHomeFeedCountry": "Home feed country",
+  "@extensionsHomeFeedCountry": {
+    "description": "Country picker for the active Home feed extension"
+  },
+  "extensionsHomeFeedCountryDescription": "Choose a country's Home recommendations without a VPN.",
+  "@extensionsHomeFeedCountryDescription": {
+    "description": "Help for choosing regional Home recommendations"
+  },
   "extensionsHomeFeedDescription": "Choose which extension provides the home feed on the main screen",
   "@extensionsHomeFeedDescription": {
     "description": "Extensions page - description for home feed provider picker"
@@ -6984,6 +6992,14 @@
   "regionCountryUS": "United States",
   "@regionCountryUS": {
     "description": "Country name for SongLink region picker"
+  },
+  "regionCountryIT": "Italy",
+  "@regionCountryIT": {
+    "description": "Country name for Italy"
+  },
+  "regionCountryES": "Spain",
+  "@regionCountryES": {
+    "description": "Country name for Spain"
   },
   "regionCountryGB": "United Kingdom",
   "@regionCountryGB": {

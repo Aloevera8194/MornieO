@@ -12,6 +12,21 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 
 final _log = AppLogger('ExploreProvider');
 
+final homeFeedExtensionProvider = Provider<Extension?>((ref) {
+  final preferred = ref.watch(
+    settingsProvider.select((settings) => settings.homeFeedProvider),
+  );
+  if (preferred == AppSettings.homeFeedProviderOff) return null;
+  final extensions = ref.watch(
+    extensionProvider.select((state) => state.extensions),
+  );
+  final available = extensions.where((ext) => ext.enabled && ext.hasHomeFeed);
+  if (preferred != null && preferred.isNotEmpty) {
+    return available.where((ext) => ext.id == preferred).firstOrNull;
+  }
+  return available.firstOrNull;
+});
+
 class ExploreItem {
   final String id;
   final String uri;
@@ -256,7 +271,11 @@ Map<String, Object?> _decodeExploreCache(String rawCache) {
     sections = _withDefaultExploreProviderId(sections, providerId);
   }
 
-  return {'provider_id': providerId, 'sections': sections};
+  return {
+    'provider_id': providerId,
+    'region': decoded['region'],
+    'sections': sections,
+  };
 }
 
 String _encodeExploreCache(Map<String, Object?> cachePayload) {
@@ -295,6 +314,15 @@ class ExploreNotifier extends Notifier<ExploreState> {
 
   @override
   ExploreState build() {
+    ref.listen(extensionProvider.select((state) => state.settingsRevisions), (
+      previous,
+      next,
+    ) {
+      final extension = _resolveHomeFeedExtension();
+      if (extension != null && previous?[extension.id] != next[extension.id]) {
+        _reloadConfiguration(extension.id);
+      }
+    });
     _restoreFromCache();
     return const ExploreState();
   }
@@ -328,6 +356,21 @@ class ExploreNotifier extends Notifier<ExploreState> {
       final resolvedProviderId = providerId?.isNotEmpty == true
           ? providerId
           : _resolveHomeFeedExtension()?.id;
+      var extension = _resolveHomeFeedExtension();
+      if (extension == null && cachePayload['region'] != null) {
+        // Regional caches cannot be validated until installed manifests and
+        // their saved settings are available on a cold launch.
+        await ref.read(extensionProvider.notifier).ensureInitialized();
+        if (!_isCacheRestoreValid(generation)) return;
+        extension = _resolveHomeFeedExtension();
+        if (extension == null) return;
+      }
+      if (extension != null) {
+        if (resolvedProviderId != extension.id) return;
+        final region = await _homeFeedRegion(extension);
+        if (!_isCacheRestoreValid(generation)) return;
+        if (cachePayload['region'] != region) return;
+      }
       if (resolvedProviderId != null && resolvedProviderId.isNotEmpty) {
         normalizedSections = _withDefaultExploreProviderId(
           normalizedSections,
@@ -369,34 +412,53 @@ class ExploreNotifier extends Notifier<ExploreState> {
   }
 
   Extension? _resolveHomeFeedExtension() {
-    final settings = ref.read(settingsProvider);
-    final preferredId = settings.homeFeedProvider;
-    final enabledHomeFeedExtensions = ref
-        .read(extensionProvider)
-        .extensions
-        .where((extension) => extension.enabled && extension.hasHomeFeed)
-        .toList(growable: false);
+    return ref.read(homeFeedExtensionProvider);
+  }
 
-    if (preferredId != null && preferredId.isNotEmpty) {
-      return enabledHomeFeedExtensions
-          .where((extension) => extension.id == preferredId)
-          .firstOrNull;
+  Future<String?> _homeFeedRegion(Extension extension) async {
+    final setting = extension.homeFeedRegionSetting;
+    if (setting == null) return null;
+    final settings = await ref.read(
+      extensionSettingsProvider(extension.id).future,
+    );
+    return (settings[setting.key] ?? setting.defaultValue)
+        ?.toString()
+        .trim()
+        .toUpperCase();
+  }
+
+  Future<void> _reloadConfiguration(String extensionId) async {
+    clear();
+    final generation = _homeFeedRequestId;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!_isRequestValid(generation)) return;
+      await ExploreCacheStore(prefs).clear();
+    } catch (error) {
+      _log.w('Failed to clear changed home feed: $error');
     }
-
-    return enabledHomeFeedExtensions.firstOrNull;
+    if (_isRequestValid(generation) &&
+        _resolveHomeFeedExtension()?.id == extensionId) {
+      await refresh();
+    }
   }
 
   Future<void> _saveToCache(
     List<Map<String, Object?>> normalizedSections,
     String providerId,
+    String? region,
+    int requestId,
   ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final encoded = await compute(_encodeExploreCache, {
         'provider_id': providerId,
+        'region': region,
         'sections': normalizedSections,
       });
-      await ExploreCacheStore(prefs).write(encoded);
+      if (_isRequestValid(requestId)) {
+        await ExploreCacheStore(prefs).write(encoded);
+      }
     } catch (e) {
       _log.w('Failed to save explore cache: $e');
     }
@@ -440,6 +502,8 @@ class ExploreNotifier extends Notifier<ExploreState> {
         return;
       }
 
+      final region = await _homeFeedRegion(targetExt);
+      if (!_isRequestValid(requestId)) return;
       final result = await PlatformBridge.getExtensionHomeFeed(
         targetExt.id,
         cancelPrevious: forceRefresh,
@@ -490,7 +554,7 @@ class ExploreNotifier extends Notifier<ExploreState> {
         lastFetched: DateTime.now(),
       );
 
-      _saveToCache(normalizedSections, targetExt.id);
+      _saveToCache(normalizedSections, targetExt.id, region, requestId);
     } catch (e, stack) {
       _log.e('Error fetching home feed: $e', e, stack);
       if (!_isRequestValid(requestId)) return;

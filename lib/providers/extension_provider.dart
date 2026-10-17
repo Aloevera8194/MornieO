@@ -22,6 +22,11 @@ const _metadataProviderPriorityKey = 'metadata_provider_priority';
 const _providerPriorityKey = 'provider_priority';
 const _storeRegistryUrlPrefKey = 'store_registry_url';
 
+final extensionSettingsProvider = FutureProvider.autoDispose
+    .family<Map<String, dynamic>, String>((ref, extensionId) {
+      return PlatformBridge.getExtensionSettings(extensionId);
+    });
+
 /// Result of restoring extensions from a backup.
 class ExtensionNotifier extends Notifier<ExtensionState> {
   static const _extensionHealthDefaultCacheTtl = Duration(minutes: 10);
@@ -784,7 +789,7 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
             ...current,
             ...Map<String, dynamic>.from(settings),
           };
-          await PlatformBridge.setExtensionSettings(id, merged);
+          await setExtensionSettings(id, merged);
         } catch (e) {
           _log.w('Restore: failed to apply settings for $id: $e');
         }

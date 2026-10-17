@@ -23,6 +23,7 @@ import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:spotiflac_android/widgets/home_feed_region_setting.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 
 class ExtensionsPage extends ConsumerStatefulWidget {
@@ -125,6 +126,7 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
                   _MetadataPriorityItem(),
                   _SearchProviderSelector(),
                   _HomeFeedProviderSelector(),
+                  HomeFeedRegionSetting(),
                 ],
               ),
             ),

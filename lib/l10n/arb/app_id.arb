@@ -5358,6 +5358,8 @@
   "@extensionsHomeFeedProvider": {
     "description": "Extensions page - label for home feed provider selector"
   },
+  "extensionsHomeFeedCountry": "Negara beranda",
+  "extensionsHomeFeedCountryDescription": "Pilih rekomendasi beranda suatu negara tanpa VPN.",
   "extensionsHomeFeedDescription": "Pilih ekstensi provider feed beranda di layar utama",
   "@extensionsHomeFeedDescription": {
     "description": "Extensions page - description for home feed provider picker"
@@ -7025,6 +7027,8 @@
   "@regionCountryUS": {
     "description": "Country name for SongLink region picker"
   },
+  "regionCountryIT": "Italia",
+  "regionCountryES": "Spanyol",
   "regionCountryGB": "Inggris Raya",
   "@regionCountryGB": {
     "description": "Country name for SongLink region picker"
