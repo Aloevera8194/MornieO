@@ -186,13 +186,6 @@ class AboutPage extends StatelessWidget {
                     showDivider: true,
                   ),
                   _AboutSettingsItem(
-                    icon: Icons.campaign_outlined,
-                    title: context.l10n.aboutKeepAndroidOpen,
-                    subtitle: 'keepandroidopen.org',
-                    onTap: () => _launchUrl('https://keepandroidopen.org/'),
-                    showDivider: true,
-                  ),
-                  _AboutSettingsItem(
                     icon: Icons.bug_report_outlined,
                     title: context.l10n.aboutReportIssue,
                     subtitle: context.l10n.aboutReportIssueSubtitle,
@@ -229,6 +222,13 @@ class AboutPage extends StatelessWidget {
                     title: context.l10n.aboutTelegramChat,
                     subtitle: context.l10n.aboutTelegramChatSubtitle,
                     onTap: () => _launchUrl('https://t.me/spotiflac_chat'),
+                    showDivider: true,
+                  ),
+                  _AboutSettingsItem(
+                    icon: Icons.science_outlined,
+                    title: context.l10n.aboutTelegramBeta,
+                    subtitle: context.l10n.aboutTelegramBetaSubtitle,
+                    onTap: () => _launchUrl('https://t.me/+GUncjI1DB1w0N2Y1'),
                     showDivider: false,
                   ),
                 ],

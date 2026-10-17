@@ -780,6 +780,8 @@
   "@aboutTelegramChatSubtitle": {
     "description": "Subtitle for Telegram chat"
   },
+  "aboutTelegramBeta": "SpotiFLAC Mobile Beta",
+  "aboutTelegramBetaSubtitle": "Gabung untuk build beta internal terbaru",
   "aboutSocial": "Media Sosial",
   "@aboutSocial": {
     "description": "Section for social links"
@@ -6633,7 +6635,7 @@
   "@libraryExternalPlayer": {
     "description": "Setting option to use an external music player"
   },
-  "libraryExternalPlayerSubtitle": "Bagus untuk mendengarkan harian, kualitas terbaik, pemutaran lancar, EQ, dan dukungan format luas",
+  "libraryExternalPlayerSubtitle": "Buka lagu di aplikasi musik lain di perangkatmu",
   "@libraryExternalPlayerSubtitle": {
     "description": "Subtitle for external player option"
   },

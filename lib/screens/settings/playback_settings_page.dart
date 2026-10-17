@@ -13,6 +13,7 @@ import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
+import 'package:spotiflac_android/widgets/beta_badge.dart';
 import 'package:spotiflac_android/widgets/player_volume_control.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/discord_presence_settings.dart';
@@ -126,6 +127,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                 SettingsItem(
                   icon: Icons.equalizer,
                   title: context.l10n.equalizerTitle,
+                  titleTrailing: const BetaBadge(),
                   subtitle: context.l10n.equalizerDescription,
                   onTap: () => Navigator.of(context).push<void>(
                     MaterialPageRoute(builder: (_) => const EqualizerScreen()),
@@ -321,7 +323,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                     builder: (context, status, _) => SettingsSwitchItem(
                       icon: Icons.usb,
                       title: context.l10n.usbBitPerfect,
-                      titleTrailing: const _PlaybackBetaBadge(),
+                      titleTrailing: const BetaBadge(),
                       subtitle: [
                         context.l10n.usbBitPerfectDescription,
                         if (settings.usbBitPerfect)
@@ -447,7 +449,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                     SettingsSwitchItem(
                       icon: Icons.headphones,
                       title: context.l10n.dapExclusive,
-                      titleTrailing: const _PlaybackBetaBadge(),
+                      titleTrailing: const BetaBadge(),
                       subtitle: context.l10n.dapExclusiveDescription,
                       value: settings.dapExclusive,
                       onChanged: (value) => ref
@@ -482,29 +484,6 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
         ],
-      ),
-    );
-  }
-}
-
-class _PlaybackBetaBadge extends StatelessWidget {
-  const _PlaybackBetaBadge();
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        'Beta',
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: colors.onSurfaceVariant,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }

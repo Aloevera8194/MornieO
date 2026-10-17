@@ -23,6 +23,7 @@ import 'package:spotiflac_android/widgets/app_slider.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/app_text_field.dart';
+import 'package:spotiflac_android/widgets/beta_badge.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
@@ -237,6 +238,7 @@ class _EqualizerScreenState extends ConsumerState<EqualizerScreen> {
                   SettingsSwitchItem(
                     icon: Icons.graphic_eq,
                     title: l10n.equalizerEnable,
+                    titleTrailing: const BetaBadge(),
                     value: settings.enabled,
                     onChanged: setEnabled,
                     showDivider: false,
@@ -660,12 +662,24 @@ class _EqualizerOverview extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: tokens.gapXs),
-                    Text(
-                      '${settings.gains.length} ${l10n.equalizerBands.toLowerCase()} · ${l10n.equalizerPreamp} ${_signed(settings.inputGain)} dB',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontFeatures: const [FontFeature.tabularFigures()],
-                      ),
+                    Row(
+                      children: [
+                        const BetaBadge(),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            '${settings.gains.length} ${l10n.equalizerBands.toLowerCase()} · ${l10n.equalizerPreamp} ${_signed(settings.inputGain)} dB',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colors.onSurfaceVariant,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
