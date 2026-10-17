@@ -253,6 +253,12 @@ final class RustCoreBackend: CoreBackend {
         return manager
     }
 
+    private func managerSnapshot() -> ExtensionManager? {
+        ownerLock.lock()
+        defer { ownerLock.unlock() }
+        return manager
+    }
+
     private func requestRegistryLocked() -> CancellationRegistry {
         if let requests = requests { return requests }
         let created = CancellationRegistry(domain: .extensionRequest)
@@ -432,30 +438,22 @@ final class RustCoreBackend: CoreBackend {
     }
 
     func getLibraryScanProgress() throws -> String {
-        ownerLock.lock()
-        let current = manager
-        ownerLock.unlock()
+        let current = managerSnapshot()
         return try current?.getLibraryScanProgress() ?? "{}"
     }
 
     func cancelLibraryScan() throws {
-        ownerLock.lock()
-        let current = manager
-        ownerLock.unlock()
+        let current = managerSnapshot()
         try current?.cancelLibraryScan()
     }
 
     func pauseLibraryScan() throws {
-        ownerLock.lock()
-        let current = manager
-        ownerLock.unlock()
+        let current = managerSnapshot()
         try current?.pauseLibraryScan()
     }
 
     func resumeLibraryScan() throws {
-        ownerLock.lock()
-        let current = manager
-        ownerLock.unlock()
+        let current = managerSnapshot()
         try current?.resumeLibraryScan()
     }
 
