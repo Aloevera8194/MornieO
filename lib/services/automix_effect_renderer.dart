@@ -112,8 +112,11 @@ class AutoMixEffectRenderer {
       if (generation != _generation) return null;
       final output = File('${work.path}/tail.wav');
       final seconds = duration.inMicroseconds / 1e6;
-      // Slower playback needs less source material; faster playback is bounded
-      // by the outgoing song's end and padded to the exact overlap length.
+      // Faster playback consumes more source than the overlap lasts. Reading
+      // only the overlap's length ended the effect early and padded the rest
+      // with silence. The song's end still bounds the read, then padding
+      // keeps the exact overlap length.
+      final source = seconds * max(1.0, options.effectiveSpeed);
       final success = await _jobs.run([
         '-hide_banner',
         '-loglevel',
@@ -127,7 +130,7 @@ class AutoMixEffectRenderer {
         '-ss',
         (max(0, start.inMicroseconds) / 1e6).toStringAsFixed(6),
         '-t',
-        seconds.toStringAsFixed(6),
+        source.toStringAsFixed(6),
         '-i',
         path,
         '-vn',

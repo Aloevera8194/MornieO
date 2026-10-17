@@ -45,6 +45,31 @@ void main() {
     renderer.dispose();
   });
 
+  test('faster effects read enough source to fill the overlap', () async {
+    List<String>? captured;
+    final renderer = AutoMixEffectRenderer(
+      temporaryDirectory: () async => temporary,
+      jobs: AudioAnalysisJobs<bool>(
+        start: (arguments) async {
+          captured = arguments;
+          return (id: 1, completed: Future.value(false));
+        },
+        cancel: (_) async {},
+      ),
+    );
+    await renderer.render(
+      '/missing.flac',
+      start: const Duration(seconds: 10),
+      duration: const Duration(seconds: 4),
+      options: const AutoMixOptions(effect: AutoMixEffect.custom, speed: 1.2),
+    );
+    final input = captured!.indexOf('-i');
+    // 4 s of output at 1.2× needs 4.8 s of the outgoing song.
+    expect(captured![input - 1], '4.800000');
+    expect(captured![captured!.lastIndexOf('-t') + 1], '4.000000');
+    renderer.dispose();
+  });
+
   test(
     'real filters change pitch, attenuate highs, and generate delayed echoes',
     () async {

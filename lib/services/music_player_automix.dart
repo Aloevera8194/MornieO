@@ -271,12 +271,25 @@ class _MusicAutoMix {
           final livePosition = await original.getCurrentPosition() ?? position;
           if (!_current(generation)) return;
           final effectOffset = livePosition - plan.start;
-          await effectDeck.seek(
-            effectOffset.isNegative ? Duration.zero : effectOffset,
-          );
+          final effectStart = effectOffset.isNegative
+              ? Duration.zero
+              : effectOffset;
+          await effectDeck.seek(effectStart);
           if (!_current(generation)) return;
           await effectDeck.resume();
           if (!_current(generation)) return;
+          // The render opens with the same dry audio as the live deck. Hand
+          // over only once it is audibly playing and aligned: fading the live
+          // deck out on resume left a gap while the effect decoder started,
+          // and its late start then doubled the music.
+          if (await _waitForProgress(effectDeck, effectStart, generation) ==
+              null) {
+            throw StateError('Effect deck did not start');
+          }
+          if (!await _alignEffect(effectDeck, original, plan, generation)) {
+            if (!_current(generation)) return;
+            throw StateError('Effect deck could not be aligned');
+          }
           outgoing = effectDeck;
           _effectDry = original;
         } catch (error) {
@@ -404,6 +417,32 @@ class _MusicAutoMix {
     await cancel();
     // Do not repeatedly prepare the same stalled transition on every tick.
     if (_generation == generation + 1) _attempt = attempt;
+  }
+
+  /// Keeps the silent effect deck within [tolerance] of the live song. Two
+  /// players cannot share a clock, so a corrected seek is checked again.
+  Future<bool> _alignEffect(
+    MusicPlaybackDeck effect,
+    MusicPlaybackDeck live,
+    AutoMixPlan plan,
+    int generation, {
+    Duration tolerance = const Duration(milliseconds: 50),
+  }) async {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      final effectPosition = await effect.getCurrentPosition();
+      final livePosition = await live.getCurrentPosition();
+      if (!_current(generation)) return false;
+      if (effectPosition == null || livePosition == null) return false;
+      final target = livePosition - plan.start;
+      if ((target - effectPosition).abs() <= tolerance) return true;
+      if (target.isNegative) return false;
+      await effect.seek(target);
+      if (!_current(generation)) return false;
+      if (await _waitForProgress(effect, target, generation) == null) {
+        return false;
+      }
+    }
+    return false;
   }
 
   Future<Duration?> _waitForProgress(
