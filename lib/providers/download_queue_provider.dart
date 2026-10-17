@@ -1116,6 +1116,20 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
     }
   }
 
+  void _recordFailedDownload(
+    String id, {
+    required String error,
+    required DownloadErrorType errorType,
+  }) {
+    updateItemStatus(
+      id,
+      DownloadStatus.failed,
+      error: error,
+      errorType: errorType,
+    );
+    _failedInSession++;
+  }
+
   /// Fails requests that have not started when shared queue setup cannot
   /// continue. Active and terminal items keep their current state.
   void failQueuedDownloads({

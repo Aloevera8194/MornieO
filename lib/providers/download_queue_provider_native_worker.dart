@@ -78,13 +78,11 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
           continue;
         }
         reconciledIds.add(pendingId);
-        updateItemStatus(
+        _recordFailedDownload(
           pendingId,
-          DownloadStatus.failed,
           error: safPermissionLostErrorMessage,
           errorType: DownloadErrorType.permission,
         );
-        _failedInSession++;
       }
       return true;
     }
@@ -819,13 +817,11 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
             current.status == DownloadStatus.skipped) {
           continue;
         }
-        updateItemStatus(
+        _recordFailedDownload(
           item.id,
-          DownloadStatus.failed,
           error: 'Native download worker failed: $e',
           errorType: DownloadErrorType.unknown,
         );
-        _failedInSession++;
       }
     } finally {
       preparationStopRequested = true;
@@ -1110,13 +1106,11 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
               stack,
             );
             if (_findItemById(itemId) != null) {
-              updateItemStatus(
+              _recordFailedDownload(
                 itemId,
-                DownloadStatus.failed,
                 error: 'Downloaded file could not be added to the Library: $e',
                 errorType: DownloadErrorType.unknown,
               );
-              _failedInSession++;
             }
             reconciledIds.add(itemId);
           }
@@ -1209,13 +1203,7 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
             );
             continue;
           }
-          updateItemStatus(
-            itemId,
-            DownloadStatus.failed,
-            error: errorMsg,
-            errorType: errorType,
-          );
-          _failedInSession++;
+          _recordFailedDownload(itemId, error: errorMsg, errorType: errorType);
         }
       }
     }
@@ -1265,13 +1253,11 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
     final item = context.item;
     var filePath = result.filePath;
     if (filePath == null || filePath.isEmpty) {
-      updateItemStatus(
+      _recordFailedDownload(
         item.id,
-        DownloadStatus.failed,
         error: 'Native worker completed without a file path',
         errorType: DownloadErrorType.unknown,
       );
-      _failedInSession++;
       return;
     }
 
@@ -1326,13 +1312,11 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
       ),
     );
     if (decryptOutcome.path == null) {
-      updateItemStatus(
+      _recordFailedDownload(
         item.id,
-        DownloadStatus.failed,
         error: 'Failed to decrypt encrypted stream',
         errorType: DownloadErrorType.unknown,
       );
-      _failedInSession++;
       return;
     }
     filePath = decryptOutcome.path!;
@@ -1381,13 +1365,11 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
           filePath: filePath,
         );
     if (convertedContainerPath == null) {
-      updateItemStatus(
+      _recordFailedDownload(
         item.id,
-        DownloadStatus.failed,
         error: 'Failed to convert downloaded container',
         errorType: DownloadErrorType.unknown,
       );
-      _failedInSession++;
       return;
     }
     filePath = convertedContainerPath;

@@ -1780,13 +1780,7 @@ class _DownloadRun {
     }
 
     _log.e('Download failed: $errorMsg (type: $errorTypeStr)');
-    n.updateItemStatus(
-      item.id,
-      DownloadStatus.failed,
-      error: errorMsg,
-      errorType: errorType,
-    );
-    n._failedInSession++;
+    n._recordFailedDownload(item.id, error: errorMsg, errorType: errorType);
 
     try {
       await PlatformBridge.cleanupConnections();
@@ -1804,13 +1798,11 @@ class _DownloadRun {
     _log.e('Exception: $e', e, stackTrace);
 
     if (isNetworkDownload) {
-      n.updateItemStatus(
+      n._recordFailedDownload(
         item.id,
-        DownloadStatus.failed,
         error: 'Network download failed. Retry keeps prepared audio: $e',
         errorType: DownloadErrorType.unknown,
       );
-      n._failedInSession++;
       return;
     }
 
@@ -1861,13 +1853,7 @@ class _DownloadRun {
       return;
     }
 
-    n.updateItemStatus(
-      item.id,
-      DownloadStatus.failed,
-      error: errorMsg,
-      errorType: errorType,
-    );
-    n._failedInSession++;
+    n._recordFailedDownload(item.id, error: errorMsg, errorType: errorType);
 
     try {
       await PlatformBridge.cleanupConnections();
