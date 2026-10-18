@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/scroll_edge_fade.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
@@ -21,26 +22,6 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   static const int _totalPages = 6;
-
-  double _responsiveScale({
-    required BuildContext context,
-    double min = 0.82,
-    double max = 1.08,
-    double baseShortestSide = 390,
-  }) {
-    final shortestSide = MediaQuery.sizeOf(context).shortestSide;
-    final scale = shortestSide / baseShortestSide;
-    if (scale < min) return min;
-    if (scale > max) return max;
-    return scale;
-  }
-
-  double _effectiveTextScale(BuildContext context) {
-    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
-    if (textScale < 1.0) return 1.0;
-    if (textScale > 1.4) return 1.4;
-    return textScale;
-  }
 
   @override
   void dispose() {
@@ -81,8 +62,8 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final isLastPage = _currentPage == _totalPages - 1;
-    final scale = _responsiveScale(context: context, min: 0.86, max: 1.05);
-    final textScale = _effectiveTextScale(context);
+    final scale = responsiveScale(context: context, min: 0.86, max: 1.05);
+    final textScale = effectiveTextScale(context);
     final topBarPaddingH = 24 * scale;
     final topBarPaddingV = 16 * scale;
     final pageIndicatorHeight = 8 * scale;

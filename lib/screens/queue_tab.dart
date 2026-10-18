@@ -222,17 +222,10 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   _queueLibraryPageDataCache = {};
   DateTime? _lastBlankLibraryRepairAt;
 
-  double _effectiveTextScale() {
-    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
-    if (textScale < 1.0) return 1.0;
-    if (textScale > 1.4) return 1.4;
-    return textScale;
-  }
-
   double _queueCoverSize() {
     final shortestSide = MediaQuery.sizeOf(context).shortestSide;
     final scale = (shortestSide / 390).clamp(0.82, 1.0);
-    final textScale = _effectiveTextScale();
+    final textScale = effectiveTextScale(context);
     return (56 * scale * (1 + ((textScale - 1) * 0.12))).clamp(46.0, 56.0);
   }
 

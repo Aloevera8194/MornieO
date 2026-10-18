@@ -148,35 +148,15 @@ class _HomeTabState extends ConsumerState<HomeTab>
   List<Track>? _sortedTracksCache;
   List<int>? _sortedTrackIndexesCache;
 
-  double _responsiveScale({
-    required BuildContext context,
-    double min = 0.82,
-    double max = 1.08,
-    double baseShortestSide = 390,
-  }) {
-    final shortestSide = MediaQuery.sizeOf(context).shortestSide;
-    final scale = shortestSide / baseShortestSide;
-    if (scale < min) return min;
-    if (scale > max) return max;
-    return scale;
-  }
-
-  double _effectiveTextScale(BuildContext context) {
-    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
-    if (textScale < 1.0) return 1.0;
-    if (textScale > 1.4) return 1.4;
-    return textScale;
-  }
-
   double _recentDownloadCoverSize(BuildContext context) {
-    final scale = _responsiveScale(context: context, min: 0.82, max: 1.25);
-    final textScale = _effectiveTextScale(context);
+    final scale = responsiveScale(context: context, min: 0.82, max: 1.25);
+    final textScale = effectiveTextScale(context);
     return 100 * scale * (1 + (textScale - 1) * 0.15);
   }
 
   double _recentDownloadsRowHeight(BuildContext context) {
     final coverSize = _recentDownloadCoverSize(context);
-    final textScale = _effectiveTextScale(context);
+    final textScale = effectiveTextScale(context);
     return coverSize + 28 + ((textScale - 1) * 8);
   }
 
@@ -184,8 +164,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
     // Six phone-sized cards across an iPad made the feed look like a desktop
     // page zoomed out. A higher tablet cap gives roughly five generous cards
     // in portrait while leaving all phone sizes unchanged.
-    final scale = _responsiveScale(context: context, min: 0.82, max: 1.32);
-    final textScale = _effectiveTextScale(context);
+    final scale = responsiveScale(context: context, min: 0.82, max: 1.32);
+    final textScale = effectiveTextScale(context);
     final size = 145 * scale * (1 + (textScale - 1) * 0.12);
     // Landscape tablets are short: one carousel row should not take over a
     // third of the screen. Portrait and phone heights never reach this cap.
@@ -195,7 +175,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
 
   double _exploreSectionHeight(BuildContext context) {
     final cardSize = _exploreCardSize(context);
-    final textScale = _effectiveTextScale(context);
+    final textScale = effectiveTextScale(context);
     return cardSize + 58 + ((textScale - 1) * 12);
   }
 

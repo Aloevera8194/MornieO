@@ -115,3 +115,25 @@ double wideListInset(
   MediaQuery.sizeOf(context).width,
   contentMaxWidth: contentMaxWidth,
 );
+
+/// Scales fixed sizes with the shortest screen side, clamped to [min]..[max].
+double responsiveScale({
+  required BuildContext context,
+  double min = 0.82,
+  double max = 1.08,
+  double baseShortestSide = 390,
+}) {
+  final shortestSide = MediaQuery.sizeOf(context).shortestSide;
+  final scale = shortestSide / baseShortestSide;
+  if (scale < min) return min;
+  if (scale > max) return max;
+  return scale;
+}
+
+/// The system text scale clamped to 1.0..1.4 for fixed-height layouts.
+double effectiveTextScale(BuildContext context) {
+  final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+  if (textScale < 1.0) return 1.0;
+  if (textScale > 1.4) return 1.4;
+  return textScale;
+}
