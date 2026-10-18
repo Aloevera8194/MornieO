@@ -74,7 +74,13 @@ void main() {
     'real filters change pitch, attenuate highs, and generate delayed echoes',
     () async {
       final ffmpeg = Platform.environment['SPOTIFLAC_TEST_FFMPEG'] ?? 'ffmpeg';
-      final probe = await Process.run(ffmpeg, ['-version']);
+      final ProcessResult probe;
+      try {
+        probe = await Process.run(ffmpeg, ['-version']);
+      } on ProcessException {
+        markTestSkipped('Host FFmpeg is unavailable');
+        return;
+      }
       expect(probe.exitCode, 0);
       final jobs = AudioAnalysisJobs<bool>(
         start: (arguments) async => (
