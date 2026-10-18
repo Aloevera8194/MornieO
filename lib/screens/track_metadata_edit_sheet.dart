@@ -119,91 +119,78 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
   }
 
   Future<void> _showMetadataProviderPicker(List<Extension> providers) async {
-    FocusScope.of(context).unfocus();
-    final selectedId = await showModalBottomSheet<String>(
-      context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
-      useRootNavigator: true,
-      isScrollControlled: true,
-      showDragHandle: true,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      builder: (sheetContext) {
-        final cs = Theme.of(sheetContext).colorScheme;
-        final currentId =
-            providers.any(
-              (extension) => extension.id == _selectedMetadataProviderId,
-            )
-            ? _selectedMetadataProviderId!
-            : '';
-        final options = <({String id, String name, IconData icon})>[
-          (
-            id: '',
-            name: sheetContext.l10n.editMetadataAutoFillSourceAutomatic,
-            icon: Icons.auto_awesome_outlined,
-          ),
-          for (final extension in providers)
+    final currentId =
+        providers.any(
+          (extension) => extension.id == _selectedMetadataProviderId,
+        )
+        ? _selectedMetadataProviderId!
+        : '';
+    final selectedId =
+        await _showEditorOptionPicker<({String id, String name})>(
+          title: (sheetContext) => sheetContext.l10n.editMetadataAutoFillSource,
+          options: (sheetContext) => [
             (
-              id: extension.id,
-              name: extension.displayName,
-              icon: Icons.extension_outlined,
+              id: '',
+              name: sheetContext.l10n.editMetadataAutoFillSourceAutomatic,
             ),
-        ];
-
-        return SafeArea(
-          top: false,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.72,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                  child: Text(
-                    sheetContext.l10n.editMetadataAutoFillSource,
-                    style: Theme.of(sheetContext).textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Flexible(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _editorOptions(
-                      children: [
-                        for (var index = 0; index < options.length; index++)
-                          _metadataProviderOption(
-                            context: sheetContext,
-                            id: options[index].id,
-                            name: options[index].name,
-                            icon: options[index].icon,
-                            selected: options[index].id == currentId,
-                            showDivider: index != options.length - 1,
-                            cs: cs,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            for (final extension in providers)
+              (id: extension.id, name: extension.displayName),
+          ],
+          isSelected: (option) => option.id == currentId,
+          label: (sheetContext, option) => option.name,
+          icon: (sheetContext, option) => sheetContext.adaptiveIcon(
+            option.id.isEmpty
+                ? Icons.auto_awesome_outlined
+                : Icons.extension_outlined,
           ),
+          ellipsizeLabels: true,
+          checkInSheetTheme: true,
         );
-      },
-    );
 
     if (!mounted || selectedId == null) return;
     setState(() {
-      _selectedMetadataProviderId = selectedId.isEmpty ? null : selectedId;
+      _selectedMetadataProviderId = selectedId.id.isEmpty
+          ? null
+          : selectedId.id;
       _invalidateAutoFillPreview();
     });
   }
 
   Future<void> _showCoverResolutionPicker() async {
-    FocusScope.of(context).unfocus();
     final currentValue = _coverMaxDimension ?? 0;
-    final selectedValue = await showModalBottomSheet<int>(
+    final selectedValue = await _showEditorOptionPicker<int>(
+      title: (sheetContext) => sheetContext.l10n.trackCoverResolution,
+      options: (sheetContext) => [0, ..._coverResizeDimensions],
+      isSelected: (value) => value == currentValue,
+      label: (sheetContext, value) => value == 0
+          ? _originalCoverResolutionLabel(
+              sheetContext.l10n.trackConvertOriginal,
+            )
+          : '$value px',
+      icon: (sheetContext, value) => context.isMornye
+          ? CupertinoIcons.photo
+          : value == 0
+          ? Icons.photo_size_select_actual_outlined
+          : Icons.photo_size_select_large_outlined,
+    );
+
+    if (!mounted || selectedValue == null) return;
+    setState(() {
+      _coverMaxDimension = selectedValue == 0 ? null : selectedValue;
+    });
+  }
+
+  Future<T?> _showEditorOptionPicker<T>({
+    required String Function(BuildContext sheetContext) title,
+    required List<T> Function(BuildContext sheetContext) options,
+    required bool Function(T option) isSelected,
+    required String Function(BuildContext sheetContext, T option) label,
+    required IconData Function(BuildContext sheetContext, T option) icon,
+    bool ellipsizeLabels = false,
+    bool checkInSheetTheme = false,
+  }) {
+    FocusScope.of(context).unfocus();
+    return showModalBottomSheet<T>(
       context: context,
       sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
@@ -212,16 +199,8 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
       backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       builder: (sheetContext) {
         final cs = Theme.of(sheetContext).colorScheme;
-        final options = <({int value, String label})>[
-          (
-            value: 0,
-            label: _originalCoverResolutionLabel(
-              sheetContext.l10n.trackConvertOriginal,
-            ),
-          ),
-          for (final dimension in _coverResizeDimensions)
-            (value: dimension, label: '$dimension px'),
-        ];
+        final items = options(sheetContext);
+
         return SafeArea(
           top: false,
           child: ConstrainedBox(
@@ -235,7 +214,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                   child: Text(
-                    sheetContext.l10n.trackCoverResolution,
+                    title(sheetContext),
                     style: Theme.of(sheetContext).textTheme.titleLarge
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
@@ -245,7 +224,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                     padding: const EdgeInsets.only(bottom: 16),
                     child: _editorOptions(
                       children: [
-                        for (var index = 0; index < options.length; index++)
+                        for (var index = 0; index < items.length; index++)
                           Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -255,31 +234,34 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                                   vertical: 4,
                                 ),
                                 leading: Icon(
-                                  context.isMornye
-                                      ? CupertinoIcons.photo
-                                      : options[index].value == 0
-                                      ? Icons.photo_size_select_actual_outlined
-                                      : Icons.photo_size_select_large_outlined,
-                                  color: options[index].value == currentValue
+                                  icon(sheetContext, items[index]),
+                                  color: isSelected(items[index])
                                       ? cs.primary
                                       : cs.onSurfaceVariant,
                                 ),
-                                title: Text(options[index].label),
-                                selected: options[index].value == currentValue,
+                                title: Text(
+                                  label(sheetContext, items[index]),
+                                  maxLines: ellipsizeLabels ? 2 : null,
+                                  overflow: ellipsizeLabels
+                                      ? TextOverflow.ellipsis
+                                      : null,
+                                ),
+                                selected: isSelected(items[index]),
                                 selectedColor: cs.primary,
-                                trailing: options[index].value == currentValue
+                                trailing: isSelected(items[index])
                                     ? Icon(
-                                        context.isMornye
+                                        (checkInSheetTheme
+                                                    ? sheetContext
+                                                    : context)
+                                                .isMornye
                                             ? CupertinoIcons.checkmark
                                             : Icons.check_rounded,
                                       )
                                     : null,
-                                onTap: () => Navigator.pop(
-                                  sheetContext,
-                                  options[index].value,
-                                ),
+                                onTap: () =>
+                                    Navigator.pop(sheetContext, items[index]),
                               ),
-                              if (index != options.length - 1)
+                              if (index != items.length - 1)
                                 Divider(
                                   height: 1,
                                   indent: 60,
@@ -299,55 +281,6 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
           ),
         );
       },
-    );
-
-    if (!mounted || selectedValue == null) return;
-    setState(() {
-      _coverMaxDimension = selectedValue == 0 ? null : selectedValue;
-    });
-  }
-
-  Widget _metadataProviderOption({
-    required BuildContext context,
-    required String id,
-    required String name,
-    required IconData icon,
-    required bool selected,
-    required bool showDivider,
-    required ColorScheme cs,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 4,
-          ),
-          leading: Icon(
-            context.adaptiveIcon(icon),
-            color: selected ? cs.primary : cs.onSurfaceVariant,
-          ),
-          title: Text(name, maxLines: 2, overflow: TextOverflow.ellipsis),
-          selected: selected,
-          selectedColor: cs.primary,
-          trailing: selected
-              ? Icon(
-                  context.isMornye
-                      ? CupertinoIcons.checkmark
-                      : Icons.check_rounded,
-                )
-              : null,
-          onTap: () => Navigator.pop(context, id),
-        ),
-        if (showDivider)
-          Divider(
-            height: 1,
-            indent: 60,
-            endIndent: 20,
-            color: cs.outlineVariant.withValues(alpha: 0.3),
-          ),
-      ],
     );
   }
 
