@@ -812,9 +812,6 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
     if (_isConverting) return;
     _setState(() => _isConverting = true);
     final losslessLabels = context.l10n.losslessConversionLabels;
-    String? coverPath;
-    String? safTempPath;
-    String? convertedSafTempPath;
 
     try {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -825,260 +822,51 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
       final shouldEmbedLyrics =
           settings.embedLyrics && settings.lyricsMode != 'external';
       final metadata = _buildFallbackMetadata();
-      try {
-        final result = await PlatformBridge.readFileMetadata(cleanFilePath);
-        if (result['error'] == null) {
-          mergePlatformMetadataForTagEmbed(target: metadata, source: result);
-        } else {
-          _log.w('readFileMetadata returned error, using fallback metadata');
-        }
-      } catch (e) {
-        _log.w('readFileMetadata threw, using fallback metadata: $e');
-      }
-      await ensureLyricsMetadataForConversion(
+      final localItem = _localLibraryItem;
+      final result = await convertLibraryTrack(
+        filePath: cleanFilePath,
         metadata: metadata,
-        sourcePath: cleanFilePath,
-        shouldEmbedLyrics: shouldEmbedLyrics,
         trackName: trackName,
         artistName: artistName,
         spotifyId: _spotifyId ?? '',
         durationMs: (duration ?? 0) * 1000,
-      );
-
-      try {
-        final tempDir = await getTemporaryDirectory();
-        final coverOutput =
-            '${tempDir.path}${Platform.pathSeparator}convert_cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final coverResult = await PlatformBridge.extractCoverToFile(
-          cleanFilePath,
-          coverOutput,
-        );
-        if (coverResult['error'] == null) {
-          coverPath = coverOutput;
-        }
-      } catch (_) {}
-
-      String workingPath = cleanFilePath;
-      final isSaf = _isSafFile;
-
-      if (isSaf) {
-        safTempPath = await ConversionLibraryService.copySafSourceToTemp(
-          cleanFilePath,
-        );
-        if (safTempPath == null) {
-          if (mounted) {
-            _setState(() => _isConverting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(context.l10n.trackConvertFailed)),
-            );
-          }
-          return;
-        }
-        workingPath = safTempPath;
-      }
-
-      final newPath = await FFmpegService.convertAudioFormat(
-        inputPath: workingPath,
-        targetFormat: targetFormat.toLowerCase(),
-        bitrate: bitrate,
-        metadata: metadata,
-        coverPath: coverPath,
-        artistTagMode: ref.read(settingsProvider).artistTagMode,
-        deleteOriginal: !isSaf && !keepOriginal,
         sourceBitDepth: bitDepth,
+        sourceSampleRate: sampleRate,
+        historyItem: localItem == null ? _downloadItem : null,
+        localItem: localItem,
+        targetFormat: targetFormat,
+        bitrate: bitrate,
         losslessQuality: losslessQuality,
         losslessProcessing: losslessProcessing,
+        keepOriginal: keepOriginal,
+        shouldEmbedLyrics: shouldEmbedLyrics,
+        readArtistTagMode: () => ref.read(settingsProvider).artistTagMode,
+        losslessLabels: losslessLabels,
+        coverTempPrefix: 'convert_cover_',
+        treatEmptySafTempPathAsFailure: false,
+        historySafFileNameFallback: _extractFileNameFromPathOrUri(
+          cleanFilePath,
+        ),
+        eagerTempCleanup: true,
+        onPersisted: () => localItem == null
+            ? ref.read(downloadHistoryProvider.notifier).reloadFromStorage()
+            : ref.read(localLibraryProvider.notifier).reloadFromStorage(),
+        diagnosticsLog: _log,
+        onCleanupFailed: (path, error) =>
+            _log.w('Failed to clean conversion temp file $path: $error'),
       );
 
-      if (coverPath != null) {
-        try {
-          await File(coverPath).delete();
-        } catch (_) {}
+      if (!result.succeeded && !result.isPipelineFailure) {
+        Error.throwWithStackTrace(result.error!, result.stackTrace!);
       }
-
-      if (newPath == null) {
-        if (safTempPath != null) {
-          try {
-            await File(safTempPath).delete();
-          } catch (_) {}
-        }
-        if (mounted) {
-          _setState(() => _isConverting = false);
+      if (mounted) {
+        _setState(() => _isConverting = false);
+        if (!result.succeeded) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(context.l10n.trackConvertFailed)),
           );
-        }
-        return;
-      }
-      if (isSaf) convertedSafTempPath = newPath;
-
-      final isLosslessOutput = isLosslessConversionTarget(targetFormat);
-      int? convertedBitDepth;
-      int? convertedSampleRate;
-      if (isLosslessOutput) {
-        try {
-          final convertedMetadata = await PlatformBridge.readFileMetadata(
-            newPath,
-          );
-          if (convertedMetadata['error'] == null) {
-            convertedBitDepth = readPositiveInt(convertedMetadata['bit_depth']);
-            convertedSampleRate = readPositiveInt(
-              convertedMetadata['sample_rate'],
-            );
-          }
-        } catch (_) {}
-        convertedBitDepth ??= losslessQuality.effectiveBitDepth(bitDepth);
-        convertedSampleRate ??= losslessQuality.effectiveSampleRate(sampleRate);
-      }
-      final newQuality = convertedAudioQualityLabel(
-        targetFormat: targetFormat,
-        bitrate: bitrate,
-        labels: losslessLabels,
-        losslessQuality: losslessQuality,
-        actualBitDepth: convertedBitDepth,
-        actualSampleRate: convertedSampleRate,
-      );
-
-      if (isSaf) {
-        String? treeUri;
-        String relativeDir = '';
-        String oldFileName = '';
-        if (_isLocalItem) {
-          final location = resolveSafDocumentLocation(cleanFilePath);
-          if (location != null) {
-            treeUri = location.treeUri;
-            relativeDir = location.relativeDir;
-            oldFileName = location.fileName;
-          }
-        } else {
-          treeUri = _downloadItem?.downloadTreeUri;
-          relativeDir = _downloadItem?.safRelativeDir ?? '';
-          oldFileName =
-              (_downloadItem?.safFileName != null &&
-                  _downloadItem!.safFileName!.isNotEmpty)
-              ? _downloadItem!.safFileName!
-              : _extractFileNameFromPathOrUri(cleanFilePath);
-        }
-        if (treeUri == null || treeUri.isEmpty) {
-          try {
-            await File(newPath).delete();
-          } catch (_) {}
-          if (safTempPath != null) {
-            try {
-              await File(safTempPath).delete();
-            } catch (_) {}
-          }
-          if (mounted) {
-            _setState(() => _isConverting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(context.l10n.trackConvertFailed)),
-            );
-          }
           return;
         }
-
-        final published = await ConversionLibraryService.publishSafConversion(
-          treeUri: treeUri,
-          relativeDir: relativeDir,
-          originalFileName: oldFileName,
-          targetFormat: targetFormat,
-          sourcePath: newPath,
-          keepOriginal: keepOriginal,
-        );
-        final safUri = published?.uri;
-
-        if (safUri == null || safUri.isEmpty) {
-          try {
-            await File(newPath).delete();
-          } catch (_) {}
-          if (safTempPath != null) {
-            try {
-              await File(safTempPath).delete();
-            } catch (_) {}
-          }
-          if (mounted) {
-            _setState(() => _isConverting = false);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(context.l10n.trackConvertFailed)),
-            );
-          }
-          return;
-        }
-
-        if (!keepOriginal && !isSameContentUri(cleanFilePath, safUri)) {
-          final deletedOriginal = await PlatformBridge.safDelete(
-            cleanFilePath,
-          ).catchError((_) => false);
-          if (deletedOriginal != true) {
-            _log.w(
-              'Converted SAF file created but failed deleting original URI',
-            );
-          }
-        }
-
-        if (!_isLocalItem) {
-          await ConversionLibraryService.persistHistoryConversion(
-            source: _downloadItem!,
-            newFilePath: safUri,
-            newQuality: newQuality,
-            targetFormat: targetFormat,
-            bitrate: bitrate,
-            bitDepth: convertedBitDepth,
-            sampleRate: convertedSampleRate,
-            keepOriginal: keepOriginal,
-            newSafFileName: published!.fileName,
-          );
-          await ref.read(downloadHistoryProvider.notifier).reloadFromStorage();
-        } else {
-          await LibraryDatabase.instance.replaceWithConvertedItem(
-            item: _localLibraryItem!,
-            newFilePath: safUri,
-            targetFormat: targetFormat,
-            bitrate: bitrate,
-            bitDepth: convertedBitDepth,
-            sampleRate: convertedSampleRate,
-            keepOriginal: keepOriginal,
-          );
-          await ref.read(localLibraryProvider.notifier).reloadFromStorage();
-        }
-
-        try {
-          await File(newPath).delete();
-        } catch (_) {}
-        if (safTempPath != null) {
-          try {
-            await File(safTempPath).delete();
-          } catch (_) {}
-        }
-      } else {
-        if (!_isLocalItem) {
-          await ConversionLibraryService.persistHistoryConversion(
-            source: _downloadItem!,
-            newFilePath: newPath,
-            newQuality: newQuality,
-            targetFormat: targetFormat,
-            bitrate: bitrate,
-            bitDepth: convertedBitDepth,
-            sampleRate: convertedSampleRate,
-            keepOriginal: keepOriginal,
-          );
-          await ref.read(downloadHistoryProvider.notifier).reloadFromStorage();
-        } else {
-          await LibraryDatabase.instance.replaceWithConvertedItem(
-            item: _localLibraryItem!,
-            newFilePath: newPath,
-            targetFormat: targetFormat,
-            bitrate: bitrate,
-            bitDepth: convertedBitDepth,
-            sampleRate: convertedSampleRate,
-            keepOriginal: keepOriginal,
-          );
-          await ref.read(localLibraryProvider.notifier).reloadFromStorage();
-        }
-      }
-
-      if (mounted) {
-        _setState(() => _isConverting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.trackConvertSuccess(targetFormat)),
@@ -1096,20 +884,6 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
             ),
           ),
         );
-      }
-    } finally {
-      for (final path in <String?>[
-        coverPath,
-        safTempPath,
-        convertedSafTempPath,
-      ]) {
-        if (path == null || path.isEmpty) continue;
-        try {
-          final file = File(path);
-          if (await file.exists()) await file.delete();
-        } catch (error) {
-          _log.w('Failed to clean conversion temp file $path: $error');
-        }
       }
     }
   }

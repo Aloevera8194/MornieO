@@ -14,7 +14,6 @@ import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/re_enrich_review_sheet.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/services/conversion_library_service.dart';
 import 'package:spotiflac_android/services/deleted_library_files.dart';
 import 'package:spotiflac_android/services/file_access_check.dart';
 import 'package:spotiflac_android/services/network_storage_service.dart';
@@ -70,6 +69,8 @@ import 'package:spotiflac_android/widgets/open_on_platform_sheet.dart';
 import 'package:spotiflac_android/widgets/metadata_barcode.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/constants/music_services.dart';
+import 'package:spotiflac_android/controllers/batch_track_actions.dart'
+    show convertLibraryTrack;
 import 'package:spotiflac_android/screens/collapsing_header_scroll_mixin.dart';
 import 'package:spotiflac_android/screens/track_metadata_edit_sheet.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';

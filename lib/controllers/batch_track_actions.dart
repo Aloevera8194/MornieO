@@ -37,6 +37,32 @@ class _BatchConversionFailure implements Exception {
   String toString() => '$stage: $message';
 }
 
+/// Outcome of [convertLibraryTrack]: success, a checked pipeline failure
+/// (no SAF copy, no converter output, no SAF destination), or a thrown error.
+class LibraryTrackConversionResult {
+  const LibraryTrackConversionResult._({
+    this.failureStage,
+    this.error,
+    this.stackTrace,
+  });
+
+  const LibraryTrackConversionResult.success() : this._();
+
+  /// Pipeline stage that was running when the conversion failed.
+  final String? failureStage;
+  final Object? error;
+  final StackTrace? stackTrace;
+
+  bool get succeeded => error == null;
+
+  /// Whether the failure is a checked pipeline outcome, not a thrown error.
+  bool get isPipelineFailure => error is _BatchConversionFailure;
+
+  /// `stage: message` summary of the failure.
+  String get failureDetail =>
+      isPipelineFailure ? error.toString() : '$failureStage: $error';
+}
+
 /// Shows the batch format-conversion sheet for [selectedItems] and runs the
 /// conversion when confirmed. Handles both history-backed and local-backed
 /// items, including SAF-hosted files.
@@ -244,276 +270,51 @@ Future<void> _performBatchConversion(
 
     BatchProgressDialog.update(current: i + 1, detail: item.trackName);
 
-    String failureStage = 'metadata';
-    String? coverPath;
-    String? safTempPath;
-    String? convertedSafTempPath;
-    try {
-      final metadata = <String, String>{
+    final result = await convertLibraryTrack(
+      filePath: item.filePath,
+      metadata: <String, String>{
         'TITLE': item.trackName,
         'ARTIST': item.artistName,
         'ALBUM': item.albumName,
         if (item.historyItem?.explicit == true ||
             item.localItem?.explicit == true)
           'ITUNESADVISORY': '1',
-      };
-      try {
-        final result = await PlatformBridge.readFileMetadata(item.filePath);
-        if (result['error'] == null) {
-          mergePlatformMetadataForTagEmbed(target: metadata, source: result);
-        }
-      } catch (_) {}
-      await ensureLyricsMetadataForConversion(
-        metadata: metadata,
-        sourcePath: item.filePath,
-        shouldEmbedLyrics: shouldEmbedLyrics,
-        trackName: item.trackName,
-        artistName: item.artistName,
-        spotifyId: item.historyItem?.spotifyId ?? '',
-        durationMs:
-            ((item.historyItem?.duration ?? item.localItem?.duration) ?? 0) *
-            1000,
-      );
+      },
+      trackName: item.trackName,
+      artistName: item.artistName,
+      spotifyId: item.historyItem?.spotifyId ?? '',
+      durationMs:
+          ((item.historyItem?.duration ?? item.localItem?.duration) ?? 0) *
+          1000,
+      sourceBitDepth: item.historyItem?.bitDepth ?? item.localItem?.bitDepth,
+      sourceSampleRate:
+          item.historyItem?.sampleRate ?? item.localItem?.sampleRate,
+      historyItem: item.historyItem,
+      localItem: item.localItem,
+      targetFormat: targetFormat,
+      bitrate: bitrate,
+      losslessQuality: losslessQuality,
+      losslessProcessing: losslessProcessing,
+      keepOriginal: keepOriginal,
+      shouldEmbedLyrics: shouldEmbedLyrics,
+      readArtistTagMode: () => settings.artistTagMode,
+      losslessLabels: losslessLabels,
+      coverTempPrefix: 'batch_cover_',
+      treatEmptySafTempPathAsFailure: true,
+      onCleanupFailed: (path, error) =>
+          _batchActionsLog.w('Failed to clean temporary file $path: $error'),
+    );
 
-      try {
-        final tempDir = await getTemporaryDirectory();
-        final coverOutput =
-            '${tempDir.path}${Platform.pathSeparator}batch_cover_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final coverResult = await PlatformBridge.extractCoverToFile(
-          item.filePath,
-          coverOutput,
-        );
-        if (coverResult['error'] == null) {
-          coverPath = coverOutput;
-        }
-      } catch (_) {}
-
-      String workingPath = item.filePath;
-      final isSaf = isContentUri(item.filePath);
-
-      if (isSaf) {
-        failureStage = 'read SAF source';
-        safTempPath = await ConversionLibraryService.copySafSourceToTemp(
-          item.filePath,
-        );
-        if (safTempPath == null || safTempPath.isEmpty) {
-          throw const _BatchConversionFailure(
-            'read SAF source',
-            'temporary copy was not created',
-          );
-        }
-        workingPath = safTempPath;
-      }
-
-      failureStage = 'FFmpeg conversion';
-      final newPath = await FFmpegService.convertAudioFormat(
-        inputPath: workingPath,
-        targetFormat: targetFormat.toLowerCase(),
-        bitrate: bitrate,
-        metadata: metadata,
-        coverPath: coverPath,
-        artistTagMode: settings.artistTagMode,
-        deleteOriginal: !isSaf && !keepOriginal,
-        sourceBitDepth: item.historyItem?.bitDepth ?? item.localItem?.bitDepth,
-        losslessQuality: losslessQuality,
-        losslessProcessing: losslessProcessing,
-      );
-
-      if (newPath == null) {
-        throw const _BatchConversionFailure(
-          'FFmpeg conversion',
-          'converter returned no output',
-        );
-      }
-      if (isSaf) convertedSafTempPath = newPath;
-
-      final sourceBitDepth =
-          item.historyItem?.bitDepth ?? item.localItem?.bitDepth;
-      final sourceSampleRate =
-          item.historyItem?.sampleRate ?? item.localItem?.sampleRate;
-      final isLosslessOutput = isLosslessConversionTarget(targetFormat);
-      int? convertedBitDepth;
-      int? convertedSampleRate;
-      if (isLosslessOutput) {
-        try {
-          final convertedMetadata = await PlatformBridge.readFileMetadata(
-            newPath,
-          );
-          if (convertedMetadata['error'] == null) {
-            convertedBitDepth = readPositiveInt(convertedMetadata['bit_depth']);
-            convertedSampleRate = readPositiveInt(
-              convertedMetadata['sample_rate'],
-            );
-          }
-        } catch (_) {}
-        convertedBitDepth ??= losslessQuality.effectiveBitDepth(sourceBitDepth);
-        convertedSampleRate ??= losslessQuality.effectiveSampleRate(
-          sourceSampleRate,
-        );
-      }
-      final newQuality = convertedAudioQualityLabel(
-        targetFormat: targetFormat,
-        bitrate: bitrate,
-        labels: losslessLabels,
-        losslessQuality: losslessQuality,
-        actualBitDepth: convertedBitDepth,
-        actualSampleRate: convertedSampleRate,
-      );
-
-      if (isSaf && item.historyItem != null) {
-        failureStage = 'publish SAF output';
-        final hi = item.historyItem!;
-        final treeUri = hi.downloadTreeUri;
-        final relativeDir = hi.safRelativeDir ?? '';
-        if (treeUri != null && treeUri.isNotEmpty) {
-          final oldFileName = hi.safFileName ?? '';
-          final published = await ConversionLibraryService.publishSafConversion(
-            treeUri: treeUri,
-            relativeDir: relativeDir,
-            originalFileName: oldFileName,
-            targetFormat: targetFormat,
-            sourcePath: newPath,
-            keepOriginal: keepOriginal,
-          );
-          final safUri = published?.uri;
-
-          if (safUri == null || safUri.isEmpty) {
-            throw const _BatchConversionFailure(
-              'publish SAF output',
-              'destination file was not created',
-            );
-          }
-
-          if (!keepOriginal && !isSameContentUri(item.filePath, safUri)) {
-            try {
-              await PlatformBridge.safDelete(item.filePath);
-            } catch (_) {}
-          }
-
-          await ConversionLibraryService.persistHistoryConversion(
-            source: hi,
-            newFilePath: safUri,
-            newQuality: newQuality,
-            targetFormat: targetFormat,
-            bitrate: bitrate,
-            bitDepth: convertedBitDepth,
-            sampleRate: convertedSampleRate,
-            keepOriginal: keepOriginal,
-            newSafFileName: published!.fileName,
-          );
-        } else {
-          throw const _BatchConversionFailure(
-            'publish SAF output',
-            'download folder permission is unavailable',
-          );
-        }
-        try {
-          await File(newPath).delete();
-        } catch (_) {}
-        if (safTempPath != null) {
-          try {
-            await File(safTempPath).delete();
-          } catch (_) {}
-        }
-      } else if (isSaf && item.localItem != null) {
-        failureStage = 'publish SAF output';
-        final location = resolveSafDocumentLocation(item.filePath);
-
-        if (location != null) {
-          final published = await ConversionLibraryService.publishSafConversion(
-            treeUri: location.treeUri,
-            relativeDir: location.relativeDir,
-            originalFileName: location.fileName,
-            targetFormat: targetFormat,
-            sourcePath: newPath,
-            keepOriginal: keepOriginal,
-          );
-          final safUri = published?.uri;
-
-          if (safUri == null || safUri.isEmpty) {
-            throw const _BatchConversionFailure(
-              'publish SAF output',
-              'destination file was not created',
-            );
-          }
-
-          if (!keepOriginal && !isSameContentUri(item.filePath, safUri)) {
-            try {
-              await PlatformBridge.safDelete(item.filePath);
-            } catch (_) {}
-          }
-          await LibraryDatabase.instance.replaceWithConvertedItem(
-            item: item.localItem!,
-            newFilePath: safUri,
-            targetFormat: targetFormat,
-            bitrate: bitrate,
-            bitDepth: convertedBitDepth,
-            sampleRate: convertedSampleRate,
-            keepOriginal: keepOriginal,
-          );
-        } else {
-          throw const _BatchConversionFailure(
-            'publish SAF output',
-            'source document location could not be resolved',
-          );
-        }
-
-        try {
-          await File(newPath).delete();
-        } catch (_) {}
-        if (safTempPath != null) {
-          try {
-            await File(safTempPath).delete();
-          } catch (_) {}
-        }
-      } else if (item.historyItem != null) {
-        await ConversionLibraryService.persistHistoryConversion(
-          source: item.historyItem!,
-          newFilePath: newPath,
-          newQuality: newQuality,
-          targetFormat: targetFormat,
-          bitrate: bitrate,
-          bitDepth: convertedBitDepth,
-          sampleRate: convertedSampleRate,
-          keepOriginal: keepOriginal,
-        );
-      } else if (item.localItem != null) {
-        await LibraryDatabase.instance.replaceWithConvertedItem(
-          item: item.localItem!,
-          newFilePath: newPath,
-          targetFormat: targetFormat,
-          bitrate: bitrate,
-          bitDepth: convertedBitDepth,
-          sampleRate: convertedSampleRate,
-          keepOriginal: keepOriginal,
-        );
-      }
-
+    if (result.succeeded) {
       successCount++;
-    } catch (error, stackTrace) {
-      final detail = error is _BatchConversionFailure
-          ? error.toString()
-          : '$failureStage: $error';
+    } else {
+      final detail = result.failureDetail;
       failures.add('${item.trackName} — $detail');
       _batchActionsLog.e(
-        'Batch conversion failed for ${item.trackName} at $failureStage',
-        error,
-        stackTrace,
+        'Batch conversion failed for ${item.trackName} at ${result.failureStage}',
+        result.error,
+        result.stackTrace,
       );
-    } finally {
-      for (final path in <String?>[
-        coverPath,
-        safTempPath,
-        convertedSafTempPath,
-      ]) {
-        if (path == null || path.isEmpty) continue;
-        try {
-          final file = File(path);
-          if (await file.exists()) await file.delete();
-        } catch (error) {
-          _batchActionsLog.w('Failed to clean temporary file $path: $error');
-        }
-      }
     }
   }
 
@@ -536,6 +337,321 @@ Future<void> _performBatchConversion(
       ),
     );
   }
+}
+
+/// Converts the track at [filePath] to [targetFormat], publishes SAF output
+/// and records the result on [historyItem] or [localItem] (with neither, the
+/// converted file is not recorded). Temporary files are removed before this
+/// returns. Shared by batch conversion and the track metadata screen.
+///
+/// [metadata] holds the caller's fallback tags and is completed from the
+/// file. [readArtistTagMode] is read when FFmpeg starts.
+/// [coverTempPrefix] names the extracted cover in the temp directory.
+/// [treatEmptySafTempPathAsFailure] also fails an empty SAF temp copy path.
+/// [historySafFileNameFallback] is the original SAF file name used when
+/// [historyItem] has none. [eagerTempCleanup] deletes the cover right after
+/// FFmpeg and the temp files before each checked failure, not only at the
+/// end. [onPersisted] runs right after the history or library row is written.
+/// [diagnosticsLog] receives metadata fallback and SAF original delete
+/// warnings. [onCleanupFailed] reports a temp file that could not be deleted.
+Future<LibraryTrackConversionResult> convertLibraryTrack({
+  required String filePath,
+  required Map<String, String> metadata,
+  required String trackName,
+  required String artistName,
+  required String spotifyId,
+  required int durationMs,
+  required int? sourceBitDepth,
+  required int? sourceSampleRate,
+  required DownloadHistoryItem? historyItem,
+  required LocalLibraryItem? localItem,
+  required String targetFormat,
+  required String bitrate,
+  required LosslessConversionQuality losslessQuality,
+  required LosslessConversionProcessing losslessProcessing,
+  required bool keepOriginal,
+  required bool shouldEmbedLyrics,
+  required String Function() readArtistTagMode,
+  required LosslessConversionLabels losslessLabels,
+  required String coverTempPrefix,
+  required bool treatEmptySafTempPathAsFailure,
+  String historySafFileNameFallback = '',
+  bool eagerTempCleanup = false,
+  Future<void> Function()? onPersisted,
+  AppLogger? diagnosticsLog,
+  required void Function(String path, Object error) onCleanupFailed,
+}) async {
+  String failureStage = 'metadata';
+  String? coverPath;
+  String? safTempPath;
+  String? convertedSafTempPath;
+
+  Future<void> cleanUpEagerly(List<String?> paths) async {
+    if (!eagerTempCleanup) return;
+    for (final path in paths) {
+      if (path != null) await _deleteFileQuietly(path);
+    }
+  }
+
+  try {
+    try {
+      final result = await PlatformBridge.readFileMetadata(filePath);
+      if (result['error'] == null) {
+        mergePlatformMetadataForTagEmbed(target: metadata, source: result);
+      } else {
+        diagnosticsLog?.w(
+          'readFileMetadata returned error, using fallback metadata',
+        );
+      }
+    } catch (e) {
+      diagnosticsLog?.w('readFileMetadata threw, using fallback metadata: $e');
+    }
+    await ensureLyricsMetadataForConversion(
+      metadata: metadata,
+      sourcePath: filePath,
+      shouldEmbedLyrics: shouldEmbedLyrics,
+      trackName: trackName,
+      artistName: artistName,
+      spotifyId: spotifyId,
+      durationMs: durationMs,
+    );
+
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final coverOutput =
+          '${tempDir.path}${Platform.pathSeparator}$coverTempPrefix${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final coverResult = await PlatformBridge.extractCoverToFile(
+        filePath,
+        coverOutput,
+      );
+      if (coverResult['error'] == null) {
+        coverPath = coverOutput;
+      }
+    } catch (_) {}
+
+    String workingPath = filePath;
+    final isSaf = isContentUri(filePath);
+
+    if (isSaf) {
+      failureStage = 'read SAF source';
+      safTempPath = await ConversionLibraryService.copySafSourceToTemp(
+        filePath,
+      );
+      if (safTempPath == null ||
+          (treatEmptySafTempPathAsFailure && safTempPath.isEmpty)) {
+        throw const _BatchConversionFailure(
+          'read SAF source',
+          'temporary copy was not created',
+        );
+      }
+      workingPath = safTempPath;
+    }
+
+    failureStage = 'FFmpeg conversion';
+    final newPath = await FFmpegService.convertAudioFormat(
+      inputPath: workingPath,
+      targetFormat: targetFormat.toLowerCase(),
+      bitrate: bitrate,
+      metadata: metadata,
+      coverPath: coverPath,
+      artistTagMode: readArtistTagMode(),
+      deleteOriginal: !isSaf && !keepOriginal,
+      sourceBitDepth: sourceBitDepth,
+      losslessQuality: losslessQuality,
+      losslessProcessing: losslessProcessing,
+    );
+    await cleanUpEagerly([coverPath]);
+
+    if (newPath == null) {
+      await cleanUpEagerly([safTempPath]);
+      throw const _BatchConversionFailure(
+        'FFmpeg conversion',
+        'converter returned no output',
+      );
+    }
+    if (isSaf) convertedSafTempPath = newPath;
+
+    final isLosslessOutput = isLosslessConversionTarget(targetFormat);
+    int? convertedBitDepth;
+    int? convertedSampleRate;
+    if (isLosslessOutput) {
+      try {
+        final convertedMetadata = await PlatformBridge.readFileMetadata(
+          newPath,
+        );
+        if (convertedMetadata['error'] == null) {
+          convertedBitDepth = readPositiveInt(convertedMetadata['bit_depth']);
+          convertedSampleRate = readPositiveInt(
+            convertedMetadata['sample_rate'],
+          );
+        }
+      } catch (_) {}
+      convertedBitDepth ??= losslessQuality.effectiveBitDepth(sourceBitDepth);
+      convertedSampleRate ??= losslessQuality.effectiveSampleRate(
+        sourceSampleRate,
+      );
+    }
+    final newQuality = convertedAudioQualityLabel(
+      targetFormat: targetFormat,
+      bitrate: bitrate,
+      labels: losslessLabels,
+      losslessQuality: losslessQuality,
+      actualBitDepth: convertedBitDepth,
+      actualSampleRate: convertedSampleRate,
+    );
+
+    Future<({String uri, String fileName})> publishSafOutput({
+      required String treeUri,
+      required String relativeDir,
+      required String originalFileName,
+    }) async {
+      final published = await ConversionLibraryService.publishSafConversion(
+        treeUri: treeUri,
+        relativeDir: relativeDir,
+        originalFileName: originalFileName,
+        targetFormat: targetFormat,
+        sourcePath: newPath,
+        keepOriginal: keepOriginal,
+      );
+      final safUri = published?.uri;
+
+      if (safUri == null || safUri.isEmpty) {
+        await cleanUpEagerly([newPath, safTempPath]);
+        throw const _BatchConversionFailure(
+          'publish SAF output',
+          'destination file was not created',
+        );
+      }
+
+      if (!keepOriginal && !isSameContentUri(filePath, safUri)) {
+        final deletedOriginal = await PlatformBridge.safDelete(
+          filePath,
+        ).catchError((_) => false);
+        if (deletedOriginal != true) {
+          diagnosticsLog?.w(
+            'Converted SAF file created but failed deleting original URI',
+          );
+        }
+      }
+      return published!;
+    }
+
+    if (isSaf && historyItem != null) {
+      failureStage = 'publish SAF output';
+      final treeUri = historyItem.downloadTreeUri;
+      if (treeUri != null && treeUri.isNotEmpty) {
+        final safFileName = historyItem.safFileName;
+        final published = await publishSafOutput(
+          treeUri: treeUri,
+          relativeDir: historyItem.safRelativeDir ?? '',
+          originalFileName: safFileName != null && safFileName.isNotEmpty
+              ? safFileName
+              : historySafFileNameFallback,
+        );
+        await ConversionLibraryService.persistHistoryConversion(
+          source: historyItem,
+          newFilePath: published.uri,
+          newQuality: newQuality,
+          targetFormat: targetFormat,
+          bitrate: bitrate,
+          bitDepth: convertedBitDepth,
+          sampleRate: convertedSampleRate,
+          keepOriginal: keepOriginal,
+          newSafFileName: published.fileName,
+        );
+        await onPersisted?.call();
+      } else {
+        await cleanUpEagerly([newPath, safTempPath]);
+        throw const _BatchConversionFailure(
+          'publish SAF output',
+          'download folder permission is unavailable',
+        );
+      }
+      await _deleteFileQuietly(newPath);
+      if (safTempPath != null) await _deleteFileQuietly(safTempPath);
+    } else if (isSaf && localItem != null) {
+      failureStage = 'publish SAF output';
+      final location = resolveSafDocumentLocation(filePath);
+
+      if (location != null) {
+        final published = await publishSafOutput(
+          treeUri: location.treeUri,
+          relativeDir: location.relativeDir,
+          originalFileName: location.fileName,
+        );
+        await LibraryDatabase.instance.replaceWithConvertedItem(
+          item: localItem,
+          newFilePath: published.uri,
+          targetFormat: targetFormat,
+          bitrate: bitrate,
+          bitDepth: convertedBitDepth,
+          sampleRate: convertedSampleRate,
+          keepOriginal: keepOriginal,
+        );
+        await onPersisted?.call();
+      } else {
+        await cleanUpEagerly([newPath, safTempPath]);
+        throw const _BatchConversionFailure(
+          'publish SAF output',
+          'source document location could not be resolved',
+        );
+      }
+
+      await _deleteFileQuietly(newPath);
+      if (safTempPath != null) await _deleteFileQuietly(safTempPath);
+    } else if (historyItem != null) {
+      await ConversionLibraryService.persistHistoryConversion(
+        source: historyItem,
+        newFilePath: newPath,
+        newQuality: newQuality,
+        targetFormat: targetFormat,
+        bitrate: bitrate,
+        bitDepth: convertedBitDepth,
+        sampleRate: convertedSampleRate,
+        keepOriginal: keepOriginal,
+      );
+      await onPersisted?.call();
+    } else if (localItem != null) {
+      await LibraryDatabase.instance.replaceWithConvertedItem(
+        item: localItem,
+        newFilePath: newPath,
+        targetFormat: targetFormat,
+        bitrate: bitrate,
+        bitDepth: convertedBitDepth,
+        sampleRate: convertedSampleRate,
+        keepOriginal: keepOriginal,
+      );
+      await onPersisted?.call();
+    }
+
+    return const LibraryTrackConversionResult.success();
+  } catch (error, stackTrace) {
+    return LibraryTrackConversionResult._(
+      failureStage: failureStage,
+      error: error,
+      stackTrace: stackTrace,
+    );
+  } finally {
+    for (final path in <String?>[
+      coverPath,
+      safTempPath,
+      convertedSafTempPath,
+    ]) {
+      if (path == null || path.isEmpty) continue;
+      try {
+        final file = File(path);
+        if (await file.exists()) await file.delete();
+      } catch (error) {
+        onCleanupFailed(path, error);
+      }
+    }
+  }
+}
+
+Future<void> _deleteFileQuietly(String path) async {
+  try {
+    await File(path).delete();
+  } catch (_) {}
 }
 
 /// Adds or removes ReplayGain tags for [selectedItems].
