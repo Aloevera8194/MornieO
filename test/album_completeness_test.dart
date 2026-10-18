@@ -139,7 +139,7 @@ print('inventory passed')
 ''',
         jsonEncode({
           'history': _tableDefinition(
-            'lib/services/history_database.dart',
+            'lib/services/history_schema.dart',
             'history',
           ),
           'library': _tableDefinition(

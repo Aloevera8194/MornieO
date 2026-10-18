@@ -94,7 +94,7 @@ void main() {
       'NativeHistoryStore.kt',
     ).readAsStringSync();
     final historyDatabaseSource = File(
-      'lib/services/history_database.dart',
+      'lib/services/history_schema.dart',
     ).readAsStringSync();
     final workerSnapshotSource = File(
       'android/app/src/main/kotlin/com/zarz/spotiflac/'

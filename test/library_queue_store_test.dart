@@ -118,7 +118,7 @@ void main() {
     await db.execute("ATTACH DATABASE ':memory:' AS history_db");
     final definition = RegExp(r'CREATE TABLE history\s*\([\s\S]*?\n\s*\)')
         .firstMatch(
-          File('lib/services/history_database.dart').readAsStringSync(),
+          File('lib/services/history_schema.dart').readAsStringSync(),
         )!
         .group(0)!;
     await db.execute(
