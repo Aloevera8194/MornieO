@@ -90,76 +90,12 @@ internal fun MainActivity.loadExistingFilesFromSnapshot(snapshotPath: String): M
         return result
     }
 
-    /**
-     * Extract the audio filename referenced by a CUE sheet file.
-     * Reads the FILE "name" TYPE line from the .cue text.
-     * Returns just the filename (no path), or null if not found.
-     */
-internal fun MainActivity.extractCueAudioFileName(cueTempPath: String): String? {
-        try {
-            val lines = File(cueTempPath).readLines()
-            for (line in lines) {
-                val trimmed = line.trim().let { l ->
-                    if (l.startsWith("\uFEFF")) l.removePrefix("\uFEFF").trim() else l
-                }
-                if (trimmed.uppercase(Locale.ROOT).startsWith("FILE ")) {
-                    val rest = trimmed.substring(5).trim()
-                    val filename = if (rest.startsWith("\"")) {
-                        val endQuote = rest.indexOf('"', 1)
-                        if (endQuote > 0) rest.substring(1, endQuote) else rest
-                    } else {
-                        val parts = rest.split("\\s+".toRegex())
-                        if (parts.size >= 2) parts.dropLast(1).joinToString(" ") else rest
-                    }
-                    return filename.substringAfterLast("/").substringAfterLast("\\")
-                }
-            }
-        } catch (e: Exception) {
-            android.util.Log.w("SpotiFLAC", "Failed to extract audio filename from CUE: ${e.message}")
-        }
-        return null
-    }
-
-    private val cueSiblingAudioExtensions = listOf(
-        ".flac", ".wav", ".ape", ".mp3", ".ogg", ".wv", ".m4a", ".mp4", ".aac"
-    )
-
     // Keep the SAF folder walk aligned with the backend's supported audio formats.
     // CUE files are handled separately.
     private val libraryScanAudioExtensions = setOf(
         ".flac", ".m4a", ".mp4", ".aac", ".mp3", ".opus", ".ogg",
         ".ape", ".wv", ".mpc", ".wav", ".aiff", ".aif", ".dsf", ".dff"
     )
-
-internal fun MainActivity.getSafChildFileLookup(
-        dir: DocumentFile,
-        cache: MutableMap<String, Map<String, DocumentFile>>,
-    ): Map<String, DocumentFile> {
-        val dirKey = dir.uri.toString()
-        return cache.getOrPut(dirKey) { safChildFileLookup(listSafChildrenOrThrow(dir)) }
-    }
-
-private fun safChildFileLookup(children: List<SafChildEntry>): Map<String, DocumentFile> =
-    buildMap {
-        for (child in children) {
-            if (child.isDirectory) continue
-            val childName = child.name?.trim().orEmpty()
-            if (childName.isBlank()) continue
-            put(childName.lowercase(Locale.ROOT), child.doc)
-        }
-    }
-
-/** Keeps a traversal listing for CUE sibling lookup so the directory is not
- * queried again; on network providers every listing is a round trip. */
-private fun rememberCueDirectoryListing(
-    dir: DocumentFile,
-    children: List<SafChildEntry>,
-    cache: MutableMap<String, Map<String, DocumentFile>>,
-) {
-    if (children.any { !it.isDirectory && it.name?.endsWith(".cue", ignoreCase = true) == true }) {
-        cache[dir.uri.toString()] = safChildFileLookup(children)
-    }
-}
 
 // Provider round trips dominate on SD cards, USB drives and network shares.
 private const val SAF_LIST_CONCURRENCY = 4
@@ -265,37 +201,6 @@ private fun <T, R> runSafReadsInOrder(
         executor.shutdownNow()
     }
 }
-
-internal fun MainActivity.resolveCueAudioSibling(
-        parentDir: DocumentFile,
-        cueName: String,
-        audioFileName: String?,
-        childLookupCache: MutableMap<String, Map<String, DocumentFile>>,
-    ): DocumentFile? {
-        val childLookup = getSafChildFileLookup(parentDir, childLookupCache)
-
-        val directMatch = audioFileName
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
-            ?.substringAfterLast("/")
-            ?.substringAfterLast("\\")
-            ?.lowercase(Locale.ROOT)
-            ?.let(childLookup::get)
-        if (directMatch != null) {
-            return directMatch
-        }
-
-        val cueBaseName = cueName.substringBeforeLast('.').trim()
-        if (cueBaseName.isBlank()) {
-            return null
-        }
-
-        val cueBaseKey = cueBaseName.lowercase(Locale.ROOT)
-        for (ext in cueSiblingAudioExtensions) {
-            childLookup["$cueBaseKey$ext"]?.let { return it }
-        }
-        return null
-    }
 
 internal data class SafChildEntry(
     val doc: DocumentFile,
