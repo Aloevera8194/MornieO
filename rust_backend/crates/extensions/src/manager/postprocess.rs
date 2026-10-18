@@ -1,3 +1,5 @@
+//! Extension manager post-processing: input types and running extension post-process hooks on files.
+
 use super::*;
 use crate::files::clean;
 use serde::{Deserialize, Serialize};

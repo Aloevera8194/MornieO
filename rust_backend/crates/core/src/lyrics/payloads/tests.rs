@@ -1,3 +1,5 @@
+//! Unit tests for lyric payload parsing and formatting.
+
 use super::*;
 
 #[test]

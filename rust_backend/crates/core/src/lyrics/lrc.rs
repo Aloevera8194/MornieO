@@ -1,3 +1,5 @@
+//! LRC lyrics parsing and helpers: timestamps, synced and plain text, and usability checks.
+
 use super::{LyricsLine, LyricsResponse};
 use crate::matching::lowercase;
 use base64::{Engine, engine::general_purpose::STANDARD};

@@ -1,3 +1,5 @@
+//! Built-in Apple Music and SpotiFLAC lyrics providers.
+
 use super::*;
 use crate::lyrics::http;
 use regex::Regex;

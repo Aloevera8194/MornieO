@@ -1,3 +1,5 @@
+//! HTTP client service with connection pooling, network options, and bounded response handling.
+
 mod headers;
 mod pool;
 mod stream;

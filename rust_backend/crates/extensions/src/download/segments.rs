@@ -1,3 +1,5 @@
+//! Segmented downloads: fetches a list of segments and assembles them into one output file.
+
 use super::segment_store::{SegmentFile, SegmentOutput};
 use super::{DownloadOptions, Failure, header, next_delay, retryable, status_failure};
 use crate::files::{ExtensionFiles, FilePath};

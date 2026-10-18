@@ -1,3 +1,5 @@
+//! Extension runtime: loads extension sources into a worker VM and runs calls under resource limits.
+
 use spotiflac_core::cancellation::{CancellationError, RequestLease};
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::{self, SyncSender, TrySendError};

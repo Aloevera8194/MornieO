@@ -1,3 +1,5 @@
+//! Signed session protocol helpers: manifest defaults, endpoint and challenge URLs, and stored records.
+
 use crate::manifest::SignedSession;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use hmac::{Hmac, KeyInit, Mac};

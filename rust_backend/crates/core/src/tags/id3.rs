@@ -1,3 +1,5 @@
+//! ID3v1 and ID3v2 tag reading: text frames, embedded cover art, and genre decoding.
+
 use super::{AudioMetadata, CoverArt, bytes, exact, pair, seek, truthy, utf8};
 use crate::matching::{lowercase, uppercase};
 use std::io::{self, Cursor, Read, Seek, SeekFrom};

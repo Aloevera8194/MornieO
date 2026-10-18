@@ -1,3 +1,5 @@
+//! In-memory cache for Deezer album, artist, and playlist responses, with in-flight request sharing.
+
 use super::{Check, DeezerClient, ResolverError};
 use spotiflac_core::metadata::{
     AlbumExtendedMetadata, AlbumResponsePayload, ArtistResponsePayload,

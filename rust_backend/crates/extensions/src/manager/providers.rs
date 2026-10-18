@@ -1,3 +1,5 @@
+//! Extension manager provider selection: priorities, fallback providers, and URL handler lookup.
+
 use super::*;
 use spotiflac_core::matching::lowercase;
 use std::collections::BTreeSet;

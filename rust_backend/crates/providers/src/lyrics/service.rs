@@ -1,3 +1,6 @@
+//! Lyrics service: runs the ordered provider list for a search request, coalesces identical
+//! in-flight requests, and caches negative results.
+
 use super::{CallGraph, CallNode, Check, LyricsError, cache::LyricsCache};
 use spotiflac_core::lyrics::{LyricsResponse, config, config::FetchOptions, matching};
 use spotiflac_core::matching::lowercase;

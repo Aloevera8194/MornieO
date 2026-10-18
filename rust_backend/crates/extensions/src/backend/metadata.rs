@@ -1,3 +1,5 @@
+//! Backend metadata options and operations: language and region settings, caches, and Deezer lookups.
+
 use super::Backend;
 use serde::Serialize;
 use serde_json::{Value, json};

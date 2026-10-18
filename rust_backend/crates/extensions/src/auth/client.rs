@@ -1,3 +1,5 @@
+//! Extension auth client: handles auth calls from extensions, including PKCE and callback state.
+
 use super::{AuthRegistry, PendingAuthRequest, callback_state, pkce_challenge, pkce_verifier};
 use serde_json::{Map, Value, json};
 use spotiflac_core::app_version::AppVersion;

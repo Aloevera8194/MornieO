@@ -1,3 +1,5 @@
+//! Extension manager metadata operations: availability checks, track enrichment, and provider search.
+
 use super::*;
 use serde::Deserialize;
 use spotiflac_core::cancellation::RequestLease;

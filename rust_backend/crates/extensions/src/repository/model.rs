@@ -1,3 +1,5 @@
+//! Repository index models: extension entries, tags, checksums, download URLs, and index parsing.
+
 use super::{RepositoryError, error};
 use crate::environment::compare_versions;
 use serde::{Deserialize, Deserializer, Serialize};

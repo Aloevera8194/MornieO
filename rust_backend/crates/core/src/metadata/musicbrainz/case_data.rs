@@ -1,3 +1,6 @@
+//! Frozen Unicode 15.0.0 character property ranges and case mappings used by the MusicBrainz
+//! title casing.
+
 // Generated and frozen. DO NOT EDIT.
 // Pinned to Unicode 15.0.0 (golang.org/x/text v0.41.0; see NOTICE) for matching
 // parity with the retired Go backend. It was generated once by a tool that is no

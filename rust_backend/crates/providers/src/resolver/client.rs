@@ -1,3 +1,5 @@
+//! Platform resolver chain that resolves tracks through link services, with rate limiting.
+
 use super::{
     Check, Metadata, Resolution, Resolver, ResolverError, add_source, check_active, urls, useful,
 };

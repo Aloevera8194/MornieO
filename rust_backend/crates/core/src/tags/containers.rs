@@ -1,3 +1,5 @@
+//! Container readers for FLAC and Ogg streams, including Ogg page and packet parsing.
+
 use super::{AudioMetadata, CoverArt, bytes, comments, exact, id3, seek, utf8};
 use base64::Engine;
 use std::collections::BTreeMap;

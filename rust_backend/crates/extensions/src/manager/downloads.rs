@@ -1,3 +1,5 @@
+//! Extension manager download support: request types, preflight checks, and the download engine pool.
+
 use super::*;
 use serde::Deserialize;
 

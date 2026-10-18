@@ -1,3 +1,5 @@
+//! Unit tests for the lyrics service.
+
 use super::*;
 use std::thread;
 

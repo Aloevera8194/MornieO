@@ -1,3 +1,5 @@
+//! Download metadata selection and application: host track data, identity matching, and preferred track ids.
+
 use super::matching::{duration_matches, exact_identity, matches_track, strong_identity};
 use crate::manifest::ExtensionManifest;
 use serde_json::Value;

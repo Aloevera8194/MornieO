@@ -1,3 +1,5 @@
+//! Unit tests for the extension runtime.
+
 use super::vm::Vm;
 use super::*;
 use std::sync::atomic::Ordering;

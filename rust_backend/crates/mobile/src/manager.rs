@@ -1,3 +1,6 @@
+//! Mobile `ExtensionManager` object: install and lifecycle, downloads, post-processing, metadata
+//! search, provider calls and priorities, URL handlers, and pending auth.
+
 use crate::cancellation::RequestLease;
 use crate::extensions::ExtensionEnvironment;
 use spotiflac_extensions::RuntimeLimits;

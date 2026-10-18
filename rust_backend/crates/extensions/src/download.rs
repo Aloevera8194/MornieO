@@ -1,3 +1,5 @@
+//! Native download engine for extensions: options, failure mapping, and chunked or segmented transfers.
+
 mod chunked;
 pub(crate) mod progress;
 mod segment_store;

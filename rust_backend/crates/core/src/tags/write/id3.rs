@@ -1,3 +1,5 @@
+//! ID3v2 tag writing: parses the existing header and builds or rewrites the tag frames.
+
 use super::{Fields, MAX_TAG_BYTES, bytes, cover_mime, edit_index, pair, seek};
 use crate::matching::uppercase;
 use crate::tags::id3::{decode, user_text};

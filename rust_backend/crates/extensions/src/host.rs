@@ -1,3 +1,5 @@
+//! Host function registration for the extension VM, plus storage bindings and Go-style UTF-8 decoding.
+
 use crate::runtime::{Control, ExtensionServices};
 use crate::storage::{StorageError, StoreKind};
 use base64::Engine;

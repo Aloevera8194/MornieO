@@ -1,3 +1,5 @@
+//! Backend audio tag editing: FLAC fields, file metadata, M4A freeform atoms, and AC-4 metadata.
+
 use super::Backend;
 use crate::files::ExtensionFiles;
 use cap_std::fs::{File, OpenOptions};

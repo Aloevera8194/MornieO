@@ -1,3 +1,5 @@
+//! Backend cover art handling: downloading, resizing, extracting from audio files, and caching.
+
 use super::Backend;
 use cap_std::fs::OpenOptions;
 use spotiflac_core::app_version::AppVersion;

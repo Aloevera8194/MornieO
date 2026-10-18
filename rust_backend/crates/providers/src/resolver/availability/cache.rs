@@ -1,3 +1,5 @@
+//! Cached track and album availability checks across streaming platforms, per region.
+
 use super::{
     AlbumAvailability, TrackAvailability, album, deezer_id_from_metadata, from_deezer, from_links,
     resolved_links,

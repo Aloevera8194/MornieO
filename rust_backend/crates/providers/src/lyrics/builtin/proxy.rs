@@ -1,3 +1,6 @@
+//! Built-in lyrics providers backed by proxy endpoints (Spotify, Deezer, YouTube, Netease,
+//! Musixmatch) and the Lyrics Plus (KPOE) servers.
+
 use super::*;
 use crate::lyrics::http;
 use spotiflac_core::lyrics::{decode_document, payloads};

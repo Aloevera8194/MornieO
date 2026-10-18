@@ -1,3 +1,5 @@
+//! Worker thread and JavaScript VM that compile extension sources and execute their calls.
+
 use super::{
     CallKind, Command, Control, ExtensionError, ExtensionServices, IDLE_GC_DELAY, LoadMode,
     MAX_INPUT_BYTES, Operation, RuntimeLimits, lifecycle_result, validate_json,

@@ -1,3 +1,5 @@
+//! Built-in lyrics providers that query their services directly (QQ Music, Kugou, Genius).
+
 use super::*;
 use crate::lyrics::http;
 use base64::{

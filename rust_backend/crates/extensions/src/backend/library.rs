@@ -1,3 +1,5 @@
+//! Backend operations for local library files: audio metadata reads and CUE sheet parsing and scanning.
+
 use super::Backend;
 use cap_std::fs::OpenOptions;
 use chrono::{SecondsFormat, Utc};

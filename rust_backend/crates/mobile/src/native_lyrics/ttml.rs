@@ -1,3 +1,5 @@
+//! TTML document parsing into timed lyric lines, words, and voices.
+
 use super::text::{WHITE_SPACE, parse_int, trim, trim_end, whitespace};
 use super::{Line, Parsed, Voice, Word, has_usable_timing};
 use roxmltree::{Document, Node};

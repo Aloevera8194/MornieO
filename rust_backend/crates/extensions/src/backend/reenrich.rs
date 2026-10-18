@@ -1,3 +1,5 @@
+//! Backend re-enrichment of an existing audio file with fresh metadata, cover art, and lyrics.
+
 use super::{Backend, LyricsRequest};
 use cap_std::fs::OpenOptions;
 use serde_json::json;

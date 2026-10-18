@@ -1,3 +1,6 @@
+//! Mobile audio tag and library entry points on `ExtensionManager`: metadata reads, CUE parsing,
+//! library scans and scan control, cover extraction and download, and tag writes.
+
 use crate::cancellation::RequestLease;
 use crate::manager::{ExtensionManager, ExtensionManagerError};
 use spotiflac_core::tags;

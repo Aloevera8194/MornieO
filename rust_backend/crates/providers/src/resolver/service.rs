@@ -1,3 +1,5 @@
+//! Platform resolver service that resolves URLs and Spotify tracks to other platforms, with caching.
+
 use super::{Check, Metadata, Resolution, Resolver, ResolverError, check_active};
 use crate::lyrics::{LyricsError, builtin::TrackResolver};
 use std::collections::BTreeMap;

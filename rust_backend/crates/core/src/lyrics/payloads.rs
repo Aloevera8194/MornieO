@@ -1,3 +1,5 @@
+//! Parsing and formatting of provider lyric payloads (PAX, Apple, proxy, and KPOE syllable formats).
+
 use super::{LyricsResponse, LyricsWord, json, lrc};
 use crate::json::{field_name, lenient_deserialize};
 use regex::Regex;

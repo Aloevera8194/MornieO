@@ -1,3 +1,5 @@
+//! Chunked (ranged) downloads with resume, retry delays, and total length detection.
+
 use super::store::DownloadFile;
 use super::{
     DownloadOptions, Failure, fingerprint, header, next_delay, retryable, set_header,

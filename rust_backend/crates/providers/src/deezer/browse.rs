@@ -1,3 +1,5 @@
+//! Deezer browse endpoints: album, artist, and playlist lookups.
+
 use super::{
     Check, DeezerClient, ResolverError,
     cache::{Bucket, Value},

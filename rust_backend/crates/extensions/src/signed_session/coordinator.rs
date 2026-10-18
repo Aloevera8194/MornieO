@@ -1,3 +1,5 @@
+//! Signed session coordination: shared in-flight requests and per-session challenge state.
+
 use super::{RecordStore, RuntimeHints, protocol};
 use crate::auth::{AuthRegistry, PendingAuthRequest};
 use crate::manifest::SignedSession;

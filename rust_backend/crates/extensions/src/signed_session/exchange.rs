@@ -1,3 +1,5 @@
+//! Signed session exchanges: preflight, bootstrap, grant completion, and token refresh.
+
 use super::coordinator::{Check, Flight, SignedSessionClient};
 use super::protocol::{self, Record};
 use crate::auth::{PendingAuthRequest, callback_state};
