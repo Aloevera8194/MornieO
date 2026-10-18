@@ -43,13 +43,13 @@ class _LogScreenState extends State<LogScreen> {
   void initState() {
     super.initState();
     LogBuffer().addListener(_onLogUpdate);
-    LogBuffer().startGoLogPolling();
+    LogBuffer().startNativeLogPolling();
   }
 
   @override
   void dispose() {
     LogBuffer().removeListener(_onLogUpdate);
-    LogBuffer().stopGoLogPolling();
+    LogBuffer().stopNativeLogPolling();
     _scrollController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -624,7 +624,7 @@ class _LogEntryTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (entry.isFromGo) ...[
+                      if (entry.isFromNative) ...[
                         const SizedBox(width: 4),
                         Container(
                           padding: const EdgeInsets.symmetric(

@@ -594,7 +594,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
         _log.e('Failed to flush expired iOS queue: $error');
       }),
     );
-    // The native expiration callback cancels Go synchronously before this
+    // The native expiration callback cancels the download synchronously before this
     // asynchronous event reaches Dart. If foregrounding won that race, still
     // requeue the cancelled item, then immediately let the running queue loop
     // continue instead of misclassifying it as a skipped download.

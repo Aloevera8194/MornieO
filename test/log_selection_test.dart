@@ -52,7 +52,7 @@ void main() {
         tag: 'Download',
         message: 'second',
         error: 'failed',
-        isFromGo: true,
+        isFromNative: true,
       ),
     ];
 

@@ -2334,7 +2334,7 @@ class PlatformBridge {
   }
 
   /// Streaming-platform links for a track, keyed by song.link platform ID.
-  /// Served from the Go-side memory cache; throws when the lookup fails.
+  /// Served from the native backend's memory cache; throws when the lookup fails.
   static Future<Map<String, String>> getTrackPlatformLinks({
     String spotifyId = '',
     String isrc = '',
@@ -2847,7 +2847,7 @@ class PlatformBridge {
     });
     if (result['success'] != true) return result;
 
-    // The Go/Rust result uses new_file_path; the queue consumes file_path.
+    // The native result uses new_file_path; the queue consumes file_path.
     // SAF publishes back to its document URI after processing a temporary file.
     final uri = result['new_file_uri'];
     final path = result['new_file_path'];

@@ -39,7 +39,7 @@ void main() {
     _startupBenchmark = _StartupBenchmark();
   }
   // Catch uncaught Dart errors so a failing async path is logged, not fatal.
-  // Native (Go) crashes still can't be caught here.
+  // Native backend crashes still can't be caught here.
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();

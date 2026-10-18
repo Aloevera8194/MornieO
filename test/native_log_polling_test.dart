@@ -21,7 +21,7 @@ void main() {
   const interval = Duration(milliseconds: 800);
 
   tearDown(() {
-    buffer.stopGoLogPolling();
+    buffer.stopNativeLogPolling();
     messenger.setMockMethodCallHandler(channel, null);
   });
 
@@ -39,12 +39,12 @@ void main() {
     buffer.clear();
     await tester.pump();
 
-    buffer.startGoLogPolling();
+    buffer.startNativeLogPolling();
     await tester.pump(interval);
     expect(indexes, [0]);
 
-    buffer.stopGoLogPolling();
-    buffer.startGoLogPolling();
+    buffer.stopNativeLogPolling();
+    buffer.startNativeLogPolling();
     await tester.pump(interval);
     expect(indexes, [0]);
 
@@ -58,7 +58,7 @@ void main() {
 
     await tester.pump(interval);
     expect(indexes, [0, 0, 4]);
-    buffer.stopGoLogPolling();
+    buffer.stopNativeLogPolling();
   });
 
   testWidgets('clear rejects old logs and waits for native cursor reset', (
@@ -81,7 +81,7 @@ void main() {
     buffer.clear();
     await tester.pump();
 
-    buffer.startGoLogPolling();
+    buffer.startNativeLogPolling();
     await tester.pump(interval);
     expect(indexes, [0]);
 
@@ -102,6 +102,6 @@ void main() {
 
     await tester.pump(interval);
     expect(indexes, [0, 0, 1]);
-    buffer.stopGoLogPolling();
+    buffer.stopNativeLogPolling();
   });
 }
