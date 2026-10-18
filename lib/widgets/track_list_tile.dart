@@ -5,7 +5,7 @@ import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
-import 'package:spotiflac_android/utils/local_playback.dart';
+import 'package:spotiflac_android/controllers/local_playback.dart';
 import 'package:spotiflac_android/widgets/audio_quality_badges.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 import 'package:spotiflac_android/widgets/in_library_badge.dart';

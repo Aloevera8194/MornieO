@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/app_localizations.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/extension_action_forms.dart';
+import 'package:spotiflac_android/controllers/extension_action_forms.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 
 import 'support/fixed_settings.dart';

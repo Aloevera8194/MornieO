@@ -11,7 +11,7 @@ import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/library_collections_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/cover_cache_manager.dart';
-import 'package:spotiflac_android/utils/local_playback.dart';
+import 'package:spotiflac_android/controllers/local_playback.dart';
 import 'package:spotiflac_android/widgets/playlist_picker_sheet.dart';
 import 'package:spotiflac_android/widgets/mornye_context_menu.dart';
 import 'package:share_plus/share_plus.dart';

@@ -38,7 +38,7 @@ import 'package:spotiflac_android/utils/ttl_cache.dart';
 import 'package:spotiflac_android/screens/album_screen.dart';
 import 'package:spotiflac_android/screens/extension_collection_screens.dart'
     show ExtensionAlbumScreen;
-import 'package:spotiflac_android/utils/local_playback.dart';
+import 'package:spotiflac_android/controllers/local_playback.dart';
 import 'package:spotiflac_android/widgets/download_service_picker.dart';
 import 'package:spotiflac_android/widgets/error_card.dart';
 import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
