@@ -216,22 +216,14 @@ class MainActivity: FlutterFragmentActivity() {
         payload.put("tree_uri", uri.toString())
         payload.put("display_name", resolveSafDisplayPath(uri))
         val storageId = resolveSafStorageId(uri)
-        val volume = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            getSystemService(StorageManager::class.java).storageVolumes.firstOrNull {
-                (storageId == "primary" && it.isPrimary) ||
-                    (!it.uuid.isNullOrBlank() && it.uuid.equals(storageId, ignoreCase = true))
-            }
-        } else {
-            null
+        val volume = getSystemService(StorageManager::class.java).storageVolumes.firstOrNull {
+            (storageId == "primary" && it.isPrimary) ||
+                (!it.uuid.isNullOrBlank() && it.uuid.equals(storageId, ignoreCase = true))
         }
         payload.put("volume_id", storageId ?: JSONObject.NULL)
         payload.put(
             "is_removable",
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                volume?.isRemovable ?: (storageId != null && storageId != "primary")
-            } else {
-                storageId != null && storageId != "primary"
-            },
+            volume?.isRemovable ?: (storageId != null && storageId != "primary"),
         )
         deliver(payload.toString())
     }
@@ -264,13 +256,9 @@ class MainActivity: FlutterFragmentActivity() {
             val prefix = if (storageId == "primary") {
                 "/storage/emulated/0"
             } else {
-                val volumeName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    getSystemService(StorageManager::class.java).storageVolumes
-                        .firstOrNull { it.uuid.equals(storageId, ignoreCase = true) }
-                        ?.getDescription(this)
-                } else {
-                    null
-                }
+                val volumeName = getSystemService(StorageManager::class.java).storageVolumes
+                    .firstOrNull { it.uuid.equals(storageId, ignoreCase = true) }
+                    ?.getDescription(this)
                 volumeName?.takeIf { it.isNotBlank() } ?: "External storage"
             }
 
@@ -1147,11 +1135,7 @@ class MainActivity: FlutterFragmentActivity() {
                         }
                         "exitApp" -> {
                             flutterBackCallback?.isEnabled = false
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                                finishAndRemoveTask()
-                            } else {
-                                finish()
-                            }
+                            finishAndRemoveTask()
                             result.success(null)
                         }
                         "downloadByStrategy" -> {
