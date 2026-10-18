@@ -279,7 +279,7 @@ impl NetworkService {
 
     /// Native compatibility requests may retry HTTPS over HTTP. Extension
     /// sessions retain their manifest policy. TLS verification is never disabled.
-    pub fn set_network_compatibility_options(&self, allow_http: bool, _insecure_tls: bool) {
+    pub fn set_network_compatibility_options(&self, allow_http: bool) {
         let mut pool = self.pool.lock().expect("HTTP pool lock");
         if pool.allow_http_fallback == allow_http {
             return;

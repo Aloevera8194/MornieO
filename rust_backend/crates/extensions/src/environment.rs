@@ -219,11 +219,9 @@ impl ExtensionEnvironment {
     pub fn set_network_compatibility_options(
         &self,
         allow_http: bool,
-        insecure_tls: bool,
     ) -> Result<(), EnvironmentError> {
         let _operation = self.enter()?;
-        self.network
-            .set_network_compatibility_options(allow_http, insecure_tls);
+        self.network.set_network_compatibility_options(allow_http);
         Ok(())
     }
 

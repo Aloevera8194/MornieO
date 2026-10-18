@@ -193,8 +193,10 @@ impl ExtensionEnvironment {
         allow_http: bool,
         insecure_tls: bool,
     ) -> Result<(), JsExtensionError> {
+        // Accepted for binding compatibility and ignored: TLS verification is never disabled.
+        let _ = insecure_tls;
         self.inner
-            .set_network_compatibility_options(allow_http, insecure_tls)
+            .set_network_compatibility_options(allow_http)
             .map_err(Into::into)
     }
 
