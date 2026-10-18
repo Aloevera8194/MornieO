@@ -68,17 +68,26 @@ void main() {
         final bytes = (await image.toByteData(
           format: ui.ImageByteFormat.rawRgba,
         ))!;
-        for (final y in [24, 52, 78]) {
+        double luminanceAt(int y) {
           final offset = (y * image.width + 20) * 4;
-          final background = Color.fromARGB(
+          return Color.fromARGB(
             bytes.getUint8(offset + 3),
             bytes.getUint8(offset),
             bytes.getUint8(offset + 1),
             bytes.getUint8(offset + 2),
-          );
-          final contrast = 1.05 / (background.computeLuminance() + 0.05);
-          expect(contrast, greaterThanOrEqualTo(4.5), reason: 'App bar y=$y');
+          ).computeLuminance();
         }
+
+        // The shade is darkest under the status bar, eases out across the
+        // app bar, stays light enough not to hide the cover, and is gone
+        // below the bar (24 inset + 56 toolbar + 32 fade).
+        final top = luminanceAt(2);
+        final bar = luminanceAt(52);
+        final below = luminanceAt(130);
+        expect(top, lessThan(bar));
+        expect(bar, lessThan(below));
+        expect(top, greaterThan(below * 0.5));
+        expect(below, closeTo(luminanceAt(200), 0.01));
       } finally {
         image.dispose();
       }

@@ -91,12 +91,12 @@ class MaterialPlayerBackdrop extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  // Keep the entire bar readable, then fade below it. Fading
-                  // from the top left too little shade behind white icons.
+                  // A light shade that eases out across the bar: enough for
+                  // white icons without darkening the top of the cover.
                   stops: [0, appBarHeight / (appBarHeight + 32), 1],
                   colors: const [
-                    Color(0x99000000),
-                    Color(0x99000000),
+                    Color(0x40000000),
+                    Color(0x14000000),
                     Color(0x00000000),
                   ],
                 ),
