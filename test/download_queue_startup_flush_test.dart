@@ -13,6 +13,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/app_state_database.dart';
 
 import 'support/fixed_settings.dart';
+import 'support/virtual_time.dart';
 
 const _earlyTrack = Track(
   id: 'example:early',
@@ -24,9 +25,11 @@ const _earlyTrack = Track(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  // The waits run on virtual time, including the 350 ms persistence debounce
+  // they must outlast.
   test(
     'startup restores, merges and retries only complete owned snapshots',
-    () async {
+    () => VirtualTime().run(() async {
       SharedPreferences.setMockInitialValues({
         'app_state_migrated_queue_to_sqlite_v1': true,
         'download_queue_user_paused_v1': true,
@@ -407,6 +410,6 @@ void main() {
       expect([writes, deletes], [7, 0]);
       explicitRetry.dispose();
       await (await AppStateDatabase.instance.database).close();
-    },
+    }),
   );
 }
