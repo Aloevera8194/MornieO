@@ -591,7 +591,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
   }
 
   String _displayNameForPath(String path) {
-    if (path.startsWith('content://')) {
+    if (isContentUri(path)) {
       try {
         final decoded = Uri.decodeComponent(Uri.parse(path).pathSegments.last);
         final relative = decoded.contains(':')
@@ -611,7 +611,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
   }
 
   bool _looksLikeRemovablePath(String path) {
-    if (path.startsWith('content://')) {
+    if (isContentUri(path)) {
       try {
         final decoded = Uri.decodeComponent(Uri.parse(path).pathSegments.last);
         return !decoded.startsWith('primary:');
@@ -636,7 +636,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
       if (_availabilityProbe != null) {
         return await _availabilityProbe(path, bookmark: bookmark);
       }
-      if (Platform.isAndroid && path.startsWith('content://')) {
+      if (Platform.isAndroid && isContentUri(path)) {
         return await PlatformBridge.probeSafTreeReadAccess(path);
       }
       if (Platform.isIOS && bookmark != null && bookmark.trim().isNotEmpty) {
@@ -970,7 +970,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
       if (!ref.mounted || _scanCancelRequested) return;
       final effectiveFolderPath = resolvedPath ?? folderPath;
 
-      final isSaf = effectiveFolderPath.startsWith('content://');
+      final isSaf = isContentUri(effectiveFolderPath);
 
       final useStreamingFullScan =
           effectiveFolderPath.startsWith('network://') ||
@@ -1777,9 +1777,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
     }
 
     if (isSaf) {
-      final uris = legacyPaths
-          .where((path) => path.startsWith('content://'))
-          .toList();
+      final uris = legacyPaths.where((path) => isContentUri(path)).toList();
       if (uris.isEmpty) {
         return const {};
       }
@@ -1805,7 +1803,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
     }
 
     final paths = legacyPaths
-        .where((path) => !path.startsWith('content://'))
+        .where((path) => !isContentUri(path))
         .toList(growable: false);
     const chunkSize = 24;
     final backfilled = <String, int>{};

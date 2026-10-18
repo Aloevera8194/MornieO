@@ -5,6 +5,7 @@ import 'package:spotiflac_android/services/download_saf_file_replacer.dart';
 import 'package:spotiflac_android/services/ffmpeg_models.dart';
 import 'package:spotiflac_android/utils/audio_conversion_utils.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 
 typedef DecryptDownloadFile =
     Future<String?> Function({
@@ -120,7 +121,7 @@ class DownloadFileFinalizer {
       return DownloadDecryptionOutcome(filePath);
     }
     onStart?.call(descriptor.normalizedStrategy);
-    if (useSaf && filePath.startsWith('content://')) {
+    if (useSaf && isContentUri(filePath)) {
       if (treeUri == null || treeUri.isEmpty) {
         return const DownloadDecryptionOutcome(
           null,
@@ -239,7 +240,7 @@ class DownloadFileFinalizer {
       onStart?.call();
       String? convertedPath;
       String? publishedName = convertedName;
-      if (useSaf && filePath.startsWith('content://')) {
+      if (useSaf && isContentUri(filePath)) {
         if (treeUri == null || treeUri.isEmpty) {
           throw StateError('Missing SAF tree for automatic conversion');
         }

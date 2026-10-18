@@ -40,7 +40,7 @@ class PlaybackController extends Notifier<PlaybackState> {
     final value = cover.trim();
     if (value.isEmpty) return null;
     if (value.startsWith('http') ||
-        value.startsWith('content://') ||
+        isContentUri(value) ||
         value.startsWith('file://')) {
       return value;
     }

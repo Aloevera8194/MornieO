@@ -1,6 +1,7 @@
 import 'package:spotiflac_android/models/download_result.dart';
 import 'package:spotiflac_android/services/download_saf_file_replacer.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 
 /// Finalizes a requested lossless container using the measured audio stream.
 /// Native FLAC bytes can be renamed; FLAC-in-MP4 still needs remuxing.
@@ -36,7 +37,7 @@ class DownloadContainerFinalizer {
     forceConversion = forceConversion || result.requiresContainerConversion;
     final outputExtension = result.outputExtension(path: filePath);
     final lowerPath = filePath.toLowerCase();
-    final isSafSource = filePath.startsWith('content://');
+    final isSafSource = isContentUri(filePath);
     final pathLooksLikeM4a =
         lowerPath.endsWith('.m4a') ||
         lowerPath.endsWith('.mp4') ||

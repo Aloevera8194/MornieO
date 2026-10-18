@@ -1,5 +1,6 @@
 import 'package:spotiflac_android/models/download_result.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/int_utils.dart';
 
 typedef DownloadCompletionAudio = ({
@@ -30,7 +31,7 @@ Future<DownloadCompletionAudio> resolveDownloadCompletionAudio({
       normalizeAudioFormatValue(audioFormatForPath(filePath));
   var bitrate = download.bitrateKbps;
   final lowerPath = filePath.toLowerCase();
-  if (filePath.startsWith('content://') ||
+  if (isContentUri(filePath) ||
       const [
         '.flac',
         '.m4a',

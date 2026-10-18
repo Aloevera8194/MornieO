@@ -5,6 +5,7 @@ import 'package:spotiflac_android/models/unified_library_item.dart';
 import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/services/music_player_service.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 
 final musicPlayerRuntimeProvider = Provider<MusicPlayerRuntime>(
   (ref) => musicPlayerRuntime,
@@ -301,7 +302,7 @@ PlayableMedia playableFromLocal(LocalLibraryItem item) {
   String? art;
   final cover = item.coverPath;
   if (cover != null && cover.trim().isNotEmpty) {
-    art = cover.startsWith('http') || cover.startsWith('content://')
+    art = cover.startsWith('http') || isContentUri(cover)
         ? cover
         : Uri.file(cover).toString();
   }

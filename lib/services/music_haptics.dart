@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/services/audio_analysis_jobs.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/logger.dart' show AppLogger;
 
 const musicHapticsSampleRate = 4000;
@@ -177,7 +178,7 @@ class MusicHapticsAnalyzer {
     List<String> arguments,
   ) async {
     final inputIndex = arguments.indexOf('-i') + 1;
-    if (inputIndex > 0 && arguments[inputIndex].startsWith('content://')) {
+    if (inputIndex > 0 && isContentUri(arguments[inputIndex])) {
       // Resolve only when this owned job starts. FFmpegKit opens and closes
       // its own SAF descriptor, independently of the player's short lease.
       final input = await FFmpegKitConfig.getSafParameterForRead(
@@ -221,7 +222,7 @@ class MusicHapticsAnalyzer {
     Directory? work;
     try {
       String? key;
-      if (path.startsWith('content://')) {
+      if (isContentUri(path)) {
         // A document URI is not a filesystem path. Unknown modification times
         // still allow analysis, but cannot safely identify a cached revision.
         try {

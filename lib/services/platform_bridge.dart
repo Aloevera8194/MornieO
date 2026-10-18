@@ -1008,7 +1008,7 @@ class PlatformBridge {
   static Future<ContentUriPlaybackLease?> openContentUriPlaybackLease(
     String uri,
   ) async {
-    if (!Platform.isAndroid || !uri.startsWith('content://')) return null;
+    if (!Platform.isAndroid || !isContentUri(uri)) return null;
     final result = await _channel.invokeMethod('safOpenPlaybackLease', {
       'uri': uri,
     });
@@ -2688,7 +2688,7 @@ class PlatformBridge {
   }) async {
     final input = <String, dynamic>{};
     if (itemId != null && itemId.isNotEmpty) input['item_id'] = itemId;
-    if (filePath.startsWith('content://')) {
+    if (isContentUri(filePath)) {
       input['uri'] = filePath;
     } else {
       input['path'] = filePath;
@@ -2704,7 +2704,7 @@ class PlatformBridge {
     final uri = result['new_file_uri'];
     final path = result['new_file_path'];
     final legacyPath = result['file_path'];
-    if (filePath.startsWith('content://') && uri is String && uri.isNotEmpty) {
+    if (isContentUri(filePath) && uri is String && uri.isNotEmpty) {
       result['file_path'] = uri;
     } else if (path is String && path.isNotEmpty) {
       result['file_path'] = path;

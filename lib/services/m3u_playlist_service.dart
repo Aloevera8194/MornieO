@@ -6,6 +6,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
 final _log = AppLogger('M3uPlaylist');
@@ -122,7 +123,7 @@ class M3uPlaylistService {
   static String? exportPathFor(String rawPath) {
     final trimmed = rawPath.trim();
     if (trimmed.isEmpty) return null;
-    if (!trimmed.startsWith('content://')) return trimmed;
+    if (!isContentUri(trimmed)) return trimmed;
 
     try {
       // Uri.pathSegments already percent-decodes each segment once.
