@@ -89,6 +89,10 @@ void main() {
       'android/app/src/main/kotlin/com/zarz/spotiflac/'
       'NativeDownloadFinalizer.kt',
     ).readAsStringSync();
+    final finalizerHistorySource = File(
+      'android/app/src/main/kotlin/com/zarz/spotiflac/'
+      'NativeFinalizerHistory.kt',
+    ).readAsStringSync();
     final historyStoreSource = File(
       'android/app/src/main/kotlin/com/zarz/spotiflac/'
       'NativeHistoryStore.kt',
@@ -197,8 +201,9 @@ void main() {
       expect(nativeDefinitions, dartDefinitions);
 
       final buildHistoryRow = RegExp(
-        r'private fun buildHistoryRow\([\s\S]*?return values',
-      ).firstMatch(finalizerSource);
+        r'internal fun NativeDownloadFinalizer\.buildHistoryRow\('
+        r'[\s\S]*?return values',
+      ).firstMatch(finalizerHistorySource);
       expect(buildHistoryRow, isNotNull);
       final nativeWrittenColumns = RegExp(
         r'values\.put\("([a-z0-9_]+)"',
