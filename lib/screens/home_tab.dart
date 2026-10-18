@@ -964,251 +964,312 @@ class _HomeTabState extends ConsumerState<HomeTab>
             controller: _homeScrollController,
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
-              AppSliverHeader.tabRoot(
-                alignToContent: true,
-                title: widget.mode == HomeTabMode.search
-                    ? context.l10n.mornyeSearch
-                    : greeting ?? context.l10n.homeTitle,
-                actions: context.isMornye && _showsHome
-                    ? const [HomeProfileButton()]
-                    : null,
+              _buildHeaderSliver(greeting: greeting),
+              _buildHomeIntroSliver(
+                sectionMotion: sectionMotion,
+                hasResults: hasResults,
+                showExplore: showExplore,
+                colorScheme: colorScheme,
+                screenHeight: screenHeight,
+                showEmptyHomeState: showEmptyHomeState,
               ),
-
-              SliverToBoxAdapter(
-                child: AnimatedSize(
-                  duration: sectionMotion.duration,
-                  curve: sectionMotion.curve,
-                  child: (hasResults || showExplore || !_showsHome)
-                      ? const SizedBox.shrink()
-                      : _buildHomeIntro(
-                          colorScheme: colorScheme,
-                          screenHeight: screenHeight,
-                          showEmptyHomeState: showEmptyHomeState,
-                        ),
-                ),
-              ),
-
               if (showSearchBar)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    // Centered with the search results on tablets.
-                    padding: EdgeInsets.fromLTRB(
-                      16 + wideListInset(context),
-                      (hasResults || showExplore)
-                          ? 8
-                          : greetsInHeader
-                          ? 20
-                          : 32,
-                      16 + wideListInset(context),
-                      (hasResults || showExplore) ? 8 : 16,
-                    ),
-                    child: _buildSearchBar(),
-                  ),
+                _buildSearchBarSliver(
+                  hasResults: hasResults,
+                  showExplore: showExplore,
+                  greetsInHeader: greetsInHeader,
                 ),
-
               if (hasActiveSearchSurface &&
                   !showRecentAccess &&
                   !showEmptySearchResult)
-                Consumer(
-                  builder: (context, ref, _) {
-                    final currentSearchProvider = ref.watch(
-                      settingsProvider.select((s) => s.searchProvider),
-                    );
-                    final extensions = ref.watch(
-                      extensionProvider.select((s) => s.extensions),
-                    );
-                    final selectedSearchFilter = ref.watch(
-                      trackProvider.select((s) => s.selectedSearchFilter),
-                    );
-                    final searchFilters = _resolveSearchFilters(
-                      context,
-                      currentSearchProvider,
-                      extensions,
-                    );
-                    if (searchFilters.isEmpty) {
-                      return const SliverToBoxAdapter(child: SizedBox.shrink());
-                    }
-                    return SliverToBoxAdapter(
-                      child: _buildSearchFilterBar(
-                        searchFilters,
-                        HomeSearchProviderPolicy.displayFilterSelection(
-                          selectedSearchFilter,
-                          defaultSearchTab,
-                          currentSearchProvider,
-                          extensions,
-                        ),
-                        colorScheme,
-                      ),
-                    );
-                  },
+                _buildSearchFilterSliver(
+                  colorScheme: colorScheme,
+                  defaultSearchTab: defaultSearchTab,
                 ),
-
               if (showRecentAccess)
-                Consumer(
-                  builder: (context, ref, _) {
-                    final recentAccessView = ref.watch(
-                      recentAccessViewProvider,
-                    );
-                    return _buildRecentAccess(recentAccessView, colorScheme);
-                  },
-                ),
-
-              SliverToBoxAdapter(
-                child: AnimatedSize(
-                  duration: sectionMotion.duration,
-                  curve: sectionMotion.curve,
-                  child:
-                      (!_showsHome ||
-                          hasResults ||
-                          showRecentAccess ||
-                          showExplore ||
-                          showEmptyHomeState)
-                      ? const SizedBox.shrink()
-                      : Column(
-                          children: [
-                            if (greetsInHeader)
-                              _HomeSections(inset: 16 + wideListInset(context)),
-                            if (_showsSearch &&
-                                !hasSearchedBefore &&
-                                !greetsInHeader)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  context.l10n.homeSupports,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                ),
-                              ),
-                            if (hasHistoryItems && !greetsInHeader)
-                              Consumer(
-                                builder: (context, ref, _) {
-                                  final historyItems = ref.watch(
-                                    _homeHistoryPreviewProvider,
-                                  );
-                                  return Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      24,
-                                      32,
-                                      24,
-                                      24,
-                                    ),
-                                    child: _buildRecentDownloads(
-                                      historyItems,
-                                      colorScheme,
-                                    ),
-                                  );
-                                },
-                              ),
-                          ],
-                        ),
-                ),
+                _buildRecentAccessSliver(colorScheme: colorScheme),
+              _buildHomeSectionsSliver(
+                sectionMotion: sectionMotion,
+                hasResults: hasResults,
+                showRecentAccess: showRecentAccess,
+                showExplore: showExplore,
+                showEmptyHomeState: showEmptyHomeState,
+                greetsInHeader: greetsInHeader,
+                hasSearchedBefore: hasSearchedBefore,
+                hasHistoryItems: hasHistoryItems,
+                colorScheme: colorScheme,
               ),
-
-              if (showExplore)
-                Consumer(
-                  builder: (context, ref, _) {
-                    final exploreSections = ref.watch(
-                      exploreProvider.select((s) => s.sections),
-                    );
-                    // The feed decides whether a greeting shows; its words
-                    // are localized here and address the profile name.
-                    final showGreeting =
-                        ref.watch(exploreProvider.select((s) => s.greeting)) !=
-                        null;
-                    final profileName = ref.watch(
-                      userProfileProvider.select((p) => p.value?.name ?? ''),
-                    );
-                    return SliverMainAxisGroup(
-                      slivers: _buildExploreSections(
-                        exploreSections,
-                        showGreeting
-                            ? homeGreeting(context.l10n, name: profileName)
-                            : null,
-                        colorScheme,
-                      ),
-                    );
-                  },
-                ),
-
+              if (showExplore) _buildExploreSliver(colorScheme: colorScheme),
               if (_showsHome &&
                   hasHomeFeedExtension &&
                   !homeFeedDisabled &&
                   !hasActualResults &&
                   !isLoading &&
                   exploreLoading)
-                SliverToBoxAdapter(
-                  child: ShimmerLoading(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildExploreSectionSkeleton(isArtist: false),
-                        _buildExploreSectionSkeleton(isArtist: true),
-                      ],
-                    ),
-                  ),
-                ),
-
+                _buildExploreLoadingSliver(),
               if (_showsSearch)
-                Consumer(
-                  builder: (context, ref, _) {
-                    final tracks = ref.watch(
-                      trackProvider.select((s) => s.tracks),
-                    );
-                    final isLoading = ref.watch(
-                      trackProvider.select((s) => s.isLoading),
-                    );
-                    final error = ref.watch(
-                      trackProvider.select((s) => s.error),
-                    );
-                    final searchExtensionId = ref.watch(
-                      trackProvider.select((s) => s.searchExtensionId),
-                    );
-                    final localLibrarySettings = ref.watch(
-                      settingsProvider.select(
-                        (s) => (
-                          s.localLibraryEnabled,
-                          s.localLibraryShowDuplicates,
-                        ),
-                      ),
-                    );
-                    final extensions = ref.watch(
-                      extensionProvider.select((s) => s.extensions),
-                    );
-                    final showLocalLibraryIndicator =
-                        localLibrarySettings.$1 && localLibrarySettings.$2;
-                    final thumbnailSizesByExtensionId =
-                        _getThumbnailSizesByExtensionId(extensions);
-                    final hasResults =
-                        tracks.isNotEmpty ||
-                        isLoading ||
-                        error != null ||
-                        hasActiveSearchSurface;
-
-                    return SliverMainAxisGroup(
-                      slivers: _buildSearchResults(
-                        resultsRef: ref,
-                        tracks: tracks,
-                        isLoading: isLoading,
-                        error: error,
-                        colorScheme: colorScheme,
-                        hasResults: hasResults,
-                        showEmptySearchResult: showEmptySearchResult,
-                        searchExtensionId: searchExtensionId,
-                        showLocalLibraryIndicator: showLocalLibraryIndicator,
-                        thumbnailSizesByExtensionId:
-                            thumbnailSizesByExtensionId,
-                      ),
-                    );
-                  },
+                _buildSearchResultsSliver(
+                  colorScheme: colorScheme,
+                  hasActiveSearchSurface: hasActiveSearchSurface,
+                  showEmptySearchResult: showEmptySearchResult,
                 ),
               const NavBarSliverSpacer(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildHeaderSliver({required String? greeting}) {
+    return AppSliverHeader.tabRoot(
+      alignToContent: true,
+      title: widget.mode == HomeTabMode.search
+          ? context.l10n.mornyeSearch
+          : greeting ?? context.l10n.homeTitle,
+      actions: context.isMornye && _showsHome
+          ? const [HomeProfileButton()]
+          : null,
+    );
+  }
+
+  Widget _buildHomeIntroSliver({
+    required AppMotionSpec sectionMotion,
+    required bool hasResults,
+    required bool showExplore,
+    required ColorScheme colorScheme,
+    required double screenHeight,
+    required bool showEmptyHomeState,
+  }) {
+    return SliverToBoxAdapter(
+      child: AnimatedSize(
+        duration: sectionMotion.duration,
+        curve: sectionMotion.curve,
+        child: (hasResults || showExplore || !_showsHome)
+            ? const SizedBox.shrink()
+            : _buildHomeIntro(
+                colorScheme: colorScheme,
+                screenHeight: screenHeight,
+                showEmptyHomeState: showEmptyHomeState,
+              ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBarSliver({
+    required bool hasResults,
+    required bool showExplore,
+    required bool greetsInHeader,
+  }) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        // Centered with the search results on tablets.
+        padding: EdgeInsets.fromLTRB(
+          16 + wideListInset(context),
+          (hasResults || showExplore)
+              ? 8
+              : greetsInHeader
+              ? 20
+              : 32,
+          16 + wideListInset(context),
+          (hasResults || showExplore) ? 8 : 16,
+        ),
+        child: _buildSearchBar(),
+      ),
+    );
+  }
+
+  Widget _buildSearchFilterSliver({
+    required ColorScheme colorScheme,
+    required String defaultSearchTab,
+  }) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final currentSearchProvider = ref.watch(
+          settingsProvider.select((s) => s.searchProvider),
+        );
+        final extensions = ref.watch(
+          extensionProvider.select((s) => s.extensions),
+        );
+        final selectedSearchFilter = ref.watch(
+          trackProvider.select((s) => s.selectedSearchFilter),
+        );
+        final searchFilters = _resolveSearchFilters(
+          context,
+          currentSearchProvider,
+          extensions,
+        );
+        if (searchFilters.isEmpty) {
+          return const SliverToBoxAdapter(child: SizedBox.shrink());
+        }
+        return SliverToBoxAdapter(
+          child: _buildSearchFilterBar(
+            searchFilters,
+            HomeSearchProviderPolicy.displayFilterSelection(
+              selectedSearchFilter,
+              defaultSearchTab,
+              currentSearchProvider,
+              extensions,
+            ),
+            colorScheme,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRecentAccessSliver({required ColorScheme colorScheme}) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final recentAccessView = ref.watch(recentAccessViewProvider);
+        return _buildRecentAccess(recentAccessView, colorScheme);
+      },
+    );
+  }
+
+  Widget _buildHomeSectionsSliver({
+    required AppMotionSpec sectionMotion,
+    required bool hasResults,
+    required bool showRecentAccess,
+    required bool showExplore,
+    required bool showEmptyHomeState,
+    required bool greetsInHeader,
+    required bool hasSearchedBefore,
+    required bool hasHistoryItems,
+    required ColorScheme colorScheme,
+  }) {
+    return SliverToBoxAdapter(
+      child: AnimatedSize(
+        duration: sectionMotion.duration,
+        curve: sectionMotion.curve,
+        child:
+            (!_showsHome ||
+                hasResults ||
+                showRecentAccess ||
+                showExplore ||
+                showEmptyHomeState)
+            ? const SizedBox.shrink()
+            : Column(
+                children: [
+                  if (greetsInHeader)
+                    _HomeSections(inset: 16 + wideListInset(context)),
+                  if (_showsSearch && !hasSearchedBefore && !greetsInHeader)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        context.l10n.homeSupports,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  if (hasHistoryItems && !greetsInHeader)
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final historyItems = ref.watch(
+                          _homeHistoryPreviewProvider,
+                        );
+                        return Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                          child: _buildRecentDownloads(
+                            historyItems,
+                            colorScheme,
+                          ),
+                        );
+                      },
+                    ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildExploreSliver({required ColorScheme colorScheme}) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final exploreSections = ref.watch(
+          exploreProvider.select((s) => s.sections),
+        );
+        // The feed decides whether a greeting shows; its words
+        // are localized here and address the profile name.
+        final showGreeting =
+            ref.watch(exploreProvider.select((s) => s.greeting)) != null;
+        final profileName = ref.watch(
+          userProfileProvider.select((p) => p.value?.name ?? ''),
+        );
+        return SliverMainAxisGroup(
+          slivers: _buildExploreSections(
+            exploreSections,
+            showGreeting ? homeGreeting(context.l10n, name: profileName) : null,
+            colorScheme,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildExploreLoadingSliver() {
+    return SliverToBoxAdapter(
+      child: ShimmerLoading(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildExploreSectionSkeleton(isArtist: false),
+            _buildExploreSectionSkeleton(isArtist: true),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchResultsSliver({
+    required ColorScheme colorScheme,
+    required bool hasActiveSearchSurface,
+    required bool showEmptySearchResult,
+  }) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final tracks = ref.watch(trackProvider.select((s) => s.tracks));
+        final isLoading = ref.watch(trackProvider.select((s) => s.isLoading));
+        final error = ref.watch(trackProvider.select((s) => s.error));
+        final searchExtensionId = ref.watch(
+          trackProvider.select((s) => s.searchExtensionId),
+        );
+        final localLibrarySettings = ref.watch(
+          settingsProvider.select(
+            (s) => (s.localLibraryEnabled, s.localLibraryShowDuplicates),
+          ),
+        );
+        final extensions = ref.watch(
+          extensionProvider.select((s) => s.extensions),
+        );
+        final showLocalLibraryIndicator =
+            localLibrarySettings.$1 && localLibrarySettings.$2;
+        final thumbnailSizesByExtensionId = _getThumbnailSizesByExtensionId(
+          extensions,
+        );
+        final hasResults =
+            tracks.isNotEmpty ||
+            isLoading ||
+            error != null ||
+            hasActiveSearchSurface;
+
+        return SliverMainAxisGroup(
+          slivers: _buildSearchResults(
+            resultsRef: ref,
+            tracks: tracks,
+            isLoading: isLoading,
+            error: error,
+            colorScheme: colorScheme,
+            hasResults: hasResults,
+            showEmptySearchResult: showEmptySearchResult,
+            searchExtensionId: searchExtensionId,
+            showLocalLibraryIndicator: showLocalLibraryIndicator,
+            thumbnailSizesByExtensionId: thumbnailSizesByExtensionId,
+          ),
+        );
+      },
     );
   }
 
