@@ -697,91 +697,16 @@ class MainActivity: FlutterFragmentActivity() {
                             result.success(null)
                         }
                         "runPostProcessingV2" -> handleRunPostProcessingV2(call, result)
-                        "setLibraryCoverCacheDir" -> {
-                            val cacheDir = call.argument<String>("cache_dir") ?: ""
-                            withContext(Dispatchers.IO) {
-                                coreBackend.setLibraryCoverCacheDirectory(cacheDir)
-                            }
-                            result.success(null)
-                        }
-                        "scanLibraryFolderToNDJSONFile" -> {
-                            val folderPath = call.argument<String>("folder_path") ?: ""
-                            val outputPath = call.argument<String>("output_path") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                safScanActive = false
-                                val count = coreBackend.scanLibraryFolderToNdjsonFile(
-                                    folderPath,
-                                    outputPath,
-                                )
-                                mapOf(
-                                    "path" to outputPath,
-                                    "count" to count,
-                                    "error_count" to JSONObject(coreBackend.getLibraryScanProgress())
-                                        .getInt("error_count"),
-                                )
-                            }
-                            result.success(response)
-                        }
-                        "scanLibraryFolderIncremental" -> {
-                            val folderPath = call.argument<String>("folder_path") ?: ""
-                            val existingFiles = call.argument<String>("existing_files") ?: "{}"
-                            val response = withContext(Dispatchers.IO) {
-                                safScanActive = false
-                                bridgeJsonResult(
-                                    coreBackend.scanLibraryFolderIncremental(folderPath, existingFiles)
-                                )
-                            }
-                            result.success(response)
-                        }
-                        "scanSafTreeToNDJSONFile" -> {
-                            val treeUri = call.argument<String>("tree_uri") ?: ""
-                            val outputPath = call.argument<String>("output_path") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                scanSafTree(treeUri, outputPath)
-                            }
-                            result.success(response)
-                        }
-                        "scanSafTreeIncremental" -> {
-                            val treeUri = call.argument<String>("tree_uri") ?: ""
-                            val existingFiles = call.argument<String>("existing_files") ?: "{}"
-                            val response = withContext(Dispatchers.IO) {
-                                scanSafTreeIncremental(treeUri, existingFiles)
-                            }
-                            result.success(response)
-                        }
+                        "setLibraryCoverCacheDir" -> handleSetLibraryCoverCacheDir(call, result)
+                        "scanLibraryFolderToNDJSONFile" -> handleScanLibraryFolderToNDJSONFile(call, result)
+                        "scanLibraryFolderIncremental" -> handleScanLibraryFolderIncremental(call, result)
+                        "scanSafTreeToNDJSONFile" -> handleScanSafTreeToNDJSONFile(call, result)
+                        "scanSafTreeIncremental" -> handleScanSafTreeIncremental(call, result)
                         "getSafFileModTimes" -> handleGetSafFileModTimes(call, result)
-                        "getLibraryScanProgress" -> {
-                            val response = withContext(Dispatchers.IO) {
-                                if (safScanActive) {
-                                    safProgressToJson()
-                                } else {
-                                    coreBackend.getLibraryScanProgress()
-                                }
-                            }
-                            result.success(parseJsonPayload(response))
-                        }
-                        "cancelLibraryScan" -> {
-                            withContext(Dispatchers.IO) {
-                                safScanCancel = true
-                                safScanPaused = false
-                                coreBackend.cancelLibraryScan()
-                            }
-                            result.success(null)
-                        }
-                        "pauseLibraryScan" -> {
-                            withContext(Dispatchers.IO) {
-                                safScanPaused = true
-                                coreBackend.pauseLibraryScan()
-                            }
-                            result.success(null)
-                        }
-                        "resumeLibraryScan" -> {
-                            withContext(Dispatchers.IO) {
-                                safScanPaused = false
-                                coreBackend.resumeLibraryScan()
-                            }
-                            result.success(null)
-                        }
+                        "getLibraryScanProgress" -> handleGetLibraryScanProgress(call, result)
+                        "cancelLibraryScan" -> handleCancelLibraryScan(call, result)
+                        "pauseLibraryScan" -> handlePauseLibraryScan(call, result)
+                        "resumeLibraryScan" -> handleResumeLibraryScan(call, result)
                         "readAudioMetadata" -> handleReadAudioMetadata(call, result)
                         "parseCueSheet" -> handleParseCueSheet(call, result)
                         else -> result.notImplemented()
