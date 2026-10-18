@@ -503,13 +503,7 @@ class MainActivity: FlutterFragmentActivity() {
                             finishAndRemoveTask()
                             result.success(null)
                         }
-                        "downloadByStrategy" -> {
-                            val requestJson = call.arguments as String
-                            val response = withContext(Dispatchers.IO) {
-                                SafDownloadHandler.handle(this@MainActivity, requestJson, coreBackend)
-                            }
-                            result.success(response)
-                        }
+                        "downloadByStrategy" -> handleDownloadByStrategy(call, result)
                         "getBackendImplementations" -> {
                             result.success(
                                 mapOf(
@@ -559,103 +553,25 @@ class MainActivity: FlutterFragmentActivity() {
                         "downloadCoverToFile" -> handleDownloadCoverToFile(call, result)
                         "extractCoverToFile" -> handleExtractCoverToFile(call, result)
                         "reEnrichFile" -> handleReEnrichFile(call, result)
-                        "startDownloadService" -> {
-                            val trackName = call.argument<String>("track_name") ?: ""
-                            val artistName = call.argument<String>("artist_name") ?: ""
-                            val queueCount = call.argument<Int>("queue_count") ?: 0
-                            DownloadService.start(this@MainActivity, trackName, artistName, queueCount)
-                            result.success(null)
-                        }
+                        "startDownloadService" -> handleStartDownloadService(call, result)
                         "stopDownloadService" -> {
                             DownloadService.stop(this@MainActivity)
                             result.success(null)
                         }
-                        "updateDownloadServiceProgress" -> {
-                            val trackName = call.argument<String>("track_name") ?: ""
-                            val artistName = call.argument<String>("artist_name") ?: ""
-                            val progress = (call.argument<Number>("progress") ?: 0).toLong()
-                            val total = (call.argument<Number>("total") ?: 0).toLong()
-                            val queueCount = (call.argument<Number>("queue_count") ?: 0).toInt()
-                            val status = call.argument<String>("status") ?: "downloading"
-                            DownloadService.updateProgress(this@MainActivity, trackName, artistName, progress, total, queueCount, status)
-                            result.success(null)
-                        }
+                        "updateDownloadServiceProgress" -> handleUpdateDownloadServiceProgress(call, result)
                         "isDownloadServiceRunning" -> {
                             result.success(DownloadService.isServiceRunning())
                         }
-                        "startBackgroundWork" -> {
-                            result.success(
-                                BackgroundWorkService.start(
-                                    this@MainActivity,
-                                    call.argument<String>("kind") ?: "",
-                                    call.argument<String>("title") ?: "",
-                                    call.argument<String>("text") ?: "",
-                                ),
-                            )
-                        }
-                        "updateBackgroundWork" -> {
-                            BackgroundWorkService.update(
-                                call.argument<String>("kind") ?: "",
-                                call.argument<String>("title") ?: "",
-                                call.argument<String>("text") ?: "",
-                                call.argument<Int>("progress") ?: -1,
-                            )
-                            result.success(null)
-                        }
+                        "startBackgroundWork" -> handleStartBackgroundWork(call, result)
+                        "updateBackgroundWork" -> handleUpdateBackgroundWork(call, result)
                         "stopBackgroundWork" -> {
                             BackgroundWorkService.stop(call.argument<String>("kind") ?: "")
                             result.success(null)
                         }
-                        "startNativeDownloadWorker" -> {
-                            val requestsJson = call.argument<String>("requests_json") ?: "[]"
-                            val settingsJson = call.argument<String>("settings_json") ?: "{}"
-                            val requestsPath = call.argument<String>("requests_path") ?: ""
-                            val settingsPath = call.argument<String>("settings_path") ?: ""
-                            if (requestsPath.isNotBlank()) {
-                                DownloadService.startNativeQueueFromFiles(
-                                    this@MainActivity,
-                                    requestsPath,
-                                    settingsPath
-                                )
-                            } else {
-                                DownloadService.startNativeQueue(this@MainActivity, requestsJson, settingsJson)
-                            }
-                            result.success(null)
-                        }
-                        "appendNativeDownloadWorkerRequests" -> {
-                            val requestsPath = call.argument<String>("requests_path") ?: ""
-                            val runId = call.argument<String>("run_id") ?: ""
-                            if (requestsPath.isNotBlank() && runId.isNotBlank()) {
-                                DownloadService.appendNativeQueueFromFile(
-                                    this@MainActivity,
-                                    requestsPath,
-                                    runId,
-                                )
-                            }
-                            result.success(null)
-                        }
-                        "finishNativeDownloadWorkerPreparation" -> {
-                            val runId = call.argument<String>("run_id") ?: ""
-                            if (runId.isNotBlank()) {
-                                DownloadService.finishNativeQueuePreparation(
-                                    this@MainActivity,
-                                    runId,
-                                )
-                            }
-                            result.success(null)
-                        }
-                        "acknowledgeNativeDownloadWorkerItems" -> {
-                            val runId = call.argument<String>("run_id") ?: ""
-                            val itemIdsJson = call.argument<String>("item_ids_json") ?: "[]"
-                            if (runId.isNotBlank()) {
-                                DownloadService.acknowledgeNativeQueueItems(
-                                    this@MainActivity,
-                                    runId,
-                                    itemIdsJson,
-                                )
-                            }
-                            result.success(null)
-                        }
+                        "startNativeDownloadWorker" -> handleStartNativeDownloadWorker(call, result)
+                        "appendNativeDownloadWorkerRequests" -> handleAppendNativeDownloadWorkerRequests(call, result)
+                        "finishNativeDownloadWorkerPreparation" -> handleFinishNativeDownloadWorkerPreparation(call, result)
+                        "acknowledgeNativeDownloadWorkerItems" -> handleAcknowledgeNativeDownloadWorkerItems(call, result)
                         "pauseNativeDownloadWorker" -> {
                             DownloadService.pauseNativeQueue(this@MainActivity)
                             result.success(null)
@@ -668,21 +584,7 @@ class MainActivity: FlutterFragmentActivity() {
                             DownloadService.cancelNativeQueue(this@MainActivity)
                             result.success(null)
                         }
-                        "getNativeDownloadWorkerSnapshot" -> {
-                            val sinceStateSerial =
-                                (call.argument<Number>("since_state_serial") ?: 0L).toLong()
-                            // The snapshot can be megabytes late in a large
-                            // batch; read and parse it off the main thread.
-                            val payload = withContext(Dispatchers.IO) {
-                                parseJsonPayload(
-                                    DownloadService.getNativeWorkerSnapshot(
-                                        this@MainActivity,
-                                        sinceStateSerial
-                                    )
-                                )
-                            }
-                            result.success(payload)
-                        }
+                        "getNativeDownloadWorkerSnapshot" -> handleGetNativeDownloadWorkerSnapshot(call, result)
                         "releaseMemory" -> {
                             withContext(Dispatchers.IO) {
                                 coreBackend.releaseIdleResources()
