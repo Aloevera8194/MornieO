@@ -118,8 +118,9 @@
       </h3>
       <p>
         Synced lyrics with word-by-word timing, optional translation and
-        romanization lines, and several lyrics providers with automatic
-        fallback. Pick up to five lines and share them as a card.
+        romanization lines, and a reorderable chain of lyrics providers,
+        including SpotiFLAC-Mobile Lyrics. Files without lyrics can search
+        online from the player. Pick up to five lines and share them as a card.
       </p>
       <p></p>
     </td>
@@ -335,6 +336,18 @@ your DAC or amplifier volume before you press play.
 </details>
 
 <details>
+<summary><b>Where do the lyrics come from?</b></summary>
+<br>
+
+From the providers in **Settings > Lyrics > Lyrics Provider Priority**, tried
+top to bottom until one has the song. By default that is Apple Music (through
+Paxsenix), lrc.red, SpotiFLAC-Mobile Lyrics, LyricsPlus and LRCLIB; you can
+reorder them or turn on others. Lyrics already in a file always come first.
+If a file has none, tap **Search online** on the player's lyrics page.
+
+</details>
+
+<details>
 <summary><b>Where are my listening statistics stored?</b></summary>
 <br>
 
@@ -413,8 +426,11 @@ Interested in contributing? Check out the [Contributing Guide](CONTRIBUTING.md) 
 ## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-credits-dark.svg"><img src="assets/readme/sections/section-credits-light.svg" height="32" align="top" alt=""></picture> API Credits
 
 <p align="center">
-  <a href="https://lrclib.net"><b>LRCLib</b></a> &nbsp;·&nbsp;
   <a href="https://lyrics.paxsenix.org"><b>Paxsenix</b></a> &nbsp;·&nbsp;
+  <a href="https://lrc.red"><b>lrc.red</b></a> &nbsp;·&nbsp;
+  <a href="https://github.com/ibratabian17/LyricsPlus"><b>LyricsPlus</b></a> &nbsp;·&nbsp;
+  <a href="https://lrclib.net"><b>LRCLib</b></a> &nbsp;·&nbsp;
+  <a href="https://betterlyrics.org"><b>BetterLyrics</b></a> &nbsp;·&nbsp;
   <a href="https://developers.deezer.com"><b>Deezer</b></a> &nbsp;·&nbsp;
   <a href="https://musicbrainz.org"><b>MusicBrainz</b></a> &nbsp;·&nbsp;
   <a href="https://song.link"><b>Song.link</b></a> &nbsp;·&nbsp;
