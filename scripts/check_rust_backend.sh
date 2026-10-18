@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Check the production Rust workspace without local migration archives.
+# Check the production Rust workspace.
 
 set -euo pipefail
 

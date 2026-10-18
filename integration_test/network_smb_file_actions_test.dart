@@ -3,7 +3,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:spotiflac_android/services/network_storage_service.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 
-// Run scripts/test_network_smb_server.py --deletion first. Only fixture files
+// Run scripts/smb2_fixture_server.py --deletion first. Only fixture files
 // are deleted; Android emulators use 10.0.2.2 instead of 127.0.0.1.
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
