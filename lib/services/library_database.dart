@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -807,6 +808,7 @@ class LibraryDatabase {
     QueueLibraryDbQuery request,
   ) async => (await _queueStore()).counts(request);
 
+  @visibleForTesting
   Future<List<Map<String, dynamic>>> getQueueAlbumPage(
     QueueLibraryDbQuery request,
   ) async {

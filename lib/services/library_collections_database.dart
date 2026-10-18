@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -345,6 +346,7 @@ class LibraryCollectionsDatabase {
     });
   }
 
+  @visibleForTesting
   Future<List<Map<String, dynamic>>> loadPlaylistTracks(
     String playlistId,
   ) async {

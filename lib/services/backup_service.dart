@@ -177,11 +177,13 @@ class BackupService {
   static const int _maxProfilePhotoBytes = 2 << 20;
   static const String _profilePhotoEntry = 'profile/avatar.png';
 
+  @visibleForTesting
   static String encode(Map<String, dynamic> envelope) =>
       const JsonEncoder.withIndent('  ').convert(envelope);
 
   /// Legacy JSON envelope retained so backups from earlier releases and unit
   /// tests remain readable. New backups are written by [writeBackupArchive].
+  @visibleForTesting
   static Map<String, dynamic> buildEnvelope({
     required Map<String, dynamic>? settings,
     required List<Map<String, dynamic>> history,

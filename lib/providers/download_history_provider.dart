@@ -1179,7 +1179,7 @@ final downloadHistoryBatchExistsProvider = FutureProvider.autoDispose
       };
     });
 
-bool historyLookupExistsInMemory(
+bool _historyLookupExistsInMemory(
   DownloadHistoryState state,
   HistoryLookupRequest request,
 ) {
@@ -1205,7 +1205,7 @@ Set<String> mergeVisibleHistoryLookupKeys({
 }) {
   final keys = <String>{...persistedKeys};
   for (final track in request.tracks) {
-    if (historyLookupExistsInMemory(state, track)) {
+    if (_historyLookupExistsInMemory(state, track)) {
       keys.add(track.lookupKey);
     }
   }

@@ -335,7 +335,7 @@ class HistoryDatabase {
 
   static String normalizeIsrc(String? value) => isrc.normalizeIsrc(value);
 
-  static String normalizeSpotifyId(String? value) {
+  static String _normalizeSpotifyId(String? value) {
     return (value ?? '').trim().toLowerCase();
   }
 
@@ -452,7 +452,7 @@ class HistoryDatabase {
       (albumArtist ?? '').trim().isEmpty ? artistName : albumArtist,
     );
     return {
-      'spotify_id_norm': normalizeSpotifyId(spotifyId),
+      'spotify_id_norm': _normalizeSpotifyId(spotifyId),
       'isrc_norm': normalizeIsrc(isrc),
       'match_key': matchKeyFor(trackName, artistName),
       'album_key': '$normalizedAlbum|$normalizedAlbumArtist',
@@ -936,7 +936,7 @@ class HistoryDatabase {
     final spotifyCandidates = spotifyLookupCandidates(request.spotifyId);
     if (spotifyCandidates.isNotEmpty) {
       final placeholders = List.filled(spotifyCandidates.length, '?').join(',');
-      final normalized = spotifyCandidates.map(normalizeSpotifyId).toList();
+      final normalized = spotifyCandidates.map(_normalizeSpotifyId).toList();
       final rows = await db.query(
         'history',
         columns: columns,
@@ -1021,7 +1021,7 @@ class HistoryDatabase {
           if (candidate.isNotEmpty && seen.add(exactKey)) {
             addCandidate(requestIndex, priority++, 'spotify_id', candidate);
           }
-          final normalized = normalizeSpotifyId(candidate);
+          final normalized = _normalizeSpotifyId(candidate);
           final normalizedKey = 'spotify_id_norm\u0000$normalized';
           if (normalized.isNotEmpty && seen.add(normalizedKey)) {
             addCandidate(

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -345,6 +346,7 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
     dbDelete: _db.deleteFavoriteArtistEntry,
   );
 
+  @visibleForTesting
   Future<void> removeFromWishlist(String trackKey) => _removeEntry(
     trackKey,
     contains: (key) => state.containsWishlistKey(key),
@@ -354,6 +356,7 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
     dbDelete: _db.deleteWishlistEntry,
   );
 
+  @visibleForTesting
   Future<void> removeFromLoved(String trackKey) => _removeEntry(
     trackKey,
     contains: (key) => state.containsLovedKey(key),
@@ -583,6 +586,7 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
     }
   });
 
+  @visibleForTesting
   Future<void> removeTrackFromPlaylist(String playlistId, String trackKey) =>
       _mutate(() async {
         var playlist = state.playlistById(playlistId);

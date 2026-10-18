@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
@@ -383,6 +384,7 @@ class AutoplayPersonalization {
     }
   }
 
+  @visibleForTesting
   double adjustment(
     AutoplayLearningTrack track,
     AutoplayLearningTrack seed,

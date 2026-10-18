@@ -11,7 +11,7 @@ final _log = AppLogger('StoreProvider');
 final RegExp _leadingVersionPrefix = RegExp(r'^v');
 const _registryUrlPrefKey = 'store_registry_url';
 
-int compareVersions(String v1, String v2) {
+int _compareVersions(String v1, String v2) {
   final parts1 = v1.replaceAll(_leadingVersionPrefix, '').split('.');
   final parts2 = v2.replaceAll(_leadingVersionPrefix, '').split('.');
 
@@ -101,7 +101,7 @@ class RepoExtension {
 
   bool get requiresNewerApp {
     if (minAppVersion == null || minAppVersion!.isEmpty) return false;
-    return compareVersions(minAppVersion!, AppInfo.version) > 0;
+    return _compareVersions(minAppVersion!, AppInfo.version) > 0;
   }
 }
 
