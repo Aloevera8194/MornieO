@@ -13,6 +13,7 @@ import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/audio_analysis_cache.dart';
+import 'package:spotiflac_android/services/cache_maintenance_service.dart';
 import 'package:spotiflac_android/services/cover_cache_manager.dart';
 import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
 import 'package:spotiflac_android/services/motion_artwork_store.dart';
@@ -76,7 +77,7 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
     final appSupportDirFuture = getApplicationSupportDirectory();
     final coverStatsFuture = CoverCacheManager.getStats();
     final motionStatsFuture = MotionArtworkStore.defaultDirectory().then(
-      _scanDirectory,
+      CacheMaintenanceService.scanDirectory,
     );
     final prefsFuture = SharedPreferences.getInstance();
     final trackCacheEntriesFuture = _getTrackCacheSizeSafe();
@@ -87,16 +88,18 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
     final tempPath = p.normalize(tempDir.path);
     final tempIsSameAsAppCache = appCachePath == tempPath;
 
-    final appCacheStatsFuture = _scanDirectory(Directory(appCachePath));
+    final appCacheStatsFuture = CacheMaintenanceService.scanDirectory(
+      Directory(appCachePath),
+    );
     final tempStatsFuture = tempIsSameAsAppCache
-        ? Future<_DirectoryStats?>.value(null)
-        : _scanDirectory(Directory(tempPath));
+        ? Future<DirectoryStats?>.value(null)
+        : CacheMaintenanceService.scanDirectory(Directory(tempPath));
 
     final appSupportDir = await appSupportDirFuture;
-    final libraryCoverStatsFuture = _scanDirectory(
+    final libraryCoverStatsFuture = CacheMaintenanceService.scanDirectory(
       Directory('${appSupportDir.path}/library_covers'),
     );
-    final audioAnalysisStatsFuture = _scanDirectory(
+    final audioAnalysisStatsFuture = CacheMaintenanceService.scanDirectory(
       AudioAnalysisDiskCache.directoryIn(appSupportDir.path),
     );
 
@@ -127,29 +130,6 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
     );
   }
 
-  Future<_DirectoryStats> _scanDirectory(Directory directory) async {
-    if (!await directory.exists()) {
-      return const _DirectoryStats(fileCount: 0, totalSizeBytes: 0);
-    }
-
-    var fileCount = 0;
-    var totalSize = 0;
-
-    try {
-      await for (final entity in directory.list(
-        recursive: true,
-        followLinks: false,
-      )) {
-        if (entity is File) {
-          fileCount++;
-          totalSize += await entity.length();
-        }
-      }
-    } catch (_) {}
-
-    return _DirectoryStats(fileCount: fileCount, totalSizeBytes: totalSize);
-  }
-
   Future<int> _getTrackCacheSizeSafe() async {
     try {
       return await PlatformBridge.getTrackCacheSize();
@@ -158,46 +138,15 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
     }
   }
 
-  Future<void> _clearDirectoryContents(String path) async {
-    final directory = Directory(path);
-    if (!await directory.exists()) return;
-
-    try {
-      final entities = <FileSystemEntity>[];
-      await for (final entity in directory.list(followLinks: false)) {
-        entities.add(entity);
-      }
-
-      const deleteChunkSize = 24;
-      for (var i = 0; i < entities.length; i += deleteChunkSize) {
-        final end = (i + deleteChunkSize < entities.length)
-            ? i + deleteChunkSize
-            : entities.length;
-        final chunk = entities.sublist(i, end);
-        await Future.wait(
-          chunk.map((entity) async {
-            try {
-              await entity.delete(recursive: true);
-            } catch (_) {}
-          }),
-        );
-      }
-    } catch (_) {}
-
-    try {
-      await directory.create(recursive: true);
-    } catch (_) {}
-  }
-
   Future<void> _clearAppCache() async {
     await DownloadedEmbeddedCoverResolver.clearPersistentCache();
     final cacheDir = await getApplicationCacheDirectory();
-    await _clearDirectoryContents(cacheDir.path);
+    await CacheMaintenanceService.clearDirectoryContents(cacheDir.path);
   }
 
   Future<void> _clearTempCache() async {
     final tempDir = await getTemporaryDirectory();
-    await _clearDirectoryContents(tempDir.path);
+    await CacheMaintenanceService.clearDirectoryContents(tempDir.path);
   }
 
   Future<void> _clearCoverCache() async {
@@ -212,13 +161,13 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
   Future<void> _clearLibraryCoverCache() async {
     final appSupportDir = await getApplicationSupportDirectory();
     final libraryCoverDir = Directory('${appSupportDir.path}/library_covers');
-    await _clearDirectoryContents(libraryCoverDir.path);
+    await CacheMaintenanceService.clearDirectoryContents(libraryCoverDir.path);
   }
 
   Future<void> _clearAudioAnalysisCache() async {
     final appSupportDir = await getApplicationSupportDirectory();
     final analysisDir = AudioAnalysisDiskCache.directoryIn(appSupportDir.path);
-    await _clearDirectoryContents(analysisDir.path);
+    await CacheMaintenanceService.clearDirectoryContents(analysisDir.path);
   }
 
   Future<void> _clearExploreCache() async {
@@ -364,7 +313,7 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
     });
   }
 
-  String _formatDirectorySize(_DirectoryStats stats) {
+  String _formatDirectorySize(DirectoryStats stats) {
     if (stats.fileCount == 0 || stats.totalSizeBytes == 0) {
       return context.l10n.cacheNoData;
     }
@@ -720,14 +669,14 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
 
 class _CacheOverview {
   final String appCachePath;
-  final _DirectoryStats appCacheStats;
+  final DirectoryStats appCacheStats;
   final String? tempPath;
-  final _DirectoryStats? tempStats;
+  final DirectoryStats? tempStats;
   final bool tempIsSameAsAppCache;
   final CacheStats coverStats;
-  final _DirectoryStats motionStats;
-  final _DirectoryStats libraryCoverStats;
-  final _DirectoryStats audioAnalysisStats;
+  final DirectoryStats motionStats;
+  final DirectoryStats libraryCoverStats;
+  final DirectoryStats audioAnalysisStats;
   final int exploreCacheBytes;
   final bool hasExploreCache;
   final int trackCacheEntries;
@@ -754,14 +703,4 @@ class _CacheOverview {
         libraryCoverStats.totalSizeBytes +
         exploreCacheBytes;
   }
-}
-
-class _DirectoryStats {
-  final int fileCount;
-  final int totalSizeBytes;
-
-  const _DirectoryStats({
-    required this.fileCount,
-    required this.totalSizeBytes,
-  });
 }
