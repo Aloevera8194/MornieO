@@ -87,6 +87,81 @@ fn direct_media_does_not_send_metadata_cookies_or_follow_redirects() {
 }
 
 #[test]
+fn read_limited_matches_the_bounded_read_loops_it_replaced() {
+    use std::io::{Read, Write};
+    const BODY: &[u8] = b"0123456789";
+    // (limit, buffer length): exact fit, one byte over, single-chunk and zero.
+    let cases = [(10, 4), (9, 4), (10, 64 << 10), (9, 64 << 10), (0, 4)];
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let base = format!("http://{}", listener.local_addr().unwrap());
+    let server = std::thread::spawn(move || {
+        for _ in 0..cases.len() * 2 {
+            let (mut stream, _) = listener.accept().unwrap();
+            stream
+                .set_read_timeout(Some(Duration::from_secs(3)))
+                .unwrap();
+            let mut request = Vec::new();
+            while !request.ends_with(b"\r\n\r\n") {
+                let mut byte = [0];
+                stream.read_exact(&mut byte).unwrap();
+                request.push(byte[0]);
+            }
+            stream
+                .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 10\r\nConnection: close\r\n\r\n")
+                .unwrap();
+            stream.write_all(BODY).unwrap();
+        }
+    });
+    let service = NetworkService::new().unwrap();
+    service.set_allow_private_network(true);
+    let session = service.session(
+        NetworkPermissions {
+            domains: vec!["127.0.0.1".into()],
+            allow_http: true,
+        },
+        Duration::from_secs(3),
+    );
+    let open = || {
+        let request =
+            serde_json::from_value(serde_json::json!({"url":format!("{base}/body")})).unwrap();
+        session
+            .open_stream(
+                request,
+                Duration::from_secs(3),
+                Duration::from_secs(3),
+                || Ok(()),
+            )
+            .unwrap()
+    };
+    // The loop shared by the lyrics, resolver and registry readers.
+    let previous = |stream: &mut HttpStream, limit: usize, buffer: &mut [u8]| {
+        let mut body = Vec::new();
+        loop {
+            let capacity = buffer.len().min(limit + 1 - body.len());
+            let count = stream.read(&mut buffer[..capacity], || Ok(()))?;
+            if count == 0 {
+                break;
+            }
+            body.extend_from_slice(&buffer[..count]);
+            if body.len() > limit {
+                return Ok::<_, String>(None);
+            }
+        }
+        Ok(Some(body))
+    };
+    for (limit, length) in cases {
+        let actual = open().read_limited(limit, &mut vec![0; length], || Ok(()));
+        let expected = previous(&mut open(), limit, &mut vec![0; length]);
+        assert_eq!(actual, expected, "limit {limit} buffer {length}");
+        assert_eq!(
+            actual.unwrap(),
+            (limit >= BODY.len()).then(|| BODY.to_vec())
+        );
+    }
+    server.join().unwrap();
+}
+
+#[test]
 fn cancellation_after_operation_is_pending_drops_it_before_return() {
     struct Dropped<'a>(&'a AtomicBool);
     impl Drop for Dropped<'_> {

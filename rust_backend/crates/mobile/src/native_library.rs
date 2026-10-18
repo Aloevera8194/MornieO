@@ -159,7 +159,7 @@ pub(crate) fn scan_incremental(
     import(request, Some(&delta), check)
 }
 
-fn normalized(value: &str) -> String {
+pub(crate) fn normalized(value: &str) -> String {
     path_keys::dart_lower(path_keys::dart_trim(value))
 }
 

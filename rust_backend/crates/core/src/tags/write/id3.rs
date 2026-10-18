@@ -211,10 +211,7 @@ fn syncsafe(size: usize) -> [u8; 4] {
 
 fn size(data: &[u8], syncsafe: bool) -> usize {
     if syncsafe {
-        ((data[0] as usize) << 21)
-            | ((data[1] as usize) << 14)
-            | ((data[2] as usize) << 7)
-            | data[3] as usize
+        crate::tags::id3::syncsafe(data) as usize
     } else {
         u32::from_be_bytes(data.try_into().unwrap()) as usize
     }
@@ -378,4 +375,39 @@ fn read_frames(
         });
     }
     Ok((frames, audio_start))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // The decoder `size` inlined before it shared the reader's `syncsafe`.
+    fn previous_syncsafe_size(data: &[u8]) -> usize {
+        ((data[0] as usize) << 21)
+            | ((data[1] as usize) << 14)
+            | ((data[2] as usize) << 7)
+            | data[3] as usize
+    }
+
+    #[test]
+    fn syncsafe_size_matches_previous_decoder_across_bit_boundaries() {
+        assert_eq!(size(&[0, 0, 0, 0], true), 0);
+        assert_eq!(size(&[0, 0, 0, 0x7f], true), 0x7f);
+        assert_eq!(size(&[0, 0, 1, 0], true), 0x80);
+        assert_eq!(size(&[0x7f, 0x7f, 0x7f, 0x7f], true), 0x0fff_ffff);
+        assert_eq!(size(&[0, 0, 0, 0x80], true), 0x80);
+        assert_eq!(size(&[0xff, 0xff, 0xff, 0xff], true), 0x1fff_ffff);
+        assert_eq!(size(&[0, 0, 1, 0, 9], true), 0x80);
+        let values = [0x00, 0x01, 0x7f, 0x80, 0xff];
+        for a in values {
+            for b in values {
+                for c in values {
+                    for d in values {
+                        let data = [a, b, c, d];
+                        assert_eq!(size(&data, true), previous_syncsafe_size(&data), "{data:?}");
+                    }
+                }
+            }
+        }
+    }
 }

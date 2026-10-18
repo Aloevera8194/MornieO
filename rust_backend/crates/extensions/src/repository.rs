@@ -500,22 +500,14 @@ fn read_registry(
     let status = stream.response.status;
     let mut body = Vec::new();
     if status == 200 {
-        let mut buffer = [0; 64 * 1024];
-        loop {
-            let limit = buffer.len().min(MAX_REGISTRY_BYTES + 1 - body.len());
-            let count = stream
-                .read(&mut buffer[..limit], check)
-                .map_err(|e| cause("failed to read registry", e))?;
-            if count == 0 {
-                break;
-            }
-            body.extend_from_slice(&buffer[..count]);
-            if body.len() > MAX_REGISTRY_BYTES {
-                return Err(error(format!(
+        body = stream
+            .read_limited(MAX_REGISTRY_BYTES, &mut [0; 64 * 1024], check)
+            .map_err(|e| cause("failed to read registry", e))?
+            .ok_or_else(|| {
+                error(format!(
                     "registry response exceeds {MAX_REGISTRY_BYTES} bytes"
-                )));
-            }
-        }
+                ))
+            })?;
     }
     Ok((status, stream.response.headers, body))
 }

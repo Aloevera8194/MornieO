@@ -501,7 +501,7 @@ fn v1(reader: &mut (impl Read + Seek)) -> Result<AudioMetadata, String> {
     })
 }
 
-fn syncsafe(data: &[u8]) -> u64 {
+pub(crate) fn syncsafe(data: &[u8]) -> u64 {
     u64::from(data[0]) << 21
         | u64::from(data[1]) << 14
         | u64::from(data[2]) << 7

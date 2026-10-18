@@ -3,7 +3,7 @@
 use base64::Engine;
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use spotiflac_core::tags;
+use spotiflac_core::{lower_hex, tags};
 use spotiflac_network::{
     HttpRequest, NetworkService, NetworkSession, policy::NetworkPermissions, url::UrlParts,
 };
@@ -125,11 +125,7 @@ pub(crate) fn matches_upload(
     if received != length {
         return Ok(json!({"matches": false}));
     }
-    let remote: String = hash
-        .finalize()
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect();
+    let remote = lower_hex(&hash.finalize());
     let local = crate::data_jobs::hash_file(path, check)?;
     check()?;
     Ok(json!({"matches": remote == local}))
@@ -191,10 +187,7 @@ fn cache_cover(
         return Err("Artwork cache must be absolute".into());
     }
     fs::create_dir_all(directory).map_err(|error| error.to_string())?;
-    let digest: String = Sha256::digest(bytes)
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect();
+    let digest = lower_hex(&Sha256::digest(bytes));
     let target = directory.join(format!("network_cover_{digest}.image"));
     let mut staged =
         tempfile::NamedTempFile::new_in(directory).map_err(|error| error.to_string())?;

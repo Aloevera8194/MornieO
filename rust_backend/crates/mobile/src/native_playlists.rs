@@ -1,5 +1,6 @@
 //! The existing playlist import contract, executed on the native data worker.
 //! CSV remains line-based for compatibility with existing exports/imports.
+use crate::native_library::path_keys::dart_trim as trim;
 use serde_json::{Value, json};
 use std::{
     collections::HashMap,
@@ -87,10 +88,6 @@ fn lines(content: &str) -> Vec<&str> {
     }
     result.push(&content[start..]);
     result
-}
-
-fn trim(value: &str) -> &str {
-    value.trim_matches(|character: char| character.is_whitespace() || character == '\u{feff}')
 }
 
 fn track(

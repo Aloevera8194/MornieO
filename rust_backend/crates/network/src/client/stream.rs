@@ -87,6 +87,30 @@ impl HttpStream {
         result
     }
 
+    /// Collect the rest of the body through `buffer`, returning `Ok(None)` as
+    /// soon as it exceeds `limit` bytes. Each read requests at most one byte
+    /// past the limit, so an oversized body is never buffered further. Read
+    /// errors are returned unchanged for the caller to map.
+    pub fn read_limited(
+        &mut self,
+        limit: usize,
+        buffer: &mut [u8],
+        check: impl Fn() -> Result<(), String>,
+    ) -> Result<Option<Vec<u8>>, String> {
+        let mut body = Vec::new();
+        loop {
+            let capacity = buffer.len().min(limit + 1 - body.len());
+            let count = self.read(&mut buffer[..capacity], &check)?;
+            if count == 0 {
+                return Ok(Some(body));
+            }
+            body.extend_from_slice(&buffer[..count]);
+            if body.len() > limit {
+                return Ok(None);
+            }
+        }
+    }
+
     /// Release an unwanted body (a range probe or retryable error). A small
     /// HTTP/1.1 body is finished within 20 ms so its connection can return to
     /// the pool; HTTP/2, compressed, large or slow bodies are dropped at once.

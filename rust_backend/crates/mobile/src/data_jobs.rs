@@ -179,11 +179,7 @@ pub(crate) fn hash_file(
         hash.update(&buffer[..count]);
     }
     check()?;
-    Ok(hash
-        .finalize()
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect())
+    Ok(spotiflac_core::lower_hex(&hash.finalize()))
 }
 
 #[cfg(test)]

@@ -4,6 +4,7 @@ mod index;
 
 use cap_std::ambient_authority;
 use cap_std::fs::{Dir, File, OpenOptions};
+pub(crate) use spotiflac_core::fs::clean;
 use std::collections::BTreeMap;
 use std::io;
 use std::path::{Component, Path, PathBuf};
@@ -676,28 +677,6 @@ impl Drop for OutputGuard {
     fn drop(&mut self) {
         *self.0.owner.lock().expect("file owner lock") = None;
         self.0.idle.notify_all();
-    }
-}
-
-pub(crate) fn clean(path: &Path) -> PathBuf {
-    let mut result = PathBuf::new();
-    for component in path.components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir => {
-                if result.file_name().is_some_and(|name| name != "..") {
-                    result.pop();
-                } else if !result.has_root() {
-                    result.push("..");
-                }
-            }
-            _ => result.push(component),
-        }
-    }
-    if result.as_os_str().is_empty() {
-        ".".into()
-    } else {
-        result
     }
 }
 

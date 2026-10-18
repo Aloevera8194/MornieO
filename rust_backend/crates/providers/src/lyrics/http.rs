@@ -159,23 +159,10 @@ fn transport_error(error: String, check: &Check<'_>) -> LyricsError {
 }
 
 fn read(stream: &mut HttpStream, limit: usize, check: &Check<'_>) -> Result<Vec<u8>, LyricsError> {
-    let mut result = Vec::new();
-    let mut buffer = [0; 16 << 10];
-    loop {
-        let capacity = buffer.len().min(limit + 1 - result.len());
-        let count = stream
-            .read(&mut buffer[..capacity], check)
-            .map_err(|error| transport_error(error, check))?;
-        if count == 0 {
-            break;
-        }
-        result.extend_from_slice(&buffer[..count]);
-        if result.len() > limit {
-            return Err(LyricsError::Other(format!(
-                "response exceeds {limit} bytes"
-            )));
-        }
-    }
+    let result = stream
+        .read_limited(limit, &mut [0; 16 << 10], check)
+        .map_err(|error| transport_error(error, check))?
+        .ok_or_else(|| LyricsError::Other(format!("response exceeds {limit} bytes")))?;
     check().map_err(LyricsError::Cancelled)?;
     Ok(result)
 }

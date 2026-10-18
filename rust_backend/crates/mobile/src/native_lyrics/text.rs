@@ -18,28 +18,9 @@ static VOICE_PREFIX: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(&format!(r"(?i)^({WS}*(?:<[0-9]{{1,3}}:[0-9]{{1,2}}(?:[.:][0-9]{{1,3}})?>{WS}*)*)(v[1-9][0-9]*):[ \t]*")).unwrap()
 });
 
-pub(super) fn whitespace(c: char) -> bool {
-    matches!(
-        c,
-        '\t' | '\n'
-            | '\u{000b}'
-            | '\u{000c}'
-            | '\r'
-            | ' '
-            | '\u{0085}'
-            | '\u{00a0}'
-            | '\u{1680}'
-            | '\u{2028}'
-            | '\u{2029}'
-            | '\u{202f}'
-            | '\u{205f}'
-            | '\u{3000}'
-            | '\u{feff}'
-    ) || ('\u{2000}'..='\u{200a}').contains(&c)
-}
-pub(super) fn trim(s: &str) -> &str {
-    s.trim_matches(whitespace)
-}
+pub(super) use crate::native_library::path_keys::{
+    dart_trim as trim, dart_whitespace as whitespace,
+};
 pub(super) fn trim_end(s: &str) -> &str {
     s.trim_end_matches(whitespace)
 }

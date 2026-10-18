@@ -4,6 +4,7 @@ use hmac::{Hmac, KeyInit, Mac};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+use spotiflac_core::lower_hex as hex;
 use spotiflac_network::{HttpResponse, query, url::UrlParts};
 use std::collections::BTreeMap;
 use std::time::{Duration, UNIX_EPOCH};
@@ -372,15 +373,6 @@ pub fn random_hex(count: usize) -> Result<String, String> {
     let mut bytes = Zeroizing::new(vec![0; count]);
     getrandom::fill(&mut bytes).map_err(|error| error.to_string())?;
     Ok(hex(&bytes))
-}
-
-fn hex(bytes: &[u8]) -> String {
-    use std::fmt::Write;
-    let mut output = String::with_capacity(bytes.len() * 2);
-    for byte in bytes {
-        let _ = write!(output, "{byte:02x}");
-    }
-    output
 }
 
 fn hmac(key: &[u8], message: &[u8]) -> String {
