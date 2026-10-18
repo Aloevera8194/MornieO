@@ -10,49 +10,217 @@
   <a href="https://trendshift.io/repositories/25971" target="_blank">
     <img src="https://trendshift.io/api/badge/repositories/25971" alt="spotiflacapp%2FSpotiFLAC-Mobile | Trendshift" width="250" height="55">
   </a>
+  <a href="https://fmhy.net/mobile#android-audio" target="_blank">
+    <img src="assets/readme/featured-on-fmhy.svg" alt="Featured on FMHY" height="55">
+  </a>
 </p>
 
 </div>
 
-<div align="center">
+<p align="center">
+  <a href="https://github.com/spotiflacapp/SpotiFLAC-Mobile/releases/latest">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/readme/badges/badge-release-dark.svg">
+      <img alt="Download the latest release" src="assets/readme/badges/badge-release-light.svg" height="56">
+    </picture>
+  </a>
+  <a href="https://crowdin.com/project/spotiflac-mobile">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/readme/badges/badge-crowdin-dark.svg">
+      <img alt="Help translate on Crowdin" src="assets/readme/badges/badge-crowdin-light.svg" height="56">
+    </picture>
+  </a>
+</p>
 
-[![GitHub Release](https://img.shields.io/github/v/release/spotiflacapp/SpotiFLAC-Mobile?style=for-the-badge&logo=github)](https://github.com/spotiflacapp/SpotiFLAC-Mobile/releases)
-[![Crowdin](https://img.shields.io/badge/HELP%20TRANSLATE%20ON-CROWDIN-%2321252b?style=for-the-badge&logo=crowdin)](https://crowdin.com/project/spotiflac-mobile)
-
-[![Telegram Channel](https://img.shields.io/badge/CHANNEL-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/spotiflac)
-[![Telegram Community](https://img.shields.io/badge/COMMUNITY-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/spotiflac_chat)
-
-</div>
+<p align="center">
+  <a href="https://t.me/spotiflac">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/readme/badges/badge-telegram-channel-dark.svg">
+      <img alt="Telegram channel" src="assets/readme/badges/badge-telegram-channel-light.svg" height="56">
+    </picture>
+  </a>
+  <a href="https://t.me/spotiflac_chat">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="assets/readme/badges/badge-telegram-community-dark.svg">
+      <img alt="Telegram community" src="assets/readme/badges/badge-telegram-community-light.svg" height="56">
+    </picture>
+  </a>
+</p>
 
 ## Screenshots
 
 <p align="center">
-  <img src="assets/readme/1.jpg?v=2" width="200" />
-  <img src="assets/readme/2.jpg?v=2" width="200" />
-  <img src="assets/readme/3.jpg?v=2" width="200" />
-  <img src="assets/readme/4.jpg?v=2" width="200" />
+  <img src="assets/readme/1.jpg?v=3" width="200" alt="Home" />
+  <img src="assets/readme/2.jpg?v=3" width="200" alt="Library" />
+  <img src="assets/readme/3.jpg?v=3" width="200" alt="Now Playing" />
+  <img src="assets/readme/4.jpg?v=4" width="200" alt="Equalizer" />
 </p>
 
 ---
 
-## Extensions
+## Features
 
-Extensions let the community add new music sources and features without waiting for app updates. When a streaming service API changes or a new source becomes available, extensions can be updated independently.
-
-### Installing Extensions
-
-1. Open the **Store** tab in the app
-2. On first launch, enter an **Extension Repository URL** when prompted
-3. Browse and install extensions with one tap
-4. Or download a `.spotiflac-ext` file and install manually via **Settings > Extensions**
-5. Configure extension settings if needed
-6. Set provider priority under **Settings > Extensions > Provider Priority**
-
-### Developing Extensions
-
-> [!NOTE]
-> Want to build your own extension? The
-> [documentation site](https://spotiflac.zarz.moe/docs) contains the API reference.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-player-dark.svg">
+          <img src="assets/readme/features/feature-player-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Built-in player
+      </h3>
+      <p>
+        Full-screen cover art, a detailed audio quality label, queue
+        controls and a sleep timer. AutoMix blends tracks with its own beat
+        detection, and home screen widgets on Android and iOS follow your
+        wallpaper colors.
+      </p>
+      <p></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-hires-dark.svg">
+          <img src="assets/readme/features/feature-hires-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Hi-res output
+      </h3>
+      <p>
+        USB bit-perfect playback on Android 14 and later, AAudio exclusive
+        mode for DAPs at each track's original rate, and a direct USB driver
+        with native DSD on compatible DACs.
+      </p>
+      <p></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-equalizer-dark.svg">
+          <img src="assets/readme/features/feature-equalizer-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Equalizer and loudness
+      </h3>
+      <p>
+        A multiband equalizer with presets (beta), volume normalization, and
+        ReplayGain scanning based on EBU R128 for single tracks or whole
+        selections.
+      </p>
+      <p></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-lyrics-dark.svg">
+          <img src="assets/readme/features/feature-lyrics-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Lyrics
+      </h3>
+      <p>
+        Synced lyrics with word-by-word timing, optional translation and
+        romanization lines, and several lyrics providers with automatic
+        fallback. Pick up to five lines and share them as a card.
+      </p>
+      <p></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-library-dark.svg">
+          <img src="assets/readme/features/feature-library-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Local library
+      </h3>
+      <p>
+        Scan your music folders and browse songs, albums, artists and
+        playlists. Review duplicates, edit metadata and export collections
+        as M3U8.
+      </p>
+      <p></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-network-dark.svg">
+          <img src="assets/readme/features/feature-network-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Network storage
+      </h3>
+      <p>
+        Play music from SMB, WebDAV and HTTP / HTTPS servers. HTTPS
+        connections can trust a single approved certificate fingerprint.
+      </p>
+      <p></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-foryou-dark.svg">
+          <img src="assets/readme/features/feature-foryou-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Made for you
+      </h3>
+      <p>
+        Rewind recaps your listening, personalized autoplay learns on your
+        device, music haptics let you feel the beat, and artist pages show
+        upcoming concerts.
+      </p>
+      <p></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-look-dark.svg">
+          <img src="assets/readme/features/feature-look-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Your look
+      </h3>
+      <p>
+        Material 3 Expressive or the Mornye theme, Dynamic Color, an AMOLED
+        mode, Material Symbols and layouts for tablets and large screens.
+      </p>
+      <p></p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-extensions-dark.svg">
+          <img src="assets/readme/features/feature-extensions-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Extensions
+      </h3>
+      <p>
+        Add metadata and lyrics sources from community extension
+        repositories, then choose their priority. Building one? See the
+        <a href="https://spotiflac.zarz.moe/docs">extension documentation</a>.
+      </p>
+      <p></p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-keep-dark.svg">
+          <img src="assets/readme/features/feature-keep-light.svg" width="56" height="56" alt="">
+        </picture>
+        <br>Yours to keep
+      </h3>
+      <p>
+        Back up and restore settings, history and playlists. The app is open
+        source, available in 20 languages, and offers an AltStore / SideStore
+        source on iOS.
+      </p>
+      <p></p>
+    </td>
+  </tr>
+</table>
 
 ---
 
