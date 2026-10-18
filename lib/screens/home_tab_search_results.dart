@@ -801,6 +801,12 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
 
   Widget _buildSearchBar() {
     final hasText = _urlController.text.isNotEmpty;
+    // The Material Home keeps the resting field clean; import and paste
+    // appear once it is focused.
+    final showInputActions =
+        context.isMornye ||
+        widget.mode == HomeTabMode.search ||
+        _searchFocusNode.hasFocus;
 
     return AppSearchField(
       controller: _urlController,
@@ -830,7 +836,7 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
               onPressed: _clearAndRefresh,
               tooltip: context.l10n.dialogClear,
             )
-          else ...[
+          else if (showInputActions) ...[
             AppIconButton(
               icon: const Icon(Icons.file_upload_outlined),
               onPressed: _isCsvImporting

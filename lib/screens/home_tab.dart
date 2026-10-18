@@ -43,6 +43,16 @@ import 'package:spotiflac_android/providers/explore_provider.dart';
 import 'package:spotiflac_android/providers/user_profile_provider.dart';
 import 'package:spotiflac_android/widgets/explore_featured_section.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
+import 'package:spotiflac_android/providers/music_player_provider.dart';
+import 'package:spotiflac_android/models/unified_library_item.dart';
+import 'package:spotiflac_android/screens/equalizer_screen.dart';
+import 'package:spotiflac_android/screens/listening_statistics_screen.dart';
+import 'package:spotiflac_android/screens/network_storage_screen.dart';
+import 'package:spotiflac_android/screens/now_playing_screen.dart';
+import 'package:spotiflac_android/services/library_database.dart';
+import 'package:spotiflac_android/services/listening_statistics.dart';
+import 'package:spotiflac_android/services/music_player_service.dart'
+    show PlayableMedia;
 import 'package:spotiflac_android/screens/track_metadata_screen.dart';
 import 'package:spotiflac_android/screens/album_screen.dart';
 import 'package:spotiflac_android/screens/collapsing_header_scroll_mixin.dart';
@@ -68,6 +78,7 @@ import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/widgets/audio_quality_badges.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:spotiflac_android/widgets/player_artwork.dart';
 import 'package:spotiflac_android/widgets/error_card.dart';
 import 'package:spotiflac_android/widgets/in_library_badge.dart';
 import 'package:spotiflac_android/widgets/preview_button.dart';
@@ -80,6 +91,7 @@ part 'home_tab_helpers.dart';
 part 'home_tab_explore.dart';
 part 'home_tab_recent.dart';
 part 'home_tab_import.dart';
+part 'home_tab_intro.dart';
 part 'home_tab_search_results.dart';
 part 'home_tab_widgets.dart';
 
@@ -890,6 +902,23 @@ class _HomeTabState extends ConsumerState<HomeTab>
       context,
       const AppMotionSpec(Duration(milliseconds: 250), Curves.easeOut),
     );
+    // Without a feed, the Material Home greets in its header and gathers
+    // the player and shortcuts under the search bar. A feed brings its own
+    // greeting, and the Mornye style keeps its navigation title.
+    final greetsInHeader =
+        _showsHome &&
+        widget.mode != HomeTabMode.search &&
+        !context.isMornye &&
+        !showExplore &&
+        !showEmptyHomeState;
+    final greeting = greetsInHeader
+        ? homeGreeting(
+            context.l10n,
+            name: ref.watch(
+              userProfileProvider.select((p) => p.value?.name ?? ''),
+            ),
+          )
+        : null;
 
     ref.listen<String>(settingsProvider.select((s) => s.defaultSearchTab), (
       previous,
@@ -944,7 +973,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 alignToContent: true,
                 title: widget.mode == HomeTabMode.search
                     ? context.l10n.mornyeSearch
-                    : context.l10n.homeTitle,
+                    : greeting ?? context.l10n.homeTitle,
                 actions: context.isMornye && _showsHome
                     ? const [HomeProfileButton()]
                     : null,
@@ -970,7 +999,11 @@ class _HomeTabState extends ConsumerState<HomeTab>
                     // Centered with the search results on tablets.
                     padding: EdgeInsets.fromLTRB(
                       16 + wideListInset(context),
-                      (hasResults || showExplore) ? 8 : 32,
+                      (hasResults || showExplore)
+                          ? 8
+                          : greetsInHeader
+                          ? 20
+                          : 32,
                       16 + wideListInset(context),
                       (hasResults || showExplore) ? 8 : 16,
                     ),
@@ -1038,7 +1071,11 @@ class _HomeTabState extends ConsumerState<HomeTab>
                       ? const SizedBox.shrink()
                       : Column(
                           children: [
-                            if (_showsSearch && !hasSearchedBefore)
+                            if (greetsInHeader)
+                              _HomeSections(inset: 16 + wideListInset(context)),
+                            if (_showsSearch &&
+                                !hasSearchedBefore &&
+                                !greetsInHeader)
                               Padding(
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Text(
@@ -1050,7 +1087,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                                       ),
                                 ),
                               ),
-                            if (hasHistoryItems)
+                            if (hasHistoryItems && !greetsInHeader)
                               Consumer(
                                 builder: (context, ref, _) {
                                   final historyItems = ref.watch(
@@ -1229,47 +1266,12 @@ class _HomeTabState extends ConsumerState<HomeTab>
     // in the content area.
     if (context.isMornye) return const SizedBox.shrink();
 
+    // The header carries the greeting; prompts take turns beneath it.
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          SizedBox(height: screenHeight * 0.06),
-          AppShapeBadge(
-            kind: AppShapes.brand,
-            size: 96,
-            color: colorScheme.primary,
-            child: Image.asset(
-              'assets/images/logo-transparent.png',
-              color: colorScheme.onPrimary,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  width: 96,
-                  height: 96,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'SpotiFLAC Mobile',
-            textAlign: TextAlign.center,
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            context.l10n.homeSubtitle,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
+      padding: EdgeInsets.symmetric(horizontal: 24 + wideListInset(context)),
+      child: const Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: _HomeTagline(),
       ),
     );
   }
