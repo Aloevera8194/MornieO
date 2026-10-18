@@ -23,10 +23,7 @@ import 'package:spotiflac_android/widgets/cached_cover_image.dart';
 import 'package:spotiflac_android/widgets/local_library_artwork_builder.dart';
 import 'package:spotiflac_android/widgets/mornye_artist_header.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings(localLibraryEnabled: false);
-}
+import 'support/fixed_settings.dart';
 
 class _History extends DownloadHistoryNotifier {
   @override
@@ -79,7 +76,13 @@ void main() {
   });
 
   Widget app(Widget home, {bool mornye = false}) => ProviderScope(
-    overrides: [settingsProvider.overrideWith(_Settings.new)],
+    overrides: [
+      settingsProvider.overrideWith(
+        () => FixedSettingsNotifier(
+          const AppSettings(localLibraryEnabled: false),
+        ),
+      ),
+    ],
     child: MaterialApp(
       theme: mornye ? MornyeTheme.build(Brightness.light) : AppTheme.light(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -305,7 +308,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            settingsProvider.overrideWith(_Settings.new),
+            settingsProvider.overrideWith(
+              () => FixedSettingsNotifier(
+                const AppSettings(localLibraryEnabled: false),
+              ),
+            ),
             downloadHistoryProvider.overrideWith(_History.new),
             libraryBrowsePageLoaderProvider.overrideWithValue(
               (request) async => LibraryBrowsePage([

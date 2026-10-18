@@ -16,6 +16,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/mornye_library_screen.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 
+import '../test/support/fixed_settings.dart';
 import '../test/support/library_paging_fixture.dart';
 import 'performance_probe.dart';
 
@@ -27,11 +28,6 @@ const _request = (
   limit: 40,
   completeness: null,
 );
-
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings(localLibraryEnabled: true);
-}
 
 class _History extends DownloadHistoryNotifier {
   @override
@@ -197,7 +193,11 @@ void main() {
             child: ProviderScope(
               key: ValueKey(mountNumber++),
               overrides: [
-                settingsProvider.overrideWith(_Settings.new),
+                settingsProvider.overrideWith(
+                  () => FixedSettingsNotifier(
+                    const AppSettings(localLibraryEnabled: true),
+                  ),
+                ),
                 downloadHistoryProvider.overrideWith(_History.new),
                 localLibraryProvider.overrideWith(_Local.new),
                 libraryBrowsePageLoaderProvider.overrideWithValue(readPage),

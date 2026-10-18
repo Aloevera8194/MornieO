@@ -13,11 +13,7 @@ import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() =>
-      const AppSettings(downloadDirectory: '/fixture/output');
-}
+import 'support/fixed_settings.dart';
 
 class _Queue extends DownloadQueueNotifier {
   _Queue(this._items);
@@ -165,7 +161,11 @@ void main() {
           ];
           final container = ProviderContainer(
             overrides: [
-              settingsProvider.overrideWith(_Settings.new),
+              settingsProvider.overrideWith(
+                () => FixedSettingsNotifier(
+                  const AppSettings(downloadDirectory: '/fixture/output'),
+                ),
+              ),
               downloadQueueProvider.overrideWith(() => _Queue(initial)),
             ],
           );
@@ -249,7 +249,11 @@ void main() {
       ];
       final container = ProviderContainer(
         overrides: [
-          settingsProvider.overrideWith(_Settings.new),
+          settingsProvider.overrideWith(
+            () => FixedSettingsNotifier(
+              const AppSettings(downloadDirectory: '/fixture/output'),
+            ),
+          ),
           downloadQueueProvider.overrideWith(() => _Queue(initial)),
         ],
       );
@@ -353,7 +357,11 @@ void main() {
         ];
         final container = ProviderContainer(
           overrides: [
-            settingsProvider.overrideWith(_Settings.new),
+            settingsProvider.overrideWith(
+              () => FixedSettingsNotifier(
+                const AppSettings(downloadDirectory: '/fixture/output'),
+              ),
+            ),
             downloadQueueProvider.overrideWith(() => _Queue(initial)),
           ],
         );

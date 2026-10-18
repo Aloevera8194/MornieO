@@ -5,16 +5,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/extension_action_forms.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
-}
+import 'support/fixed_settings.dart';
 
 void main() {
   const channel = MethodChannel('com.zarz.spotiflac/backend');
@@ -30,7 +26,7 @@ void main() {
   }) {
     return tester.pumpWidget(
       ProviderScope(
-        overrides: [settingsProvider.overrideWith(_Settings.new)],
+        overrides: [settingsProvider.overrideWith(FixedSettingsNotifier.new)],
         child: MaterialApp(
           theme: mornye ? MornyeTheme.build(Brightness.dark) : ThemeData(),
           localizationsDelegates: AppLocalizations.localizationsDelegates,

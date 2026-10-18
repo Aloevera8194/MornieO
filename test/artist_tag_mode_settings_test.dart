@@ -8,11 +8,7 @@ import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/settings/metadata_settings_page.dart';
 import 'package:spotiflac_android/utils/artist_utils.dart';
 
-/// Skips loading persisted settings; mode changes use the real validation.
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
-}
+import 'support/fixed_settings.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -35,7 +31,7 @@ void main() {
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
       final container = ProviderContainer(
-        overrides: [settingsProvider.overrideWith(_Settings.new)],
+        overrides: [settingsProvider.overrideWith(FixedSettingsNotifier.new)],
       );
       addTearDown(container.dispose);
       await tester.pumpWidget(

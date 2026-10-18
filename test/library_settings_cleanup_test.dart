@@ -16,10 +16,7 @@ import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings(localLibraryEnabled: true);
-}
+import 'support/fixed_settings.dart';
 
 class _Library extends LocalLibraryNotifier {
   _Library(this._initial, this._cleanup);
@@ -92,7 +89,11 @@ Future<void> _mount(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        settingsProvider.overrideWith(_Settings.new),
+        settingsProvider.overrideWith(
+          () => FixedSettingsNotifier(
+            const AppSettings(localLibraryEnabled: true),
+          ),
+        ),
         localLibraryProvider.overrideWith(() => library),
         downloadHistoryProvider.overrideWith(() => history),
       ],

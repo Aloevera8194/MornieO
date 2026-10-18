@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/settings/download_fallback_extensions_page.dart';
@@ -12,10 +11,7 @@ import 'package:spotiflac_android/screens/settings/provider_priority_page.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
-}
+import 'support/fixed_settings.dart';
 
 class _Extensions extends ExtensionNotifier {
   _Extensions(this.extension);
@@ -70,7 +66,7 @@ void main() {
           await tester.pumpWidget(
             ProviderScope(
               overrides: [
-                settingsProvider.overrideWith(_Settings.new),
+                settingsProvider.overrideWith(FixedSettingsNotifier.new),
                 extensionProvider.overrideWith(
                   () => _Extensions(
                     extension.copyWith(

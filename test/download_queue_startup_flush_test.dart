@@ -12,6 +12,8 @@ import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/app_state_database.dart';
 
+import 'support/fixed_settings.dart';
+
 const _earlyTrack = Track(
   id: 'example:early',
   name: 'Immediate addition',
@@ -19,12 +21,6 @@ const _earlyTrack = Track(
   albumName: 'Album',
   duration: 180,
 );
-
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() =>
-      const AppSettings(downloadDirectory: '/fixture/output');
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -147,7 +143,13 @@ void main() {
       });
       addTearDown(() => messenger.setMockMethodCallHandler(sqlite, null));
       ProviderContainer scope() => ProviderContainer(
-        overrides: [settingsProvider.overrideWith(_Settings.new)],
+        overrides: [
+          settingsProvider.overrideWith(
+            () => FixedSettingsNotifier(
+              const AppSettings(downloadDirectory: '/fixture/output'),
+            ),
+          ),
+        ],
       );
 
       final container = scope();

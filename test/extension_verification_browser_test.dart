@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/providers/track_provider.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/extension_auth_launcher.dart';
+
+import 'support/fixed_settings.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -114,7 +115,7 @@ void main() {
         return true;
       });
       final container = ProviderContainer(
-        overrides: [settingsProvider.overrideWith(_Settings.new)],
+        overrides: [settingsProvider.overrideWith(FixedSettingsNotifier.new)],
       );
       addTearDown(container.dispose);
       await container
@@ -129,9 +130,4 @@ void main() {
       expect(launches, 2);
     },
   );
-}
-
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
 }

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/library_collections_provider.dart';
@@ -18,6 +17,8 @@ import 'package:spotiflac_android/widgets/album_detail_header.dart';
 import 'package:spotiflac_android/widgets/track_list_tile.dart';
 import 'package:spotiflac_android/widgets/track_detail_actions.dart';
 
+import 'support/fixed_settings.dart';
+
 const _track = Track(
   id: 'example-track',
   name: 'Example song',
@@ -25,11 +26,6 @@ const _track = Track(
   albumName: 'Example album',
   duration: 180,
 );
-
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
-}
 
 class _Collections extends LibraryCollectionsNotifier {
   var _batchCalls = 0;
@@ -89,7 +85,7 @@ void main() {
       final snapshot = Provider<DownloadQueueLookup>((ref) => lookup);
       final container = ProviderContainer(
         overrides: [
-          settingsProvider.overrideWith(_Settings.new),
+          settingsProvider.overrideWith(FixedSettingsNotifier.new),
           libraryCollectionsProvider.overrideWith(_Collections.new),
           currentMediaItemProvider.overrideWith((ref) => Stream.value(null)),
           downloadQueueLookupProvider.overrideWith(
@@ -204,7 +200,7 @@ void main() {
         final collections = _Collections();
         final container = ProviderContainer(
           overrides: [
-            settingsProvider.overrideWith(_Settings.new),
+            settingsProvider.overrideWith(FixedSettingsNotifier.new),
             libraryCollectionsProvider.overrideWith(() => collections),
             recentAccessProvider.overrideWith(_Recent.new),
             currentMediaItemProvider.overrideWith((ref) => Stream.value(null)),

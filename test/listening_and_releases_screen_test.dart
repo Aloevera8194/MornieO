@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/providers/weekly_releases_provider.dart';
 import 'package:spotiflac_android/screens/listening_statistics_screen.dart';
@@ -12,10 +11,7 @@ import 'package:spotiflac_android/services/weekly_releases.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
 
-class _Settings extends SettingsNotifier {
-  @override
-  AppSettings build() => const AppSettings();
-}
+import 'support/fixed_settings.dart';
 
 void main() {
   for (final mornye in [false, true]) {
@@ -32,7 +28,7 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              settingsProvider.overrideWith(_Settings.new),
+              settingsProvider.overrideWith(FixedSettingsNotifier.new),
               listeningSummaryProvider.overrideWith((ref, period) async {
                 requested.add(period);
                 return ListeningSummary.fromRows([
