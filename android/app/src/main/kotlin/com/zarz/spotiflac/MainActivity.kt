@@ -32,10 +32,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.File
-import java.security.MessageDigest
-import java.security.SecureRandom
 import java.util.LinkedHashMap
-import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
 class MainActivity: FlutterFragmentActivity() {
@@ -62,8 +59,8 @@ class MainActivity: FlutterFragmentActivity() {
     private val LARGE_JSON_RESULT_FILE_THRESHOLD_BYTES = 256 * 1024
     internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     internal var backendChannel: MethodChannel? = null
-    private var audioOutputChannel: MethodChannel? = null
-    private var concertCalendarChannel: MethodChannel? = null
+    internal var audioOutputChannel: MethodChannel? = null
+    internal var concertCalendarChannel: MethodChannel? = null
     internal val coreBackend: CoreBackend by lazy { createCoreBackend(applicationContext) }
     private val nativeBackendMethods = setOf(
         "setScreenAwake",
@@ -138,8 +135,8 @@ class MainActivity: FlutterFragmentActivity() {
         "exitApp",
     )
     private var libraryStorageReceiver: BroadcastReceiver? = null
-    private val pendingSessionGrantEvents = mutableListOf<Map<String, Any>>()
-    private var pendingVerificationNotification: String? = null
+    internal val pendingSessionGrantEvents = mutableListOf<Map<String, Any>>()
+    internal var pendingVerificationNotification: String? = null
     internal val setupFolderPickerStore by lazy {
         SetupFolderPickerStore(getSharedPreferences("setup_folder_picker", Context.MODE_PRIVATE))
     }
@@ -154,8 +151,8 @@ class MainActivity: FlutterFragmentActivity() {
     internal var libraryScanProgressEventSink: EventChannel.EventSink? = null
     internal var lastLibraryScanProgressPayload: String? = null
     private var flutterBackCallback: OnBackPressedCallback? = null
-    private val playbackLeaseLock = Any()
-    private val playbackLeases = LinkedHashMap<String, ParcelFileDescriptor>()
+    internal val playbackLeaseLock = Any()
+    internal val playbackLeases = LinkedHashMap<String, ParcelFileDescriptor>()
     @Volatile internal var safScanCancel = false
     @Volatile internal var safScanPaused = false
     @Volatile internal var safScanActive = false
@@ -175,7 +172,7 @@ class MainActivity: FlutterFragmentActivity() {
     )
 
     companion object {
-        private val extensionAuthCallbacks = ExtensionAuthCallbacks()
+        internal val extensionAuthCallbacks = ExtensionAuthCallbacks()
         // audio_service keeps the engine across Activity recreation. Retain
         // its outstanding picker reply for the same lifetime, not the Activity.
         internal var pendingSafTreeResult: MethodChannel.Result? = null
@@ -361,112 +358,6 @@ class MainActivity: FlutterFragmentActivity() {
         }
     }
 
-    /**
-     * Creates an install-scoped marker in noBackupFilesDir. A platform restore
-     * can bring SharedPreferences back after reinstall, but this marker is never
-     * backed up. Package timestamps distinguish that case from the first app
-     * update after this marker was introduced, so existing users are not sent
-     * through onboarding again.
-     */
-    private fun ensureInstallMarker(): Map<String, Any> {
-        val marker = File(noBackupFilesDir, "installation_state_v1")
-        val markerExisted = marker.isFile
-        val packageInfo = @Suppress("DEPRECATION")
-        packageManager.getPackageInfo(packageName, 0)
-        val installTimestampDelta = kotlin.math.abs(
-            packageInfo.lastUpdateTime - packageInfo.firstInstallTime
-        )
-        val looksLikeFreshPackageInstall = installTimestampDelta <= 10_000L
-
-        var markerCreated = markerExisted
-        if (!markerExisted) {
-            markerCreated = try {
-                marker.parentFile?.mkdirs()
-                marker.writeText(
-                    "created_at=${System.currentTimeMillis()}\n" +
-                        "version_code=${BuildConfig.VERSION_CODE}\n"
-                )
-                true
-            } catch (e: Exception) {
-                android.util.Log.w(
-                    "SpotiFLAC",
-                    "Failed to create installation marker: ${e.message}"
-                )
-                false
-            }
-        }
-
-        return mapOf(
-            "marker_existed" to markerExisted,
-            "marker_created" to markerCreated,
-            "fresh_package_install" to looksLikeFreshPackageInstall,
-        )
-    }
-
-    private fun prepareRuntimeState(extensionDataDir: String): String {
-        val pattern = Regex("^[0-9a-f]{32}$")
-        fun normalize(value: String?): String? {
-            val normalized = value?.trim()?.lowercase().orEmpty()
-            return normalized.takeIf(pattern::matches)
-        }
-        fun ByteArray.hex(): String = buildString(size * 2) {
-            for (byte in this@hex) {
-                append(((byte.toInt() ushr 4) and 0x0f).toString(16))
-                append((byte.toInt() and 0x0f).toString(16))
-            }
-        }
-
-        val values = LinkedHashMap<String, String>()
-        File(extensionDataDir, "signed_sessions")
-            .listFiles { file -> file.isFile && file.name.endsWith(".json") }
-            ?.forEach { record ->
-                try {
-                    if (record.length() <= 64 * 1024L) {
-                        normalize(
-                            JSONObject(record.readText()).optString("install_id"),
-                        )?.let { values[record.name] = it }
-                    }
-                } catch (_: Exception) {
-                    // Invalid records are handled by the normal session loader.
-                }
-            }
-
-        val defaultValue = values.toSortedMap().values.firstOrNull() ?: run {
-            val androidID = android.provider.Settings.Secure.getString(
-                contentResolver,
-                android.provider.Settings.Secure.ANDROID_ID,
-            )?.trim().orEmpty()
-            val domain = "com.zarz.spotiflac/runtime/v1:"
-            val source = if (androidID.isNotEmpty()) {
-                domain + androidID
-            } else {
-                val fallbackFile = File(noBackupFilesDir, "rs_v1")
-                val fallback = try {
-                    normalize(fallbackFile.takeIf(File::isFile)?.readText())
-                } catch (_: Exception) {
-                    null
-                } ?: ByteArray(16).also(SecureRandom()::nextBytes).hex().also { value ->
-                    try {
-                        fallbackFile.parentFile?.mkdirs()
-                        fallbackFile.writeText(value)
-                    } catch (_: Exception) {}
-                }
-                domain + fallback
-            }
-            MessageDigest.getInstance("SHA-256")
-                .digest(source.toByteArray(Charsets.UTF_8))
-                .copyOf(16)
-                .hex()
-        }
-        val entries = JSONObject()
-        for ((key, value) in values.toSortedMap()) entries.put(key, value)
-        return JSONObject()
-            .put("v", 1)
-            .put("d", defaultValue)
-            .put("s", entries)
-            .toString()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         // Ensure the shared audio_service engine exists before the activity
         // delegate looks it up by cached id (see getCachedEngineId above).
@@ -485,67 +376,6 @@ class MainActivity: FlutterFragmentActivity() {
         PlayerWidgetBridge.handleIntent(intent)
     }
 
-    private fun handleVerificationNotificationIntent(intent: Intent?) {
-        if (intent?.action != VerificationNotificationIntent.ACTION) return
-        val payload = intent.getStringExtra(VerificationNotificationIntent.PAYLOAD)
-            ?.takeIf { it.isNotBlank() } ?: return
-        pendingVerificationNotification = payload
-        intent.removeExtra(VerificationNotificationIntent.PAYLOAD)
-        // Keep the payload until Dart is initialized and explicitly consumes it.
-        backendChannel?.invokeMethod("extensionVerificationNotificationTapped", null)
-    }
-
-    /**
-     * Deliver Spotify (or other) OAuth authorization code to the extension runtime
-     * and run its token exchange (e.g. completeSpotifyLogin). State is a one-time
-     * host nonce resolved to the owning extension by the backend.
-     */
-    private fun handleExtensionOAuthIntent(intent: Intent?) {
-        val uri = intent?.data ?: return
-        if (!extensionAuthCallbacks.offer(uri)) return
-        // Keep the Intent intact until the result is handled. A cold start has
-        // no extension owner yet; Dart drains this inbox after initialization.
-        backendChannel?.invokeMethod("extensionAuthCallbackReceived", null)
-    }
-
-    private suspend fun processPendingExtensionCallbacks() {
-        extensionAuthCallbacks.drain { callback ->
-            var callbackExtensionId = ""
-            try {
-                withContext(Dispatchers.IO) {
-                    coreBackend.completeAuthCallback(callback.state, callback.code, callback.sessionGrant) {
-                        callbackExtensionId = it
-                    }
-                }
-                android.util.Log.i("SpotiFLAC", "Extension callback completed")
-                if (callback.sessionGrant) {
-                    notifySessionGrantCompleted(callbackExtensionId, true)
-                }
-            } catch (e: Exception) {
-                if (e is kotlinx.coroutines.CancellationException) throw e
-                android.util.Log.w("SpotiFLAC", "Extension callback failed (${e.javaClass.simpleName})")
-                if (callback.sessionGrant && callbackExtensionId.isNotEmpty()) {
-                    notifySessionGrantCompleted(callbackExtensionId, false)
-                }
-            }
-            val current = intent?.data
-            if (current?.getQueryParameter("state") == callback.state) intent.data = null
-        }
-    }
-
-    private fun notifySessionGrantCompleted(extensionId: String, success: Boolean) {
-        val payload = mapOf(
-            "extension_id" to extensionId,
-            "success" to success,
-        )
-        val channel = backendChannel
-        if (channel == null) {
-            pendingSessionGrantEvents.add(payload)
-            return
-        }
-        channel.invokeMethod("extensionSessionGrantCompleted", payload)
-    }
-
     internal fun reportLibraryScanError(path: String, operation: String, message: String) {
         android.util.Log.e("SpotiFLAC", "Library scan: $operation [$path]: $message")
         val payload = mapOf(
@@ -555,66 +385,6 @@ class MainActivity: FlutterFragmentActivity() {
         )
         runOnUiThread {
             backendChannel?.invokeMethod("libraryScanError", payload)
-        }
-    }
-
-    /**
-     * Opens a short-lived descriptor lease for zero-copy SAF playback. The
-     * returned proc path identifies the lease. The Android audio plugin must
-     * duplicate this descriptor, never reopen it (AppFuse rejects reopening).
-     * A small hard cap protects against abandoned method calls.
-     */
-    private fun openSafPlaybackLease(uriStr: String): Map<String, String>? {
-        if (!uriStr.startsWith("content://")) return null
-        val descriptor = try {
-            contentResolver.openFileDescriptor(Uri.parse(uriStr), "r")
-        } catch (e: Exception) {
-            android.util.Log.w("SpotiFLAC", "Failed to open SAF playback descriptor: ${e.message}")
-            null
-        } ?: return null
-
-        if (!isSeekableSafDescriptor(descriptor)) {
-            descriptor.close()
-            return null
-        }
-        val token = UUID.randomUUID().toString()
-        synchronized(playbackLeaseLock) {
-            while (playbackLeases.size >= 4) {
-                val oldest = playbackLeases.entries.firstOrNull() ?: break
-                playbackLeases.remove(oldest.key)
-                try {
-                    oldest.value.close()
-                } catch (_: Exception) {}
-            }
-            playbackLeases[token] = descriptor
-        }
-        return mapOf(
-            "token" to token,
-            "path" to "/proc/self/fd/${descriptor.fd}",
-            "display_name" to buildUriDisplayName(Uri.parse(uriStr)),
-        )
-    }
-
-    private fun closeSafPlaybackLease(token: String) {
-        if (token.isBlank()) return
-        val descriptor = synchronized(playbackLeaseLock) {
-            playbackLeases.remove(token)
-        } ?: return
-        try {
-            descriptor.close()
-        } catch (_: Exception) {}
-    }
-
-    private fun closeAllSafPlaybackLeases() {
-        val descriptors = synchronized(playbackLeaseLock) {
-            val openDescriptors = playbackLeases.values.toList()
-            playbackLeases.clear()
-            openDescriptors
-        }
-        descriptors.forEach { descriptor ->
-            try {
-                descriptor.close()
-            } catch (_: Exception) {}
         }
     }
 
@@ -672,54 +442,8 @@ class MainActivity: FlutterFragmentActivity() {
         if (!flutterEngine.plugins.has(MusicHapticsPlugin::class.java)) {
             flutterEngine.plugins.add(MusicHapticsPlugin())
         }
-        concertCalendarChannel = MethodChannel(messenger, "com.zarz.spotiflac/concert_calendar").also { channel ->
-            channel.setMethodCallHandler { call, result ->
-                if (call.method != "add") {
-                    result.notImplemented()
-                } else {
-                    val start = call.argument<Number>("start")?.toLong()
-                    if (start == null) {
-                        result.success(false)
-                    } else {
-                        val suppliedEnd = call.argument<Number>("end")?.toLong()
-                        val end = suppliedEnd?.takeIf { it > start } ?: (start + 3600000)
-                        try {
-                            startActivity(Intent(Intent.ACTION_INSERT).apply {
-                                data = android.provider.CalendarContract.Events.CONTENT_URI
-                                putExtra(android.provider.CalendarContract.Events.TITLE, call.argument<String>("title"))
-                                putExtra(android.provider.CalendarContract.Events.EVENT_LOCATION, call.argument<String>("location"))
-                                putExtra(android.provider.CalendarContract.Events.DESCRIPTION, call.argument<String>("url"))
-                                putExtra(android.provider.CalendarContract.EXTRA_EVENT_BEGIN_TIME, start)
-                                putExtra(android.provider.CalendarContract.EXTRA_EVENT_END_TIME, end)
-                            })
-                            result.success(true)
-                        } catch (_: Exception) {
-                            result.success(false)
-                        }
-                    }
-                }
-            }
-        }
-        audioOutputChannel = MethodChannel(messenger, "com.zarz.spotiflac/audio_output").also { channel ->
-            channel.setMethodCallHandler { call, result ->
-                if (call.method != "show") {
-                    result.notImplemented()
-                } else {
-                    try {
-                        val shown = if (Build.VERSION.SDK_INT >= 34) {
-                            android.media.MediaRouter2.getInstance(this).showSystemOutputSwitcher()
-                        } else {
-                            // Older Android releases do not expose a public output picker.
-                            startActivity(Intent(android.provider.Settings.ACTION_BLUETOOTH_SETTINGS))
-                            true
-                        }
-                        result.success(shown)
-                    } catch (_: Exception) {
-                        result.success(false)
-                    }
-                }
-            }
-        }
+        registerConcertCalendarChannel(messenger)
+        registerAudioOutputChannel(messenger)
 
         registerProgressStreams(messenger)
 
