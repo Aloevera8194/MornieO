@@ -22,7 +22,7 @@ internal suspend fun MainActivity.handleRewriteSplitArtistTags(call: MethodCall,
     val response = withContext(Dispatchers.IO) {
         if (filePath.startsWith("content://")) {
             val uri = Uri.parse(filePath)
-            val tempPath = copyUriToTemp(uri, ".flac")
+            val tempPath = copyUriToTemp(coreBackend, uri, ".flac")
                 ?: return@withContext errorJson("Failed to copy SAF file to temp")
             try {
                 val raw = coreBackend.rewriteSplitArtistTags(tempPath, artist, albumArtist)
@@ -57,7 +57,7 @@ internal suspend fun MainActivity.handleReadFileMetadata(call: MethodCall, resul
     val response = withContext(Dispatchers.IO) {
         try {
             if (filePath.startsWith("content://")) {
-                readCompleteMetadataFromUri(Uri.parse(filePath), displayName)
+                readCompleteMetadataFromUri(coreBackend, Uri.parse(filePath), displayName)
                     ?.toString() ?: errorJson("Failed to read SAF metadata")
             } else {
                 coreBackend.readFileMetadata(filePath, displayName)
@@ -75,7 +75,7 @@ internal suspend fun MainActivity.handleCheckHiResAuthenticity(call: MethodCall,
     val response = withContext(Dispatchers.IO) {
         try {
             if (filePath.startsWith("content://")) {
-                checkHiResAuthenticityFromUri(Uri.parse(filePath), optionsJson)
+                checkHiResAuthenticityFromUri(coreBackend, Uri.parse(filePath), optionsJson)
                     ?.toString()
                     ?: errorJson("Failed to read SAF audio file")
             } else {
@@ -95,7 +95,7 @@ internal suspend fun MainActivity.handleEditFileMetadata(call: MethodCall, resul
         try {
             if (filePath.startsWith("content://")) {
                 val uri = Uri.parse(filePath)
-                val tempPath = copyUriToTemp(uri)
+                val tempPath = copyUriToTemp(coreBackend, uri)
                     ?: return@withContext """{"error":"Failed to copy SAF file to temp"}"""
                 try {
                     val raw = coreBackend.editFileMetadata(tempPath, metadataJson)
@@ -215,7 +215,7 @@ internal suspend fun MainActivity.handleExtractCoverToFile(call: MethodCall, res
     val response = withContext(Dispatchers.IO) {
         try {
             if (audioPath.startsWith("content://")) {
-                extractCoverFromUri(Uri.parse(audioPath), outputPath)
+                extractCoverFromUri(coreBackend, Uri.parse(audioPath), outputPath)
                 """{"success":true}"""
             } else {
                 coreBackend.extractCoverToFile(audioPath, outputPath)
@@ -239,7 +239,7 @@ internal suspend fun MainActivity.handleReEnrichFile(call: MethodCall, result: M
             // a full SAF document copy and never writes the source.
             if (filePath.startsWith("content://") && !reqObj.optBoolean("preview_only", false)) {
                 val uri = Uri.parse(filePath)
-                val tempPath = copyUriToTemp(uri)
+                val tempPath = copyUriToTemp(coreBackend, uri)
                     ?: return@withContext """{"error":"Failed to copy SAF file to temp"}"""
                 var retainedForFfmpeg = false
                 try {
@@ -301,7 +301,7 @@ internal suspend fun MainActivity.handleRunPostProcessingV2(call: MethodCall, re
         }
 
         if (effectiveUri.isNotBlank()) {
-            runPostProcessingSafV2(effectiveUri, metadataJson, inputObj.optString("item_id", ""))
+            runPostProcessingSafV2(coreBackend, effectiveUri, metadataJson, inputObj.optString("item_id", ""))
         } else {
             if (pathStr.isNotBlank()) {
                 inputObj.put("name", File(pathStr).name)
@@ -319,7 +319,7 @@ internal suspend fun MainActivity.handleReadAudioMetadata(call: MethodCall, resu
         try {
             if (filePath.startsWith("content://")) {
                 val uri = Uri.parse(filePath)
-                val metadata = readAudioMetadataFromUri(uri)
+                val metadata = readAudioMetadataFromUri(coreBackend, uri)
                     ?: return@withContext """{"error":"Failed to read SAF audio metadata"}"""
                 metadata.put("filePath", filePath)
                 metadata.toString()
@@ -340,7 +340,7 @@ internal suspend fun MainActivity.handleParseCueSheet(call: MethodCall, result: 
         try {
             if (cuePath.startsWith("content://")) {
                 val uri = Uri.parse(cuePath)
-                val tempCuePath = copyUriToTemp(uri, ".cue")
+                val tempCuePath = copyUriToTemp(coreBackend, uri, ".cue")
                     ?: return@withContext """{"error":"Failed to copy CUE file to temp"}"""
                 try {
                     val audioFileName = extractCueAudioFileName(tempCuePath)

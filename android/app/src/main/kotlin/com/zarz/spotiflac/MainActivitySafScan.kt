@@ -1066,7 +1066,7 @@ internal fun MainActivity.scanSafTree(
 
             var tempCuePath: String? = null
             try {
-                tempCuePath = copyUriToTemp(cueDoc.uri, ".cue", cueName)
+                tempCuePath = copyUriToTemp(coreBackend, cueDoc.uri, ".cue", cueName)
                 if (tempCuePath == null) {
                     errors++
                     reportLibraryScanError(cueUri, "Read CUE", "Failed to copy CUE file")
@@ -1106,6 +1106,7 @@ internal fun MainActivity.scanSafTree(
                 val cueLastModified = cue.lastModified
 
                 val cueResultsJson = scanCueFromUri(
+                    coreBackend,
                     tempCuePath,
                     audioDoc.uri,
                     audioName,
@@ -1189,6 +1190,7 @@ internal fun MainActivity.scanSafTree(
                 var error: String? = null
                 val metadata = try {
                     readAudioMetadataFromUri(
+                        coreBackend,
                         doc.uri,
                         name,
                         fallbackExt,
@@ -1481,7 +1483,7 @@ internal fun MainActivity.scanSafTreeIncremental(
 
             var tempCuePath: String? = null
             try {
-                tempCuePath = copyUriToTemp(cueDoc.uri, ".cue", cueName)
+                tempCuePath = copyUriToTemp(coreBackend, cueDoc.uri, ".cue", cueName)
                 if (tempCuePath == null) {
                     errors++
                     reportLibraryScanError(cueDoc.uri.toString(), "Read CUE", "Failed to copy CUE file")
@@ -1515,6 +1517,7 @@ internal fun MainActivity.scanSafTreeIncremental(
                 )
 
                 val cueResultsJson = scanCueFromUri(
+                    coreBackend,
                     tempCuePath,
                     audioDoc.uri,
                     audioName,
@@ -1557,7 +1560,7 @@ internal fun MainActivity.scanSafTreeIncremental(
         for ((cueDoc, parentDir, cueName) in unchangedCueFiles) {
             var tempCue: String? = null
             try {
-                tempCue = copyUriToTemp(cueDoc.uri, ".cue", cueName)
+                tempCue = copyUriToTemp(coreBackend, cueDoc.uri, ".cue", cueName)
                 if (tempCue != null) {
                     val audioFileName = extractCueAudioFileName(tempCue)
                     val audioDoc = resolveCueAudioSibling(
@@ -1621,6 +1624,7 @@ internal fun MainActivity.scanSafTreeIncremental(
                 val ext = audio.name.substringAfterLast('.', "").lowercase(Locale.ROOT)
                 val fallbackExt = if (ext.isNotBlank()) ".${ext}" else null
                 readAudioMetadataFromUri(
+                    coreBackend,
                     audio.doc.uri,
                     audio.name,
                     fallbackExt,

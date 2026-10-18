@@ -40,7 +40,7 @@ internal suspend fun MainActivity.dispatchBackendApplication(call: MethodCall, r
                     val path = arguments["file_path"] as? String ?: ""
                     readLyricsWithSafCopy(
                         path,
-                        copyToTemp = { copyUriToTemp(Uri.parse(it))?.let(::File) },
+                        copyToTemp = { copyUriToTemp(coreBackend, Uri.parse(it))?.let(::File) },
                         read = { localPath ->
                             coreBackend.invokeApplication(call.method, arguments + ("file_path" to localPath))
                         },

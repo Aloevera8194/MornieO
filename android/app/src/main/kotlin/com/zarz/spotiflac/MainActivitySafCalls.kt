@@ -149,7 +149,7 @@ internal suspend fun MainActivity.handleInspectSafFiles(call: MethodCall, result
 internal suspend fun MainActivity.handleSafCopyToTemp(call: MethodCall, result: MethodChannel.Result) {
     val uriStr = call.argument<String>("uri") ?: ""
     val tempPath = withContext(Dispatchers.IO) {
-        copyUriToTemp(Uri.parse(uriStr))
+        copyUriToTemp(coreBackend, Uri.parse(uriStr))
     }
     result.success(tempPath)
 }
