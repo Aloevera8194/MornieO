@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/models/artist_concert.dart';
 import 'package:spotiflac_android/screens/playlist_screen.dart';
+import 'package:spotiflac_android/services/concert_calendar_service.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/services/shell_navigation_service.dart';
 import 'package:spotiflac_android/theme/cover_palette.dart';
@@ -547,19 +548,16 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
     if (_calendarOpen || _detail.start == null) return;
     _calendarOpen = true;
     try {
-      final opened =
-          await const MethodChannel(
-            'com.zarz.spotiflac/concert_calendar',
-          ).invokeMethod<bool>('add', {
-            'title': _detail.title ?? widget.artistName,
-            'location': [
-              _detail.venue ?? widget.concert.venue,
-              _detail.address ?? widget.concert.location,
-            ].join(', '),
-            'start': _detail.start!.millisecondsSinceEpoch,
-            'end': _detail.end?.millisecondsSinceEpoch,
-            'url': _detail.url ?? widget.concert.url,
-          });
+      final opened = await ConcertCalendarService.add(
+        title: _detail.title ?? widget.artistName,
+        location: [
+          _detail.venue ?? widget.concert.venue,
+          _detail.address ?? widget.concert.location,
+        ].join(', '),
+        start: _detail.start!.millisecondsSinceEpoch,
+        end: _detail.end?.millisecondsSinceEpoch,
+        url: _detail.url ?? widget.concert.url,
+      );
       if (mounted && opened != true) {
         _error(context.l10n.concertCalendarUnavailable);
       }
