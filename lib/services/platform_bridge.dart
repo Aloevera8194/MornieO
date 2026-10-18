@@ -153,9 +153,12 @@ class PlatformBridge {
   static const _libraryScanProgressEvents = EventChannel(
     'com.zarz.spotiflac/library_scan_progress_stream',
   );
-  static final Map<String, _BridgeCacheEntry> _metadataCache = {};
-  static final Map<String, _BridgeCacheEntry> _urlHandleCache = {};
-  static final Map<String, _BridgeListCacheEntry> _customSearchCache = {};
+  static final Map<String, _BridgeCacheEntry<Map<String, dynamic>>>
+  _metadataCache = {};
+  static final Map<String, _BridgeCacheEntry<Map<String, dynamic>>>
+  _urlHandleCache = {};
+  static final Map<String, _BridgeCacheEntry<List<Map<String, dynamic>>>>
+  _customSearchCache = {};
   static final Map<String, Future<Map<String, dynamic>>> _metadataInFlight = {};
   static final Map<String, Future<Map<String, dynamic>?>> _urlHandleInFlight =
       {};
@@ -311,7 +314,7 @@ class PlatformBridge {
 
   static Future<Map<String, dynamic>> _cachedInvoke(
     String cacheKey,
-    Map<String, _BridgeCacheEntry> cache,
+    Map<String, _BridgeCacheEntry<Map<String, dynamic>>> cache,
     Map<String, Future<Map<String, dynamic>>> inFlight,
     Duration ttl,
     String persistentCacheKey,
@@ -355,7 +358,7 @@ class PlatformBridge {
   }
 
   static Map<String, dynamic>? _getCachedMap(
-    Map<String, _BridgeCacheEntry> cache,
+    Map<String, _BridgeCacheEntry<Map<String, dynamic>>> cache,
     String key,
   ) {
     _pruneExpiredBridgeCache(cache);
@@ -369,13 +372,13 @@ class PlatformBridge {
   }
 
   static void _putCachedMap(
-    Map<String, _BridgeCacheEntry> cache,
+    Map<String, _BridgeCacheEntry<Map<String, dynamic>>> cache,
     String key,
     Map<String, dynamic> value,
     Duration ttl,
     String persistentCacheKey,
   ) {
-    _putMemoryCachedMap(cache, key, value, ttl);
+    _putMemoryCached<Map<String, dynamic>>(cache, key, value, ttl);
     _scheduleLookupCachePersist(
       cache,
       persistentCacheKey,
@@ -414,7 +417,9 @@ class PlatformBridge {
     return bytes;
   }
 
-  static void _pruneExpiredBridgeCache(Map<String, _BridgeCacheEntry> cache) {
+  static void _pruneExpiredBridgeCache<T>(
+    Map<String, _BridgeCacheEntry<T>> cache,
+  ) {
     if (cache.isEmpty) return;
     final now = DateTime.now();
     cache.removeWhere((_, entry) => now.isAfter(entry.expiresAt));
@@ -491,7 +496,7 @@ class PlatformBridge {
   static Future<void> _restorePersistentCache(
     SharedPreferences prefs,
     String prefsKey,
-    Map<String, _BridgeCacheEntry> target,
+    Map<String, _BridgeCacheEntry<Map<String, dynamic>>> target,
     int generation,
   ) async {
     final raw = prefs.getString(prefsKey);
@@ -535,7 +540,7 @@ class PlatformBridge {
   }
 
   static Future<void> _persistLookupCache(
-    Map<String, _BridgeCacheEntry> cache,
+    Map<String, _BridgeCacheEntry<Map<String, dynamic>>> cache,
     String prefsKey,
     int generation,
   ) async {
@@ -570,7 +575,7 @@ class PlatformBridge {
   }
 
   static void _scheduleLookupCachePersist(
-    Map<String, _BridgeCacheEntry> cache,
+    Map<String, _BridgeCacheEntry<Map<String, dynamic>>> cache,
     String prefsKey,
     int generation,
   ) {
@@ -584,7 +589,7 @@ class PlatformBridge {
   }
 
   static Future<void> _flushLookupCachePersist(
-    Map<String, _BridgeCacheEntry> cache,
+    Map<String, _BridgeCacheEntry<Map<String, dynamic>>> cache,
     String prefsKey,
     int generation,
   ) {
@@ -2011,7 +2016,7 @@ class PlatformBridge {
       );
       if (generation == _lookupCacheGeneration &&
           _customSearchInFlight[cacheKey]?.requestId == requestId) {
-        _putMemoryCachedMapList(
+        _putMemoryCached<List<Map<String, dynamic>>>(
           _customSearchCache,
           cacheKey,
           decoded,
@@ -2061,7 +2066,7 @@ class PlatformBridge {
         if (generation == _lookupCacheGeneration &&
             decoded != null &&
             _isCacheableURLHandleResult(decoded)) {
-          _putMemoryCachedMap(
+          _putMemoryCached<Map<String, dynamic>>(
             _urlHandleCache,
             cacheKey,
             decoded,
@@ -2096,10 +2101,12 @@ class PlatformBridge {
     return type == 'album' || type == 'playlist' || type == 'artist';
   }
 
-  static void _putMemoryCachedMap(
-    Map<String, _BridgeCacheEntry> cache,
+  /// Admits [value] under the shared per-entry and per-cache budgets,
+  /// evicting the oldest entries first. Each cache map is budgeted on its own.
+  static void _putMemoryCached<T>(
+    Map<String, _BridgeCacheEntry<T>> cache,
     String key,
-    Map<String, dynamic> value,
+    T value,
     Duration ttl,
   ) {
     _pruneExpiredBridgeCache(cache);
@@ -2112,7 +2119,7 @@ class PlatformBridge {
             retained + bytes > _bridgeCacheMaxBytes)) {
       retained -= cache.remove(cache.keys.first)!.bytes;
     }
-    cache[key] = _BridgeCacheEntry(
+    cache[key] = _BridgeCacheEntry<T>(
       value: value,
       expiresAt: DateTime.now().add(ttl),
       bytes: bytes,
@@ -2120,10 +2127,10 @@ class PlatformBridge {
   }
 
   static List<Map<String, dynamic>>? _getCachedMapList(
-    Map<String, _BridgeListCacheEntry> cache,
+    Map<String, _BridgeCacheEntry<List<Map<String, dynamic>>>> cache,
     String key,
   ) {
-    _pruneExpiredBridgeListCache(cache);
+    _pruneExpiredBridgeCache(cache);
     final entry = cache[key];
     if (entry == null) return null;
     if (entry.isExpired) {
@@ -2131,37 +2138,6 @@ class PlatformBridge {
       return null;
     }
     return _copyMapList(entry.value);
-  }
-
-  static void _putMemoryCachedMapList(
-    Map<String, _BridgeListCacheEntry> cache,
-    String key,
-    List<Map<String, dynamic>> value,
-    Duration ttl,
-  ) {
-    _pruneExpiredBridgeListCache(cache);
-    cache.remove(key);
-    final bytes = _payloadBytes(value) + key.length * 2;
-    if (bytes > _bridgeCacheMaxEntryBytes) return;
-    var retained = cache.values.fold<int>(0, (sum, item) => sum + item.bytes);
-    while (cache.isNotEmpty &&
-        (cache.length >= _bridgeCacheMaxEntries ||
-            retained + bytes > _bridgeCacheMaxBytes)) {
-      retained -= cache.remove(cache.keys.first)!.bytes;
-    }
-    cache[key] = _BridgeListCacheEntry(
-      value: value,
-      expiresAt: DateTime.now().add(ttl),
-      bytes: bytes,
-    );
-  }
-
-  static void _pruneExpiredBridgeListCache(
-    Map<String, _BridgeListCacheEntry> cache,
-  ) {
-    if (cache.isEmpty) return;
-    final now = DateTime.now();
-    cache.removeWhere((_, entry) => now.isAfter(entry.expiresAt));
   }
 
   static Future<String?> findURLHandler(String url) async {

@@ -1,25 +1,11 @@
 part of '../platform_bridge.dart';
 
-class _BridgeCacheEntry {
-  final Map<String, dynamic> value;
+class _BridgeCacheEntry<T> {
+  final T value;
   final DateTime expiresAt;
   final int bytes;
 
   const _BridgeCacheEntry({
-    required this.value,
-    required this.expiresAt,
-    required this.bytes,
-  });
-
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
-}
-
-class _BridgeListCacheEntry {
-  final List<Map<String, dynamic>> value;
-  final DateTime expiresAt;
-  final int bytes;
-
-  const _BridgeListCacheEntry({
     required this.value,
     required this.expiresAt,
     required this.bytes,
