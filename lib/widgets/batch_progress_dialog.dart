@@ -11,7 +11,7 @@ class _BatchProgress {
 
 /// A reusable progress dialog for batch operations like conversion and
 /// re-enrich. Follows the same visual style as [_FetchingProgressDialog] in
-/// artist_screen.dart.
+/// artist_screen_discography.dart.
 ///
 /// Uses a static [ValueNotifier] so callers do not need the dialog's
 /// [BuildContext] to push updates – unlike `findAncestorStateOfType` which
