@@ -88,7 +88,7 @@ class EqualizerController extends Notifier<EqualizerState> {
   void update(EqualizerSettings settings) => _commit(settings, state.presets);
 
   void applyPreset(EqualizerPreset preset) =>
-      update(preset.settings.copyWith(enabled: state.settings.enabled));
+      update(state.settings.withToneOf(preset.settings));
 
   void savePreset(String name) {
     final trimmed = name.trim();

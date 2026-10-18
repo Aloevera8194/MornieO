@@ -483,11 +483,13 @@ class _EqualizerScreenState extends ConsumerState<EqualizerScreen> {
 
 /// The preset whose curve, tone and dynamics match the current settings.
 EqualizerPreset? _matchingPreset(EqualizerState state) {
-  String key(EqualizerSettings settings) =>
-      jsonEncode(settings.copyWith(enabled: false).toJson());
+  // Matches when applying the preset would change nothing.
+  String key(EqualizerSettings settings) => jsonEncode(settings.toJson());
   final current = key(state.settings);
   for (final preset in [...EqualizerPreset.builtIn, ...state.presets]) {
-    if (key(preset.settings) == current) return preset;
+    if (key(state.settings.withToneOf(preset.settings)) == current) {
+      return preset;
+    }
   }
   return null;
 }

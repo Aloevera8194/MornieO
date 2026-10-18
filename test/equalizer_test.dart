@@ -60,6 +60,35 @@ void main() {
     expect(settings.copyWith(autoHeadroom: false).inputGain, -2);
   });
 
+  test('presets change the sound but keep output safety choices', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final notifier = container.read(equalizerProvider.notifier);
+    notifier.update(
+      const EqualizerSettings(
+        enabled: true,
+        balance: 0.25,
+        autoHeadroom: false,
+        limiter: false,
+        compressor: true,
+        ratio: 6,
+      ),
+    );
+    final bassBoost = EqualizerPreset.builtIn.firstWhere(
+      (preset) => preset.name == 'Bass boost',
+    );
+    notifier.applyPreset(bassBoost);
+    final settings = container.read(equalizerProvider).settings;
+    expect(settings.gains, bassBoost.settings.gains);
+    expect(settings.enabled, isTrue);
+    expect(settings.balance, 0.25);
+    expect(settings.autoHeadroom, isFalse);
+    expect(settings.limiter, isFalse);
+    expect(settings.compressor, isTrue);
+    expect(settings.ratio, 6);
+    expect(settings.inputGain, 0);
+  });
+
   test(
     'malformed and nonfinite imports cannot create unsafe native settings',
     () {

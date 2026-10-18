@@ -130,6 +130,15 @@ class EqualizerSettings {
     return copyWith(gains: [for (final hz in next.frequencies) gainAt(hz)]);
   }
 
+  /// A preset carries a sound; headroom, limiting, compression and balance
+  /// stay as the listener set them.
+  EqualizerSettings withToneOf(EqualizerSettings preset) => copyWith(
+    gains: preset.gains,
+    preamp: preset.preamp,
+    bass: preset.bass,
+    treble: preset.treble,
+  );
+
   double gainAt(double hz, {bool includeTone = false}) {
     final values = includeTone ? effectiveGains : gains;
     final centers = frequencies;
