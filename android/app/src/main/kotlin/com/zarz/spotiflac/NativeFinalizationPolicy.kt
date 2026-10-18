@@ -462,7 +462,7 @@ internal object NativeFinalizationPolicy {
         return trimmed
     }
 
-    private fun normalizeExtension(extension: String?): String {
+    internal fun normalizeExtension(extension: String?): String {
         val trimmed = extension?.trim().orEmpty()
         if (trimmed.isEmpty()) return ""
         val lower = trimmed.lowercase(Locale.ROOT)

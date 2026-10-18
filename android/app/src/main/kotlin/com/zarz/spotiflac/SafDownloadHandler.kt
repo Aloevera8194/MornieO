@@ -632,11 +632,9 @@ object SafDownloadHandler {
         }
     }
 
-    internal fun normalizeExt(ext: String?): String {
-        val trimmed = ext?.trim().orEmpty()
-        if (trimmed.isEmpty()) return ""
-        return if (trimmed.startsWith(".")) trimmed.lowercase(Locale.ROOT) else ".${trimmed.lowercase(Locale.ROOT)}"
-    }
+    // Same result for every input; pinned by ExtensionMimeTablesTest.
+    internal fun normalizeExt(ext: String?): String =
+        NativeFinalizationPolicy.normalizeExtension(ext)
 
     internal fun mimeTypeForExt(ext: String?): String {
         return when (normalizeExt(ext)) {
