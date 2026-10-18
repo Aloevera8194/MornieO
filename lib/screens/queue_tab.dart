@@ -81,6 +81,7 @@ import 'package:spotiflac_android/services/cover_cache_manager.dart';
 import 'package:spotiflac_android/screens/library_tracks_folder_screen.dart';
 import 'package:spotiflac_android/screens/local_album_screen.dart';
 import 'package:spotiflac_android/screens/mornye_library_screen.dart';
+import 'package:spotiflac_android/controllers/queue_library_pager.dart';
 import 'package:spotiflac_android/controllers/queue_library_refresh_policy.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
@@ -214,14 +215,16 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   String _libraryQualityLabelMode = AppSettings.libraryQualityLabelBitDepthOnly;
   double _libraryGridExtent = _libraryGridDefaultExtent;
   double? _libraryGridPinchStartExtent;
-  final Map<String, int> _libraryPageOffsetByFilter = {};
-  bool _libraryPageLoadScheduled = false;
 
-  final Map<_QueueLibraryCountsRequest, QueueLibraryCounts>
-  _queueLibraryCountsCache = {};
-  final Map<_QueueLibraryPageRequest, _QueueLibraryPageData>
-  _queueLibraryPageDataCache = {};
-  DateTime? _lastBlankLibraryRepairAt;
+  final QueueLibraryPager<
+    _QueueLibraryCountsRequest,
+    _QueueLibraryPageRequest,
+    _QueueLibraryPageData
+  >
+  _pager = QueueLibraryPager(
+    pageSize: _libraryPageSize,
+    combinePages: _QueueLibraryPageData.combine,
+  );
 
   double _queueCoverSize() {
     final shortestSide = MediaQuery.sizeOf(context).shortestSide;
@@ -355,119 +358,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     });
   }
 
-  int _libraryPageOffsetFor(String filterMode) =>
-      _libraryPageOffsetByFilter[filterMode] ?? 0;
-
-  void _resetLibraryOffsets() {
-    _libraryPageOffsetByFilter.clear();
-  }
-
-  void _resetLibraryPaging() {
-    _resetLibraryOffsets();
-    _queueLibraryPageDataCache.clear();
-  }
-
-  void _loadMoreLibraryItems({
-    required String filterMode,
-    required bool hasMoreLibrary,
-  }) {
-    if (_libraryPageLoadScheduled) return;
-    _libraryPageLoadScheduled = true;
-    setState(() {
-      if (hasMoreLibrary) {
-        _libraryPageOffsetByFilter[filterMode] =
-            _libraryPageOffsetFor(filterMode) + _libraryPageSize;
-      }
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _libraryPageLoadScheduled = false;
-    });
-  }
-
-  QueueLibraryCounts _resolveQueueLibraryCounts(
-    AsyncValue<QueueLibraryCounts> value,
-    _QueueLibraryCountsRequest request, {
-    QueueLibraryCounts? nonEmptyFallback,
-  }) {
-    return value.maybeWhen(
-      data: (counts) {
-        final cached = _queueLibraryCountsCache[request];
-        final resolved = resolveQueueLibraryCountsSnapshot(
-          current: counts,
-          cached: cached,
-          activeDownloadFallback: nonEmptyFallback,
-        );
-        _queueLibraryCountsCache[request] = resolved;
-        _trimQueueLibraryCountsCache();
-        return resolved;
-      },
-      orElse: () =>
-          _queueLibraryCountsCache[request] ??
-          nonEmptyFallback ??
-          const QueueLibraryCounts(
-            allTrackCount: 0,
-            albumCount: 0,
-            singleTrackCount: 0,
-          ),
-    );
-  }
-
-  /// [nonEmptyFallback] is non-null when an in-memory snapshot is available;
-  /// it is only invoked when no cached or live page has content.
-  _QueueLibraryPageData _resolveQueueLibraryPageData(
-    AsyncValue<_QueueLibraryPageData>? value,
-    _QueueLibraryPageRequest request, {
-    _QueueLibraryPageData Function()? nonEmptyFallback,
-  }) {
-    void storePage(_QueueLibraryPageData data) {
-      final cached = _cachedQueueLibraryPageAt(request, request.offset);
-      if (shouldRetainQueueLibraryPageSnapshot(
-        currentIsEmpty: data.isEmpty,
-        cachedHasContent: cached != null && !cached.isEmpty,
-        activeDownloadFallbackAvailable: nonEmptyFallback != null,
-      )) {
-        return;
-      }
-      final staleRequests = _queueLibraryPageDataCache.keys
-          .where(
-            (cachedRequest) =>
-                cachedRequest.offset == request.offset &&
-                cachedRequest != request &&
-                _sameQueueLibraryPageScope(cachedRequest, request),
-          )
-          .toList(growable: false);
-      for (final staleRequest in staleRequests) {
-        _queueLibraryPageDataCache.remove(staleRequest);
-      }
-      _queueLibraryPageDataCache[request] = data;
-      _trimQueueLibraryPageDataCache(protectedRequest: request);
-    }
-
-    if (value != null) {
-      final liveData = value.asData?.value;
-      if (liveData != null) {
-        storePage(liveData);
-      }
-      value.whenOrNull(data: storePage);
-    }
-
-    final pages = <_QueueLibraryPageData>[];
-    for (var offset = 0; offset <= request.offset; offset += _libraryPageSize) {
-      final page = _cachedQueueLibraryPageAt(request, offset);
-      if (page != null) pages.add(page);
-    }
-
-    final combined = _QueueLibraryPageData.combine(pages);
-    if (combined.isEmpty && nonEmptyFallback != null) {
-      return nonEmptyFallback();
-    }
-    return combined;
-  }
-
-  void _invalidateLibraryDataCaches() {
-    _queueLibraryCountsCache.clear();
-    _queueLibraryPageDataCache.clear();
-  }
+  void _resetLibraryPaging() => _pager.resetPaging();
 
   void _scheduleBlankLibraryRepair({
     required bool hasQueueItems,
@@ -475,87 +366,20 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     required bool hasAnyLibraryItems,
     required bool isLibraryPageLoading,
   }) {
-    if (!hasQueueItems ||
-        hasLibraryContent ||
-        hasAnyLibraryItems ||
-        isLibraryPageLoading) {
-      return;
-    }
-    final now = DateTime.now();
-    final last = _lastBlankLibraryRepairAt;
-    if (last != null && now.difference(last) < const Duration(seconds: 8)) {
-      return;
-    }
-    _lastBlankLibraryRepairAt = now;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      _invalidateLibraryDataCaches();
-      ref.read(downloadHistoryProvider.notifier).reloadFromStorage();
-      if (ref.read(settingsProvider).localLibraryEnabled) {
-        ref.read(localLibraryProvider.notifier).reloadFromStorage();
-      }
-      setState(() {});
-    });
-  }
-
-  void _trimQueueLibraryCountsCache() {
-    const maxCountEntries = 24;
-    while (_queueLibraryCountsCache.length > maxCountEntries) {
-      _queueLibraryCountsCache.remove(_queueLibraryCountsCache.keys.first);
-    }
-  }
-
-  bool _isProtectedQueueLibraryPage(
-    _QueueLibraryPageRequest request,
-    _QueueLibraryPageRequest protectedRequest,
-  ) {
-    return _sameQueueLibraryPageScope(request, protectedRequest) &&
-        request.limit == protectedRequest.limit &&
-        request.offset <= protectedRequest.offset;
-  }
-
-  bool _sameQueueLibraryPageScope(
-    _QueueLibraryPageRequest a,
-    _QueueLibraryPageRequest b,
-  ) {
-    return a.filterMode == b.filterMode &&
-        a.limit == b.limit &&
-        a.searchQuery == b.searchQuery &&
-        a.filterSource == b.filterSource &&
-        a.filterQuality == b.filterQuality &&
-        a.filterFormat == b.filterFormat &&
-        a.filterMetadata == b.filterMetadata &&
-        a.sortMode == b.sortMode &&
-        a.localLibraryEnabled == b.localLibraryEnabled;
-  }
-
-  _QueueLibraryPageData? _cachedQueueLibraryPageAt(
-    _QueueLibraryPageRequest request,
-    int offset,
-  ) {
-    for (final entry in _queueLibraryPageDataCache.entries) {
-      if (entry.key.offset == offset &&
-          _sameQueueLibraryPageScope(entry.key, request)) {
-        return entry.value;
-      }
-    }
-    return null;
-  }
-
-  void _trimQueueLibraryPageDataCache({
-    required _QueueLibraryPageRequest protectedRequest,
-  }) {
-    const maxPageEntries = 96;
-    while (_queueLibraryPageDataCache.length > maxPageEntries) {
-      final removableKey = _queueLibraryPageDataCache.keys
-          .where(
-            (request) =>
-                !_isProtectedQueueLibraryPage(request, protectedRequest),
-          )
-          .firstOrNull;
-      if (removableKey == null) break;
-      _queueLibraryPageDataCache.remove(removableKey);
-    }
+    _pager.scheduleBlankLibraryRepair(
+      hasQueueItems: hasQueueItems,
+      hasLibraryContent: hasLibraryContent,
+      hasAnyLibraryItems: hasAnyLibraryItems,
+      isLibraryPageLoading: isLibraryPageLoading,
+      isMounted: () => mounted,
+      repair: () {
+        ref.read(downloadHistoryProvider.notifier).reloadFromStorage();
+        if (ref.read(settingsProvider).localLibraryEnabled) {
+          ref.read(localLibraryProvider.notifier).reloadFromStorage();
+        }
+        setState(() {});
+      },
+    );
   }
 
   bool _handleLibraryScrollNotification({
@@ -564,23 +388,13 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     required bool hasMoreLibrary,
     required bool isPageLoading,
   }) {
-    if (isPageLoading || !hasMoreLibrary || notification.depth != 0) {
-      return false;
-    }
-
-    final metrics = notification.metrics;
-    if (metrics.maxScrollExtent <= 0) return false;
-    final threshold = metrics.maxScrollExtent * 0.7;
-    final nearEnd =
-        metrics.pixels >= threshold ||
-        metrics.extentAfter <= metrics.viewportDimension * 1.5;
-    if (!nearEnd) return false;
-
-    _loadMoreLibraryItems(
+    return _pager.handleScrollNotification(
+      notification: notification,
       filterMode: filterMode,
       hasMoreLibrary: hasMoreLibrary,
+      isPageLoading: isPageLoading,
+      setState: setState,
     );
-    return false;
   }
 
   void _onFilterPageChanged(int index) {
@@ -745,7 +559,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         // The family provider already reruns for the new revision. Retain its
         // last successful page while SQLite is loading so metadata backfills
         // and download completions cannot flash the Library as empty.
-        _resetLibraryOffsets();
+        _pager.resetOffsets();
         if (mounted) setState(() {});
       },
     );
@@ -755,7 +569,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         (previous, next) {
           if (previous == null || previous == next) return;
           // Keep stale rows visible until the refreshed query replaces them.
-          _resetLibraryOffsets();
+          _pager.resetOffsets();
           if (mounted) setState(() {});
         },
       );
@@ -867,14 +681,14 @@ class _QueueTabState extends ConsumerState<QueueTab> {
             persistedTotalCount: historyTotalCount,
           )
         : null;
-    final queueCounts = _resolveQueueLibraryCounts(
+    final queueCounts = _pager.resolveCounts(
       countsValue,
       countsRequest,
       nonEmptyFallback: historySnapshotCounts,
     );
 
     _QueueLibraryPageRequest pageRequest(String filterMode) {
-      final offset = _libraryPageOffsetFor(filterMode);
+      final offset = _pager.pageOffsetFor(filterMode);
       final baseRequest = _QueueLibraryPageRequest(
         filterMode: filterMode,
         limit: _libraryPageSize,
@@ -888,7 +702,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         localLibraryEnabled: localLibraryEnabled,
       );
       if (offset == 0) return baseRequest;
-      final previousPage = _cachedQueueLibraryPageAt(
+      final previousPage = _pager.cachedPageAt(
         baseRequest,
         offset - _libraryPageSize,
       );
@@ -925,7 +739,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
           hasQueueItems &&
           inMemoryHistoryItems.isNotEmpty &&
           request.allowsInMemoryHistoryFallback;
-      return _resolveQueueLibraryPageData(
+      return _pager.resolvePageData(
         filterMode == historyFilterMode ? activePageValue : null,
         request,
         nonEmptyFallback: historySnapshotAvailable

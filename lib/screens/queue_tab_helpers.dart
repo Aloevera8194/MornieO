@@ -84,9 +84,12 @@ class _FilterContentData {
       filteredGroupedAlbums.length + filteredGroupedLocalAlbums.length;
 }
 
-class _QueueLibraryPageRequest {
+class _QueueLibraryPageRequest
+    implements QueueLibraryPageKey<_QueueLibraryPageRequest> {
   final String filterMode;
+  @override
   final int limit;
+  @override
   final int offset;
   final String searchQuery;
   final String? filterSource;
@@ -136,6 +139,18 @@ class _QueueLibraryPageRequest {
       (filterMode == 'all' ||
           filterMode == 'albums' ||
           filterMode == 'singles');
+
+  @override
+  bool hasSamePageScope(_QueueLibraryPageRequest other) =>
+      filterMode == other.filterMode &&
+      limit == other.limit &&
+      searchQuery == other.searchQuery &&
+      filterSource == other.filterSource &&
+      filterQuality == other.filterQuality &&
+      filterFormat == other.filterFormat &&
+      filterMetadata == other.filterMetadata &&
+      sortMode == other.sortMode &&
+      localLibraryEnabled == other.localLibraryEnabled;
 
   @override
   bool operator ==(Object other) =>
@@ -224,7 +239,7 @@ class _QueueLibraryCountsRequest {
   );
 }
 
-class _QueueLibraryPageData {
+class _QueueLibraryPageData implements QueueLibraryPageContent {
   final List<UnifiedLibraryItem> items;
   final List<DownloadHistoryItem> historyItems;
   final List<LocalLibraryItem> localItems;
@@ -241,6 +256,7 @@ class _QueueLibraryPageData {
     this.nextCursor,
   });
 
+  @override
   bool get isEmpty =>
       items.isEmpty &&
       historyItems.isEmpty &&
