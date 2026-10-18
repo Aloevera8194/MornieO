@@ -148,7 +148,8 @@ impl AvailabilityService {
         self.with_raw(check, |resolver, check| album(resolver, id, check))
     }
 
-    pub fn check_from_deezer(
+    #[cfg(test)]
+    pub(crate) fn check_from_deezer(
         &self,
         id: &str,
         check: &Check<'_>,

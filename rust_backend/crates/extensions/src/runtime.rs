@@ -570,6 +570,9 @@ impl ExtensionRuntime {
 
     /// Native provider-manager entry point. Resolver/callback/retry time shares
     /// one allowance; established native media reads pause only that allowance.
+    // Public only for the integration tests in `tests/`; the download manager
+    // uses `call_download_provider`.
+    #[doc(hidden)]
     pub fn call_download(
         &self,
         method: &str,

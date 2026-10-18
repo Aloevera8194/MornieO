@@ -162,7 +162,8 @@ impl LyricsService {
         Ok(())
     }
 
-    pub fn cache_size(&self) -> usize {
+    #[cfg(test)]
+    pub(crate) fn cache_size(&self) -> usize {
         self.inner.cache.len()
     }
 
