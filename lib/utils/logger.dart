@@ -468,18 +468,6 @@ class BufferedOutput extends LogOutput {
   }
 }
 
-final log = Logger(
-  printer: PrettyPrinter(
-    methodCount: 0,
-    errorMethodCount: 5,
-    lineLength: 80,
-    colors: true,
-    printEmojis: false,
-    dateTimeFormat: DateTimeFormat.none,
-  ),
-  level: Level.debug,
-);
-
 class AppLogger {
   final String _tag;
   late final Logger? _logger;

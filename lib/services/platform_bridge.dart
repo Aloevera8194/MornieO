@@ -1262,17 +1262,6 @@ class PlatformBridge {
     return result as bool? ?? false;
   }
 
-  static Future<bool> shareMultipleContentUris(
-    List<String> uris, {
-    String title = '',
-  }) async {
-    final result = await _channel.invokeMethod('shareMultipleContentUris', {
-      'uris': uris,
-      'title': title,
-    });
-    return result as bool? ?? false;
-  }
-
   static Future<String> getLyricsLRC(
     String spotifyId,
     String trackName,
@@ -1370,12 +1359,6 @@ class PlatformBridge {
     await _channel.invokeMethod('setLyricsProviders', {
       'providers_json': providersJSON,
     });
-  }
-
-  static Future<List<Map<String, dynamic>>>
-  getAvailableLyricsProviders() async {
-    final result = await _channel.invokeMethod('getAvailableLyricsProviders');
-    return _decodeMapListResult(result, 'getAvailableLyricsProviders');
   }
 
   /// Sets advanced lyrics fetch options used by provider-specific integrations.
@@ -2725,18 +2708,6 @@ class PlatformBridge {
     throw FormatException(
       'Expected list result from $method, got ${decoded.runtimeType}',
     );
-  }
-
-  static List<Map<String, dynamic>> _decodeMapListResult(
-    dynamic result,
-    String method,
-  ) {
-    return _decodeRequiredListResult(result, method).map((entry) {
-      if (entry is Map) return entry.cast<String, dynamic>();
-      throw FormatException(
-        'Expected map entry from $method, got ${entry.runtimeType}',
-      );
-    }).toList();
   }
 
   static Future<List<Map<String, dynamic>>> _decodeMapListResultAsync(

@@ -37,7 +37,7 @@ import 'package:spotiflac_android/services/replaygain_service.dart';
 import 'package:spotiflac_android/services/album_replaygain_readiness.dart';
 import 'package:spotiflac_android/services/notification_service.dart';
 import 'package:spotiflac_android/services/verification_notification.dart';
-import 'package:spotiflac_android/utils/logger.dart' hide log;
+import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/utils/artist_utils.dart';

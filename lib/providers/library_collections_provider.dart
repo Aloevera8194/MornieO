@@ -778,48 +778,10 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
     _invalidatePlaylistPickerSummaries();
   });
 
-  /// Returns the full collections snapshot (wishlist, loved, playlists,
-  /// favorite artists) for a backup, ensuring data is loaded first.
-  Future<Map<String, dynamic>> exportCollections() async {
-    await _ensureLoaded();
-    await ensurePlaylistsLoaded(state.playlists.map((playlist) => playlist.id));
-    return exportLibraryCollectionsState(state);
-  }
-
   Future<String> exportCollectionsJson() async {
     await _ensureLoaded();
     await ensurePlaylistsLoaded(state.playlists.map((playlist) => playlist.id));
     return exportLibraryCollectionsJson(state);
-  }
-
-  /// Exports custom playlist cover images as base64, keyed by playlist id.
-  /// Each value contains the original file extension and the encoded bytes so a
-  /// restore on another device can recreate the cover files.
-  Future<Map<String, Map<String, String>>> exportPlaylistCovers() async {
-    await _ensureLoaded();
-    final covers = <String, Map<String, String>>{};
-    final playlists = List<UserPlaylistCollection>.of(state.playlists);
-    for (final playlist in playlists) {
-      var path = playlist.coverImagePath;
-      if (path == null || path.isEmpty) continue;
-      try {
-        if (await _playlistCoverNeedsNormalization(path)) {
-          await setPlaylistCover(playlist.id, path);
-          path = state.playlistById(playlist.id)?.coverImagePath ?? path;
-        }
-        final file = File(path);
-        if (!await file.exists()) continue;
-        final bytes = await file.readAsBytes();
-        if (bytes.isEmpty) continue;
-        covers[playlist.id] = {
-          'ext': p.extension(path).toLowerCase(),
-          'data': base64Encode(bytes),
-        };
-      } catch (_) {
-        // Skip unreadable cover; the rest of the backup still succeeds.
-      }
-    }
-    return covers;
   }
 
   /// Returns cover file references for the streaming ZIP backup format. The
@@ -852,8 +814,9 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
 
   /// Replaces all collections (wishlist, loved, playlists, favorite artists)
   /// with the contents of a backup. [collectionsJson] uses the
-  /// [LibraryCollectionsState.toJson] shape; [coverImages] is the map produced
-  /// by [exportPlaylistCovers]. Cover images are rewritten into this device's
+  /// [LibraryCollectionsState.toJson] shape; [coverImages] is the backup's
+  /// playlist cover map: `ext` plus either a `path` to an extracted file or
+  /// legacy base64 `data`. Cover images are rewritten into this device's
   /// covers directory and their paths fixed up before persisting.
   Future<void> restoreFromBackup(
     Map<String, dynamic> collectionsJson, {

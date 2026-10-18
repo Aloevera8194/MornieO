@@ -588,8 +588,6 @@ class ExtensionHealthStatus {
           [],
     );
   }
-
-  bool get isSupported => status != 'unsupported';
 }
 
 class ExtensionHealthCheckStatus {

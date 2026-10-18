@@ -1091,18 +1091,6 @@ class HistoryDatabase {
     return results;
   }
 
-  Future<void> deleteById(String id) async {
-    final db = await database;
-    await db.transaction((txn) async {
-      await txn.delete(
-        'history_path_keys',
-        where: 'item_id = ?',
-        whereArgs: [id],
-      );
-      await txn.delete('history', where: 'id = ?', whereArgs: [id]);
-    });
-  }
-
   Future<void> clearAll() async {
     final db = await database;
     await db.transaction((txn) async {

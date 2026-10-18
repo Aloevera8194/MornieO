@@ -153,16 +153,6 @@ class M3uPlaylistService {
     }
   }
 
-  /// Writes the playlist to a shareable temp file named after the playlist.
-  static Future<File> writeExportFile(
-    String playlistName,
-    String content,
-  ) async {
-    final file = await _exportFile(playlistName);
-    await file.writeAsString(content);
-    return file;
-  }
-
   /// Serialize directly to a native worker file; Flutter only sends the fields
   /// represented in M3U, rather than an encoded playlist string.
   static Future<File> writeExportEntries(

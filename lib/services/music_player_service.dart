@@ -63,13 +63,6 @@ void configurePlaybackNotification({
 Future<void> restoreMusicAudioSessionAfterVideo() async =>
     musicPlayerRuntime.handler?.restoreIosNowPlaying();
 
-/// Enables/disables ReplayGain volume normalization and re-applies it to the
-/// track currently playing.
-void setPlaybackNormalizationEnabled(bool enabled) =>
-    musicPlayerRuntime.configure(
-      musicPlayerRuntime.settings.copyWith(playbackNormalization: enabled),
-    );
-
 void setPlaybackAutomationOptions({
   required bool enabled,
   required bool pauseOnMute,
@@ -99,20 +92,6 @@ void setAutoMixOptions(AutoMixOptions options) => musicPlayerRuntime.configure(
 
 void setUsbBitPerfectEnabled(bool enabled) => musicPlayerRuntime.configure(
   musicPlayerRuntime.settings.copyWith(usbBitPerfect: enabled),
-);
-
-void setUsbOutputOptions({
-  required bool direct,
-  required bool allowDop,
-  bool allowFixedVolume = false,
-  bool dapExclusive = false,
-}) => musicPlayerRuntime.configure(
-  musicPlayerRuntime.settings.copyWith(
-    usbDirect: direct,
-    usbDsdOverPcm: allowDop,
-    usbAllowFixedVolume: allowFixedVolume,
-    dapExclusive: dapExclusive,
-  ),
 );
 
 /// Gain and rate the player applies to the current track.
@@ -2287,8 +2266,6 @@ class MusicPlayerHandler extends BaseAudioHandler
   }
 }
 
-MusicPlayerHandler? get musicPlayerHandler => musicPlayerRuntime.handler;
-
 Future<MusicPlayerHandler> initMusicPlayer() => musicPlayerRuntime.initialize();
 
 /// Restores the last persisted playback session (if any) into a freshly
@@ -2397,10 +2374,3 @@ Future<void> restorePlaybackSession(MusicPlayerRuntime runtime) async {
     _log.w('Failed to restore playback session: $e');
   }
 }
-
-Stream<MediaItem?> musicPlayerMediaItemEvents() =>
-    musicPlayerRuntime.mediaItemEvents();
-Stream<PlaybackState> musicPlayerPlaybackStateEvents() =>
-    musicPlayerRuntime.playbackStateEvents();
-Stream<List<MediaItem>> musicPlayerQueueEvents() =>
-    musicPlayerRuntime.queueEvents();

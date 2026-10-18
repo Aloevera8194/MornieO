@@ -998,21 +998,6 @@ class LibraryDatabase {
     );
   }
 
-  Future<List<String>> getCoverPaths({int? limit, int? offset}) async {
-    final db = await database;
-    final rows = await db.query(
-      'library',
-      columns: ['cover_path'],
-      where: 'cover_path IS NOT NULL AND cover_path != ""',
-      limit: limit,
-      offset: offset,
-    );
-    return rows
-        .map((row) => row['cover_path'] as String?)
-        .whereType<String>()
-        .toList(growable: false);
-  }
-
   /// Physical copies sharing one ISRC, excluding inactive NAS sources and
   /// alternate index/URI references to the same file. Best quality comes first.
   Future<List<IsrcDuplicateGroup>> findIsrcDuplicateGroups() async {

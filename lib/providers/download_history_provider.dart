@@ -9,7 +9,7 @@ import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/services/history_database.dart';
 import 'package:spotiflac_android/services/history_maintenance.dart';
-import 'package:spotiflac_android/utils/logger.dart' hide log;
+import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
