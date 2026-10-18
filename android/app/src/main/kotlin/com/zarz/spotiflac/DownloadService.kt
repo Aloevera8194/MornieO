@@ -7,12 +7,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
 import android.net.Network
 import android.os.Build
 import android.os.IBinder
-import android.os.PowerManager
 import android.os.SystemClock
 import android.util.AtomicFile
 import androidx.core.app.NotificationCompat
@@ -56,8 +54,6 @@ class DownloadService : Service() {
         private const val DOWNLOAD_RESULT_NOTIFICATION_ID = 1
         private const val VERIFICATION_REQUIRED_NOTIFICATION_ID = 4
         private const val WAKELOCK_TAG = "SpotiFLAC:DownloadWakeLock"
-        private const val WAKELOCK_RENEW_MS = 30 * 60 * 1000L
-        private const val WAKELOCK_RENEW_INTERVAL_MS = 15 * 60 * 1000L
 
         const val ACTION_START = "com.zarz.spotiflac.action.START_DOWNLOAD"
         const val ACTION_STOP = "com.zarz.spotiflac.action.STOP_DOWNLOAD"
@@ -339,8 +335,7 @@ class DownloadService : Service() {
     @Volatile internal var pendingNativeItemsSnapshotJob: Job? = null
     private var nativeWorkerRequestChannel: Channel<NativeDownloadRequest>? = null
     @Volatile private var nativeWorkerPreparationComplete = true
-    private var wakeLock: PowerManager.WakeLock? = null
-    @Volatile private var wakeLockLastRenewedAt = 0L
+    private val wakeLock = ForegroundWorkLock(this, WAKELOCK_TAG, "DownloadService")
     private var currentTrackName = ""
     private var currentArtistName = ""
     internal var currentStatus = "preparing"
@@ -668,15 +663,7 @@ class DownloadService : Service() {
         ensureWakeLock()
 
         val notification = buildNotification(0, 0)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            startForeground(
-                NOTIFICATION_ID,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
-            )
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
-        }
+        startDataSyncForeground(NOTIFICATION_ID, notification)
         pushWidgetState(0, 0)
     }
 
@@ -1461,42 +1448,12 @@ class DownloadService : Service() {
 
     @Synchronized
     private fun ensureWakeLock() {
-        val existingWakeLock = wakeLock
-        if (existingWakeLock?.isHeld == true) {
-            val now = SystemClock.elapsedRealtime()
-            if (now - wakeLockLastRenewedAt >= WAKELOCK_RENEW_INTERVAL_MS) {
-                existingWakeLock.acquire(WAKELOCK_RENEW_MS)
-                wakeLockLastRenewedAt = now
-            }
-            return
-        }
-        if (existingWakeLock != null) {
-            wakeLock = null
-        }
-
-        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        wakeLock = powerManager.newWakeLock(
-            PowerManager.PARTIAL_WAKE_LOCK,
-            WAKELOCK_TAG
-        ).apply {
-            setReferenceCounted(false)
-            acquire(WAKELOCK_RENEW_MS)
-        }
-        wakeLockLastRenewedAt = SystemClock.elapsedRealtime()
+        wakeLock.ensure()
     }
 
     @Synchronized
     private fun releaseWakeLock() {
-        val existingWakeLock = wakeLock
-        wakeLock = null
-        wakeLockLastRenewedAt = 0L
-        if (existingWakeLock?.isHeld == true) {
-            try {
-                existingWakeLock.release()
-            } catch (e: RuntimeException) {
-                android.util.Log.w("DownloadService", "WakeLock release failed: ${e.message}")
-            }
-        }
+        wakeLock.release()
     }
 
     @Synchronized
@@ -1629,12 +1586,7 @@ class DownloadService : Service() {
     }
 
     private fun buildNotification(progress: Long, total: Long): Notification {
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            Intent(this, MainActivity::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val pendingIntent = mainActivityContentIntent()
 
         val title = if (queueCount > 1) {
             "Downloading $queueCount tracks"
@@ -1690,12 +1642,7 @@ class DownloadService : Service() {
     }
 
     private fun showNativeQueueComplete(counts: NativeWorkerCounts) {
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            0,
-            Intent(this, MainActivity::class.java),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
+        val pendingIntent = mainActivityContentIntent()
         val title = if (counts.failed > 0) {
             "Downloads Finished (${counts.completed} done, ${counts.failed} failed)"
         } else {
