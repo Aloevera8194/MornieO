@@ -167,7 +167,7 @@ that policy.
 Flutter and Dart:
 
 ```bash
-fvm dart format --output=none --set-exit-if-changed lib test
+fvm dart format --output=none --set-exit-if-changed lib test integration_test
 fvm flutter analyze
 fvm flutter test
 ```

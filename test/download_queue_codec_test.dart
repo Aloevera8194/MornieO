@@ -115,7 +115,7 @@ void main() {
           isA<RemoteError>().having(
             (error) => error.toString(),
             'message',
-          contains('_ThrowingTrack'),
+            contains('_ThrowingTrack'),
           ),
         ),
       );
