@@ -114,12 +114,12 @@
   "appearanceAccentPurple": "Morado",
   "appearanceAccentPink": "Rosado",
   "appearanceGlassClarity": "Transparencia del vidrio",
-  "appearanceGlassOutlines": "Glass outlines",
-  "appearanceGlassOutlinesSubtitle": "Show decorative edges around Mornye glass. Turning this off keeps blur and refraction.",
+  "appearanceGlassOutlines": "Contornos de vidrio",
+  "appearanceGlassOutlinesSubtitle": "Mostrar bordes decorativos alrededor del cristal de Mornye. Si desactivas esta opción, se mantendrán el desenfoque y la refracción.",
   "appearanceGlassClaritySubtitle": "Ajusta la transparencia en los menús y la navegación de Mornye. Se conserva el contraste del texto.",
   "appearanceGlassTinted": "Tintado",
   "appearanceGlassClear": "Borrar",
-  "appearanceGlassClearPerformance": "Very clear glass may use more power and feel less smooth on older devices. Lower clarity if needed.",
+  "appearanceGlassClearPerformance": "El vidrio muy transparente puede consumir más energía y dar una sensación menos fluida en dispositivos más antiguos. Reduce la claridad si es necesario.",
   "appearanceGlassClarityBlurOff": "El vidrio se ve opaco en este dispositivo. Activa “{configuración}” para ajustar la claridad.",
   "@appearanceGlassClarityBlurOff": {
     "description": "Shown under the disabled glass clarity slider when the device renders Mornye glass without blur. The placeholder is the name of the force-blur toggle.",
@@ -129,7 +129,7 @@
       }
     }
   },
-  "appearanceGlassClarityHighContrast": "Your system requests increased contrast, so glass stays opaque. Turn on “{setting}” to use glass anyway; text contrast is preserved.",
+  "appearanceGlassClarityHighContrast": "Tu sistema solicita un mayor contraste, por lo que el vidrio se mantiene opaco. Activa \"{setting}\" para usar el vidrio de todos modos; el contraste del texto se mantiene.",
   "@appearanceGlassClarityHighContrast": {
     "description": "Explains the system contrast request (which can include medium contrast) and the explicit glass-only override.",
     "placeholders": {
@@ -1744,7 +1744,7 @@
   "@trackFileNotFound": {
     "description": "Error - file doesn't exist"
   },
-  "trackFileUnavailable": "File is currently unavailable. Check storage access and try again.",
+  "trackFileUnavailable": "El archivo no está disponible en este momento. Verifica el acceso al almacenamiento e inténtalo de nuevo.",
   "@trackFileUnavailable": {
     "description": "File access failed; this does not mean the file was deleted"
   },
@@ -1881,8 +1881,8 @@
   "@trackDeleteConfirmTitle": {
     "description": "Delete confirmation title"
   },
-  "trackDeleteNetworkConfirmMessage": "This will permanently delete the file from your network storage and remove it from your library and history.",
-  "snackbarDeleteTracksFailed": "Could not delete {count} {count, plural, =1{track} other{tracks}}. Check storage access and try again.",
+  "trackDeleteNetworkConfirmMessage": "Esto eliminará de forma permanente el archivo de tu almacenamiento en red y lo borrará de tu biblioteca y de tu historial.",
+  "snackbarDeleteTracksFailed": "No se pudieron eliminar {count} {count, plural, =1{pista} other{pistas}}. Revisa el acceso al almacenamiento e inténtalo de nuevo.",
   "@snackbarDeleteTracksFailed": {
     "placeholders": {
       "count": {
@@ -5419,7 +5419,7 @@
       }
     }
   },
-  "notifLibraryScanProgressNoTotal": "{scanned} files scanned",
+  "notifLibraryScanProgressNoTotal": "{scanned} archivos escaneados",
   "@notifLibraryScanProgressNoTotal": {
     "description": "Notification body for library scan progress when total is unknown",
     "placeholders": {
@@ -7030,19 +7030,19 @@
   "@libraryFilterMetadataMissingReplayGain": {
     "description": "Filter option for scanned tracks without ReplayGain gain tags"
   },
-  "libraryFilterMetadataHasReplayGain": "Has ReplayGain",
+  "libraryFilterMetadataHasReplayGain": "Tiene ReplayGain",
   "@libraryFilterMetadataHasReplayGain": {
     "description": "Filter option for tracks with indexed ReplayGain track or album gain tags"
   },
-  "libraryFilterIncompleteAlbums": "Incomplete albums",
+  "libraryFilterIncompleteAlbums": "Álbumes incompletos",
   "@libraryFilterIncompleteAlbums": {
     "description": "Library filter for albums with confirmed missing track positions"
   },
-  "libraryAlbumCompletenessUnknown": "Album completeness unknown",
+  "libraryAlbumCompletenessUnknown": "Se desconoce si el álbum está completo",
   "@libraryAlbumCompletenessUnknown": {
     "description": "Library filter and status for missing, conflicting or ambiguous album track counts"
   },
-  "libraryAlbumMissingTracks": "{present}/{expected} tracks · {missing} missing",
+  "libraryAlbumMissingTracks": "{present}/{expected} pistas · {missing} faltantes",
   "@libraryAlbumMissingTracks": {
     "description": "Album completeness badge tooltip",
     "placeholders": {
@@ -7107,10 +7107,10 @@
   "autoplayOn": "Reproducción automática activada",
   "autoplayOff": "Reproducción automática desactivada",
   "autoplayFromLibrary": "Reproducción automática desde tu biblioteca",
-  "autoplayDescription": "Continue with related songs from your Library when the queue ends.",
-  "autoplayPersonalization": "Personalized autoplay",
-  "autoplayPersonalizationDescription": "Learn from songs you listen to and skip, privately on this device. Turning this off stops learning and restores ordinary autoplay.",
-  "autoplayResetLearning": "Reset recommendation learning",
+  "autoplayDescription": "Sigue con canciones relacionadas de tu biblioteca cuando termine la fila.",
+  "autoplayPersonalization": "Reproducción automática personalizada",
+  "autoplayPersonalizationDescription": "Aprende de las canciones que escuchas y de las que te saltas, de manera privada en este dispositivo. Si desactivas esta función, se detendrá el aprendizaje y se restablecerá la reproducción automática habitual.",
+  "autoplayResetLearning": "Restablecer el aprendizaje de recomendaciones",
   "profileTitle": "Perfil",
   "profileSetUp": "Configura tu perfil",
   "profileEdit": "Editar nombre y foto",
@@ -7124,12 +7124,12 @@
   "artistUpcomingConcerts": "Próximos conciertos",
   "artistAllUpcomingConcerts": "Todos los próximos conciertos",
   "artistNoUpcomingConcerts": "No hay conciertos programados.",
-  "motionArtwork": "Animated artwork",
-  "listeningStats": "Listening statistics",
-  "listeningStatsRecord": "Record listening",
-  "listeningStatsDescription": "Stored only on this device, starting now. Records the built-in player only; pauses, buffering and seeking add no listening time. A play counts after 30 seconds.",
-  "listeningStatsEmpty": "Play music with the built-in player to start your listening recap. Earlier listening cannot be recovered.",
-  "listeningStatsDays": "{days} days",
+  "motionArtwork": "Ilustraciones animadas",
+  "listeningStats": "Estadísticas de escucha",
+  "listeningStatsRecord": "Escucha de grabaciones",
+  "listeningStatsDescription": "A partir de ahora, se guardará únicamente en este dispositivo. Solo se registran las reproducciones del reproductor integrado; las pausas, el almacenamiento en búfer y el avance rápido no se suman al tiempo de escucha. Una reproducción se cuenta a los 30 segundos.",
+  "listeningStatsEmpty": "Reproduce música con el reproductor integrado para comenzar tu resumen de escucha. No se puede recuperar lo que ya se ha escuchado.",
+  "listeningStatsDays": "{days} días",
   "@listeningStatsDays": {
     "placeholders": {
       "days": {
@@ -7145,7 +7145,7 @@
       }
     }
   },
-  "listeningStatsTotals": "{plays, plural, =1{1 play} other{{plays} plays}} · {tracks, plural, =1{1 track} other{{tracks} tracks}} · {days, plural, =1{1 active day} other{{days} active days}}",
+  "listeningStatsTotals": "{plays, plural, =1{1 reproducción} other{{plays} reproducciones}} · {tracks, plural, =1{1 pista} other{{tracks} pistas}} · {days, plural, =1{1 día activo} other{{days} días activos}}",
   "@listeningStatsTotals": {
     "placeholders": {
       "plays": {
@@ -7159,66 +7159,66 @@
       }
     }
   },
-  "listeningStatsPreviousYear": "Previous year",
-  "listeningStatsNextYear": "Next year",
-  "listeningStatsActivity": "Recent listening days · minutes",
-  "listeningStatsTopArtists": "Top artists",
-  "listeningStatsTopTracks": "Top tracks",
-  "listeningStatsLoadError": "Could not load listening statistics",
-  "listeningStatsClear": "Clear listening statistics",
-  "listeningStatsClearError": "Could not clear listening statistics. Please try again.",
-  "listeningStatsClearDescription": "Delete all listening statistics on this device? Your music and playlists will be kept.",
-  "weeklyReleases": "New releases",
-  "weeklyReleasesDescription": "Recent albums and singles from your favorite artists, supplied by installed metadata extensions.",
-  "weeklyReleasesEmpty": "No dated releases found in this period. Add favorite artists or try a longer period.",
-  "weeklyReleasesUnavailable": "Some artists could not be checked. Their saved results are kept. Providers may not supply artist catalogs or exact release dates.",
-  "weeklyReleasesLoadError": "Could not check new releases. Pull to refresh.",
-  "motionArtworkDescription": "Loop video covers supplied by metadata providers. Turn off to use still artwork and reduce battery use.",
-  "libraryLoading": "Loading Library…",
-  "libraryLoadFailed": "Library could not be loaded. Retry to load the saved folders and track index.",
-  "discordPresenceDescription": "Share the title, artist, album and progress of music played in the built-in player on your Discord profile. Local audio and artwork files are never uploaded. Clears when playback pauses or stops.",
-  "discordPresenceDisabled": "Disabled",
-  "discordPresenceLink": "Link Discord account",
-  "discordPresenceConnecting": "Connecting to Discord…",
-  "discordPresenceReady": "Ready when music plays",
-  "discordPresenceActive": "Sharing current track",
-  "discordPresenceUnavailable": "Discord is unavailable. Retrying during playback.",
-  "discordPresenceBuildUnavailable": "Discord SDK is not available in this build.",
-  "discordPresenceAndroidHelp": "Install Discord and sign in on this phone. Allow activity sharing in Discord. External players are not supported.",
-  "discordPresenceIosHelp": "Link your account through Discord and allow activity sharing. Tap to link again if authorization fails.",
-  "discordPresenceDisconnect": "Disconnect and forget account",
-  "autoMixSettingsTitle": "Mix transitions",
-  "autoMixAutomaticDuration": "Automatic duration",
-  "autoMixDuration": "Mix duration",
-  "autoMixEffect": "Transition effect",
+  "listeningStatsPreviousYear": "Año anterior",
+  "listeningStatsNextYear": "El año que viene",
+  "listeningStatsActivity": "Días de escucha recientes · minutos",
+  "listeningStatsTopArtists": "Artistas destacados",
+  "listeningStatsTopTracks": "Canciones más populares",
+  "listeningStatsLoadError": "No se pudieron cargar las estadísticas de escucha",
+  "listeningStatsClear": "Estadísticas de escucha claras",
+  "listeningStatsClearError": "No se pudieron borrar las estadísticas de escucha. Inténtalo de nuevo.",
+  "listeningStatsClearDescription": "¿Deseas eliminar todas las estadísticas de escucha de este dispositivo? Tu música y tus listas de reproducción se conservarán.",
+  "weeklyReleases": "Novedades",
+  "weeklyReleasesDescription": "Álbumes y sencillos recientes de tus artistas favoritos, proporcionados por las extensiones de metadatos instaladas.",
+  "weeklyReleasesEmpty": "No se encontraron lanzamientos con fecha en este período. Agrega tus artistas favoritos o prueba con un período más largo.",
+  "weeklyReleasesUnavailable": "No se pudo verificar a algunos artistas. Se conservan los resultados guardados. Es posible que los proveedores no proporcionen catálogos de artistas ni fechas exactas de lanzamiento.",
+  "weeklyReleasesLoadError": "No se pudieron verificar las nuevas publicaciones. Desliza hacia abajo para actualizar.",
+  "motionArtworkDescription": "Las portadas de video en bucle son proporcionadas por proveedores de metadatos. Desactívalas para usar imágenes fijas y reducir el consumo de batería.",
+  "libraryLoading": "Cargando la biblioteca…",
+  "libraryLoadFailed": "No se pudo cargar la biblioteca. Intenta volver a cargar las carpetas guardadas y el índice de pistas.",
+  "discordPresenceDescription": "Comparte el título, el artista, el álbum y el progreso de la música que se reproduce en el reproductor integrado en tu perfil de Discord. Los archivos de audio y las imágenes de portada locales nunca se suben. Se borra cuando se pausa o se detiene la reproducción.",
+  "discordPresenceDisabled": "Desactivado",
+  "discordPresenceLink": "Vincular cuenta de Discord",
+  "discordPresenceConnecting": "Conectándome a Discord…",
+  "discordPresenceReady": "Listo cuando suena la música",
+  "discordPresenceActive": "Compartir la canción que se está reproduciendo",
+  "discordPresenceUnavailable": "Discord no está disponible. Se volverá a intentar durante la reproducción.",
+  "discordPresenceBuildUnavailable": "El SDK de Discord no está disponible en esta versión.",
+  "discordPresenceAndroidHelp": "Instala Discord e inicia sesión en este teléfono. Permite compartir actividad en Discord. No se admiten reproductores externos.",
+  "discordPresenceIosHelp": "Vincula tu cuenta a través de Discord y permite compartir actividad. Toca aquí para volver a vincularla si falla la autorización.",
+  "discordPresenceDisconnect": "Desconectar y olvidar la cuenta",
+  "autoMixSettingsTitle": "Transiciones de mezcla",
+  "autoMixAutomaticDuration": "Duración automática",
+  "autoMixDuration": "Duración de la mezcla",
+  "autoMixEffect": "Efecto de transición",
   "autoMixEffectAuto": "Auto",
-  "autoMixEffectCrossfade": "Crossfade",
-  "autoMixEffectMuffled": "Muffled",
-  "autoMixEffectEcho": "Echo",
-  "autoMixEffectPitch": "Pitch",
-  "autoMixEffectCustom": "Custom",
-  "autoMixEffectsHelp": "Effects apply to the end of the outgoing song during the mix. Short songs use a shorter overlap.",
-  "autoMixSpeed": "Speed",
-  "autoMixPitch": "Pitch (semitones)",
-  "autoMixEcho": "Echo",
-  "autoMixLowPass": "Muffled filter",
-  "autoMixMixing": "Mixing",
-  "autoMixCrossfading": "Crossfade",
-  "playbackAutomation": "Automatic playback",
-  "playbackPauseOnMute": "Pause when muted",
-  "snackbarPlaybackMuted": "Media volume is zero. Playback paused. Press play again to continue.",
+  "autoMixEffectCrossfade": "Fundido cruzado",
+  "autoMixEffectMuffled": "Amortiguado",
+  "autoMixEffectEcho": "Eco",
+  "autoMixEffectPitch": "Tono",
+  "autoMixEffectCustom": "Personalizado",
+  "autoMixEffectsHelp": "Los efectos se aplican hasta el final de la canción que está terminando durante la mezcla. Las canciones cortas utilizan un solapamiento más corto.",
+  "autoMixSpeed": "Velocidad",
+  "autoMixPitch": "Tono (semitonos)",
+  "autoMixEcho": "Eco",
+  "autoMixLowPass": "Filtro silenciador",
+  "autoMixMixing": "Mezcla",
+  "autoMixCrossfading": "Fundido cruzado",
+  "playbackAutomation": "Reproducción automática",
+  "playbackPauseOnMute": "Pausar cuando esté silenciado",
+  "snackbarPlaybackMuted": "El volumen del contenido multimedia es cero. La reproducción está en pausa. Presiona el botón de reproducción nuevamente para continuar.",
   "@snackbarPlaybackMuted": {
     "description": "Shown after mute automation pauses playback; another explicit play request can override the pause."
   },
-  "playbackPauseOnMuteDescription": "Pause at zero media volume and resume when raised. Manual pauses stay paused. Standard audio output only.",
-  "playbackOnHeadphonesConnected": "Play when headphones connect",
-  "playbackOnHeadphonesConnectedDescription": "Resume the current song when wired or Bluetooth headphones connect. Disconnecting pauses playback. Built-in player only.",
-  "appearanceCustomFont": "Custom font",
-  "appearanceCustomFontSubtitle": "Import a TTF or OTF file (up to 10 MB). Overrides the theme and system font.",
-  "appearanceCustomFontInvalid": "Could not load this font. Choose a valid TTF or OTF file up to 10 MB.",
-  "appearanceCustomFontReset": "Use theme font",
-  "lyricsTextSize": "Lyrics text size",
-  "lyricsTextPreview": "Follow every line of your favorite song",
+  "playbackPauseOnMuteDescription": "Se pone en pausa cuando el volumen del audio está en cero y se reanuda cuando se sube. Las pausas manuales permanecen activas. Solo salida de audio estándar.",
+  "playbackOnHeadphonesConnected": "Reproducir cuando se conecten los audífonos",
+  "playbackOnHeadphonesConnectedDescription": "Reanuda la canción actual cuando se conecten audífonos con cable o Bluetooth. Al desconectarlos, se pausa la reproducción. Solo en el reproductor integrado.",
+  "appearanceCustomFont": "Fuente personalizada",
+  "appearanceCustomFontSubtitle": "Importa un archivo TTF u OTF (hasta 10 MB). Anula la fuente del tema y del sistema.",
+  "appearanceCustomFontInvalid": "No se pudo cargar esta fuente. Elige un archivo TTF u OTF válido de hasta 10 MB.",
+  "appearanceCustomFontReset": "Usar la fuente del tema",
+  "lyricsTextSize": "Tamaño del texto de la letra",
+  "lyricsTextPreview": "Sigue cada verso de tu canción favorita",
   "optionsEmbeddedCoverSizeOriginal": "Resolución original",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
