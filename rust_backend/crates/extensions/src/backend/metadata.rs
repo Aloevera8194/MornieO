@@ -108,23 +108,6 @@ impl Backend {
         Ok(())
     }
 
-    pub fn search_deezer(
-        &self,
-        query: &str,
-        track_limit: isize,
-        artist_limit: isize,
-        filter: &str,
-        check: &Check<'_>,
-    ) -> Result<String, String> {
-        self.metadata_operation(30, check, |check| {
-            encode(
-                self.deezer
-                    .search_all(query, track_limit, artist_limit, filter, check)?
-                    .as_ref(),
-            )
-        })
-    }
-
     pub(super) fn deezer_metadata(
         &self,
         kind: &str,

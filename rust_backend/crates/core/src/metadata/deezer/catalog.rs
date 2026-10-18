@@ -1,48 +1,5 @@
 use super::{Artist, Track, Tracks, best_image};
-use crate::lyrics::json::{Update, go_deserialize};
-use serde::Deserialize;
-
-#[derive(Clone, Debug, Default)]
-pub struct ApiError {
-    pub error_type: String,
-    pub message: String,
-    pub code: isize,
-}
-go_deserialize!(ApiError { "type" => error_type, "message" => message, "code" => code, });
-
-/// A repeated non-null Go pointer field merges into the existing object.
-#[derive(Clone, Debug, Default)]
-pub struct OptionalApiError(pub Option<ApiError>);
-
-impl<'de> Update<'de> for OptionalApiError {
-    fn update<D: serde::Deserializer<'de>>(&mut self, decoder: D) -> Result<(), D::Error> {
-        match Option::<&serde_json::value::RawValue>::deserialize(decoder)? {
-            None => self.0 = None,
-            Some(raw) => {
-                self.0
-                    .get_or_insert_default()
-                    .update(&mut serde_json::Deserializer::from_str(raw.get()))
-                    .map_err(serde::de::Error::custom)?;
-            }
-        }
-        Ok(())
-    }
-}
-
-macro_rules! search_page {
-    ($name:ident, $item:ty) => {
-        #[derive(Clone, Debug, Default)]
-        pub struct $name {
-            pub data: Option<Vec<$item>>,
-            pub error: OptionalApiError,
-        }
-        go_deserialize!($name { "data" => data, "error" => error, });
-    };
-}
-search_page!(TrackSearch, Track);
-search_page!(ArtistSearch, Artist);
-search_page!(AlbumSearch, SearchAlbum);
-search_page!(PlaylistSearch, SearchPlaylist);
+use crate::lyrics::json::go_deserialize;
 
 #[derive(Clone, Debug, Default)]
 pub struct TrackPage {
@@ -143,25 +100,6 @@ go_deserialize!(FullPlaylist {
 });
 
 #[derive(Clone, Debug, Default)]
-pub struct SearchAlbum {
-    pub id: i64,
-    pub title: String,
-    pub cover: String,
-    pub cover_medium: String,
-    pub cover_big: String,
-    pub cover_xl: String,
-    pub nb_tracks: isize,
-    pub release_date: String,
-    pub record_type: String,
-    pub artist: Artist,
-}
-go_deserialize!(SearchAlbum {
-    "id" => id, "title" => title, "cover" => cover, "cover_medium" => cover_medium,
-    "cover_big" => cover_big, "cover_xl" => cover_xl, "nb_tracks" => nb_tracks,
-    "release_date" => release_date, "record_type" => record_type, "artist" => artist,
-});
-
-#[derive(Clone, Debug, Default)]
 pub struct ArtistAlbum {
     pub id: i64,
     pub title: String,
@@ -191,22 +129,6 @@ pub struct AlbumTrackCount {
 }
 go_deserialize!(AlbumTrackCount { "nb_tracks" => nb_tracks, });
 
-#[derive(Clone, Debug, Default)]
-pub struct SearchPlaylist {
-    pub id: i64,
-    pub title: String,
-    pub picture: String,
-    pub picture_medium: String,
-    pub picture_big: String,
-    pub picture_xl: String,
-    pub nb_tracks: isize,
-    pub user: Name,
-}
-go_deserialize!(SearchPlaylist {
-    "id" => id, "title" => title, "picture" => picture, "picture_medium" => picture_medium,
-    "picture_big" => picture_big, "picture_xl" => picture_xl, "nb_tracks" => nb_tracks, "user" => user,
-});
-
 macro_rules! cover_image {
     ($($name:ty),*) => {$(
         impl $name {
@@ -216,20 +138,9 @@ macro_rules! cover_image {
         }
     )*};
 }
-cover_image!(FullAlbum, SearchAlbum, ArtistAlbum);
+cover_image!(FullAlbum, ArtistAlbum);
 
 impl FullArtist {
-    pub fn image(&self) -> String {
-        best_image([
-            self.picture_xl.as_str(),
-            &self.picture_big,
-            &self.picture_medium,
-            &self.picture,
-        ])
-    }
-}
-
-impl SearchPlaylist {
     pub fn image(&self) -> String {
         best_image([
             self.picture_xl.as_str(),

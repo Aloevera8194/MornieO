@@ -1,6 +1,6 @@
 use super::{Check, DeezerClient, ResolverError};
 use spotiflac_core::metadata::{
-    AlbumExtendedMetadata, AlbumResponsePayload, ArtistResponsePayload, SearchAllResult,
+    AlbumExtendedMetadata, AlbumResponsePayload, ArtistResponsePayload,
 };
 use std::collections::BTreeMap;
 use std::panic::{AssertUnwindSafe, catch_unwind};
@@ -9,7 +9,6 @@ use std::time::{Duration, Instant};
 
 #[derive(Clone)]
 pub(super) enum Value {
-    Search(Arc<SearchAllResult>),
     Album(Arc<AlbumResponsePayload>),
     Artist(Arc<ArtistResponsePayload>),
     Extended(Arc<AlbumExtendedMetadata>),

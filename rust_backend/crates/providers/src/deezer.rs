@@ -3,7 +3,6 @@
 mod browse;
 mod cache;
 mod extended;
-mod search;
 
 use crate::resolver::{Check, ResolverError, http::ResolverHttp};
 use serde::de::DeserializeOwned;
@@ -177,6 +176,13 @@ pub fn retry_delay(value: &str, now: SystemTime) -> Duration {
         .and_then(|date| date.duration_since(now).ok())
         .unwrap_or_default()
         .min(Duration::from_secs(120))
+}
+
+fn context(error: ResolverError, message: &str) -> ResolverError {
+    match error {
+        ResolverError::Cancelled(_) | ResolverError::Closed | ResolverError::Busy => error,
+        _ => ResolverError::Failed(format!("{message}: {error}")),
+    }
 }
 
 #[cfg(test)]

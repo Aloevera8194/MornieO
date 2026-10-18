@@ -1,4 +1,4 @@
-use super::{Check, DeezerClient, MetadataLookup, ResolverError, cache::Value, search::context};
+use super::{Check, DeezerClient, MetadataLookup, ResolverError, cache::Value, context};
 use spotiflac_core::metadata::{
     AlbumExtendedMetadata, TrackMetadata,
     deezer::{FullAlbum, Track},
