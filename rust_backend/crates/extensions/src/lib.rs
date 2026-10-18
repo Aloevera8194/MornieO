@@ -1,4 +1,8 @@
 //! Extension JavaScript execution and host services, isolated from mobile UI code.
+//!
+//! Comments that mention "Go" describe the retired Go backend, whose observable
+//! behavior (wire formats, parsing quirks, file layouts) remains a compatibility
+//! contract.
 
 pub mod auth;
 pub mod backend;

@@ -75,7 +75,7 @@ struct State {
 }
 
 /// The master key comes from the native Keychain/Keystore adapter. The directory
-/// must belong to this backend; Go and Rust must not concurrently own live data.
+/// must belong to this backend, which is the only owner of the live data.
 pub struct ExtensionEnvironment {
     logs: Arc<crate::logging::LogBuffer>,
     ffmpeg: Arc<crate::ffmpeg::CommandRegistry>,

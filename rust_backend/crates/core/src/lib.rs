@@ -1,4 +1,8 @@
 //! Shared backend logic, independent of mobile bindings and UI runtimes.
+//!
+//! Comments that mention "Go" describe the retired Go backend, whose observable
+//! behavior (wire formats, parsing quirks, file layouts) remains a compatibility
+//! contract.
 
 pub mod app_version;
 pub mod cancellation;

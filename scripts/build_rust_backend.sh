@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stage Rust libraries and UniFFI bindings without changing the app's backend.
+# Stage Rust libraries and UniFFI bindings for the Rust backend, the app's only backend.
 
 set -euo pipefail
 

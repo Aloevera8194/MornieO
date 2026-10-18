@@ -88,8 +88,9 @@ impl From<ExtensionError> for JsExtensionError {
     }
 }
 
-/// Migration runtime. Calls must run off the UI thread. The complete extension
-/// manager and network/file/auth hosts are not yet wired into the mobile app.
+/// Standalone runtime for a single extension script. Used by instrumentation
+/// tests; the app routes through `ExtensionManager`. Calls must run off the UI
+/// thread.
 #[derive(uniffi::Object)]
 pub struct JsExtension {
     inner: Arc<ExtensionRuntime>,

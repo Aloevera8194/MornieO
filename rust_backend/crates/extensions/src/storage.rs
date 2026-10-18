@@ -1,4 +1,4 @@
-//! Go-compatible extension persistence. Each file is serialized across runtimes.
+//! Go-compatible extension persistence. Each file is serialized per path.
 
 use aes_gcm::aead::{Aead, KeyInit};
 use aes_gcm::{Aes256Gcm, Nonce};

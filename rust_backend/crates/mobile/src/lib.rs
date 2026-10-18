@@ -1,4 +1,9 @@
-//! Migration APIs. Instances here are not connected to the app's Go-owned work.
+//! UniFFI mobile API. This crate is the only backend and routes the app on
+//! Android and iOS.
+//!
+//! Comments that mention "Go" describe the retired Go backend, whose observable
+//! behavior (wire formats, parsing quirks, file layouts) remains a compatibility
+//! contract.
 
 mod cancellation;
 mod data_jobs;
