@@ -239,18 +239,8 @@ DownloadHistoryItem? _historyItemForCompletionBridge(
 class QueueTab extends ConsumerStatefulWidget {
   final String? librarySection;
   final bool isTabActive;
-  final PageController? parentPageController;
-  final int parentPageIndex;
-  final int? nextPageIndex;
 
-  const QueueTab({
-    super.key,
-    this.librarySection,
-    this.isTabActive = true,
-    this.parentPageController,
-    this.parentPageIndex = 1,
-    this.nextPageIndex,
-  });
+  const QueueTab({super.key, this.librarySection, this.isTabActive = true});
 
   @override
   ConsumerState<QueueTab> createState() => _QueueTabState();

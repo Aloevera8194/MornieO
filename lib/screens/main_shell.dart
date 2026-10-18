@@ -819,10 +819,7 @@ class _MainShellState extends ConsumerState<MainShell>
         navigatorKey: _libraryTabNavigatorKey,
         observers: [_libraryPreviewStopObserver],
         heroAnimationsEnabled: heroAnimationsEnabled,
-        child: _LibraryTabRoot(
-          parentPageController: _pageController,
-          isTabActive: _currentIndex == 1,
-        ),
+        child: _LibraryTabRoot(isTabActive: _currentIndex == 1),
       ),
       if (showStore)
         _TabNavigator(
@@ -1224,25 +1221,13 @@ class _PreviewStopNavigatorObserver extends NavigatorObserver {
 }
 
 class _LibraryTabRoot extends ConsumerWidget {
-  final PageController parentPageController;
   final bool isTabActive;
 
-  const _LibraryTabRoot({
-    required this.parentPageController,
-    required this.isTabActive,
-  });
+  const _LibraryTabRoot({required this.isTabActive});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showStore = ref.watch(
-      settingsProvider.select((s) => s.showExtensionStore),
-    );
-    return QueueTab(
-      isTabActive: isTabActive,
-      parentPageController: parentPageController,
-      parentPageIndex: 1,
-      nextPageIndex: showStore ? 2 : 3,
-    );
+    return QueueTab(isTabActive: isTabActive);
   }
 }
 

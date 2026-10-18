@@ -19,8 +19,6 @@ class LibraryFastScroller extends StatefulWidget {
     super.key,
     required this.child,
     required this.labelAt,
-    this.onDragStart,
-    this.onDragEnd,
     this.topPadding = 0,
     this.bottomPadding = 0,
   });
@@ -31,9 +29,6 @@ class LibraryFastScroller extends StatefulWidget {
 
   /// Label for the row at [fraction] of the scrollable content, or null.
   final String? Function(double fraction) labelAt;
-
-  final VoidCallback? onDragStart;
-  final VoidCallback? onDragEnd;
 
   /// Height of the pinned header. While an outer scroll view is expanded,
   /// only its overlap with this viewport is reserved.
@@ -86,10 +81,6 @@ class _LibraryFastScrollerState extends State<LibraryFastScroller> {
     _hideTimer?.cancel();
     _position?.removeListener(_onPositionChanged);
     _outerPosition?.removeListener(_onOuterPositionChanged);
-    if (_dragging) {
-      final onDragEnd = widget.onDragEnd;
-      WidgetsBinding.instance.addPostFrameCallback((_) => onDragEnd?.call());
-    }
     super.dispose();
   }
 
@@ -155,7 +146,6 @@ class _LibraryFastScrollerState extends State<LibraryFastScroller> {
       _dragging = true;
       _show();
     });
-    widget.onDragStart?.call();
   }
 
   void _updateDrag(DragUpdateDetails details, double trackHeight) {
@@ -197,7 +187,6 @@ class _LibraryFastScrollerState extends State<LibraryFastScroller> {
       _dragging = false;
       _show();
     });
-    widget.onDragEnd?.call();
   }
 
   @override
