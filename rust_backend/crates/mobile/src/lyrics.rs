@@ -88,12 +88,6 @@ impl ExtensionManager {
             .map_err(ExtensionManagerError::Operation)
     }
 
-    pub fn get_available_lyrics_providers_json(&self) -> Result<String, ExtensionManagerError> {
-        self.inner
-            .get_available_lyrics_providers_json()
-            .map_err(ExtensionManagerError::Operation)
-    }
-
     pub fn set_lyrics_fetch_options_json(
         &self,
         options_json: String,

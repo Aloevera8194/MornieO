@@ -140,20 +140,6 @@ impl ExtensionManager {
             .map_err(ExtensionManagerError::Operation)
     }
 
-    pub fn scan_library_folder_incremental_from_snapshot(
-        &self,
-        folder: String,
-        snapshot: String,
-        lease: Option<Arc<RequestLease>>,
-    ) -> Result<String, ExtensionManagerError> {
-        self.inner
-            .scan_library_folder_incremental_from_snapshot(&folder, &snapshot, &|| {
-                check_lease(lease.as_deref())
-            })
-            .map(|value| value.to_string())
-            .map_err(ExtensionManagerError::Operation)
-    }
-
     pub fn scan_library_folder_to_ndjson_file(
         &self,
         folder: String,

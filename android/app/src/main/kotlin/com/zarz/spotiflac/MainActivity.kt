@@ -93,10 +93,8 @@ class MainActivity: FlutterFragmentActivity() {
         "setLibraryCoverCacheDir",
         "scanLibraryFolderToNDJSONFile",
         "scanLibraryFolderIncremental",
-        "scanLibraryFolderIncrementalFromSnapshot",
         "scanSafTreeToNDJSONFile",
         "scanSafTreeIncremental",
-        "scanSafTreeIncrementalFromSnapshot",
         "getLibraryScanProgress",
         "cancelLibraryScan",
         "pauseLibraryScan",
@@ -119,7 +117,6 @@ class MainActivity: FlutterFragmentActivity() {
         "safClosePlaybackLease",
         "openContentUri",
         "shareContentUri",
-        "shareMultipleContentUris",
         "getSafFileModTimes",
         "safCreateFromPath",
         "safCreateIfAbsentFromPath",
@@ -1499,28 +1496,6 @@ class MainActivity: FlutterFragmentActivity() {
                                 result.error("share_failed", e.message, null)
                             }
                         }
-                        "shareMultipleContentUris" -> {
-                            val uriStrings = call.argument<List<String>>("uris") ?: emptyList()
-                            val title = call.argument<String>("title") ?: ""
-                            try {
-                                val uris = ArrayList<Uri>(uriStrings.size)
-                                for (s in uriStrings) {
-                                    uris.add(Uri.parse(s))
-                                }
-                                val shareIntent = Intent(Intent.ACTION_SEND_MULTIPLE).apply {
-                                    putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
-                                    setType("audio/*")
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    if (title.isNotBlank()) {
-                                        putExtra(Intent.EXTRA_SUBJECT, title)
-                                    }
-                                }
-                                startActivity(Intent.createChooser(shareIntent, title.ifBlank { "Share" }))
-                                result.success(true)
-                            } catch (e: Exception) {
-                                result.error("share_failed", e.message, null)
-                            }
-                        }
                         "rewriteSplitArtistTags" -> {
                             val filePath = call.argument<String>("file_path") ?: ""
                             val artist = call.argument<String>("artist") ?: ""
@@ -2015,20 +1990,6 @@ class MainActivity: FlutterFragmentActivity() {
                             }
                             result.success(response)
                         }
-                        "scanLibraryFolderIncrementalFromSnapshot" -> {
-                            val folderPath = call.argument<String>("folder_path") ?: ""
-                            val snapshotPath = call.argument<String>("snapshot_path") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                safScanActive = false
-                                bridgeJsonResult(
-                                    coreBackend.scanLibraryFolderIncrementalFromSnapshot(
-                                        folderPath,
-                                        snapshotPath,
-                                    )
-                                )
-                            }
-                            result.success(response)
-                        }
                         "scanSafTreeToNDJSONFile" -> {
                             val treeUri = call.argument<String>("tree_uri") ?: ""
                             val outputPath = call.argument<String>("output_path") ?: ""
@@ -2041,16 +2002,6 @@ class MainActivity: FlutterFragmentActivity() {
                             val treeUri = call.argument<String>("tree_uri") ?: ""
                             val existingFiles = call.argument<String>("existing_files") ?: "{}"
                             val response = withContext(Dispatchers.IO) {
-                                scanSafTreeIncremental(treeUri, existingFiles)
-                            }
-                            result.success(response)
-                        }
-                        "scanSafTreeIncrementalFromSnapshot" -> {
-                            val treeUri = call.argument<String>("tree_uri") ?: ""
-                            val snapshotPath = call.argument<String>("snapshot_path") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                val existingFiles =
-                                    loadExistingFilesFromSnapshot(snapshotPath)
                                 scanSafTreeIncremental(treeUri, existingFiles)
                             }
                             result.success(response)

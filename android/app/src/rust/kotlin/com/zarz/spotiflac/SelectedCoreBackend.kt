@@ -358,18 +358,6 @@ internal object RustCoreBackend : CoreBackend {
             it.scanLibraryFolderIncremental(File(folder).canonicalPath, existing, null)
         }
 
-    override fun scanLibraryFolderIncrementalFromSnapshot(folder: String, snapshot: String): String =
-        withLibraryDirectories(listOf(folder)) { current ->
-            if (snapshot.isEmpty()) current.scanLibraryFolderIncremental(File(folder).canonicalPath, "{}", null)
-            else {
-                val staged = workspace.createTemporaryFile("library_snapshot_", ".ndjson")
-                try {
-                    File(snapshot).copyTo(staged, overwrite = true)
-                    current.scanLibraryFolderIncrementalFromSnapshot(File(folder).canonicalPath, staged.canonicalPath, null)
-                } finally { staged.delete() }
-            }
-        }
-
     override fun getLibraryScanProgress(): String =
         synchronized(this) { manager }?.getLibraryScanProgress() ?: "{}"
 
@@ -598,10 +586,6 @@ internal object RustCoreBackend : CoreBackend {
             return (0 until values.length()).map { values.getString(it) }
         }
         when (method) {
-            "cancelNativeDataJob" -> {
-                NativeDataJobs.cancel(string("request_id"))
-                return null
-            }
             "cancelExtensionRequest" -> synchronized(this) {
                 requestRegistry().cancel(string("request_id"))
                 return null
@@ -656,15 +640,6 @@ internal object RustCoreBackend : CoreBackend {
             }
             "buildFilename" -> return buildFilename(string("template"), string("metadata", "{}"))
             "sanitizeFilename" -> return sanitizeFilename(string("filename"))
-            "readFileMetadata", "editFileMetadata" -> return try {
-                if (method == "readFileMetadata") {
-                    readFileMetadata(string("file_path"), string("display_name"))
-                } else {
-                    editFileMetadata(string("file_path"), string("metadata_json", "{}"))
-                }
-            } catch (error: Exception) {
-                JSONObject().put("error", error.message ?: "File metadata operation failed").toString()
-            }
             "getLogsSince" -> return synchronized(this) {
                 manager?.environment()?.use { environment ->
                     environment.logBuffer().use { it.since((args["index"] as? Number)?.toLong() ?: 0L) }
@@ -773,7 +748,6 @@ internal object RustCoreBackend : CoreBackend {
             "getProviderPriority", "getMetadataProviderPriority" -> {
                 JSONObject(current.providerPriorities()).optJSONArray(if (method == "getProviderPriority") "download" else "metadata")?.toString() ?: "[]"
             }
-            "getAvailableLyricsProviders" -> current.getAvailableLyricsProvidersJson()
             "searchTracksWithMetadataProviders" -> current.searchMetadataProviders(
                 string("query"),
                 (args["limit"] as? Number)?.toLong() ?: 20L,

@@ -190,7 +190,6 @@ internal interface CoreBackend {
     fun setLibraryCoverCacheDirectory(path: String)
     fun scanLibraryFolderToNdjsonFile(folder: String, output: String): Long
     fun scanLibraryFolderIncremental(folder: String, existing: String): String
-    fun scanLibraryFolderIncrementalFromSnapshot(folder: String, snapshot: String): String
     fun getLibraryScanProgress(): String
     fun cancelLibraryScan()
     fun pauseLibraryScan()

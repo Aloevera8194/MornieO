@@ -855,7 +855,6 @@ final class RustCoreBackend: CoreBackend {
             let priorities = try JSONSerialization.jsonObject(with: Data(current.providerPriorities().utf8)) as! [String: Any]
             let value = priorities[method == "getProviderPriority" ? "download" : "metadata"] as? [String] ?? []
             return String(decoding: try JSONSerialization.data(withJSONObject: value), as: UTF8.self)
-        case "getAvailableLyricsProviders": return try current.getAvailableLyricsProvidersJson()
         default: throw failure("Rust application method is not connected yet: \(method)")
         }
     }
