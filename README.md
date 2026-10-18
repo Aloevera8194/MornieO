@@ -50,7 +50,7 @@
 ## Screenshots
 
 <p align="center">
-  <img src="assets/readme/1.jpg?v=3" width="200" alt="Home" />
+  <img src="assets/readme/1.jpg?v=4" width="200" alt="Home" />
   <img src="assets/readme/2.jpg?v=3" width="200" alt="Library" />
   <img src="assets/readme/3.jpg?v=3" width="200" alt="Now Playing" />
   <img src="assets/readme/4.jpg?v=4" width="200" alt="Equalizer" />
