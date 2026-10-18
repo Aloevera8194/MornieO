@@ -24,16 +24,14 @@ import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/metadata_candidate_tile.dart';
+import 'package:spotiflac_android/widgets/metadata_editor_fields.dart';
 import 'package:spotiflac_android/widgets/metadata_text_field.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
 
 part 'track_metadata_edit_autofill.dart';
 part 'track_metadata_edit_cover.dart';
@@ -133,7 +131,7 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                 Flexible(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: _editorOptions(
+                    child: MetadataEditorOptions(
                       children: [
                         for (var index = 0; index < items.length; index++)
                           Column(
@@ -373,7 +371,8 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                     children: [
                       _buildCoverEditor(cs),
                       _buildAutoFillSection(cs),
-                      _sectionCard(
+                      MetadataEditorSectionCard(
+                        colorScheme: widget.colorScheme,
                         icon: Icons.info_outline,
                         title: context.l10n.trackMetadata,
                         children: [
@@ -457,7 +456,8 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                           ),
                         ],
                       ),
-                      _sectionCard(
+                      MetadataEditorSectionCard(
+                        colorScheme: widget.colorScheme,
                         icon: Icons.lyrics_outlined,
                         title: context.l10n.trackLyrics,
                         children: [
@@ -470,7 +470,8 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                           ),
                         ],
                       ),
-                      _sectionCard(
+                      MetadataEditorSectionCard(
+                        colorScheme: widget.colorScheme,
                         icon: Icons.tune,
                         title: context.l10n.editMetadataAdvanced,
                         onHeaderTap: () =>
@@ -499,7 +500,8 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
                               _form['album_type']!,
                               hint: context.l10n.editMetadataFieldAlbumTypeHint,
                             ),
-                            _switchField(
+                            MetadataEditorSwitchField(
+                              colorScheme: widget.colorScheme,
                               label: context.l10n.editMetadataFieldExplicit,
                               subtitle:
                                   context.l10n.editMetadataFieldExplicitHint,
@@ -535,304 +537,6 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _editorOptions({required List<Widget> children}) {
-    if (!context.isMornye) return SettingsGroup(children: children);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Material(
-        color: MornyeTheme.controlFill(context),
-        borderRadius: BorderRadius.circular(28),
-        clipBehavior: Clip.antiAlias,
-        child: Column(mainAxisSize: MainAxisSize.min, children: children),
-      ),
-    );
-  }
-
-  Widget _quickSelectButton({
-    required String label,
-    required VoidCallback onTap,
-    required ColorScheme cs,
-  }) {
-    if (context.isMornye) {
-      return CupertinoButton(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        onPressed: _fetching ? null : onTap,
-        child: Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: cs.primary),
-        ),
-      );
-    }
-    return InkWell(
-      onTap: _fetching ? null : onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cs.outline.withValues(alpha: 0.5)),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: cs.primary),
-        ),
-      ),
-    );
-  }
-
-  Widget _switchField({
-    required String label,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    final cs = widget.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        children: [
-          Material(
-            color: metadataEditorFieldFill(context, cs),
-            borderRadius: BorderRadius.circular(14),
-            clipBehavior: Clip.antiAlias,
-            child: AppSwitchListTile(
-              adaptive: true,
-              value: value,
-              onChanged: onChanged,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: context.isMornye ? 4 : 16,
-              ),
-              title: Text(label, style: Theme.of(context).textTheme.bodyLarge),
-              subtitle: Text(
-                subtitle,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-              ),
-            ),
-          ),
-          if (context.isMornye) const Divider(height: 0.5),
-        ],
-      ),
-    );
-  }
-
-  Widget _selectionField({
-    required String label,
-    required String value,
-    required VoidCallback onTap,
-    bool enabled = true,
-  }) {
-    final cs = widget.colorScheme;
-    if (context.isMornye) {
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 6),
-              child: Text(
-                label,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-              ),
-            ),
-            CupertinoButton(
-              color: metadataEditorFieldFill(context, cs),
-              disabledColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 14),
-              onPressed: enabled ? onTap : null,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      value,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: enabled ? cs.onSurface : cs.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Icon(
-                    CupertinoIcons.chevron_up_chevron_down,
-                    size: 16,
-                    color: cs.primary,
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 0.5),
-          ],
-        ),
-      );
-    }
-    final radius = BorderRadius.circular(14);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
-            child: Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: enabled ? cs.onSurfaceVariant : cs.outline,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.1,
-              ),
-            ),
-          ),
-          Material(
-            color: metadataEditorFieldFill(context, cs),
-            borderRadius: radius,
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: enabled ? onTap : null,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        value,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: enabled ? cs.onSurface : cs.outline,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.expand_more_rounded,
-                      color: enabled ? cs.onSurfaceVariant : cs.outline,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  RoundedRectangleBorder _sectionCardShape(ColorScheme cs) {
-    return RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(20),
-      side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.5)),
-    );
-  }
-
-  /// Titled section card. When [onHeaderTap] is set the header is a full-width
-  /// tappable row (ripple clipped to the card) with an auto chevron.
-  Widget _sectionCard({
-    required IconData icon,
-    required String title,
-    required List<Widget> children,
-    VoidCallback? onHeaderTap,
-    bool expanded = true,
-  }) {
-    final cs = widget.colorScheme;
-    final collapsible = onHeaderTap != null;
-    const inset = 16.0;
-
-    final headerRow = Row(
-      children: [
-        Icon(context.adaptiveIcon(icon), size: 20, color: cs.primary),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: cs.onSurface,
-            ),
-          ),
-        ),
-        if (collapsible)
-          AnimatedRotation(
-            turns: expanded ? 0.5 : 0,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            child: Icon(
-              context.isMornye
-                  ? CupertinoIcons.chevron_down
-                  : Icons.expand_more,
-              size: 22,
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-      ],
-    );
-
-    final Widget header = collapsible
-        ? InkWell(
-            onTap: onHeaderTap,
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(inset, 16, inset, 16),
-              child: headerRow,
-            ),
-          )
-        : Padding(
-            padding: EdgeInsets.fromLTRB(inset, 16, inset, 8),
-            child: headerRow,
-          );
-
-    final content = AnimatedSize(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      alignment: Alignment.topCenter,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          header,
-          if (children.isNotEmpty)
-            Padding(
-              padding: EdgeInsets.fromLTRB(inset, 0, inset, 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: children,
-              ),
-            ),
-        ],
-      ),
-    );
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: context.isMornye
-          ? Material(
-              color: MornyeTheme.controlFill(context),
-              borderRadius: BorderRadius.circular(28),
-              clipBehavior: Clip.antiAlias,
-              child: DividerTheme(
-                data: DividerTheme.of(
-                  context,
-                ).copyWith(color: MornyeTheme.metadataDividerColor(context)),
-                child: content,
-              ),
-            )
-          : AppContentCard(
-              elevation: 0,
-              margin: EdgeInsets.zero,
-              color: settingsGroupColor(context),
-              shape: _sectionCardShape(cs),
-              clipBehavior: Clip.antiAlias,
-              child: content,
-            ),
     );
   }
 }

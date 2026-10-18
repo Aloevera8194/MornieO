@@ -153,7 +153,8 @@ extension _EditMetadataSheetCover on _EditMetadataSheetState {
   Widget _buildCoverEditor(ColorScheme cs) {
     final hasSelectedCover = _hasValue(_selectedCoverPath);
     final hasCurrentCover = _hasValue(_currentCoverPath);
-    return _sectionCard(
+    return MetadataEditorSectionCard(
+      colorScheme: widget.colorScheme,
       icon: Icons.image_outlined,
       title: context.l10n.editMetadataFieldCover,
       children: [
@@ -248,7 +249,8 @@ extension _EditMetadataSheetCover on _EditMetadataSheetState {
             ),
           ],
           const SizedBox(height: 12),
-          _selectionField(
+          MetadataEditorSelectionField(
+            colorScheme: widget.colorScheme,
             label: context.l10n.trackCoverResolution,
             value: _coverMaxDimension == null
                 ? _originalCoverResolutionLabel(

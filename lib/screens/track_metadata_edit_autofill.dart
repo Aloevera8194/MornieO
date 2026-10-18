@@ -175,7 +175,7 @@ extension _EditMetadataSheetAutoFill on _EditMetadataSheetState {
       builder: (sheetContext) => ListView(
         padding: const EdgeInsets.only(bottom: 16),
         children: [
-          _editorOptions(
+          MetadataEditorOptions(
             children: [
               for (var index = 0; index < candidates.length; index++) ...[
                 MetadataCandidateTile(
@@ -476,7 +476,8 @@ extension _EditMetadataSheetAutoFill on _EditMetadataSheetState {
   }
 
   Widget _buildAutoFillSection(ColorScheme cs) {
-    return _sectionCard(
+    return MetadataEditorSectionCard(
+      colorScheme: widget.colorScheme,
       icon: Icons.travel_explore,
       title: context.l10n.editMetadataAutoFill,
       onHeaderTap: () => _setState(() => _showAutoFill = !_showAutoFill),
@@ -500,7 +501,8 @@ extension _EditMetadataSheetAutoFill on _EditMetadataSheetState {
               final selectedId = selectedProviderIsAvailable
                   ? _selectedMetadataProviderId
                   : null;
-              return _selectionField(
+              return MetadataEditorSelectionField(
+                colorScheme: widget.colorScheme,
                 label: context.l10n.editMetadataAutoFillSource,
                 value: _metadataProviderName(selectedId),
                 enabled: !_fetching && !_saving,
@@ -512,20 +514,23 @@ extension _EditMetadataSheetAutoFill on _EditMetadataSheetState {
             spacing: 8,
             runSpacing: 8,
             children: [
-              _quickSelectButton(
+              MetadataEditorQuickSelectButton(
                 label: context.l10n.editMetadataSelectAll,
                 onTap: _selectAllFields,
                 cs: cs,
+                fetching: _fetching,
               ),
-              _quickSelectButton(
+              MetadataEditorQuickSelectButton(
                 label: context.l10n.editMetadataSelectEmpty,
                 onTap: _selectEmptyFields,
                 cs: cs,
+                fetching: _fetching,
               ),
-              _quickSelectButton(
+              MetadataEditorQuickSelectButton(
                 label: context.l10n.editMetadataSelectNone,
                 onTap: _selectNoFields,
                 cs: cs,
+                fetching: _fetching,
               ),
             ],
           ),
