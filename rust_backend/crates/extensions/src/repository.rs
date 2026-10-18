@@ -9,6 +9,7 @@ pub use package::{destination_path, write_verified_package};
 pub use urls::{RegistryLocation, registry_location, require_https};
 
 use serde::{Deserialize, Serialize};
+use spotiflac_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
 use spotiflac_network::{HttpRequest, NetworkService, NetworkSession};
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
@@ -273,10 +274,14 @@ impl ExtensionRepository {
             if bytes.len() as u64 > MAX_CACHE_BYTES {
                 return Ok(());
             }
-            let mut file = tempfile::NamedTempFile::new_in(&self.cache_directory)?;
-            file.write_all(&bytes)?;
-            file.as_file().sync_all()?;
-            file.persist(self.cache_directory.join(CACHE_FILE))?;
+            write_atomic(
+                &self.cache_directory,
+                &self.cache_directory.join(CACHE_FILE),
+                DEFAULT_TEMP_PREFIX,
+                |file| file.write_all(&bytes),
+                || Ok(()),
+                false,
+            )?;
             Ok(())
         })();
     }

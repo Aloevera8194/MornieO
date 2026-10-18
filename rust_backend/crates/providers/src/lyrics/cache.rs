@@ -1,6 +1,7 @@
 //! Go-compatible successful-lyrics cache with bounded, atomic persistence.
 
 use serde::{Deserialize, Serialize};
+use spotiflac_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
 use spotiflac_core::lyrics::LyricsResponse;
 use std::collections::BTreeMap;
 use std::fs::{self, OpenOptions};
@@ -298,10 +299,14 @@ fn write_snapshot(path: &Path, entries: &BTreeMap<String, Entry>) -> std::io::Re
             "lyrics cache exceeds persistence size limit",
         ));
     }
-    let mut temporary = tempfile::NamedTempFile::new_in(parent)?;
-    temporary.write_all(&bytes)?;
-    temporary.as_file().sync_all()?;
-    temporary.persist(path).map_err(|error| error.error)?;
+    write_atomic(
+        parent,
+        path,
+        DEFAULT_TEMP_PREFIX,
+        |file| file.write_all(&bytes),
+        || Ok(()),
+        false,
+    )?;
     Ok(())
 }
 

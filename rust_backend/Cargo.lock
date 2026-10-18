@@ -2479,6 +2479,7 @@ dependencies = [
  "rustix",
  "serde",
  "serde_json",
+ "tempfile",
  "tz-rs",
  "unicode-general-category",
  "unicode-normalization",

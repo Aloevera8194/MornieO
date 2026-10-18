@@ -9,7 +9,7 @@ use hmac::{Hmac, Mac};
 use serde_json::{Map, Value};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
-use std::fs::{self, File};
+use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, OnceLock, RwLock, RwLockReadGuard, Weak};
@@ -433,16 +433,15 @@ fn parse_object(data: &[u8]) -> Result<Map<String, Value>, StorageError> {
 pub(crate) fn atomic_write(path: &Path, data: &[u8]) -> Result<(), StorageError> {
     file_identity(path)?;
     let directory = path.parent().ok_or(StorageError::InvalidPath)?;
-    let mut file = tempfile::Builder::new()
-        .prefix(".spotiflac-")
-        .tempfile_in(directory)?;
-    file.write_all(data)?;
-    file.as_file().sync_all()?;
-    file.persist(path).map_err(|error| error.error)?;
-    // Directory fsync is unavailable on some filesystems; rename remains atomic.
-    if let Ok(directory) = File::open(directory) {
-        let _ = directory.sync_all();
-    }
+    spotiflac_core::fs::write_atomic(
+        directory,
+        path,
+        ".spotiflac-",
+        |file| file.write_all(data),
+        || Ok(()),
+        true,
+    )
+    .map_err(io::Error::from)?;
     Ok(())
 }
 
