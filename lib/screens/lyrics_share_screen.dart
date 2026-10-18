@@ -1,17 +1,15 @@
-import 'dart:io';
-import 'dart:ui' show ImageByteFormat, ImageFilter;
+import 'dart:ui' show ImageFilter;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:material_3_expressive/material_3_expressive.dart'
     show M3EShapeKind;
-import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus, XFile;
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/theme/cover_palette.dart';
 import 'package:spotiflac_android/utils/lyrics_parser.dart';
+import 'package:spotiflac_android/utils/widget_capture.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_shape.dart';
@@ -151,16 +149,12 @@ class _LyricsShareScreenState extends State<LyricsShareScreen> {
       // Share is tapped. Capture the current card after that frame finishes.
       await WidgetsBinding.instance.endOfFrame;
       if (!mounted) return;
-      final boundary =
-          _cardKey.currentContext?.findRenderObject() as RenderRepaintBoundary?;
-      if (boundary == null) throw StateError('Card is not laid out');
-      final image = await boundary.toImage(pixelRatio: 3);
-      final bytes = await image.toByteData(format: ImageByteFormat.png);
-      image.dispose();
-      if (bytes == null) throw StateError('Card could not be encoded');
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/spotiflac_lyrics.png');
-      await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+      final file = await captureBoundaryToPngFile(
+        _cardKey,
+        pixelRatio: 3,
+        fileName: 'spotiflac_lyrics.png',
+      );
+      if (file == null) throw StateError('Card could not be captured');
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'image/png')],

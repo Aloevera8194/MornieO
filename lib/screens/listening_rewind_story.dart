@@ -137,17 +137,12 @@ class _RewindStoryState extends State<_RewindStory>
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
     setState(() => _sharing = true);
     try {
-      final boundary =
-          _captureKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary == null) return;
-      final image = await boundary.toImage(pixelRatio: pixelRatio);
-      final bytes = await image.toByteData(format: ImageByteFormat.png);
-      image.dispose();
-      if (bytes == null) return;
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/spotiflac_rewind.png');
-      await file.writeAsBytes(bytes.buffer.asUint8List(), flush: true);
+      final file = await captureBoundaryToPngFile(
+        _captureKey,
+        pixelRatio: pixelRatio,
+        fileName: 'spotiflac_rewind.png',
+      );
+      if (file == null) return;
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'image/png')],
