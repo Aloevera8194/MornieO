@@ -160,7 +160,7 @@ internal fun withCoreFFmpegExecution(
     }
 }
 
-/** Native migration boundary; each process selects one stateful backend. */
+/** Native boundary to the Rust backend; each process holds one stateful instance. */
 internal interface CoreBackend {
     val implementation: String
     fun invokeApplication(method: String, arguments: Any?): Any?

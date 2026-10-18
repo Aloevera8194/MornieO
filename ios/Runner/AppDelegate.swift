@@ -308,7 +308,7 @@ import UniformTypeIdentifiers
         switch call.method {
         case "beginBackgroundDownloadTask":
             downloadsActive = true
-            // Request the assertion before the long-running Go call starts.
+            // Request the assertion before the long-running backend call starts.
             // Waiting for applicationDidEnterBackground is too late: iOS may
             // suspend the process before the assertion is granted.
             beginBackgroundDownloadTask()
@@ -351,7 +351,7 @@ import UniformTypeIdentifiers
 
         DispatchQueue.global(qos: .userInitiated).async {
             do {
-                let response = try self.invokeGoMethod(call: call)
+                let response = try self.invokeOsMethod(call: call)
                 DispatchQueue.main.async {
                     result(response)
                 }
@@ -477,7 +477,7 @@ import UniformTypeIdentifiers
         }
     }
 
-    private func invokeGoMethod(call: FlutterMethodCall) throws -> Any? {
+    private func invokeOsMethod(call: FlutterMethodCall) throws -> Any? {
 
         switch call.method {
         case "getBackendImplementations":

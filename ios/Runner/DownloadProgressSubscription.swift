@@ -129,7 +129,7 @@ final class DownloadProgressSubscription {
                 }
             }
             // Schedule from main so subscription identity is never accessed
-            // concurrently, and stop/relisten does not wait for an old Go call.
+            // concurrently, and stop/relisten does not wait for an old backend call.
             DispatchQueue.main.async { [weak self] in
                 guard let self, self.current === session, !session.isCancelled else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + self.interval) { [weak self] in

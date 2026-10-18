@@ -17,7 +17,7 @@ import java.util.Locale
 // SAF/MediaStore URI IO helpers: temp copies, writes, sidecars, and the
 // SAF post-processing pipeline.
 
-internal fun MainActivity.errorJson(message: String): String {
+internal fun errorJson(message: String): String {
         val obj = JSONObject()
         obj.put("success", false)
         obj.put("error", message)
@@ -31,7 +31,7 @@ internal fun MainActivity.errorJson(message: String): String {
      * which require READ_MEDIA_AUDIO / READ_EXTERNAL_STORAGE permission
      * instead of SAF tree permission.
      */
-internal fun MainActivity.isMediaStoreUri(uri: Uri): Boolean {
+internal fun isMediaStoreUri(uri: Uri): Boolean {
         val authority = uri.authority ?: return false
         return authority == "media" ||
                authority.startsWith("media.") ||
@@ -61,7 +61,7 @@ internal fun MainActivity.resolveMediaStoreExt(uri: Uri, fallbackExt: String?): 
         return fallbackExt ?: ""
     }
 
-internal fun MainActivity.extFromFileName(name: String): String {
+internal fun extFromFileName(name: String): String {
         return when {
             name.endsWith(".m4a") -> ".m4a"
             name.endsWith(".mp4") -> ".mp4"
@@ -81,7 +81,7 @@ internal fun MainActivity.extFromFileName(name: String): String {
         }
     }
 
-internal fun MainActivity.extFromMimeType(mime: String?): String {
+internal fun extFromMimeType(mime: String?): String {
         return when (mime) {
             "audio/mp4" -> ".m4a"
             "audio/aac" -> ".aac"

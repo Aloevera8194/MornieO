@@ -869,7 +869,7 @@ object NativeDownloadFinalizer {
         check(!metadata.has("error")) { "ReplayGain verification failed: $metadata" }
         val isOpus = metadata.optString("audio_codec", "") == "opus"
         for (key in fields.keys()) {
-            // Opus stores only R128 gain, exposed by the Go reader as dB.
+            // Opus stores only R128 gain, exposed by the Rust reader as dB.
             if (isOpus && key.endsWith("_peak")) continue
             val expected = fields.optString(key, "").trim().removeSuffix("dB").trim().toDoubleOrNull()
             val actual = metadata.optString(key, "").trim().removeSuffix("dB").trim().toDoubleOrNull()

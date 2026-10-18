@@ -362,7 +362,7 @@ class DownloadService : Service() {
     internal val nativeWorkerTerminalStatuses = mutableMapOf<String, String>()
     internal val nativeReplayGainEntries = mutableListOf<JSONObject>()
     internal val nativeReplayGainRequestAlbumKeys = mutableMapOf<String, String>()
-    // One coordinator polls Go's delta progress stream for all native workers.
+    // One coordinator polls the backend's delta progress stream for all native workers.
     // Individual workers consume this cache instead of parsing the complete
     // multi-progress JSON independently.
     internal val nativeWorkerProgressLock = Any()

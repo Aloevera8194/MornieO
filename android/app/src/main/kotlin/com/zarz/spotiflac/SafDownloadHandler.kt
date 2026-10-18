@@ -870,12 +870,4 @@ object SafDownloadHandler {
         val baseName = if (artistName.isNotBlank()) "$artistName - $trackName" else trackName
         return forceFilenameExt(baseName, outputExt)
     }
-
-    private fun errorJson(message: String): String {
-        val obj = JSONObject()
-        obj.put("success", false)
-        obj.put("error", message)
-        obj.put("message", message)
-        return obj.toString()
-    }
 }

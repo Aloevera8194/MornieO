@@ -151,7 +151,7 @@ final class CoreDirectoryScope {
     deinit { close() }
 }
 
-/// Native migration boundary; each process selects one stateful backend.
+/// Native boundary to the Rust backend; each process holds one stateful instance.
 protocol CoreBackend {
     var implementation: String { get }
     func prepareApplicationArguments(method: String, arguments: Any?) throws -> Any?
