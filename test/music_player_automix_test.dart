@@ -19,6 +19,8 @@ import 'package:spotiflac_android/services/automix_effect_renderer.dart';
 import 'package:spotiflac_android/services/automix_status.dart';
 import 'package:spotiflac_android/services/system_volume_service.dart';
 
+import 'support/virtual_time.dart';
+
 class _EffectRenderer extends AutoMixEffectRenderer {
   final tails = <RenderedMixTail>[];
   bool fail = false;
@@ -75,6 +77,10 @@ class _HapticsAnalyzer extends MusicHapticsAnalyzer {
 /// Exercises the real AudioPlayer transport/streams against a native-channel
 /// fake, including preparation, seek completion and outgoing completion events.
 class _AudioNative {
+  _AudioNative([this.newClock = Stopwatch.new]);
+
+  /// Times mix and effect decks.
+  final Stopwatch Function() newClock;
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   final calls = <(String, String, Map<Object?, Object?>)>[];
@@ -150,7 +156,7 @@ class _AudioNative {
             playing.add(id);
             resumedSources.add(sources[id]!);
             if (id.startsWith('music-mix-') || id.startsWith('music-effect-')) {
-              clocks[id] = Stopwatch()..start();
+              clocks[id] = newClock()..start();
             }
           case 'pause' || 'stop':
             playing.remove(id);
@@ -284,8 +290,9 @@ void main() {
   late AutoplayLibraryLoader autoplayLoader;
   late _HapticsAnalyzer hapticsAnalyzer;
   late List<String?> hapticSongs;
+  late VirtualTime time;
 
-  setUp(() {
+  void setUpPlayer() {
     musicPlayerRuntime.configure(
       musicPlayerRuntime.settings.copyWith(musicHaptics: false),
     );
@@ -298,7 +305,7 @@ void main() {
     setAutoMixOptions(const AutoMixOptions());
     setUsbBitPerfectEnabled(false);
     setAutoplayEnabled(false);
-    native = _AudioNative()..install();
+    native = _AudioNative(time.stopwatch)..install();
     analyzer = _Analyzer();
     effectRenderer = _EffectRenderer();
     autoplayLoader = (_) async => _tracks;
@@ -311,6 +318,15 @@ void main() {
       hapticsAnalyzer: hapticsAnalyzer,
       hapticPulse: (_, _) async => hapticSongs.add(handler.mediaItem.value?.id),
     );
+  }
+
+  setUp(() {
+    time = VirtualTime();
+    autoMixStopwatch = time.stopwatch;
+    addTearDown(() => autoMixStopwatch = Stopwatch.new);
+    // Timers follow the zone of the listener that creates them, so the player
+    // is built in the zone that fakeTimeTest can switch to virtual time.
+    time.zone.run(setUpPlayer);
   });
 
   tearDown(() async {
@@ -331,6 +347,11 @@ void main() {
       expect(await tail.directory.exists(), isFalse);
     }
   });
+
+  /// A test whose waits (fades, readiness checks, waits for nothing to
+  /// happen) run on virtual time instead of the wall clock.
+  void fakeTimeTest(String description, Future<void> Function() body) =>
+      test(description, () => time.run(body));
 
   test(
     'USB preference is opt-in and persists with existing DSP preferences',
@@ -370,7 +391,7 @@ void main() {
     },
   );
 
-  test(
+  fakeTimeTest(
     'USB mode prevents a second DSP deck even when AutoMix is enabled',
     () async {
       setAutoMixEnabled(true);
@@ -1812,7 +1833,7 @@ void main() {
     },
   );
 
-  test(
+  fakeTimeTest(
     'disabled AutoMix uses only the ordinary player and no analysis',
     () async {
       await handler.setQueueAndPlay(_tracks);
@@ -1824,7 +1845,7 @@ void main() {
     },
   );
 
-  test(
+  fakeTimeTest(
     'handoff publishes native duration and ignores outgoing completion',
     () async {
       final incoming = await startMix();
@@ -1851,7 +1872,7 @@ void main() {
     },
   );
 
-  test(
+  fakeTimeTest(
     'matched transition releases outgoing and restores tempo after the fade',
     () async {
       analyzer.matchBeats = true;
@@ -1874,7 +1895,7 @@ void main() {
     },
   );
 
-  test(
+  fakeTimeTest(
     'Auto waits for advancing audio before fading the current song',
     () async {
       analyzer.matchBeats = true;
@@ -1899,20 +1920,23 @@ void main() {
     },
   );
 
-  test('a stalled Auto standby leaves the current song playing', () async {
-    analyzer.matchBeats = true;
-    await prepare();
-    final incoming = native.prepared;
-    native.stalled.add(incoming);
-    native.positions['music-player'] = 55670;
-    await _until(() => native.playing.contains(incoming));
-    await Future<void>.delayed(const Duration(milliseconds: 2300));
-    expect(native.live, {'music-player'});
-    expect(native.playing, {'music-player'});
-    expect(native.lastVolume('music-player'), 1);
-    expect(handler.mediaItem.value?.id, 'one');
-    expect(analyzer.calls, hasLength(2));
-  });
+  fakeTimeTest(
+    'a stalled Auto standby leaves the current song playing',
+    () async {
+      analyzer.matchBeats = true;
+      await prepare();
+      final incoming = native.prepared;
+      native.stalled.add(incoming);
+      native.positions['music-player'] = 55670;
+      await _until(() => native.playing.contains(incoming));
+      await Future<void>.delayed(const Duration(milliseconds: 2300));
+      expect(native.live, {'music-player'});
+      expect(native.playing, {'music-player'});
+      expect(native.lastVolume('music-player'), 1);
+      expect(handler.mediaItem.value?.id, 'one');
+      expect(analyzer.calls, hasLength(2));
+    },
+  );
 
   test('a late Auto timer still overlaps within the remaining outro', () async {
     analyzer.matchBeats = true;
@@ -1922,7 +1946,7 @@ void main() {
     expect(native.playing, {incoming});
   });
 
-  test(
+  fakeTimeTest(
     'pausing while Auto waits for audio cancels the pending handoff',
     () async {
       analyzer.matchBeats = true;
@@ -2078,7 +2102,7 @@ void main() {
     expect(native.playing, isEmpty);
   });
 
-  test(
+  fakeTimeTest(
     'network playback uses URL transport and does not analyze remote files',
     () async {
       setAutoMixEnabled(true);
@@ -2112,7 +2136,7 @@ void main() {
     },
   );
 
-  test('repeat one never prepares another deck', () async {
+  fakeTimeTest('repeat one never prepares another deck', () async {
     setAutoMixEnabled(true);
     await handler.setRepeatMode(AudioServiceRepeatMode.one);
     await handler.setQueueAndPlay(_tracks);

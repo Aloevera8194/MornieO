@@ -1,5 +1,9 @@
 part of 'music_player_service.dart';
 
+/// Creates the clocks that time AutoMix fades and audio-progress checks.
+/// Only tests replace it, to run transitions on a fake clock.
+Stopwatch Function() autoMixStopwatch = Stopwatch.new;
+
 /// Owns only the extra deck and transition work. The ordinary player remains
 /// the sole transport when AutoMix is disabled or a transition cannot be made.
 class _MusicAutoMix {
@@ -338,7 +342,7 @@ class _MusicAutoMix {
       handler._broadcastPosition(audiblePosition, force: true);
       handler._broadcastState(playerState: PlayerState.playing);
       unawaited(handler._persistSession(position: audiblePosition));
-      final clock = Stopwatch()..start();
+      final clock = autoMixStopwatch()..start();
       _fadeTimer = Timer.periodic(const Duration(milliseconds: 40), (_) {
         if (_writing || generation != _generation) return;
         _writing = true;
@@ -450,7 +454,7 @@ class _MusicAutoMix {
     Duration initialPosition,
     int generation,
   ) async {
-    final clock = Stopwatch()..start();
+    final clock = autoMixStopwatch()..start();
     while (_current(generation) && clock.elapsed < const Duration(seconds: 2)) {
       final position = await deck.getCurrentPosition();
       if (position != null &&

@@ -77,7 +77,11 @@ void main() {
     expect(tone.length, lessThanOrEqualTo(1));
   });
 
-  test('pulses follow the playing position and stop on pause', () async {
+  // Pulse timing runs on the widget binding's fake clock: the scheduler uses
+  // timers and PlaybackState extrapolates its position from clock.now().
+  testWidgets('pulses follow the playing position and stop on pause', (
+    tester,
+  ) async {
     var state = PlaybackState(
       playing: true,
       processingState: AudioProcessingState.ready,
@@ -97,7 +101,7 @@ void main() {
       pulse: (intensity, sharpness) async => pulses.add((intensity, sharpness)),
     );
     haptics.update('/music/song.flac');
-    await Future<void>.delayed(const Duration(milliseconds: 400));
+    await tester.pump(const Duration(milliseconds: 400));
     expect(pulses, [(1.0, 0.0), (0.2, 1.0)]);
 
     state = state.copyWith(
@@ -105,7 +109,7 @@ void main() {
       updatePosition: const Duration(milliseconds: 400),
     );
     haptics.update('/music/song.flac');
-    await Future<void>.delayed(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 600));
     expect(pulses, hasLength(2));
 
     haptics.update(null);
@@ -113,9 +117,9 @@ void main() {
     haptics.dispose();
   });
 
-  test(
+  testWidgets(
     'analysis finished during loading starts on the first ready state',
-    () async {
+    (tester) async {
       var state = PlaybackState(
         playing: true,
         processingState: AudioProcessingState.loading,
@@ -135,7 +139,7 @@ void main() {
       );
       addTearDown(haptics.dispose);
       haptics.update('/music/first.flac');
-      await Future<void>.delayed(Duration.zero);
+      await tester.pump();
       expect(haptics.track, isNotNull);
       expect(pulses, 0);
       state = PlaybackState(
@@ -143,7 +147,7 @@ void main() {
         processingState: AudioProcessingState.ready,
       );
       haptics.update('/music/first.flac');
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await tester.pump(const Duration(milliseconds: 150));
       expect(pulses, 1);
       expect(analyzer.paths, ['/music/first.flac']);
     },
