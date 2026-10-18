@@ -100,6 +100,10 @@ internal fun MainActivity.safScanStopRequested(cancelled: () -> Boolean = { fals
     return safScanCancel || cancelled()
 }
 
+/** The `progress_pct` value for [done] of [total] items; callers guard zero. */
+private fun safScanProgressPct(done: Int, total: Int): Double =
+    done.toDouble() / total.toDouble() * 100.0
+
 internal fun MainActivity.scanSafTree(
         treeUriStr: String,
         ndjsonOutputPath: String? = null,
@@ -231,7 +235,7 @@ internal fun MainActivity.scanSafTree(
             it.totalFiles = totalItems
             if (totalItems > 0 && earlyCheckpoint.isNotEmpty()) {
                 it.scannedFiles = earlyCheckpoint.size.coerceAtMost(totalItems)
-                it.progressPct = it.scannedFiles.toDouble() / totalItems.toDouble() * 100.0
+                it.progressPct = safScanProgressPct(it.scannedFiles, totalItems)
             }
         }
 
@@ -301,6 +305,15 @@ internal fun MainActivity.scanSafTree(
         var scanned = checkpoint.size.coerceAtMost(totalItems)
         var errors = traversalErrors
 
+        fun reportScanned() {
+            val pct = safScanProgressPct(scanned, totalItems)
+            updateSafScanProgress {
+                it.scannedFiles = scanned
+                it.errorCount = errors
+                it.progressPct = pct
+            }
+        }
+
         val cueReferencedAudioUris = mutableSetOf<String>()
 
         for (cue in cueFiles) {
@@ -327,13 +340,11 @@ internal fun MainActivity.scanSafTree(
                     continue
                 }
 
-                val audioFileName = extractCueAudioFileName(tempCuePath)
-
-                val audioDoc = resolveCueAudioSibling(
-                    parentDir = parentDir,
-                    cueName = cueName,
-                    audioFileName = audioFileName,
-                    childLookupCache = safChildLookupCache,
+                val audioDoc = resolveCueSheetAudio(
+                    tempCuePath,
+                    parentDir,
+                    cueName,
+                    safChildLookupCache,
                 )
 
                 if (audioDoc == null) {
@@ -349,26 +360,12 @@ internal fun MainActivity.scanSafTree(
                     continue
                 }
 
-                val audioName = try { audioDoc.name ?: "audio.flac" } catch (_: Exception) { "audio.flac" }
-                val audioLastModified = try { audioDoc.lastModified() } catch (_: Exception) { cueDoc.lastModified() }
-                val coverCacheKey = buildLibraryCoverCacheKey(
-                    audioDoc.uri.toString(),
-                    audioLastModified,
-                )
-
-                val cueLastModified = cue.lastModified
-
-                val cueResultsJson = scanCueFromUri(
-                    coreBackend,
+                val cueArray = scanSafCueTracks(
                     tempCuePath,
-                    audioDoc.uri,
-                    audioName,
-                    cueDoc.uri.toString(),
-                    cueLastModified,
-                    coverCacheKey,
-                )
-
-                val cueArray = JSONArray(cueResultsJson)
+                    audioDoc,
+                    cueUri,
+                    cue.lastModified,
+                ) { cueDoc.lastModified() }
                 for (j in 0 until cueArray.length()) {
                     putResult(cueArray.getJSONObject(j))
                 }
@@ -383,12 +380,7 @@ internal fun MainActivity.scanSafTree(
             }
 
             scanned++
-            val pct = scanned.toDouble() / totalItems.toDouble() * 100.0
-            updateSafScanProgress {
-                it.scannedFiles = scanned
-                it.errorCount = errors
-                it.progressPct = pct
-            }
+            reportScanned()
         }
 
         data class SafAudioScanOutcome(
@@ -417,7 +409,7 @@ internal fun MainActivity.scanSafTree(
             if (cueReferencedAudioUris.contains(stableUri)) {
                 recordCheckpoint(stableUri, lastModified)
                 scanned++
-                val pct = scanned.toDouble() / totalItems.toDouble() * 100.0
+                val pct = safScanProgressPct(scanned, totalItems)
                 updateSafScanProgress {
                     it.scannedFiles = scanned
                     it.progressPct = pct
@@ -485,12 +477,7 @@ internal fun MainActivity.scanSafTree(
             }
 
             scanned++
-            val pct = scanned.toDouble() / totalItems.toDouble() * 100.0
-            updateSafScanProgress {
-                it.scannedFiles = scanned
-                it.errorCount = errors
-                it.progressPct = pct
-            }
+            reportScanned()
         }
         if (!completed) {
             ndjsonWriter?.close()
@@ -717,6 +704,20 @@ internal fun MainActivity.scanSafTreeIncremental(
         var scanned = 0
         var errors = traversalErrors
 
+        fun reportProcessed() {
+            val processed = skippedCount + scanned
+            val pct = if (totalFiles > 0) {
+                safScanProgressPct(processed, totalFiles)
+            } else {
+                100.0
+            }
+            updateSafScanProgress {
+                it.scannedFiles = processed
+                it.errorCount = errors
+                it.progressPct = pct
+            }
+        }
+
         val cueReferencedAudioUris = mutableSetOf<String>()
 
         for ((cueDoc, parentDir, cueName, cueLastModified) in cueFilesToScan) {
@@ -744,13 +745,11 @@ internal fun MainActivity.scanSafTreeIncremental(
                     continue
                 }
 
-                val audioFileName = extractCueAudioFileName(tempCuePath)
-
-                val audioDoc = resolveCueAudioSibling(
-                    parentDir = parentDir,
-                    cueName = cueName,
-                    audioFileName = audioFileName,
-                    childLookupCache = safChildLookupCache,
+                val audioDoc = resolveCueSheetAudio(
+                    tempCuePath,
+                    parentDir,
+                    cueName,
+                    safChildLookupCache,
                 )
 
                 if (audioDoc == null) {
@@ -762,24 +761,12 @@ internal fun MainActivity.scanSafTreeIncremental(
 
                 cueReferencedAudioUris.add(audioDoc.uri.toString())
 
-                val audioName = try { audioDoc.name ?: "audio.flac" } catch (_: Exception) { "audio.flac" }
-                val audioLastModified = try { audioDoc.lastModified() } catch (_: Exception) { cueLastModified }
-                val coverCacheKey = buildLibraryCoverCacheKey(
-                    audioDoc.uri.toString(),
-                    audioLastModified,
-                )
-
-                val cueResultsJson = scanCueFromUri(
-                    coreBackend,
+                val cueArray = scanSafCueTracks(
                     tempCuePath,
-                    audioDoc.uri,
-                    audioName,
+                    audioDoc,
                     cueDoc.uri.toString(),
                     cueLastModified,
-                    coverCacheKey,
-                )
-
-                val cueArray = JSONArray(cueResultsJson)
+                ) { cueLastModified }
                 for (j in 0 until cueArray.length()) {
                     val trackObj = cueArray.getJSONObject(j)
                     putFile(trackObj)
@@ -797,17 +784,7 @@ internal fun MainActivity.scanSafTreeIncremental(
             }
 
             scanned++
-            val processed = skippedCount + scanned
-            val pct = if (totalFiles > 0) {
-                processed.toDouble() / totalFiles.toDouble() * 100.0
-            } else {
-                100.0
-            }
-            updateSafScanProgress {
-                it.scannedFiles = processed
-                it.errorCount = errors
-                it.progressPct = pct
-            }
+            reportProcessed()
         }
 
         for ((cueDoc, parentDir, cueName) in unchangedCueFiles) {
@@ -815,12 +792,11 @@ internal fun MainActivity.scanSafTreeIncremental(
             try {
                 tempCue = copyUriToTemp(coreBackend, cueDoc.uri, ".cue", cueName)
                 if (tempCue != null) {
-                    val audioFileName = extractCueAudioFileName(tempCue)
-                    val audioDoc = resolveCueAudioSibling(
-                        parentDir = parentDir,
-                        cueName = cueName,
-                        audioFileName = audioFileName,
-                        childLookupCache = safChildLookupCache,
+                    val audioDoc = resolveCueSheetAudio(
+                        tempCue,
+                        parentDir,
+                        cueName,
+                        safChildLookupCache,
                     )
                     if (audioDoc != null) {
                         cueReferencedAudioUris.add(audioDoc.uri.toString())
@@ -843,20 +819,6 @@ internal fun MainActivity.scanSafTreeIncremental(
             result.put("totalFiles", totalFiles)
             result.put("cancelled", true)
             return result.toString()
-        }
-
-        fun reportProcessed() {
-            val processed = skippedCount + scanned
-            val pct = if (totalFiles > 0) {
-                processed.toDouble() / totalFiles.toDouble() * 100.0
-            } else {
-                100.0
-            }
-            updateSafScanProgress {
-                it.scannedFiles = processed
-                it.errorCount = errors
-                it.progressPct = pct
-            }
         }
 
         val pendingAudio = mutableListOf<ChangedAudio>()

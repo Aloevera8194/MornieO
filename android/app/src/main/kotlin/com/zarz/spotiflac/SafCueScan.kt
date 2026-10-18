@@ -1,6 +1,7 @@
 package com.zarz.spotiflac
 
 import androidx.documentfile.provider.DocumentFile
+import org.json.JSONArray
 import java.io.File
 import java.util.Locale
 
@@ -101,3 +102,52 @@ internal fun MainActivity.resolveCueAudioSibling(
         }
         return null
     }
+
+/** Resolves the audio document named by a CUE sheet copied to [tempCuePath]. */
+internal fun MainActivity.resolveCueSheetAudio(
+    tempCuePath: String,
+    parentDir: DocumentFile,
+    cueName: String,
+    childLookupCache: MutableMap<String, Map<String, DocumentFile>>,
+): DocumentFile? {
+    val audioFileName = extractCueAudioFileName(tempCuePath)
+
+    return resolveCueAudioSibling(
+        parentDir = parentDir,
+        cueName = cueName,
+        audioFileName = audioFileName,
+        childLookupCache = childLookupCache,
+    )
+}
+
+/**
+ * Reads the virtual track rows of a CUE sheet against its resolved audio.
+ * [audioLastModifiedFallback] runs only when the audio's own timestamp
+ * cannot be read; the two scans fall back to different values.
+ */
+internal fun MainActivity.scanSafCueTracks(
+    tempCuePath: String,
+    audioDoc: DocumentFile,
+    cueUri: String,
+    cueLastModified: Long,
+    audioLastModifiedFallback: () -> Long,
+): JSONArray {
+    val audioName = try { audioDoc.name ?: "audio.flac" } catch (_: Exception) { "audio.flac" }
+    val audioLastModified = try { audioDoc.lastModified() } catch (_: Exception) { audioLastModifiedFallback() }
+    val coverCacheKey = buildLibraryCoverCacheKey(
+        audioDoc.uri.toString(),
+        audioLastModified,
+    )
+
+    val cueResultsJson = scanCueFromUri(
+        coreBackend,
+        tempCuePath,
+        audioDoc.uri,
+        audioName,
+        cueUri,
+        cueLastModified,
+        coverCacheKey,
+    )
+
+    return JSONArray(cueResultsJson)
+}
