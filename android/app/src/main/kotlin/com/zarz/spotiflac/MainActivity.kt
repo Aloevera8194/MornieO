@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
-import android.provider.DocumentsContract
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.documentfile.provider.DocumentFile
@@ -533,291 +532,23 @@ class MainActivity: FlutterFragmentActivity() {
                             setupFolderPickerStore.acknowledge(call.argument<String>("payload") ?: "")
                             result.success(null)
                         }
-                        "safExists" -> {
-                            val uriStr = call.argument<String>("uri") ?: ""
-                            val exists = withContext(Dispatchers.IO) {
-                                val uri = Uri.parse(uriStr)
-                                DocumentFile.fromSingleUri(this@MainActivity, uri)?.exists() == true
-                            }
-                            result.success(exists)
-                        }
-                        "safExistsBatch" -> {
-                            val urisJson = call.argument<String>("uris_json") ?: "[]"
-                            val response = withContext(Dispatchers.IO) {
-                                safExistsBatch(urisJson)
-                            }
-                            result.success(response)
-                        }
-                        "probeSafTreeReadAccess" -> {
-                            val uriStr = call.argument<String>("tree_uri") ?: ""
-                            val readable = withContext(Dispatchers.IO) {
-                                probeSafTreeReadAccess(
-                                    hasReadPermission = {
-                                        val uri = Uri.parse(uriStr)
-                                        val root = DocumentsContract.buildDocumentUriUsingTree(
-                                            uri,
-                                            DocumentsContract.getTreeDocumentId(uri),
-                                        )
-                                        checkUriPermission(
-                                            root,
-                                            android.os.Process.myPid(),
-                                            android.os.Process.myUid(),
-                                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-                                    },
-                                    readRoot = {
-                                        val uri = Uri.parse(uriStr)
-                                        val root = DocumentsContract.buildDocumentUriUsingTree(
-                                            uri,
-                                            DocumentsContract.getTreeDocumentId(uri),
-                                        )
-                                        val rootPresent = contentResolver.query(
-                                            root,
-                                            arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID),
-                                            null, null, null,
-                                        )?.use { cursor ->
-                                            when {
-                                                cursor.moveToFirst() -> true
-                                                cursor.extras.getBoolean(DocumentsContract.EXTRA_LOADING, false) -> null
-                                                else -> false
-                                            }
-                                        }
-                                        if (rootPresent == true) {
-                                            true
-                                        } else {
-                                            // A reconnecting remote provider may not have
-                                            // queryDocument metadata yet. A completed child
-                                            // listing is stronger evidence of read access.
-                                            val directory = DocumentFile.fromTreeUri(this@MainActivity, uri)
-                                            if (directory != null && listSafChildrenOrThrow(directory).isNotEmpty()) {
-                                                true
-                                            } else {
-                                                rootPresent
-                                            }
-                                        }
-                                    },
-                                    onFailure = { error ->
-                                        android.util.Log.w("SpotiFLAC", "SAF library read probe failed", error)
-                                    },
-                                )
-                            }
-                            result.success(readable)
-                        }
-                        "isSafTreeAccessible" -> {
-                            val uriStr = call.argument<String>("tree_uri") ?: ""
-                            val accessible = withContext(Dispatchers.IO) {
-                                try {
-                                    val uri = Uri.parse(uriStr)
-                                    val persisted = contentResolver.persistedUriPermissions.any {
-                                        it.uri == uri && it.isReadPermission && it.isWritePermission
-                                    }
-                                    if (!persisted) {
-                                        false
-                                    } else {
-                                        val doc = DocumentFile.fromTreeUri(this@MainActivity, uri)
-                                        doc != null && doc.exists() && doc.canWrite()
-                                    }
-                                } catch (e: Exception) {
-                                    android.util.Log.w("SpotiFLAC", "SAF tree access check failed: ${e.message}")
-                                    false
-                                }
-                            }
-                            result.success(accessible)
-                        }
-                        "safDelete" -> {
-                            val uriStr = call.argument<String>("uri") ?: ""
-                            val deleted = withContext(Dispatchers.IO) {
-                                val uri = Uri.parse(uriStr)
-                                DocumentFile.fromSingleUri(this@MainActivity, uri)?.delete() == true
-                            }
-                            result.success(deleted)
-                        }
-                        "safStat" -> {
-                            val uriStr = call.argument<String>("uri") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                querySafDocumentStat(contentResolver, Uri.parse(uriStr)).toString()
-                            }
-                            result.success(response)
-                        }
-                        "resolveSafFile" -> {
-                            val treeUriStr = call.argument<String>("tree_uri") ?: ""
-                            val relativeDir = call.argument<String>("relative_dir") ?: ""
-                            val fileName = call.argument<String>("file_name") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                resolveSafFile(treeUriStr, relativeDir, fileName)
-                            }
-                            result.success(response)
-                        }
-                        "inspectSafFiles" -> {
-                            val requestsJson = call.argument<String>("requests_json") ?: "[]"
-                            val response = withContext(Dispatchers.IO) {
-                                inspectSafFiles(requestsJson)
-                            }
-                            result.success(response)
-                        }
-                        "safCopyToTemp" -> {
-                            val uriStr = call.argument<String>("uri") ?: ""
-                            val tempPath = withContext(Dispatchers.IO) {
-                                copyUriToTemp(Uri.parse(uriStr))
-                            }
-                            result.success(tempPath)
-                        }
-                        "safOpenPlaybackLease" -> {
-                            val uriStr = call.argument<String>("uri") ?: ""
-                            val lease = withContext(Dispatchers.IO) {
-                                openSafPlaybackLease(uriStr)
-                            }
-                            result.success(lease)
-                        }
-                        "safClosePlaybackLease" -> {
-                            val token = call.argument<String>("token") ?: ""
-                            closeSafPlaybackLease(token)
-                            result.success(null)
-                        }
-                        "safCreateFromPath" -> {
-                            val treeUriStr = call.argument<String>("tree_uri") ?: ""
-                            val relativeDir = call.argument<String>("relative_dir") ?: ""
-                            val fileName = SafDownloadHandler.sanitizeFilename(call.argument<String>("file_name") ?: "")
-                            val mimeType = call.argument<String>("mime_type") ?: "application/octet-stream"
-                            val srcPath = call.argument<String>("src_path") ?: ""
-                            val createdUri = withContext(Dispatchers.IO) {
-                                if (treeUriStr.isBlank()) return@withContext null
-                                if (fileName.isBlank()) return@withContext null
-                                val dir = SafDownloadHandler.ensureDocumentDir(this@MainActivity, Uri.parse(treeUriStr), relativeDir) ?: return@withContext null
-                                val existing = findSafChild(this@MainActivity, dir, fileName)
-                                val createdNew = existing == null
-                                val doc = SafDownloadHandler.createOrReuseDocumentFile(this@MainActivity, dir, mimeType, fileName)
-                                    ?: return@withContext null
-                                if (!writeUriFromPath(doc.uri, srcPath)) {
-                                    if (createdNew) {
-                                        doc.delete()
-                                    }
-                                    return@withContext null
-                                }
-                                doc.uri.toString()
-                            }
-                            result.success(createdUri)
-                        }
-                        "safCreateIfAbsentFromPath" -> {
-                            val treeUriStr = call.argument<String>("tree_uri") ?: ""
-                            val relativeDir = call.argument<String>("relative_dir") ?: ""
-                            val fileName = call.argument<String>("file_name") ?: ""
-                            val mimeType = call.argument<String>("mime_type") ?: "application/octet-stream"
-                            val srcPath = call.argument<String>("src_path") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                if (treeUriStr.isBlank() || fileName.isBlank()) return@withContext null
-                                SafDownloadHandler.writeFileToSafIfAbsent(
-                                    context = this@MainActivity,
-                                    treeUriStr = treeUriStr,
-                                    relativeDir = relativeDir,
-                                    fileName = fileName,
-                                    mimeType = mimeType,
-                                    srcPath = srcPath,
-                                )?.let { writeResult ->
-                                    JSONObject()
-                                        .put("uri", writeResult.uri)
-                                        .put("file_name", writeResult.fileName)
-                                        .put("already_exists", writeResult.alreadyExists)
-                                        .put("publish_timings_ms", JSONObject(writeResult.publishTimingsMs))
-                                        .toString()
-                                }
-                            }
-                            result.success(response)
-                        }
-                        "safCreateUniqueFromPath" -> {
-                            val treeUriStr = call.argument<String>("tree_uri") ?: ""
-                            val relativeDir = call.argument<String>("relative_dir") ?: ""
-                            val fileName = call.argument<String>("file_name") ?: ""
-                            val mimeType = call.argument<String>("mime_type") ?: "application/octet-stream"
-                            val srcPath = call.argument<String>("src_path") ?: ""
-                            val preservedSuffix = call.argument<String>("preserved_suffix") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                if (treeUriStr.isBlank() || fileName.isBlank()) return@withContext null
-                                SafDownloadHandler.writeFileToSafUnique(
-                                    context = this@MainActivity,
-                                    treeUriStr = treeUriStr,
-                                    relativeDir = relativeDir,
-                                    fileName = fileName,
-                                    mimeType = mimeType,
-                                    srcPath = srcPath,
-                                    preservedSuffix = preservedSuffix,
-                                )?.let { writeResult ->
-                                    JSONObject()
-                                        .put("uri", writeResult.uri)
-                                        .put("file_name", writeResult.fileName)
-                                        .put("publish_timings_ms", JSONObject(writeResult.publishTimingsMs))
-                                        .toString()
-                                }
-                            }
-                            result.success(response)
-                        }
-                        "safCreateCollisionAwareFromPath" -> {
-                            val treeUriStr = call.argument<String>("tree_uri") ?: ""
-                            val relativeDir = call.argument<String>("relative_dir") ?: ""
-                            val cleanFileName = call.argument<String>("clean_file_name") ?: ""
-                            val variantFileName = call.argument<String>("variant_file_name") ?: ""
-                            val mimeType = call.argument<String>("mime_type") ?: "application/octet-stream"
-                            val srcPath = call.argument<String>("src_path") ?: ""
-                            val preservedSuffix = call.argument<String>("preserved_suffix") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                if (
-                                    treeUriStr.isBlank() ||
-                                    cleanFileName.isBlank() ||
-                                    variantFileName.isBlank()
-                                ) return@withContext null
-                                SafDownloadHandler.writeFileToSafCollisionAware(
-                                    context = this@MainActivity,
-                                    treeUriStr = treeUriStr,
-                                    relativeDir = relativeDir,
-                                    cleanFileName = cleanFileName,
-                                    variantFileName = variantFileName,
-                                    mimeType = mimeType,
-                                    srcPath = srcPath,
-                                    preservedSuffix = preservedSuffix,
-                                )?.let { writeResult ->
-                                    JSONObject()
-                                        .put("uri", writeResult.uri)
-                                        .put("file_name", writeResult.fileName)
-                                        .put("publish_timings_ms", JSONObject(writeResult.publishTimingsMs))
-                                        .toString()
-                                }
-                            }
-                            result.success(response)
-                        }
-                        "openContentUri" -> {
-                            val uriStr = call.argument<String>("uri") ?: ""
-                            val mimeType = call.argument<String>("mime_type") ?: ""
-                            try {
-                                val uri = Uri.parse(uriStr)
-                                val type = if (mimeType.isNotBlank()) mimeType else contentResolver.getType(uri) ?: "*/*"
-                                val intent = Intent(Intent.ACTION_VIEW).setDataAndType(uri, type)
-                                    .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                startActivity(intent)
-                                result.success(null)
-                            } catch (e: Exception) {
-                                result.error("open_failed", e.message, null)
-                            }
-                        }
-                        "shareContentUri" -> {
-                            val uriStr = call.argument<String>("uri") ?: ""
-                            val title = call.argument<String>("title") ?: ""
-                            try {
-                                val uri = Uri.parse(uriStr)
-                                val type = contentResolver.getType(uri) ?: "audio/*"
-                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                    setType(type)
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                    if (title.isNotBlank()) {
-                                        putExtra(Intent.EXTRA_SUBJECT, title)
-                                    }
-                                }
-                                startActivity(Intent.createChooser(shareIntent, title.ifBlank { "Share" }))
-                                result.success(true)
-                            } catch (e: Exception) {
-                                result.error("share_failed", e.message, null)
-                            }
-                        }
+                        "safExists" -> handleSafExists(call, result)
+                        "safExistsBatch" -> handleSafExistsBatch(call, result)
+                        "probeSafTreeReadAccess" -> handleProbeSafTreeReadAccess(call, result)
+                        "isSafTreeAccessible" -> handleIsSafTreeAccessible(call, result)
+                        "safDelete" -> handleSafDelete(call, result)
+                        "safStat" -> handleSafStat(call, result)
+                        "resolveSafFile" -> handleResolveSafFile(call, result)
+                        "inspectSafFiles" -> handleInspectSafFiles(call, result)
+                        "safCopyToTemp" -> handleSafCopyToTemp(call, result)
+                        "safOpenPlaybackLease" -> handleSafOpenPlaybackLease(call, result)
+                        "safClosePlaybackLease" -> handleSafClosePlaybackLease(call, result)
+                        "safCreateFromPath" -> handleSafCreateFromPath(call, result)
+                        "safCreateIfAbsentFromPath" -> handleSafCreateIfAbsentFromPath(call, result)
+                        "safCreateUniqueFromPath" -> handleSafCreateUniqueFromPath(call, result)
+                        "safCreateCollisionAwareFromPath" -> handleSafCreateCollisionAwareFromPath(call, result)
+                        "openContentUri" -> handleOpenContentUri(call, result)
+                        "shareContentUri" -> handleShareContentUri(call, result)
                         "rewriteSplitArtistTags" -> {
                             val filePath = call.argument<String>("file_path") ?: ""
                             val artist = call.argument<String>("artist") ?: ""
@@ -969,40 +700,8 @@ class MainActivity: FlutterFragmentActivity() {
                             }
                             result.success(response)
                         }
-                        "writeTempToSaf" -> {
-                            val tempPath = call.argument<String>("temp_path") ?: ""
-                            val safUri = call.argument<String>("saf_uri") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                try {
-                                    val uri = Uri.parse(safUri)
-                                    if (writeUriFromPath(uri, tempPath)) {
-                                        """{"success":true}"""
-                                    } else {
-                                        """{"success":false,"error":"Failed to write back to SAF"}"""
-                                    }
-                                } finally {
-                                    try { File(tempPath).delete() } catch (_: Exception) {}
-                                }
-                            }
-                            result.success(response)
-                        }
-                        "writeSafSidecarLrc" -> {
-                            val safUri = call.argument<String>("saf_uri") ?: ""
-                            val lyrics = call.argument<String>("lyrics") ?: ""
-                            val response = withContext(Dispatchers.IO) {
-                                try {
-                                    val uri = Uri.parse(safUri)
-                                    if (writeSafSidecarLrc(uri, lyrics)) {
-                                        """{"success":true}"""
-                                    } else {
-                                        """{"success":false,"error":"Failed to write LRC sidecar"}"""
-                                    }
-                                } catch (e: Exception) {
-                                    """{"success":false,"error":"${e.message?.replace("\"", "'")}"}"""
-                                }
-                            }
-                            result.success(response)
-                        }
+                        "writeTempToSaf" -> handleWriteTempToSaf(call, result)
+                        "writeSafSidecarLrc" -> handleWriteSafSidecarLrc(call, result)
                         "downloadCoverToFile" -> {
                             val coverUrl = call.argument<String>("cover_url") ?: ""
                             val outputPath = call.argument<String>("output_path") ?: ""
@@ -1328,13 +1027,7 @@ class MainActivity: FlutterFragmentActivity() {
                             }
                             result.success(response)
                         }
-                        "getSafFileModTimes" -> {
-                            val uris = call.argument<String>("uris") ?: "[]"
-                            val response = withContext(Dispatchers.IO) {
-                                getSafFileModTimes(uris)
-                            }
-                            result.success(response)
-                        }
+                        "getSafFileModTimes" -> handleGetSafFileModTimes(call, result)
                         "getLibraryScanProgress" -> {
                             val response = withContext(Dispatchers.IO) {
                                 if (safScanActive) {
