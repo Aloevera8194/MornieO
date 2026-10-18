@@ -249,6 +249,13 @@ class FileAccessStat {
   const FileAccessStat({this.size, this.modified});
 }
 
+/// Deletes [file] when it exists and swallows any error.
+Future<void> deleteFileQuietly(File file) async {
+  try {
+    if (await file.exists()) await file.delete();
+  } catch (_) {}
+}
+
 bool isContentUri(String? path) {
   return path != null && path.startsWith('content://');
 }

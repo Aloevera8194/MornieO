@@ -11,6 +11,7 @@ import 'package:spotiflac_android/services/ffmpeg_service.dart';
 import 'package:spotiflac_android/services/library_collections_database.dart';
 import 'package:spotiflac_android/services/library_collections_hydration.dart';
 import 'package:spotiflac_android/services/collection_track_batch.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
 export 'package:spotiflac_android/models/library_collections.dart';
@@ -684,10 +685,7 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
         });
         _invalidatePlaylistPickerSummaries();
         if (previousCoverPath != null && previousCoverPath != destPath) {
-          try {
-            final previous = File(previousCoverPath);
-            if (await previous.exists()) await previous.delete();
-          } catch (_) {}
+          await deleteFileQuietly(File(previousCoverPath));
         }
       });
 
@@ -737,10 +735,7 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
       await File(tempPath).rename(destPath);
       return destPath;
     } finally {
-      try {
-        final temp = File(tempPath);
-        if (await temp.exists()) await temp.delete();
-      } catch (_) {}
+      await deleteFileQuietly(File(tempPath));
     }
   }
 
@@ -862,9 +857,7 @@ class LibraryCollectionsNotifier extends Notifier<LibraryCollectionsState> {
                   sourcePath,
                 );
               } finally {
-                try {
-                  if (await source.exists()) await source.delete();
-                } catch (_) {}
+                await deleteFileQuietly(source);
               }
             } catch (_) {
               newCoverPath = null;

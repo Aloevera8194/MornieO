@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/services/ffmpeg_service.dart';
 import 'package:spotiflac_android/services/motion_artwork_download.dart';
 import 'package:spotiflac_android/services/motion_artwork_proxy.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 
@@ -171,9 +172,7 @@ class MotionArtworkStore {
       return null;
     } finally {
       for (final file in [temporary, infoTemporary]) {
-        try {
-          if (file != null && await file.exists()) await file.delete();
-        } catch (_) {}
+        if (file != null) await deleteFileQuietly(file);
       }
     }
   }

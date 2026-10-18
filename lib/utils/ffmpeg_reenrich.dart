@@ -3,17 +3,13 @@ import 'dart:io';
 import 'package:spotiflac_android/services/ffmpeg_service.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/lyrics_metadata_helper.dart';
 
 bool _hasValue(String? value) => value != null && value.trim().isNotEmpty;
 
 Future<void> _safeDeleteFile(String path) async {
-  try {
-    final file = File(path);
-    if (await file.exists()) {
-      await file.delete();
-    }
-  } catch (_) {}
+  await deleteFileQuietly(File(path));
 }
 
 Future<void> _cleanupTempFileAndParent(String path) async {

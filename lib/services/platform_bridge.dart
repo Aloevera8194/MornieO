@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/services/download_request_payload.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
 part 'platform_bridge/bridge_codec.dart';
@@ -1558,12 +1559,7 @@ class PlatformBridge {
   }
 
   static Future<void> _deleteFileIfExists(String path) async {
-    try {
-      final file = File(path);
-      if (await file.exists()) {
-        await file.delete();
-      }
-    } catch (_) {}
+    await deleteFileQuietly(File(path));
   }
 
   static Future<Directory> _nativeWorkerPayloadDir() async {

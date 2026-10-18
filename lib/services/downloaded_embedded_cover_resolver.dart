@@ -1046,9 +1046,7 @@ class DownloadedEmbeddedCoverResolver {
   }
 
   static Future<void> _deleteFileIfPresent(File file) async {
-    try {
-      if (await file.exists()) await file.delete();
-    } catch (_) {}
+    await deleteFileQuietly(file);
   }
 
   static Future<void> _clearDirectoryContents(Directory directory) async {

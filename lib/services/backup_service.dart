@@ -12,6 +12,7 @@ import 'package:spotiflac_android/services/history_database.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/services/sqlite_native_snapshot.dart';
 import 'package:spotiflac_android/services/user_profile_store.dart';
+import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
 typedef BackupHistoryPageLoader =
@@ -343,9 +344,7 @@ class BackupService {
       try {
         if (await staging.exists()) await staging.delete(recursive: true);
       } catch (_) {}
-      try {
-        if (await partFile.exists()) await partFile.delete();
-      } catch (_) {}
+      await deleteFileQuietly(partFile);
     }
   }
 

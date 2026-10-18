@@ -69,9 +69,7 @@ extension _DownloadQueuePaths on DownloadQueueNotifier {
       return false;
     } finally {
       if (probe != null) {
-        try {
-          if (await probe.exists()) await probe.delete();
-        } catch (_) {}
+        await deleteFileQuietly(probe);
       }
     }
   }

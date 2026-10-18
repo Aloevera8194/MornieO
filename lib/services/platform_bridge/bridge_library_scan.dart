@@ -27,13 +27,8 @@ class LibraryScanNDJSONFile {
   }
 
   Future<void> delete() async {
-    try {
-      if (await file.exists()) await file.delete();
-    } catch (_) {}
+    await deleteFileQuietly(file);
     // Remove the resumable scan checkpoint after ingestion.
-    try {
-      final checkpoint = File('${file.path}.state');
-      if (await checkpoint.exists()) await checkpoint.delete();
-    } catch (_) {}
+    await deleteFileQuietly(File('${file.path}.state'));
   }
 }
