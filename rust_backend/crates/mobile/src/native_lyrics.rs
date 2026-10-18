@@ -31,6 +31,20 @@ static SUPPLEMENT: LazyLock<Regex> = LazyLock::new(|| {
 static NEW_LINE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"\r\n|\r|\n").unwrap());
 static WRITER_CREDIT: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(&format!(r"(?i)^Written{WS}+by{WS}*:{WS}*(.+)$")).unwrap());
+static AU_TAG: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!(r"(?im)^\[au:([^\]\r\n]*)\]{WS}*$")).unwrap());
+static PROVIDER_TAG: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!(r"(?im)^\[x-provider:([^\]\r\n]*)\]{WS}*$")).unwrap());
+static BY_TAG: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!(r"(?im)^\[by:([^\]\r\n]*)\]{WS}*$")).unwrap());
+static VIA_CREDIT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!(r"(?i)\bvia{WS}+([^\(]+)")).unwrap());
+static API_SUFFIX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!(r"(?i){WS}+API$")).unwrap());
+static SOURCE_CREDIT: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(&format!(r"(?i)\(source:{WS}*([^\)]+)\)")).unwrap());
+static EXTENSION_PREFIX: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?i)^extension:").unwrap());
 
 #[derive(Clone, Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -897,39 +911,19 @@ fn xml_source(input: &str, drop_cdata: bool) -> String {
 }
 
 fn with_credits(raw: &str, lyrics: &mut Parsed) -> Result<(), String> {
-    let tag = |name: &str| {
-        Regex::new(&format!(r"(?im)^\[{name}:([^\]\r\n]*)\]{WS}*$"))
-            .unwrap()
-            .captures(raw)
-            .map(|c| trim(&c[1]).to_string())
-    };
-    let mut writers = tag("au");
-    let mut provider = tag("x-provider");
-    let credit = tag("by").unwrap_or_default();
+    let tag = |pattern: &Regex| pattern.captures(raw).map(|c| trim(&c[1]).to_string());
+    let mut writers = tag(&AU_TAG);
+    let mut provider = tag(&PROVIDER_TAG);
+    let credit = tag(&BY_TAG).unwrap_or_default();
     if provider.is_none()
-        && let Some(c) = Regex::new(&format!(r"(?i)\bvia{WS}+([^\(]+)"))
-            .unwrap()
-            .captures(&credit)
+        && let Some(c) = VIA_CREDIT.captures(&credit)
     {
-        provider = Some(
-            Regex::new(&format!(r"(?i){WS}+API$"))
-                .unwrap()
-                .replace(trim(&c[1]), "")
-                .into(),
-        );
+        provider = Some(API_SUFFIX.replace(trim(&c[1]), "").into());
     }
     if provider.is_none() {
-        provider = Regex::new(&format!(r"(?i)\(source:{WS}*([^\)]+)\)"))
-            .unwrap()
-            .captures(&credit)
-            .map(|c| trim(&c[1]).into());
+        provider = SOURCE_CREDIT.captures(&credit).map(|c| trim(&c[1]).into());
     }
-    provider = provider.map(|value| {
-        Regex::new(r"(?i)^extension:")
-            .unwrap()
-            .replace(&value, "")
-            .into()
-    });
+    provider = provider.map(|value| EXTENSION_PREFIX.replace(&value, "").into());
     if looks_ttml(raw) {
         spotiflac_core::xml::check_depth(raw)?;
         let normalized = xml_source(raw, false);

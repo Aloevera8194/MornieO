@@ -1810,16 +1810,19 @@ fn stopped(service: &str, availability: &Value, message: &str) -> Value {
 }
 
 fn storage_failure(kind: &str, message: &str) -> bool {
-    kind.eq_ignore_ascii_case("permission")
-        || [
-            "operation not permitted",
-            "permission denied",
-            "read-only file system",
-            "failed to create file",
-            "failed to create directory",
-        ]
-        .into_iter()
-        .any(|part| message.to_lowercase().contains(part))
+    if kind.eq_ignore_ascii_case("permission") {
+        return true;
+    }
+    let message = message.to_lowercase();
+    [
+        "operation not permitted",
+        "permission denied",
+        "read-only file system",
+        "failed to create file",
+        "failed to create directory",
+    ]
+    .into_iter()
+    .any(|part| message.contains(part))
 }
 
 #[cfg(test)]
