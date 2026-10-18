@@ -1,4 +1,5 @@
 use super::{LyricsResponse, LyricsWord, json, lrc};
+use crate::json::{field_name, lenient_deserialize};
 use regex::Regex;
 use serde::Serialize;
 use serde_json::value::RawValue;
@@ -15,7 +16,7 @@ pub struct PaxDetail {
     pub timestamp: Option<isize>,
     pub endtime: Option<isize>,
 }
-json::go_deserialize!(PaxDetail {
+lenient_deserialize!(PaxDetail {
     "text" => text, "part" => part, "timestamp" => timestamp, "endtime" => endtime,
 });
 
@@ -33,7 +34,7 @@ pub struct PaxLine {
     #[serde(skip_serializing_if = "String::is_empty")]
     pub agent: String,
 }
-json::go_deserialize!(PaxLine {
+lenient_deserialize!(PaxLine {
     "text" => text, "timestamp" => timestamp, "oppositeturn" => opposite_turn,
     "background" => background, "backgroundtext" => background_text, "endtime" => endtime,
     "backgroundlines" => background_lines,
@@ -45,13 +46,13 @@ struct AppleAgent {
     id: String,
     kind: String,
 }
-json::go_deserialize!(AppleAgent { "id" => id, "type" => kind, });
+lenient_deserialize!(AppleAgent { "id" => id, "type" => kind, });
 
 #[derive(Default)]
 struct AppleMetadata {
     agents: Option<Vec<AppleAgent>>,
 }
-json::go_deserialize!(AppleMetadata { "agents" => agents, });
+lenient_deserialize!(AppleMetadata { "agents" => agents, });
 
 #[derive(Default)]
 struct ApplePayload {
@@ -63,7 +64,7 @@ struct ApplePayload {
     ttml_content: String,
     metadata: Option<AppleMetadata>,
 }
-json::go_deserialize!(ApplePayload {
+lenient_deserialize!(ApplePayload {
     "type" => kind, "content" => content, "elrc" => elrc,
     "elrcmultiperson" => elrc_multi_person, "plain" => plain, "ttmlcontent" => ttml_content,
     "metadata" => metadata,
@@ -168,7 +169,7 @@ struct ProxyPayload {
     lyrics_text: String,
     plain_lyrics: String,
 }
-json::go_deserialize!(ProxyPayload {
+lenient_deserialize!(ProxyPayload {
     "type" => kind, "content" => content, "lyrics" => lyrics,
     "lyrics_text" => lyrics_text, "plain_lyrics" => plain_lyrics,
 });
@@ -204,7 +205,7 @@ pub fn format_pax_content(
         if index > 0 {
             output.push('\n');
         }
-        if json::field_name(kind) == "syllable" {
+        if field_name(kind) == "syllable" {
             output.push_str(&lrc::timestamp(line.timestamp as i64));
             if multi_person {
                 output.push_str(if line.opposite_turn { "v2:" } else { "v1:" });
@@ -259,7 +260,7 @@ fn format_apple_payload(
     multi_person: bool,
     word_timing: bool,
 ) -> Result<String, String> {
-    let kind = json::field_name(&payload.kind);
+    let kind = field_name(&payload.kind);
     if kind == "unsynced" && !payload.plain.trim().is_empty() {
         return Ok(payload.plain.trim().into());
     }
@@ -380,7 +381,7 @@ pub fn apple_supplements(raw: &str, lyrics: &mut LyricsResponse) {
     struct Payload {
         metadata: Option<Box<RawValue>>,
     }
-    json::go_deserialize!(Payload { "metadata" => metadata, });
+    lenient_deserialize!(Payload { "metadata" => metadata, });
 
     let metadata = json::decode::<Payload>(raw)
         .ok()
@@ -589,7 +590,7 @@ pub struct KpoeSyllable {
     pub duration: f64,
     pub is_background: bool,
 }
-json::go_deserialize!(KpoeSyllable {
+lenient_deserialize!(KpoeSyllable {
     "text" => text, "time" => time, "duration" => duration, "isbackground" => is_background,
 });
 
@@ -600,7 +601,7 @@ pub struct KpoeLine {
     pub text: String,
     pub syllabus: Option<Vec<KpoeSyllable>>,
 }
-json::go_deserialize!(KpoeLine {
+lenient_deserialize!(KpoeLine {
     "time" => time, "duration" => duration, "text" => text, "syllabus" => syllabus,
 });
 
@@ -610,13 +611,10 @@ pub struct KpoeResponse {
     pub kind: String,
     pub lyrics: Option<Vec<KpoeLine>>,
 }
-json::go_deserialize!(KpoeResponse { "type" => kind, "lyrics" => lyrics, });
+lenient_deserialize!(KpoeResponse { "type" => kind, "lyrics" => lyrics, });
 
 pub fn format_kpoe(response: &KpoeResponse, multi_person: bool, word_timing: bool) -> String {
-    let words = matches!(
-        json::field_name(&response.kind).as_str(),
-        "word" | "syllable"
-    );
+    let words = matches!(field_name(&response.kind).as_str(), "word" | "syllable");
     let mut lines = Vec::new();
     let append = |details: &[&KpoeSyllable]| {
         let mut result = String::new();

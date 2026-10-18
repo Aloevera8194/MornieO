@@ -36,7 +36,7 @@ pub struct FetchOptions {
     pub musixmatch_language: String,
 }
 
-super::json::go_deserialize!(FetchOptions {
+crate::json::lenient_deserialize!(FetchOptions {
     "include_translation_netease" => include_translation_netease,
     "include_romanization_netease" => include_romanization_netease,
     "multi_person_word_by_word" => multi_person_word_by_word,
@@ -60,7 +60,7 @@ impl FetchOptions {
     /// Go unmarshals partial settings into the current options. Commit only a
     /// fully valid document, including duplicate fields and null scalar values.
     pub fn update_json(&mut self, raw: &str) -> Result<(), serde_json::Error> {
-        use super::json::Update;
+        use crate::json::Update;
         if raw.trim().is_empty() {
             return Ok(());
         }

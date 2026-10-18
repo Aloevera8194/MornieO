@@ -65,7 +65,7 @@ pub struct DownloadRequest {
     pub network_concurrency_limit: i64,
 }
 
-crate::lyrics::json::go_deserialize!(DownloadRequest {
+crate::json::lenient_deserialize!(DownloadRequest {
     "contract_version" => contract_version, "isrc" => isrc, "service" => service,
     "download_provider" => download_provider, "provider_track_id" => provider_track_id,
     "spotify_id" => spotify_id, "track_name" => track_name, "artist_name" => artist_name,

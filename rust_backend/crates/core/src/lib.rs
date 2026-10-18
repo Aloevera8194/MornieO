@@ -12,6 +12,7 @@ pub mod cue;
 pub mod downloads;
 pub mod filename;
 pub mod isrc;
+pub mod json;
 pub mod lyrics;
 pub mod matching;
 pub mod media;
