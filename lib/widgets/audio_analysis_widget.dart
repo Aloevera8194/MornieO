@@ -1,18 +1,12 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui' as ui;
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_session.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/services/audio_analysis_jobs.dart';
 import 'package:spotiflac_android/services/audio_analysis_cache.dart';
 import 'package:spotiflac_android/services/audio_analysis_ffmpeg.dart';
 import 'package:spotiflac_android/services/audio_analysis_models.dart';
+import 'package:spotiflac_android/services/audio_analysis_runner.dart';
 import 'package:spotiflac_android/services/network_audio_analysis_input.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
@@ -20,15 +14,12 @@ import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/string_utils.dart';
 
 export 'package:spotiflac_android/services/audio_analysis_ffmpeg.dart';
 export 'package:spotiflac_android/services/audio_analysis_models.dart';
 
-part 'audio_analysis_models.dart';
 part 'audio_analysis_info_card.dart';
 part 'audio_analysis_spectrogram.dart';
 
@@ -52,44 +43,14 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
   bool _spectrogramChannelLoading = false;
   int _spectrogramRequestId = 0;
   String? _unsupportedCodec;
-  final _networkInput = NetworkAudioAnalysisInput();
-  final _analysisJobs = AudioAnalysisJobs<FFmpegSession>(
-    start: (arguments) async {
-      final completed = Completer<FFmpegSession>();
-      final session = await FFmpegKit.executeWithArgumentsAsync(
-        arguments,
-        completed.complete,
-      );
-      final id = session.getSessionId();
-      if (id == null) {
-        // Never pass null to cancel: FFmpegKit interprets it as cancel-all.
-        await completed.future;
-        throw StateError('Analysis session has no ID');
-      }
-      return (id: id, completed: completed.future);
-    },
-    cancel: (id) => FFmpegKit.cancel(id),
-  );
+  final _runner = AudioAnalysisRunner();
+
+  bool _isStaleRequest(int requestId) =>
+      !mounted || requestId != _spectrogramRequestId;
 
   void _checkAnalysisRequest(int requestId) {
-    if (!mounted || requestId != _spectrogramRequestId) {
+    if (_isStaleRequest(requestId)) {
       throw const AudioAnalysisCancelled();
-    }
-  }
-
-  final _nativeAnalysisRequests = <String>{};
-
-  void _cancelNativeAnalysis() {
-    for (final request in _nativeAnalysisRequests) {
-      unawaited(_cancelNativeAnalysisRequest(request));
-    }
-  }
-
-  Future<void> _cancelNativeAnalysisRequest(String request) async {
-    try {
-      await PlatformBridge.cancelNativeDataJob(request);
-    } catch (_) {
-      // Await the owned worker before temp cleanup even if cancellation fails.
     }
   }
 
@@ -140,9 +101,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
     }
 
     _spectrogramRequestId++;
-    _analysisJobs.invalidate();
-    _networkInput.cancel();
-    _cancelNativeAnalysis();
+    _runner.cancel();
     _spectrogramImage?.dispose();
     _spectrogramImage = null;
     _spectrogramChannel = -1;
@@ -161,9 +120,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
   @override
   void dispose() {
     _spectrogramRequestId++;
-    _analysisJobs.dispose();
-    _networkInput.cancel();
-    _cancelNativeAnalysis();
+    _runner.dispose();
     _spectrogramImage?.dispose();
     super.dispose();
   }
@@ -182,7 +139,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
     try {
       final cached = await AudioAnalysisDiskCache.loadFromCache(
         expectedPath,
-        _networkInput,
+        _runner.networkInput,
       );
       if (cached != null && isCurrentRequest()) {
         final unsupported = unsupportedAudioAnalysisCodecLabel(cached.codec);
@@ -243,9 +200,9 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
     final sourcePath = filePath ?? widget.filePath;
     final data = analysisData ?? _data;
     final channel = _spectrogramChannel;
-    final artifact = await _generateSpectrogramForFile(
+    final artifact = await _runner.generateSpectrogramForFile(
       sourcePath,
-      requestId: requestId,
+      isCancelled: () => _isStaleRequest(requestId),
       channel: channel,
       durationSeconds: data?.duration,
       sampleRate: data?.sampleRate,
@@ -266,9 +223,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
       AudioAnalysisDiskCache.cacheKey(sourcePath),
     );
     final requestId = ++_spectrogramRequestId;
-    _analysisJobs.invalidate();
-    _networkInput.cancel();
-    _cancelNativeAnalysis();
+    _runner.cancel();
     setState(() {
       _analyzing = true;
       _spectrogramChannelLoading = false;
@@ -290,7 +245,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
           ? null
           : await AudioAnalysisDiskCache.loadFromCache(
               sourcePath,
-              _networkInput,
+              _runner.networkInput,
             );
       _checkAnalysisRequest(requestId);
       AudioAnalysisData data;
@@ -307,7 +262,10 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
           channel: _spectrogramChannel,
         );
       } else {
-        final result = await _runAnalysis(sourcePath, requestId);
+        final result = await _runner.runAnalysis(
+          sourcePath,
+          () => _isStaleRequest(requestId),
+        );
         data = result.data;
         image = result.spectrogramImage;
         await AudioAnalysisDiskCache.saveToCache(sourcePath, data);
@@ -357,266 +315,6 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
     }
   }
 
-  Future<_AudioAnalysisRunResult> _runAnalysis(
-    String filePath,
-    int requestId, {
-    String? sourcePath,
-  }) async {
-    _checkAnalysisRequest(requestId);
-    if (NetworkAudioAnalysisInput.isNetwork(filePath)) {
-      return _networkInput.withFile(
-        filePath,
-        (path) => _runAnalysis(path, requestId, sourcePath: filePath),
-      );
-    }
-    String workingPath = filePath;
-    String? tempCopy;
-    if (filePath.startsWith('content://')) {
-      tempCopy = await PlatformBridge.copyContentUriToTemp(filePath);
-      if (tempCopy == null) {
-        throw Exception('Failed to copy SAF file for analysis');
-      }
-      workingPath = tempCopy;
-    }
-
-    try {
-      _checkAnalysisRequest(requestId);
-      final info = await _getMediaInfo(workingPath);
-      _checkAnalysisRequest(requestId);
-      final unsupported = unsupportedAudioAnalysisCodecLabel(info.codecName);
-      if (unsupported != null) {
-        throw UnsupportedAudioAnalysisCodecException(unsupported);
-      }
-      _GeneratedSpectrogram? spectrogram;
-      try {
-        final effectiveDuration = info.totalSamples > 0 && info.sampleRate > 0
-            ? info.totalSamples / info.sampleRate
-            : info.duration;
-        spectrogram = await _generateSpectrogram(
-          workingPath,
-          requestId: requestId,
-          channel: -1,
-          includeCutoffPlane: true,
-          durationSeconds: effectiveDuration,
-          sampleRate: info.sampleRate,
-          channels: info.channels,
-        );
-        _checkAnalysisRequest(requestId);
-        final spectralCutoffHz = spectrogram.cutoffFrequencyHz;
-        final levelMetrics = await _runFullStreamLevelAnalysis(
-          workingPath,
-          requestId: requestId,
-          durationSeconds: effectiveDuration,
-        );
-        if (levelMetrics == null) {
-          throw Exception('FFmpeg level analysis returned no usable metrics');
-        }
-        final peakAmplitude = levelMetrics.peakDb;
-        final rmsLevel = levelMetrics.rmsDb;
-        final dynamicRange = peakAmplitude - rmsLevel;
-
-        return _AudioAnalysisRunResult(
-          data: AudioAnalysisData(
-            filePath: sourcePath ?? filePath,
-            fileSize: info.fileSize,
-            codec: info.codec,
-            container: info.container,
-            decodedSampleFormat: info.decodedSampleFormat,
-            sampleRate: info.sampleRate,
-            channels: info.channels,
-            channelLayout: info.channelLayout,
-            bitsPerSample: info.bitsPerSample,
-            duration: info.duration,
-            bitrate: info.bitrate,
-            bitDepth: info.bitsPerSample > 0
-                ? '${info.bitsPerSample}-bit'
-                : 'N/A',
-            dynamicRange: dynamicRange,
-            peakAmplitude: peakAmplitude,
-            rmsLevel: rmsLevel,
-            integratedLufs: levelMetrics.integratedLufs,
-            truePeakDb: levelMetrics.truePeakDb,
-            clippingSamples: levelMetrics.clippingSamples,
-            spectralCutoffHz: spectralCutoffHz,
-            channelStats: levelMetrics.channelStats,
-            totalSamples: info.totalSamples,
-          ),
-          spectrogramImage: spectrogram.image,
-        );
-      } catch (_) {
-        spectrogram?.image.dispose();
-        rethrow;
-      }
-    } finally {
-      if (tempCopy != null) {
-        try {
-          await File(tempCopy).delete();
-        } catch (_) {}
-      }
-    }
-  }
-
-  Future<_GeneratedSpectrogram> _generateSpectrogramForFile(
-    String filePath, {
-    required int requestId,
-    required int channel,
-    double? durationSeconds,
-    int? sampleRate,
-    int? channels,
-  }) async {
-    _checkAnalysisRequest(requestId);
-    if (NetworkAudioAnalysisInput.isNetwork(filePath)) {
-      return _networkInput.withFile(
-        filePath,
-        (path) => _generateSpectrogramForFile(
-          path,
-          requestId: requestId,
-          channel: channel,
-          durationSeconds: durationSeconds,
-          sampleRate: sampleRate,
-          channels: channels,
-        ),
-      );
-    }
-    String workingPath = filePath;
-    String? tempCopy;
-    if (filePath.startsWith('content://')) {
-      tempCopy = await PlatformBridge.copyContentUriToTemp(filePath);
-      if (tempCopy == null) {
-        throw Exception('Failed to copy SAF file for spectrogram');
-      }
-      workingPath = tempCopy;
-    }
-
-    try {
-      return await _generateSpectrogram(
-        workingPath,
-        requestId: requestId,
-        channel: channel,
-        durationSeconds: durationSeconds,
-        sampleRate: sampleRate,
-        channels: channels,
-      );
-    } finally {
-      if (tempCopy != null) {
-        try {
-          await File(tempCopy).delete();
-        } catch (_) {}
-      }
-    }
-  }
-
-  Future<_GeneratedSpectrogram> _generateSpectrogram(
-    String inputPath, {
-    required int requestId,
-    required int channel,
-    bool includeCutoffPlane = false,
-    double? durationSeconds,
-    int? sampleRate,
-    int? channels,
-  }) async {
-    final tempDir = await getTemporaryDirectory();
-    final rawPath =
-        '${tempDir.path}/analysis_spectrum_'
-        '${DateTime.now().microsecondsSinceEpoch}_${channel + 1}.rgba';
-    final cutoffPath = includeCutoffPlane ? '$rawPath.cutoff.gray' : null;
-
-    try {
-      _checkAnalysisRequest(requestId);
-      final session = await _analysisJobs.run(
-        buildAudioSpectrogramArguments(
-          inputPath: inputPath,
-          outputPath: rawPath,
-          cutoffOutputPath: cutoffPath,
-          channel: channel,
-          durationSeconds: durationSeconds,
-          sampleRate: sampleRate,
-          channels: channels,
-        ),
-      );
-
-      final returnCode = await session.getReturnCode();
-      if (!ReturnCode.isSuccess(returnCode)) {
-        final logs = await session.getLogsAsString();
-        throw Exception('FFmpeg spectrogram failed: $logs');
-      }
-
-      final expectedLength = audioSpectrogramWidth * audioSpectrogramHeight * 4;
-      final rawBytes = await File(rawPath).readAsBytes();
-      if (rawBytes.length < expectedLength) {
-        throw Exception(
-          'Incomplete spectrogram output '
-          '(${rawBytes.length}/$expectedLength bytes)',
-        );
-      }
-      final rgba = rawBytes.length == expectedLength
-          ? rawBytes
-          : Uint8List.sublistView(rawBytes, 0, expectedLength);
-      double? cutoffFrequencyHz;
-      if (cutoffPath != null) {
-        final expectedCutoffLength =
-            audioSpectralAnalysisWidth * audioSpectrogramHeight;
-        final cutoffLength = await File(cutoffPath).length();
-        if (cutoffLength != expectedCutoffLength) {
-          throw Exception(
-            'Incomplete spectral cutoff output '
-            '($cutoffLength/$expectedCutoffLength bytes)',
-          );
-        }
-        _checkAnalysisRequest(requestId);
-        final nativeRequest = 'spectral-$rawPath';
-        _nativeAnalysisRequests.add(nativeRequest);
-        try {
-          try {
-            final result = await PlatformBridge.runNativeDataJob({
-              'operation': 'spectral_cutoff',
-              'path': cutoffPath,
-              'width': audioSpectralAnalysisWidth,
-              'height': audioSpectrogramHeight,
-              'max_frequency': (sampleRate ?? 0) / 2,
-            }, requestId: nativeRequest);
-            cutoffFrequencyHz = (result['cutoff'] as num?)?.toDouble();
-          } on MissingPluginException {
-            cutoffFrequencyHz = await compute(
-              _estimateEffectiveSpectralCutoffFileInIsolate,
-              _SpectralCutoffFileParams(
-                path: cutoffPath,
-                width: audioSpectralAnalysisWidth,
-                height: audioSpectrogramHeight,
-                maxFrequencyHz: (sampleRate ?? 0) / 2,
-              ),
-            );
-          }
-        } finally {
-          _nativeAnalysisRequests.remove(nativeRequest);
-        }
-        _checkAnalysisRequest(requestId);
-      }
-      final completer = Completer<ui.Image>();
-      ui.decodeImageFromPixels(
-        rgba,
-        audioSpectrogramWidth,
-        audioSpectrogramHeight,
-        ui.PixelFormat.rgba8888,
-        completer.complete,
-      );
-      return _GeneratedSpectrogram(
-        image: await completer.future,
-        rgba: rgba,
-        cutoffFrequencyHz: cutoffFrequencyHz,
-      );
-    } finally {
-      try {
-        await File(rawPath).delete();
-      } catch (_) {}
-      if (cutoffPath != null) {
-        try {
-          await File(cutoffPath).delete();
-        } catch (_) {}
-      }
-    }
-  }
-
   Future<void> _changeSpectrogramChannel(int channel) async {
     final data = _data;
     if (data == null ||
@@ -646,9 +344,9 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
         channel: channel,
       );
       if (image == null) {
-        final artifact = await _generateSpectrogramForFile(
+        final artifact = await _runner.generateSpectrogramForFile(
           sourcePath,
-          requestId: requestId,
+          isCancelled: () => _isStaleRequest(requestId),
           channel: channel,
           durationSeconds: data.duration,
           sampleRate: data.sampleRate,
@@ -682,224 +380,6 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
     } finally {
       releaseCache();
       unawaited(AudioAnalysisDiskCache.trimCache());
-    }
-  }
-
-  Future<_MediaInfo> _getMediaInfo(String filePath) async {
-    final session = await FFprobeKit.getMediaInformation(filePath);
-    final info = session.getMediaInformation();
-
-    if (info == null) {
-      throw Exception('Failed to get media information');
-    }
-
-    int fileSize = 0;
-    try {
-      fileSize = await File(filePath).length();
-    } catch (_) {}
-
-    final streams = info.getStreams();
-    final audioStream = streams.firstWhere(
-      (s) => s.getAllProperties()?['codec_type'] == 'audio',
-      orElse: () => throw Exception('No audio stream found'),
-    );
-
-    final props = audioStream.getAllProperties() ?? {};
-    final infoProps = info.getAllProperties() ?? {};
-    final codecName = props['codec_name']?.toString().toLowerCase() ?? '';
-    final codecLongName = props['codec_long_name']?.toString() ?? '';
-    final decodedSampleFormat = props['sample_fmt']?.toString() ?? '';
-    final formatName = infoProps['format_name']?.toString() ?? '';
-    final formatLongName = infoProps['format_long_name']?.toString() ?? '';
-    final sampleRate =
-        int.tryParse(props['sample_rate']?.toString() ?? '') ?? 0;
-    final channels = int.tryParse(props['channels']?.toString() ?? '') ?? 0;
-    final channelLayout =
-        props['channel_layout']?.toString() ??
-        props['ch_layout']?.toString() ??
-        '';
-    final streamDuration = double.tryParse(props['duration']?.toString() ?? '');
-    final containerDuration = double.tryParse(info.getDuration() ?? '');
-    final duration =
-        (streamDuration != null && streamDuration > 0
-            ? streamDuration
-            : containerDuration) ??
-        0;
-    final streamBitrate = int.tryParse(props['bit_rate']?.toString() ?? '');
-    final containerBitrate = int.tryParse(info.getBitrate() ?? '');
-    final bitrate =
-        streamBitrate ??
-        containerBitrate ??
-        (duration > 0 && fileSize > 0 ? (fileSize * 8 / duration).round() : 0);
-
-    final canReportStoredBitDepth = _codecHasStoredBitDepth(codecName);
-
-    int bitsPerSample = 0;
-    if (canReportStoredBitDepth) {
-      bitsPerSample =
-          int.tryParse(props['bits_per_raw_sample']?.toString() ?? '') ?? 0;
-      if (bitsPerSample == 0) {
-        bitsPerSample =
-            int.tryParse(props['bits_per_sample']?.toString() ?? '') ?? 0;
-      }
-    }
-
-    if (bitsPerSample == 0 && canReportStoredBitDepth) {
-      final sampleFmt = props['sample_fmt']?.toString() ?? '';
-      if (sampleFmt.contains('16') ||
-          sampleFmt == 's16' ||
-          sampleFmt == 's16p') {
-        bitsPerSample = 16;
-      } else if (sampleFmt.contains('32') ||
-          sampleFmt == 'flt' ||
-          sampleFmt == 'fltp') {
-        bitsPerSample = 32;
-      } else if (sampleFmt.contains('24') || sampleFmt == 's24') {
-        bitsPerSample = 24;
-      }
-    }
-
-    return _MediaInfo(
-      fileSize: fileSize,
-      codecName: codecName,
-      codec: _formatCodecLabel(codecName, codecLongName),
-      container: _formatContainerLabel(formatName, formatLongName),
-      decodedSampleFormat: decodedSampleFormat,
-      sampleRate: sampleRate,
-      channels: channels,
-      channelLayout: channelLayout,
-      bitsPerSample: bitsPerSample,
-      duration: duration,
-      bitrate: bitrate,
-      totalSamples: _estimateTotalSamples(
-        props: props,
-        duration: duration,
-        sampleRate: sampleRate,
-        channels: channels,
-      ),
-    );
-  }
-
-  String _formatCodecLabel(String codecName, String codecLongName) {
-    final name = codecName.trim();
-    final longName = _normalizeAnalysisLabel(codecLongName);
-    if (name.isEmpty) return longName;
-    if (longName.isEmpty || longName.toLowerCase() == name.toLowerCase()) {
-      return name.toUpperCase();
-    }
-    return '${name.toUpperCase()} ($longName)';
-  }
-
-  String _formatContainerLabel(String formatName, String formatLongName) {
-    final longName = _normalizeAnalysisLabel(formatLongName);
-    if (longName.isNotEmpty) return longName;
-    final name = formatName.trim();
-    return name.isEmpty ? '' : name.toUpperCase();
-  }
-
-  String _normalizeAnalysisLabel(String value) {
-    final trimmed = value.trim();
-    final lower = trimmed.toLowerCase();
-    if (lower.isEmpty || lower == 'unknown' || lower == 'n/a') return '';
-    return trimmed;
-  }
-
-  int _estimateTotalSamples({
-    required Map<dynamic, dynamic> props,
-    required double duration,
-    required int sampleRate,
-    required int channels,
-  }) {
-    final nbSamples = int.tryParse(props['nb_samples']?.toString() ?? '');
-    if (nbSamples != null && nbSamples > 0) {
-      return nbSamples;
-    }
-
-    final durationTs = int.tryParse(props['duration_ts']?.toString() ?? '');
-    final timeBase = props['time_base']?.toString() ?? '';
-    if (durationTs != null && durationTs > 0 && timeBase.contains('/')) {
-      final parts = timeBase.split('/');
-      final numerator = double.tryParse(parts[0]);
-      final denominator = double.tryParse(parts[1]);
-      if (numerator != null &&
-          numerator > 0 &&
-          denominator != null &&
-          denominator > 0 &&
-          sampleRate > 0) {
-        final seconds = durationTs * numerator / denominator;
-        return (seconds * sampleRate).round();
-      }
-    }
-
-    if (duration > 0 && sampleRate > 0) {
-      return (duration * sampleRate).round();
-    }
-    return 0;
-  }
-
-  bool _codecHasStoredBitDepth(String codecName) {
-    if (codecName.isEmpty) return false;
-    return codecName == 'flac' ||
-        codecName == 'alac' ||
-        codecName == 'wavpack' ||
-        codecName == 'ape' ||
-        codecName == 'tta' ||
-        codecName.startsWith('pcm_');
-  }
-
-  Future<_LevelMetrics?> _runFullStreamLevelAnalysis(
-    String inputPath, {
-    required int requestId,
-    required double durationSeconds,
-  }) async {
-    final tempDir = await getTemporaryDirectory();
-    final metadataFile = File(
-      '${tempDir.path}/analysis_metrics_'
-      '${DateTime.now().microsecondsSinceEpoch}.txt',
-    );
-    try {
-      _checkAnalysisRequest(requestId);
-      final session = await _analysisJobs.run(
-        buildAudioMetricsArguments(
-          inputPath: inputPath,
-          metadataPath: metadataFile.path,
-          durationSeconds: durationSeconds,
-        ),
-      );
-
-      final returnCode = await session.getReturnCode();
-      if (!ReturnCode.isSuccess(returnCode)) {
-        return null;
-      }
-
-      final metadata = await metadataFile.exists()
-          ? await metadataFile.readAsString()
-          : '';
-      final metadataSummary = parseAudioAnalysisMetadata(metadata);
-      final logs = metadataSummary == null
-          ? await session.getAllLogsAsString() ?? ''
-          : '';
-      final summary = metadataSummary ?? parseAudioAstatsSummary(logs);
-      if (summary == null) return null;
-      final channelStats = metadataSummary?.channelStats.isNotEmpty == true
-          ? metadataSummary!.channelStats
-          : parseChannelStats(logs);
-      final clippingSamples = channelStats.fold<int>(0, (sum, stats) {
-        if (stats.peakDb == null || stats.peakDb! < -0.1) return sum;
-        return sum + stats.peakCount;
-      });
-      return _LevelMetrics(
-        peakDb: summary.peakDb,
-        rmsDb: summary.rmsDb,
-        integratedLufs: metadataSummary?.integratedLufs,
-        truePeakDb: metadataSummary?.truePeakDb,
-        clippingSamples: clippingSamples,
-        channelStats: channelStats,
-      );
-    } finally {
-      try {
-        if (await metadataFile.exists()) await metadataFile.delete();
-      } catch (_) {}
     }
   }
 
