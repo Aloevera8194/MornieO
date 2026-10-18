@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/repo_provider.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/services/extension_storage_service.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
@@ -569,12 +567,9 @@ class _ExtensionDetailsScreenState
   }
 
   Future<void> _installExtension(RepoExtension ext) async {
-    final tempDir = await getTemporaryDirectory();
-    final storage = await ExtensionStorageService.prepare();
-
     final success = await ref
         .read(repoProvider.notifier)
-        .installExtension(ext.id, tempDir.path, storage.extensionsDir);
+        .installExtensionToDefaultPaths(ext.id);
 
     if (mounted) {
       showAppSnackBar(
@@ -590,11 +585,9 @@ class _ExtensionDetailsScreenState
   }
 
   Future<void> _updateExtension(RepoExtension ext) async {
-    final tempDir = await getTemporaryDirectory();
-
     final success = await ref
         .read(repoProvider.notifier)
-        .updateExtension(ext.id, tempDir.path);
+        .updateExtensionToDefaultPaths(ext.id);
 
     if (mounted) {
       showAppSnackBar(

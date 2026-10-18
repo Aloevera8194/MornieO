@@ -15,7 +15,6 @@ import 'package:spotiflac_android/providers/repo_provider.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
 import 'package:spotiflac_android/screens/repo/extension_details_screen.dart';
-import 'package:spotiflac_android/services/extension_storage_service.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
@@ -600,12 +599,9 @@ class _RepoTabState extends ConsumerState<RepoTab> {
   }
 
   Future<void> _installExtension(RepoExtension ext) async {
-    final tempDir = await getTemporaryDirectory();
-    final storage = await ExtensionStorageService.prepare();
-
     final success = await ref
         .read(repoProvider.notifier)
-        .installExtension(ext.id, tempDir.path, storage.extensionsDir);
+        .installExtensionToDefaultPaths(ext.id);
 
     if (mounted) {
       showAppSnackBar(
@@ -621,11 +617,9 @@ class _RepoTabState extends ConsumerState<RepoTab> {
   }
 
   Future<void> _updateExtension(RepoExtension ext) async {
-    final tempDir = await getTemporaryDirectory();
-
     final success = await ref
         .read(repoProvider.notifier)
-        .updateExtension(ext.id, tempDir.path);
+        .updateExtensionToDefaultPaths(ext.id);
 
     if (mounted) {
       showAppSnackBar(

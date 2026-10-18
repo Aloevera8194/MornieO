@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/constants/app_info.dart';
+import 'package:spotiflac_android/services/extension_storage_service.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
@@ -381,6 +382,19 @@ class RepoNotifier extends Notifier<RepoState> {
         apply: (notifier, path) => notifier.installExtension(path),
       ),
     );
+  }
+
+  /// Installs [extensionId] using the app's temp and extension directories.
+  Future<bool> installExtensionToDefaultPaths(String extensionId) async {
+    final tempDir = await getTemporaryDirectory();
+    final storage = await ExtensionStorageService.prepare();
+    return installExtension(extensionId, tempDir.path, storage.extensionsDir);
+  }
+
+  /// Updates [extensionId] using the app's temp directory.
+  Future<bool> updateExtensionToDefaultPaths(String extensionId) async {
+    final tempDir = await getTemporaryDirectory();
+    return updateExtension(extensionId, tempDir.path);
   }
 
   Future<bool> updateExtension(String extensionId, String tempDir) {
