@@ -30,7 +30,6 @@ import 'package:spotiflac_android/services/music_playback_deck.dart';
 import 'package:spotiflac_android/services/automix_analysis.dart';
 import 'package:spotiflac_android/services/autoplay_personalization.dart';
 import 'package:spotiflac_android/services/automix_analyzer.dart';
-import 'package:spotiflac_android/models/automix_options.dart';
 import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/services/automix_effect_renderer.dart';
 import 'package:spotiflac_android/services/automix_status.dart';
@@ -50,49 +49,10 @@ part 'music_player_autoplay.dart';
 
 final _log = AppLogger('MusicPlayer');
 
-void configurePlaybackNotification({
-  required PlaybackNotification presentation,
-  required Future<bool> Function(MediaItem) toggleFavorite,
-}) => musicPlayerRuntime.configureNotification(
-  presentation: presentation,
-  toggleFavorite: toggleFavorite,
-);
-
 /// Muted artwork shares the music session. Recover its Now Playing ownership
 /// after video initialization, including failed or abandoned initialization.
 Future<void> restoreMusicAudioSessionAfterVideo() async =>
     musicPlayerRuntime.handler?.restoreIosNowPlaying();
-
-void setPlaybackAutomationOptions({
-  required bool enabled,
-  required bool pauseOnMute,
-  required bool playOnHeadphonesConnected,
-}) => musicPlayerRuntime.configure(
-  musicPlayerRuntime.settings.copyWith(
-    playerMode: enabled ? 'internal' : 'external',
-    pauseOnMute: pauseOnMute,
-    playOnHeadphonesConnected: playOnHeadphonesConnected,
-  ),
-);
-
-void setAutoMixEnabled(bool enabled) => musicPlayerRuntime.configure(
-  musicPlayerRuntime.settings.copyWith(autoMix: enabled),
-);
-
-void setAutoMixOptions(AutoMixOptions options) => musicPlayerRuntime.configure(
-  musicPlayerRuntime.settings.copyWith(
-    autoMixDuration: options.durationSeconds,
-    autoMixEffect: options.effect,
-    autoMixSpeed: options.speed,
-    autoMixPitch: options.pitchSemitones,
-    autoMixEcho: options.echo,
-    autoMixLowPass: options.lowPass,
-  ),
-);
-
-void setUsbBitPerfectEnabled(bool enabled) => musicPlayerRuntime.configure(
-  musicPlayerRuntime.settings.copyWith(usbBitPerfect: enabled),
-);
 
 /// Gain and rate the player applies to the current track.
 class PlaybackProcessing {
