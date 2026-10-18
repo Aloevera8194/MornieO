@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -15,6 +18,7 @@ jobs:
     name: Detect changed paths
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       pull-requests: read
     outputs:
       dart: ${{ steps.filter.outputs.dart }}
@@ -46,6 +50,8 @@ jobs:
               - '.github/workflows/ci.yml'
             rust:
               - 'rust_backend/**'
+              - 'test/fixtures/**'
+              - 'android/app/src/test/resources/lyrics_usability_cases.tsv'
               - 'scripts/*rust*.sh'
               - 'android/gradlew'
               - 'android/gradle/wrapper/**'
@@ -144,29 +150,29 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Setup Java for Android SDK tools
-        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
-        with:
-          distribution: "temurin"
-          java-version: "25"
-
       - name: Activate pinned Rust toolchain
         working-directory: rust_backend
         run: rustup show
+
+      - name: Cache Cargo registry and build output
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            rust_backend/target
+          key: cargo-${{ runner.os }}-rust-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-${{ hashFiles('rust_backend/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-rust-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-
 
       - name: Install C binding generator dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libclang-dev
 
+      # The Android libraries are built once, by Gradle in the android job.
       - name: Rust formatting, Clippy and unit tests
         run: bash scripts/check_rust_backend.sh
-
-      - name: Install Android NDK
-        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;30.0.16248370"'
-
-      - name: Build Android ARM32 and ARM64 libraries
-        run: ANDROID_NDK_HOME="$ANDROID_HOME/ndk/30.0.16248370" bash scripts/build_rust_backend.sh android
 
   rust-ios:
     name: Rust iOS libraries & release application
@@ -183,6 +189,17 @@ jobs:
       - name: Activate pinned Rust toolchain
         working-directory: rust_backend
         run: rustup show
+
+      - name: Cache Cargo registry and build output
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            rust_backend/target
+          key: cargo-${{ runner.os }}-rust-ios-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-${{ hashFiles('rust_backend/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-rust-ios-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-
 
       - name: Build iOS device and universal simulator XCFramework
         run: bash scripts/build_rust_backend.sh ios
@@ -288,6 +305,17 @@ jobs:
           sudo apt-get install -y libclang-dev ffmpeg
           ffmpeg -version
           echo "SPOTIFLAC_TEST_FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
+
+      - name: Cache Cargo registry and build output
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            rust_backend/target
+          key: cargo-${{ runner.os }}-android-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-${{ hashFiles('rust_backend/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-android-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-
 
       - name: Package Rust application and run native unit tests
         run: gradle -p android :app:assembleDebug :app:testDebugUnitTest

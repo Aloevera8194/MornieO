@@ -11,6 +11,9 @@ on:
         required: true
         default: "v1.0.0"
 
+permissions:
+  contents: read
+
 jobs:
   # Get version first (quick job)
   get-version:
