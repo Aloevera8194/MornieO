@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/models/download_item.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/download_queue_state.dart';
-import 'package:spotiflac_android/services/download_progress.dart';
+import 'package:spotiflac_android/providers/download_progress.dart';
 
 DownloadItem _item({DownloadStatus status = DownloadStatus.downloading}) =>
     DownloadItem(

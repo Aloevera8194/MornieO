@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/services/ffmpeg_models.dart';
+import 'package:spotiflac_android/models/ffmpeg_models.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
 import 'package:spotiflac_android/utils/download_error_type.dart';
 import 'package:spotiflac_android/utils/int_utils.dart';

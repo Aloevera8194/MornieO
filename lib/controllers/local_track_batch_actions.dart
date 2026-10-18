@@ -16,7 +16,7 @@ import 'package:spotiflac_android/services/deleted_library_files.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 import 'package:spotiflac_android/services/local_track_redownload_service.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/ffmpeg_reenrich.dart';
+import 'package:spotiflac_android/services/ffmpeg_reenrich.dart';
 import 'package:spotiflac_android/utils/confirm_and_delete_tracks.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
 import 'package:spotiflac_android/utils/int_utils.dart';

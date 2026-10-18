@@ -19,7 +19,7 @@ import 'package:spotiflac_android/providers/download_verification_retry_guard.da
 import 'package:spotiflac_android/providers/download_queue_state.dart';
 import 'package:spotiflac_android/providers/download_queue_policy.dart';
 import 'package:spotiflac_android/services/download_queue_persistence.dart';
-import 'package:spotiflac_android/services/download_progress.dart';
+import 'package:spotiflac_android/providers/download_progress.dart';
 import 'package:spotiflac_android/services/download_file_finalizer.dart';
 import 'package:spotiflac_android/services/download_container_finalizer.dart';
 import 'package:spotiflac_android/services/download_completion_audio.dart';
