@@ -19,7 +19,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:spotiflac_android/services/setup_progress_store.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/constants/language_choices.dart';
@@ -46,8 +46,7 @@ class SetupScreen extends ConsumerStatefulWidget {
 
 class _SetupScreenState extends ConsumerState<SetupScreen>
     with WidgetsBindingObserver {
-  static const _progressKey = 'setup_progress_v1';
-  final _prefs = SharedPreferences.getInstance();
+  final _progressStore = SetupProgressStore();
   final _platform = defaultTargetPlatform;
   PageController? _pageController;
   final ScrollController _languageScrollController = ScrollController();
@@ -98,10 +97,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
         final androidInfo = await DeviceInfoPlugin().androidInfo;
         _androidSdkVersion = androidInfo.version.sdkInt;
       }
-      final prefs = await _prefs;
+      final saved = await _progressStore.readDraft();
       if (!mounted) return;
       _selectedLocale = ref.read(settingsProvider).locale;
-      final saved = prefs.getString(_progressKey);
       if (saved != null) {
         final draft = jsonDecode(saved) as Map<String, dynamic>;
         _currentStep = ((draft['step'] as int?) ?? 0).clamp(0, _totalSteps - 1);
@@ -141,16 +139,13 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
   }
 
   Future<void> _saveProgress({int? step}) async {
-    final draft = jsonEncode({
+    await _progressStore.writeDraft({
       'step': step ?? _currentStep,
       'directory': _selectedDirectory,
       'bookmark': _selectedDirectoryBookmark,
       'treeUri': _selectedTreeUri,
       'skipNotifications': _notificationPermissionSkipped,
     });
-    if (!await (await _prefs).setString(_progressKey, draft)) {
-      throw StateError('Could not save setup progress');
-    }
   }
 
   Future<void> _restoreSelectedFolder() => _folderRecovery ??=
@@ -607,7 +602,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
       }
 
       await ref.read(settingsProvider.notifier).setFirstLaunchComplete();
-      await (await _prefs).remove(_progressKey);
+      await _progressStore.clear();
 
       if (mounted) context.go('/tutorial');
     } catch (e) {

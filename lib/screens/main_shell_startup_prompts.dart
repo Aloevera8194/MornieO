@@ -168,7 +168,7 @@ extension _MainShellStartupPrompts on _MainShellState {
     );
   }
 
-  static const _safMigrationShownKey = 'saf_migration_prompt_shown';
+  static const _safMigrationPromptStore = SafMigrationPromptStore();
 
   Future<void> _checkSafMigration() async {
     if (!Platform.isAndroid) return;
@@ -181,9 +181,8 @@ extension _MainShellStartupPrompts on _MainShellState {
     final androidInfo = await deviceInfo.androidInfo;
     if (androidInfo.version.sdkInt < 29) return;
 
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool(_safMigrationShownKey) == true) return;
-    await prefs.setBool(_safMigrationShownKey, true);
+    if (await _safMigrationPromptStore.wasShown()) return;
+    await _safMigrationPromptStore.markShown();
 
     if (!mounted) return;
 
