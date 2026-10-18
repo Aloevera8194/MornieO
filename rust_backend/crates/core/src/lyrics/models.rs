@@ -112,19 +112,34 @@ pub struct QqSong {
 }
 go_deserialize!(QqSong { "mid" => mid, "id" => id, "name" => name, "interval" => interval, "singer" => singer, });
 #[derive(Clone, Debug, Default)]
-pub struct QqSongs {
-    pub list: Option<Vec<QqSong>>,
+pub struct QqSongDetail {
+    pub code: isize,
+    pub data: Option<Vec<QqSong>>,
 }
-go_deserialize!(QqSongs { "list" => list, });
+go_deserialize!(QqSongDetail { "code" => code, "data" => data, });
+/// Search suggestions carry IDs as strings and singers joined by `/`.
 #[derive(Clone, Debug, Default)]
-pub struct QqData {
-    pub song: QqSongs,
+pub struct QqSuggestion {
+    pub id: String,
+    pub mid: String,
+    pub name: String,
+    pub singer: String,
 }
-go_deserialize!(QqData { "song" => song, });
+go_deserialize!(QqSuggestion { "id" => id, "mid" => mid, "name" => name, "singer" => singer, });
+#[derive(Clone, Debug, Default)]
+pub struct QqSuggestedSongs {
+    pub itemlist: Option<Vec<QqSuggestion>>,
+}
+go_deserialize!(QqSuggestedSongs { "itemlist" => itemlist, });
+#[derive(Clone, Debug, Default)]
+pub struct QqSuggestionData {
+    pub song: QqSuggestedSongs,
+}
+go_deserialize!(QqSuggestionData { "song" => song, });
 #[derive(Clone, Debug, Default)]
 pub struct QqSearch {
     pub code: isize,
-    pub data: QqData,
+    pub data: QqSuggestionData,
 }
 go_deserialize!(QqSearch { "code" => code, "data" => data, });
 #[derive(Clone, Debug, Default)]
