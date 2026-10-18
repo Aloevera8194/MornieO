@@ -24,7 +24,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -147,7 +146,7 @@ class MainActivity: FlutterFragmentActivity() {
     internal var libraryScanProgressStreamJob: Job? = null
     internal var libraryScanProgressEventSink: EventChannel.EventSink? = null
     internal var lastLibraryScanProgressPayload: String? = null
-    private var flutterBackCallback: OnBackPressedCallback? = null
+    internal var flutterBackCallback: OnBackPressedCallback? = null
     internal val playbackLeaseLock = Any()
     internal val playbackLeases = LinkedHashMap<String, ParcelFileDescriptor>()
     @Volatile internal var safScanCancel = false
@@ -466,54 +465,13 @@ class MainActivity: FlutterFragmentActivity() {
                             processPendingExtensionCallbacks()
                             result.success(null)
                         }
-                        "setScreenAwake" -> {
-                            val flag = android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                            if (call.argument<Boolean>("enabled") == true) {
-                                window.addFlags(flag)
-                            } else {
-                                window.clearFlags(flag)
-                            }
-                            result.success(null)
-                        }
-                        "consumeVerificationNotification" -> {
-                            val payload = pendingVerificationNotification
-                            pendingVerificationNotification = null
-                            result.success(payload)
-                        }
-                        "ensureInstallMarker" -> {
-                            val installState = withContext(Dispatchers.IO) {
-                                ensureInstallMarker()
-                            }
-                            result.success(installState)
-                        }
-                        "prepareRuntimeState" -> {
-                            val dataDir = call.argument<String>("data_dir") ?: ""
-                            val runtimeState = withContext(Dispatchers.IO) {
-                                require(dataDir.isNotBlank()) {
-                                    "Extension data directory is required"
-                                }
-                                val payload = prepareRuntimeState(dataDir)
-                                selectedBackend.setRuntimeState(dataDir, payload)
-                                mapOf("ready" to true)
-                            }
-                            result.success(runtimeState)
-                        }
-                        "exitApp" -> {
-                            flutterBackCallback?.isEnabled = false
-                            finishAndRemoveTask()
-                            result.success(null)
-                        }
+                        "setScreenAwake" -> handleSetScreenAwake(call, result)
+                        "consumeVerificationNotification" -> handleConsumeVerificationNotification(call, result)
+                        "ensureInstallMarker" -> handleEnsureInstallMarker(call, result)
+                        "prepareRuntimeState" -> handlePrepareRuntimeState(call, result, selectedBackend)
+                        "exitApp" -> handleExitApp(call, result)
                         "downloadByStrategy" -> handleDownloadByStrategy(call, result)
-                        "getBackendImplementations" -> {
-                            result.success(
-                                mapOf(
-                                    "filename" to coreBackend.implementation,
-                                    "file_metadata" to coreBackend.fileMetadataImplementation(call.argument<String>("file_path") ?: ""),
-                                    "extensions" to coreBackend.implementation,
-                                    "downloads" to coreBackend.implementation,
-                                )
-                            )
-                        }
+                        "getBackendImplementations" -> handleGetBackendImplementations(call, result)
                         "pickSafTree" -> {
                             launchSafTreePicker(call, result)
                         }
@@ -585,19 +543,8 @@ class MainActivity: FlutterFragmentActivity() {
                             result.success(null)
                         }
                         "getNativeDownloadWorkerSnapshot" -> handleGetNativeDownloadWorkerSnapshot(call, result)
-                        "releaseMemory" -> {
-                            withContext(Dispatchers.IO) {
-                                coreBackend.releaseIdleResources()
-                            }
-                            result.success(null)
-                        }
-                        "releaseMemoryUnderPressure" -> {
-                            withContext(Dispatchers.IO) {
-                                coreBackend.releaseMemoryUnderPressure()
-                            }
-                            android.util.Log.d("SpotiFLAC", "Backend memory pressure release completed")
-                            result.success(null)
-                        }
+                        "releaseMemory" -> handleReleaseMemory(call, result)
+                        "releaseMemoryUnderPressure" -> handleReleaseMemoryUnderPressure(call, result)
                         "runPostProcessingV2" -> handleRunPostProcessingV2(call, result)
                         "setLibraryCoverCacheDir" -> handleSetLibraryCoverCacheDir(call, result)
                         "scanLibraryFolderToNDJSONFile" -> handleScanLibraryFolderToNDJSONFile(call, result)
