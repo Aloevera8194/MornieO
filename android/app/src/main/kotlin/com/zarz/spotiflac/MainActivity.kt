@@ -1,6 +1,5 @@
 package com.zarz.spotiflac
 
-import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.ParcelFileDescriptor
-import android.os.storage.StorageManager
 import android.provider.DocumentsContract
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,9 +26,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -40,7 +35,6 @@ import java.io.File
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.LinkedHashMap
-import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicReference
 
@@ -64,17 +58,10 @@ class MainActivity: FlutterFragmentActivity() {
     override fun shouldDestroyEngineWithHost(): Boolean = false
 
     private val CHANNEL = "com.zarz.spotiflac/backend"
-    private val DOWNLOAD_PROGRESS_STREAM_CHANNEL =
-        "com.zarz.spotiflac/download_progress_stream"
-    private val LIBRARY_SCAN_PROGRESS_STREAM_CHANNEL =
-        "com.zarz.spotiflac/library_scan_progress_stream"
-    // A progress bar can't show sub-second granularity; 400ms halves the
-    // disk-read wakeups during a scan vs the previous 200ms.
-    private val LIBRARY_SCAN_PROGRESS_STREAM_POLLING_INTERVAL_MS = 400L
     private val LARGE_JSON_RESULT_FILE_KEY = "__json_file"
     private val LARGE_JSON_RESULT_FILE_THRESHOLD_BYTES = 256 * 1024
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private var backendChannel: MethodChannel? = null
+    internal val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+    internal var backendChannel: MethodChannel? = null
     private var audioOutputChannel: MethodChannel? = null
     private var concertCalendarChannel: MethodChannel? = null
     internal val coreBackend: CoreBackend by lazy { createCoreBackend(applicationContext) }
@@ -153,122 +140,30 @@ class MainActivity: FlutterFragmentActivity() {
     private var libraryStorageReceiver: BroadcastReceiver? = null
     private val pendingSessionGrantEvents = mutableListOf<Map<String, Any>>()
     private var pendingVerificationNotification: String? = null
-    private val setupFolderPickerStore by lazy {
+    internal val setupFolderPickerStore by lazy {
         SetupFolderPickerStore(getSharedPreferences("setup_folder_picker", Context.MODE_PRIVATE))
     }
     internal val safScanLock = Any()
     internal var safScanProgress = SafScanProgress()
-    private var downloadProgressStreamJob: Job? = null
-    private var downloadProgressConnection: AtomicReference<CoreDownloadProgress?>? = null
-    private var downloadProgressEventSink: EventChannel.EventSink? = null
-    private var lastDownloadProgressPayload: String? = null
-    private var lastDownloadProgressSeq = 0L
-    private var libraryScanProgressStreamJob: Job? = null
-    private var libraryScanProgressEventSink: EventChannel.EventSink? = null
-    private var lastLibraryScanProgressPayload: String? = null
+    internal var downloadProgressStreamJob: Job? = null
+    internal var downloadProgressConnection: AtomicReference<CoreDownloadProgress?>? = null
+    internal var downloadProgressEventSink: EventChannel.EventSink? = null
+    internal var lastDownloadProgressPayload: String? = null
+    internal var lastDownloadProgressSeq = 0L
+    internal var libraryScanProgressStreamJob: Job? = null
+    internal var libraryScanProgressEventSink: EventChannel.EventSink? = null
+    internal var lastLibraryScanProgressPayload: String? = null
     private var flutterBackCallback: OnBackPressedCallback? = null
     private val playbackLeaseLock = Any()
     private val playbackLeases = LinkedHashMap<String, ParcelFileDescriptor>()
     @Volatile internal var safScanCancel = false
     @Volatile internal var safScanPaused = false
     @Volatile internal var safScanActive = false
-    private val safTreeLauncher = registerForActivityResult(
+    internal val safTreeLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { activityResult ->
-        val result = pendingSafTreeResult
-        pendingSafTreeResult = null
-
-        fun deliver(payload: String?) {
-            // Android can return to a new process with no Dart method reply.
-            // Persist the grant/result anyway, then notify the restored setup.
-            try {
-                if (setupFolderPickerStore.complete(payload)) {
-                    backendChannel?.invokeMethod("setupFolderSelectionChanged", null)
-                }
-            } catch (e: Exception) {
-                android.util.Log.e("SpotiFLAC", "Could not retain setup folder selection", e)
-                result?.error("saf_save_failed", "Could not save selected folder", null)
-                return
-            }
-            result?.success(payload)
-        }
-
-        if (activityResult.resultCode != Activity.RESULT_OK) {
-            deliver(null)
-            return@registerForActivityResult
-        }
-
-        val data = activityResult.data
-        val uri = data?.data
-        if (uri == null) {
-            deliver(null)
-            return@registerForActivityResult
-        }
-
-        val takeFlags = data.flags and (Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
-        try {
-            contentResolver.takePersistableUriPermission(uri, takeFlags)
-        } catch (e: Exception) {
-            android.util.Log.w("SpotiFLAC", "Failed to persist SAF permission: ${e.message}")
-        }
-
-        val payload = JSONObject()
-        payload.put("tree_uri", uri.toString())
-        payload.put("display_name", resolveSafDisplayPath(uri))
-        val storageId = resolveSafStorageId(uri)
-        val volume = getSystemService(StorageManager::class.java).storageVolumes.firstOrNull {
-            (storageId == "primary" && it.isPrimary) ||
-                (!it.uuid.isNullOrBlank() && it.uuid.equals(storageId, ignoreCase = true))
-        }
-        payload.put("volume_id", storageId ?: JSONObject.NULL)
-        payload.put(
-            "is_removable",
-            volume?.isRemovable ?: (storageId != null && storageId != "primary"),
-        )
-        deliver(payload.toString())
+        handleSafTreeResult(activityResult)
     }
-
-    private fun resolveSafStorageId(treeUri: Uri): String? {
-        return try {
-            DocumentsContract.getTreeDocumentId(treeUri)
-                ?.substringBefore(':')
-                ?.trim()
-                ?.takeIf { it.isNotEmpty() }
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    /**
-     * Resolve a SAF tree URI to a human-readable path.
-     * e.g. "content://...tree/primary%3AMusic" -> "/storage/emulated/0/Music"
-     *      "content://...tree/1234-5678%3AMusic" -> "SD Card/Music"
-     */
-    private fun resolveSafDisplayPath(treeUri: Uri): String {
-        try {
-            val docId = android.provider.DocumentsContract.getTreeDocumentId(treeUri)
-            if (docId.isNullOrEmpty()) return treeUri.toString()
-
-            val parts = docId.split(":", limit = 2)
-            val storageId = parts.getOrNull(0) ?: return docId
-            val subPath = parts.getOrNull(1) ?: ""
-
-            val prefix = if (storageId == "primary") {
-                "/storage/emulated/0"
-            } else {
-                val volumeName = getSystemService(StorageManager::class.java).storageVolumes
-                    .firstOrNull { it.uuid.equals(storageId, ignoreCase = true) }
-                    ?.getDescription(this)
-                volumeName?.takeIf { it.isNotBlank() } ?: "External storage"
-            }
-
-            return if (subPath.isEmpty()) prefix else "$prefix/$subPath"
-        } catch (e: Exception) {
-            android.util.Log.w("SpotiFLAC", "Failed to resolve SAF display path: ${e.message}")
-            return treeUri.toString()
-        }
-    }
-
 
     data class SafScanProgress(
         var totalFiles: Int = 0,
@@ -283,118 +178,7 @@ class MainActivity: FlutterFragmentActivity() {
         private val extensionAuthCallbacks = ExtensionAuthCallbacks()
         // audio_service keeps the engine across Activity recreation. Retain
         // its outstanding picker reply for the same lifetime, not the Activity.
-        private var pendingSafTreeResult: MethodChannel.Result? = null
-        private const val SAFE_API_FOR_IMPELLER = 29
-
-        private val PROBLEMATIC_GPU_PATTERNS = listOf(
-            "adreno (tm) 3",
-            "adreno (tm) 4",
-            "mali-4",
-            "mali-t6",
-            "mali-t7",
-            "powervr sgx",
-            "powervr ge8320",
-            "vivante",
-            "gc1000",
-            "gc2000",
-            "gc4000",
-            "gc5000",
-            "gc7000",
-            "gc8000",
-            "gc820",
-            "gc880",
-        )
-
-        private val PROBLEMATIC_CHIPSETS = listOf(
-            "mt6762",
-            "mt6765",
-            "mt8768",
-            "mp0873",
-            "msm8974",
-            "msm8226",
-            "msm8926",
-            "apq8084",
-        )
-
-        // Sony Walkman / audio players report MANUFACTURER "SonyAudio" (distinct
-        // from Xperia phones, which use "Sony"). They ship legacy Vivante GPUs
-        // whose drivers crash in glLinkProgram with Impeller shaders, and the GL
-        // renderer string is unavailable when shell args are built, so match on
-        // the manufacturer instead.
-        private val PROBLEMATIC_MANUFACTURERS = listOf(
-            "sonyaudio",
-        )
-
-        private val PROBLEMATIC_MODELS = listOf(
-            "sm-t220",
-            "sm-t225",
-            "hammerhead",
-        )
-        private fun shouldDisableImpeller(): Boolean {
-            val hardware = Build.HARDWARE.lowercase(Locale.ROOT)
-            val board = Build.BOARD.lowercase(Locale.ROOT)
-            val model = Build.MODEL.lowercase(Locale.ROOT)
-            val device = Build.DEVICE.lowercase(Locale.ROOT)
-            val manufacturer = Build.MANUFACTURER.lowercase(Locale.ROOT)
-
-            for (problematicManufacturer in PROBLEMATIC_MANUFACTURERS) {
-                if (manufacturer.contains(problematicManufacturer)) {
-                    android.util.Log.i("SpotiFLAC", "Matched problematic manufacturer: $problematicManufacturer")
-                    return true
-                }
-            }
-
-            for (problematicModel in PROBLEMATIC_MODELS) {
-                if (model.contains(problematicModel) || device.contains(problematicModel)) {
-                    android.util.Log.i("SpotiFLAC", "Matched problematic model: $problematicModel")
-                    return true
-                }
-            }
-
-            for (chipset in PROBLEMATIC_CHIPSETS) {
-                if (hardware.contains(chipset) || board.contains(chipset)) {
-                    android.util.Log.i("SpotiFLAC", "Matched problematic chipset: $chipset")
-                    return true
-                }
-            }
-
-            if (Build.VERSION.SDK_INT < SAFE_API_FOR_IMPELLER) {
-                val gpuRenderer = getGpuRenderer().lowercase(Locale.ROOT)
-
-                for (pattern in PROBLEMATIC_GPU_PATTERNS) {
-                    if (gpuRenderer.contains(pattern)) {
-                        android.util.Log.i("SpotiFLAC", "Matched problematic GPU on old Android: $pattern")
-                        return true
-                    }
-                }
-
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                    android.util.Log.i("SpotiFLAC", "Android < 8.0, using Skia for safety")
-                    return true
-                }
-            }
-
-            val gpuRenderer = getGpuRenderer().lowercase(Locale.ROOT)
-            for (pattern in PROBLEMATIC_GPU_PATTERNS) {
-                if (gpuRenderer.contains(pattern)) {
-                    android.util.Log.i("SpotiFLAC", "Matched problematic GPU: $pattern")
-                    return true
-                }
-            }
-
-            return false
-        }
-
-    /**
-     * Note: This may return empty on some devices before OpenGL context is created.
-     */
-        private fun getGpuRenderer(): String {
-            return try {
-                android.opengl.GLES20.glGetString(android.opengl.GLES20.GL_RENDERER) ?: ""
-            } catch (e: Exception) {
-                ""
-            }
-        }
+        internal var pendingSafTreeResult: MethodChannel.Result? = null
     }
 
     class ImpellerAwareFlutterFragment : FlutterFragment() {
@@ -548,114 +332,6 @@ class MainActivity: FlutterFragmentActivity() {
             try { writer.close() } catch (_: Exception) {}
             try { file.delete() } catch (_: Exception) {}
         }
-    }
-
-    private fun updateDownloadProgressSeq(progress: Any?) {
-        val objectValue = progress as? Map<*, *> ?: return
-        val seq = (objectValue["seq"] as? Number)?.toLong() ?: lastDownloadProgressSeq
-        if (objectValue["reset"] == true || seq > lastDownloadProgressSeq) {
-            lastDownloadProgressSeq = seq
-        }
-    }
-
-    private fun startDownloadProgressStream(sink: EventChannel.EventSink) {
-        stopDownloadProgressStream()
-        downloadProgressEventSink = sink
-        lastDownloadProgressPayload = null
-        lastDownloadProgressSeq = 0L
-        val connection = AtomicReference<CoreDownloadProgress?>(null)
-        downloadProgressConnection = connection
-        downloadProgressStreamJob = scope.launch {
-            try {
-                while (isActive && downloadProgressConnection === connection) {
-                    try {
-                        // Decode once on IO. Reset snapshots of large queues
-                        // previously parsed twice on the UI thread.
-                        val (payload, progress) = withContext(Dispatchers.IO) {
-                            val reader = connection.get() ?: coreBackend.openDownloadProgress().also { connection.set(it) }
-                            ensureActive()
-                            val payload = reader.waitDelta(lastDownloadProgressSeq, 15_000L)
-                            payload to if (payload.isEmpty()) null else parseJsonPayload(payload)
-                        }
-                        if (!isActive || downloadProgressConnection !== connection) break
-                        if (payload.isNotEmpty() && payload != lastDownloadProgressPayload) {
-                            updateDownloadProgressSeq(progress)
-                            lastDownloadProgressPayload = payload
-                            sink.success(progress)
-                            delay(250L)
-                        }
-                    } catch (e: Exception) {
-                        connection.getAndSet(null)?.close()
-                        if (!isActive || downloadProgressConnection !== connection) break
-                        lastDownloadProgressSeq = 0L
-                        lastDownloadProgressPayload = null
-                        android.util.Log.w(
-                            "SpotiFLAC",
-                            "Download progress stream poll failed: ${e.message}",
-                        )
-                        delay(250L)
-                    }
-                }
-            } finally {
-                connection.getAndSet(null)?.close()
-            }
-        }
-    }
-
-    private fun stopDownloadProgressStream() {
-        downloadProgressStreamJob?.cancel()
-        downloadProgressStreamJob = null
-        downloadProgressConnection?.getAndSet(null)?.close()
-        downloadProgressConnection = null
-        downloadProgressEventSink = null
-        lastDownloadProgressPayload = null
-        lastDownloadProgressSeq = 0L
-    }
-
-    private fun startLibraryScanProgressStream(sink: EventChannel.EventSink) {
-        stopLibraryScanProgressStream()
-        libraryScanProgressEventSink = sink
-        lastLibraryScanProgressPayload = null
-        libraryScanProgressStreamJob = scope.launch {
-            try {
-                val initialPayload = withContext(Dispatchers.IO) {
-                    readLibraryScanProgressJsonForStream()
-                }
-                if (!isActive || libraryScanProgressEventSink !== sink) return@launch
-                lastLibraryScanProgressPayload = initialPayload
-                sink.success(parseJsonPayload(initialPayload))
-            } catch (e: Exception) {
-                android.util.Log.w(
-                    "SpotiFLAC",
-                    "Library scan progress initial poll failed: ${e.message}",
-                )
-            }
-            while (isActive && libraryScanProgressEventSink === sink) {
-                try {
-                    val payload = withContext(Dispatchers.IO) {
-                        readLibraryScanProgressJsonForStream()
-                    }
-                    if (!isActive || libraryScanProgressEventSink !== sink) break
-                    if (payload != lastLibraryScanProgressPayload) {
-                        lastLibraryScanProgressPayload = payload
-                        sink.success(parseJsonPayload(payload))
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.w(
-                        "SpotiFLAC",
-                        "Library scan progress stream poll failed: ${e.message}",
-                    )
-                }
-                delay(LIBRARY_SCAN_PROGRESS_STREAM_POLLING_INTERVAL_MS)
-            }
-        }
-    }
-
-    private fun stopLibraryScanProgressStream() {
-        libraryScanProgressStreamJob?.cancel()
-        libraryScanProgressStreamJob = null
-        libraryScanProgressEventSink = null
-        lastLibraryScanProgressPayload = null
     }
 
     // Disable Flutter's built-in deep linking so that incoming ACTION_VIEW URLs
@@ -1045,39 +721,7 @@ class MainActivity: FlutterFragmentActivity() {
             }
         }
 
-        EventChannel(
-            messenger,
-            DOWNLOAD_PROGRESS_STREAM_CHANNEL,
-        ).setStreamHandler(
-            object : EventChannel.StreamHandler {
-                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                    if (events != null) {
-                        startDownloadProgressStream(events)
-                    }
-                }
-
-                override fun onCancel(arguments: Any?) {
-                    stopDownloadProgressStream()
-                }
-            },
-        )
-
-        EventChannel(
-            messenger,
-            LIBRARY_SCAN_PROGRESS_STREAM_CHANNEL,
-        ).setStreamHandler(
-            object : EventChannel.StreamHandler {
-                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                    if (events != null) {
-                        startLibraryScanProgressStream(events)
-                    }
-                }
-
-                override fun onCancel(arguments: Any?) {
-                    stopLibraryScanProgressStream()
-                }
-            },
-        )
+        registerProgressStreams(messenger)
 
         val channel = MethodChannel(messenger, CHANNEL)
         backendChannel = channel
@@ -1156,37 +800,7 @@ class MainActivity: FlutterFragmentActivity() {
                             )
                         }
                         "pickSafTree" -> {
-                            if (pendingSafTreeResult != null) {
-                                result.error("saf_pending", "SAF picker already active", null)
-                                return@launch
-                            }
-                            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
-                            intent.addFlags(
-                                Intent.FLAG_GRANT_READ_URI_PERMISSION or
-                                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
-                                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
-                                    Intent.FLAG_GRANT_PREFIX_URI_PERMISSION
-                            )
-                            val resolver = intent.resolveActivity(packageManager)
-                            if (resolver == null) {
-                                result.error("saf_unavailable", "No folder picker available on this device", null)
-                                return@launch
-                            }
-                            setupFolderPickerStore.begin(call.argument<Boolean>("for_setup") == true)
-                            pendingSafTreeResult = result
-                            try {
-                                android.util.Log.i("SpotiFLAC", "Launching SAF picker via $resolver")
-                                safTreeLauncher.launch(intent)
-                            } catch (e: Exception) {
-                                pendingSafTreeResult = null
-                                setupFolderPickerStore.complete(null)
-                                android.util.Log.e("SpotiFLAC", "Failed to launch SAF picker: ${e.message}", e)
-                                result.error(
-                                    "saf_launch_failed",
-                                    e.message ?: "Failed to launch folder picker",
-                                    null
-                                )
-                            }
+                            launchSafTreePicker(call, result)
                         }
                         "readSetupFolderSelection" -> {
                             result.success(setupFolderPickerStore.read())
