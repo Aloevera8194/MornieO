@@ -145,7 +145,9 @@ class PlatformBridge {
   static const _bridgeCacheMaxBytes = 8 * 1024 * 1024;
   static const _persistentCacheMaxEntryBytes = 1024 * 1024;
   static const _persistentCacheMaxBytes = 2 * 1024 * 1024;
-  static const _lookupCachePersistDebounce = Duration(milliseconds: 500);
+  static const _defaultLookupCachePersistDebounce = Duration(milliseconds: 500);
+  static Duration _lookupCachePersistDebounce =
+      _defaultLookupCachePersistDebounce;
   static const _metadataPersistentCacheKey = 'bridge_metadata_lookup_cache_v1';
   static const _downloadProgressEvents = EventChannel(
     'com.zarz.spotiflac/download_progress_stream',
@@ -572,6 +574,13 @@ class PlatformBridge {
     } catch (e) {
       _log.w('Failed to persist bridge lookup cache: $e');
     }
+  }
+
+  /// Shortens the lookup cache persist debounce so tests need not wait the
+  /// production delay. Null restores the default.
+  @visibleForTesting
+  static set lookupCachePersistDebounceForTesting(Duration? value) {
+    _lookupCachePersistDebounce = value ?? _defaultLookupCachePersistDebounce;
   }
 
   static void _scheduleLookupCachePersist(
