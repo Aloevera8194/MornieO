@@ -118,18 +118,7 @@ extension _QueueTabDownloadDialogs on _QueueTabState {
   /// then persist the new location. Returns true when a folder was saved.
   Future<bool> _reselectDownloadFolder() async {
     if (Platform.isAndroid) {
-      final result = await PlatformBridge.pickSafTree();
-      if (result == null) return false;
-      final treeUri = result['tree_uri'] as String? ?? '';
-      final displayName = result['display_name'] as String? ?? '';
-      if (treeUri.isEmpty) return false;
-      final notifier = ref.read(settingsProvider.notifier);
-      notifier.setStorageMode('saf');
-      notifier.setDownloadTreeUri(
-        treeUri,
-        displayName: displayName.isNotEmpty ? displayName : treeUri,
-      );
-      return true;
+      return pickAndStoreSafDownloadTree(ref);
     }
     if (Platform.isIOS) {
       IosPickedDirectory? picked;

@@ -19,6 +19,7 @@ import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:spotiflac_android/utils/saf_download_tree.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
@@ -60,17 +61,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
   }
 
   Future<void> _pickSafTreeAndSave() async {
-    final result = await PlatformBridge.pickSafTree();
-    if (result == null) return;
-    final treeUri = result['tree_uri'] as String? ?? '';
-    final displayName = result['display_name'] as String? ?? '';
-    if (treeUri.isEmpty) return;
-    final notifier = ref.read(settingsProvider.notifier);
-    notifier.setStorageMode('saf');
-    notifier.setDownloadTreeUri(
-      treeUri,
-      displayName: displayName.isNotEmpty ? displayName : treeUri,
-    );
+    await pickAndStoreSafDownloadTree(ref);
   }
 
   Future<void> _initDeviceInfo() async {

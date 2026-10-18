@@ -56,25 +56,9 @@ extension _MainShellStartupPrompts on _MainShellState {
                           : () async {
                               setDialogState(() => isPickingFolder = true);
                               try {
-                                final result =
-                                    await PlatformBridge.pickSafTree();
-                                if (result == null) return;
-                                final treeUri =
-                                    result['tree_uri'] as String? ?? '';
-                                final displayName =
-                                    result['display_name'] as String? ?? '';
-                                if (treeUri.isEmpty) return;
-
-                                final notifier = ref.read(
-                                  settingsProvider.notifier,
-                                );
-                                notifier.setStorageMode('saf');
-                                notifier.setDownloadTreeUri(
-                                  treeUri,
-                                  displayName: displayName.isNotEmpty
-                                      ? displayName
-                                      : treeUri,
-                                );
+                                if (!await pickAndStoreSafDownloadTree(ref)) {
+                                  return;
+                                }
                                 if (dialogContext.mounted) {
                                   Navigator.of(dialogContext).pop();
                                 }
@@ -237,24 +221,15 @@ extension _MainShellStartupPrompts on _MainShellState {
             filled: true,
             onPressed: () async {
               Navigator.pop(ctx);
-              final result = await PlatformBridge.pickSafTree();
-              if (result != null) {
-                final treeUri = result['tree_uri'] as String? ?? '';
-                final displayName = result['display_name'] as String? ?? '';
-                if (treeUri.isNotEmpty) {
-                  ref
-                      .read(settingsProvider.notifier)
-                      .setDownloadTreeUri(
-                        treeUri,
-                        displayName: displayName.isNotEmpty
-                            ? displayName
-                            : treeUri,
-                      );
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(context.l10n.safMigrationSuccess)),
-                    );
-                  }
+              final saved = await pickAndStoreSafDownloadTree(
+                ref,
+                setStorageModeFirst: false,
+              );
+              if (saved) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(context.l10n.safMigrationSuccess)),
+                  );
                 }
               }
             },
