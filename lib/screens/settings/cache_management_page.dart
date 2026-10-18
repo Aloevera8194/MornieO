@@ -12,6 +12,7 @@ import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/providers/download_queue_provider.dart';
 import 'package:spotiflac_android/providers/local_library_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/services/audio_analysis_cache.dart';
 import 'package:spotiflac_android/services/cover_cache_manager.dart';
 import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
 import 'package:spotiflac_android/services/motion_artwork_store.dart';
@@ -96,7 +97,7 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
       Directory('${appSupportDir.path}/library_covers'),
     );
     final audioAnalysisStatsFuture = _scanDirectory(
-      Directory('${appSupportDir.path}/audio_analysis_cache'),
+      AudioAnalysisDiskCache.directoryIn(appSupportDir.path),
     );
 
     final prefs = await prefsFuture;
@@ -216,7 +217,7 @@ class _CacheManagementPageState extends ConsumerState<CacheManagementPage> {
 
   Future<void> _clearAudioAnalysisCache() async {
     final appSupportDir = await getApplicationSupportDirectory();
-    final analysisDir = Directory('${appSupportDir.path}/audio_analysis_cache');
+    final analysisDir = AudioAnalysisDiskCache.directoryIn(appSupportDir.path);
     await _clearDirectoryContents(analysisDir.path);
   }
 

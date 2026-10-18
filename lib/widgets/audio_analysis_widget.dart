@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
@@ -172,18 +171,23 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
   Future<void> _tryLoadFromCache() async {
     final expectedPath = widget.filePath;
     final requestId = _spectrogramRequestId;
-    final releaseCache = _cacheBudget.retain(_cacheKey(expectedPath));
+    final releaseCache = AudioAnalysisDiskCache.cacheBudget.retain(
+      AudioAnalysisDiskCache.cacheKey(expectedPath),
+    );
     bool isCurrentRequest() =>
         mounted &&
         widget.filePath == expectedPath &&
         requestId == _spectrogramRequestId;
 
     try {
-      final cached = await _loadFromCache(expectedPath);
+      final cached = await AudioAnalysisDiskCache.loadFromCache(
+        expectedPath,
+        _networkInput,
+      );
       if (cached != null && isCurrentRequest()) {
         final unsupported = unsupportedAudioAnalysisCodecLabel(cached.codec);
         if (unsupported != null) {
-          await _clearCache(expectedPath);
+          await AudioAnalysisDiskCache.clearCache(expectedPath);
           if (isCurrentRequest()) {
             setState(() {
               _unsupportedCodec = unsupported;
@@ -196,7 +200,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
           _data = cached;
           _checkingCache = false;
         });
-        var image = await _loadSpectrogramFromCache(
+        var image = await AudioAnalysisDiskCache.loadSpectrogramFromCache(
           expectedPath,
           channel: _spectrogramChannel,
         );
@@ -223,7 +227,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
       // Missing or unreadable cache entries fall back to the Analyze action.
     } finally {
       releaseCache();
-      unawaited(_trimCache());
+      unawaited(AudioAnalysisDiskCache.trimCache());
     }
     if (isCurrentRequest()) {
       setState(() => _checkingCache = false);
@@ -247,14 +251,20 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
       sampleRate: data?.sampleRate,
       channels: data?.channels,
     );
-    await _saveSpectrogramToCache(sourcePath, artifact.image, channel: channel);
+    await AudioAnalysisDiskCache.saveSpectrogramToCache(
+      sourcePath,
+      artifact.image,
+      channel: channel,
+    );
     return artifact.image;
   }
 
   Future<void> _analyze({bool forceRefresh = false}) async {
     if (_analyzing) return;
     final sourcePath = widget.filePath;
-    final releaseCache = _cacheBudget.retain(_cacheKey(sourcePath));
+    final releaseCache = AudioAnalysisDiskCache.cacheBudget.retain(
+      AudioAnalysisDiskCache.cacheKey(sourcePath),
+    );
     final requestId = ++_spectrogramRequestId;
     _analysisJobs.invalidate();
     _networkInput.cancel();
@@ -273,10 +283,15 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
 
     try {
       if (forceRefresh) {
-        await _clearCache(sourcePath);
+        await AudioAnalysisDiskCache.clearCache(sourcePath);
       }
 
-      final cached = forceRefresh ? null : await _loadFromCache(sourcePath);
+      final cached = forceRefresh
+          ? null
+          : await AudioAnalysisDiskCache.loadFromCache(
+              sourcePath,
+              _networkInput,
+            );
       _checkAnalysisRequest(requestId);
       AudioAnalysisData data;
       ui.Image? image;
@@ -287,7 +302,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
           throw UnsupportedAudioAnalysisCodecException(unsupported);
         }
         data = cached;
-        image = await _loadSpectrogramFromCache(
+        image = await AudioAnalysisDiskCache.loadSpectrogramFromCache(
           sourcePath,
           channel: _spectrogramChannel,
         );
@@ -295,8 +310,8 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
         final result = await _runAnalysis(sourcePath, requestId);
         data = result.data;
         image = result.spectrogramImage;
-        await _saveToCache(sourcePath, data);
-        await _saveSpectrogramToCache(
+        await AudioAnalysisDiskCache.saveToCache(sourcePath, data);
+        await AudioAnalysisDiskCache.saveSpectrogramToCache(
           sourcePath,
           image,
           channel: _spectrogramChannel,
@@ -338,145 +353,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
       }
     } finally {
       releaseCache();
-      unawaited(_trimCache());
-    }
-  }
-
-  static Future<void> _clearCache(String filePath) async {
-    try {
-      final dir = await _cacheDir();
-      final key = _cacheKey(filePath);
-      final jsonFile = File('${dir.path}/$key.json');
-      if (await jsonFile.exists()) {
-        await jsonFile.delete();
-      }
-      await for (final entity in dir.list()) {
-        if (entity is! File) continue;
-        final name = entity.path.replaceAll('\\', '/').split('/').last;
-        final isCombined = name == '$key.png';
-        final isChannel = name.startsWith('${key}_ch') && name.endsWith('.png');
-        if (isCombined || isChannel) {
-          await entity.delete();
-        }
-      }
-    } catch (_) {}
-  }
-
-  static String _cacheKey(String filePath) {
-    var hash = 0xcbf29ce484222325;
-    for (final byte in utf8.encode(filePath)) {
-      hash ^= byte;
-      hash = (hash * 0x100000001b3) & 0x7FFFFFFFFFFFFFFF;
-    }
-    return hash.toRadixString(16);
-  }
-
-  static Future<Directory> _cacheDir() async {
-    final appSupport = await getApplicationSupportDirectory();
-    final dir = Directory('${appSupport.path}/audio_analysis_cache');
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
-    }
-    return dir;
-  }
-
-  static final _cacheBudget = AudioAnalysisCache();
-
-  static Future<void> _trimCache() async {
-    try {
-      await _cacheBudget.trim(await _cacheDir());
-    } catch (_) {
-      // Cache maintenance must not interrupt the selected track's analysis.
-    }
-  }
-
-  Future<AudioAnalysisData?> _loadFromCache(String filePath) async {
-    try {
-      final dir = await _cacheDir();
-      final key = _cacheKey(filePath);
-      final file = File('${dir.path}/$key.json');
-      if (!await file.exists()) return null;
-
-      final json = Map<String, dynamic>.from(
-        jsonDecode(await file.readAsString()) as Map,
-      );
-      if (json['cacheVersion'] != AudioAnalysisData.cacheVersion) {
-        return null;
-      }
-      final cachedSize = json['fileSize'] as int;
-
-      if (NetworkAudioAnalysisInput.isNetwork(filePath)) {
-        final currentSize = await _networkInput.length(filePath);
-        if (currentSize <= 0 || currentSize != cachedSize) return null;
-      } else if (!filePath.startsWith('content://')) {
-        final currentSize = await File(filePath).length();
-        if (currentSize != cachedSize) return null;
-      } else {
-        final stat = await PlatformBridge.safStat(filePath);
-        final currentSize = (stat['size'] as num?)?.toInt() ?? 0;
-        if (currentSize > 0 && currentSize != cachedSize) return null;
-      }
-
-      final data = AudioAnalysisData.fromJson(json);
-      await file.setLastModified(DateTime.now());
-      return data;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  static Future<void> _saveToCache(
-    String filePath,
-    AudioAnalysisData data,
-  ) async {
-    try {
-      final dir = await _cacheDir();
-      final key = _cacheKey(filePath);
-      final file = File('${dir.path}/$key.json');
-      await file.writeAsString(jsonEncode(data.toJson()));
-    } catch (_) {}
-  }
-
-  static Future<void> _saveSpectrogramToCache(
-    String filePath,
-    ui.Image image, {
-    required int channel,
-  }) async {
-    try {
-      final dir = await _cacheDir();
-      final key = _cacheKey(filePath);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData != null) {
-        final file = File(
-          '${dir.path}/${_spectrogramCacheFileName(key, channel)}',
-        );
-        await file.writeAsBytes(byteData.buffer.asUint8List());
-        await _cacheBudget.trim(dir);
-      }
-    } catch (_) {}
-  }
-
-  static String _spectrogramCacheFileName(String key, int channel) =>
-      channel < 0 ? '$key.png' : '${key}_ch$channel.png';
-
-  static Future<ui.Image?> _loadSpectrogramFromCache(
-    String filePath, {
-    required int channel,
-  }) async {
-    try {
-      final dir = await _cacheDir();
-      final key = _cacheKey(filePath);
-      final file = File(
-        '${dir.path}/${_spectrogramCacheFileName(key, channel)}',
-      );
-      if (!await file.exists()) return null;
-
-      final bytes = await file.readAsBytes();
-      final completer = Completer<ui.Image>();
-      ui.decodeImageFromList(bytes, completer.complete);
-      return await completer.future;
-    } catch (_) {
-      return null;
+      unawaited(AudioAnalysisDiskCache.trimCache());
     }
   }
 
@@ -753,7 +630,9 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
 
     final previousChannel = _spectrogramChannel;
     final sourcePath = widget.filePath;
-    final releaseCache = _cacheBudget.retain(_cacheKey(sourcePath));
+    final releaseCache = AudioAnalysisDiskCache.cacheBudget.retain(
+      AudioAnalysisDiskCache.cacheKey(sourcePath),
+    );
     final requestId = ++_spectrogramRequestId;
     setState(() {
       _spectrogramChannel = channel;
@@ -762,7 +641,10 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
 
     ui.Image? image;
     try {
-      image = await _loadSpectrogramFromCache(sourcePath, channel: channel);
+      image = await AudioAnalysisDiskCache.loadSpectrogramFromCache(
+        sourcePath,
+        channel: channel,
+      );
       if (image == null) {
         final artifact = await _generateSpectrogramForFile(
           sourcePath,
@@ -773,7 +655,11 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
           channels: data.channels,
         );
         image = artifact.image;
-        await _saveSpectrogramToCache(sourcePath, image, channel: channel);
+        await AudioAnalysisDiskCache.saveSpectrogramToCache(
+          sourcePath,
+          image,
+          channel: channel,
+        );
       }
 
       if (!mounted || requestId != _spectrogramRequestId) {
@@ -795,7 +681,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
       }
     } finally {
       releaseCache();
-      unawaited(_trimCache());
+      unawaited(AudioAnalysisDiskCache.trimCache());
     }
   }
 
