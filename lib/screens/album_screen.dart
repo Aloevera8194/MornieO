@@ -269,6 +269,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
   }
 
   static final _qualitySeparators = RegExp(r'[\s_-]+');
+  static final _releaseYearPattern = RegExp(r'(\d{4})');
 
   static (String, bool?) _qualitySignature(Track track) => (
     (track.audioQuality ?? '').trim().toLowerCase().replaceAll(
@@ -360,7 +361,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
 
   String? _releaseYear(String? date) {
     if (date == null || date.isEmpty) return null;
-    final match = RegExp(r'(\d{4})').firstMatch(date);
+    final match = _releaseYearPattern.firstMatch(date);
     return match?.group(1);
   }
 

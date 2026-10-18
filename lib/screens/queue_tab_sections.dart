@@ -13,6 +13,15 @@ class _LibrarySection {
   int get length => end - start;
 }
 
+final _letterPattern = RegExp(r'[\p{L}]', unicode: true);
+
+final _monthYearFormats = <String, DateFormat>{};
+
+DateFormat _monthYearFormat(BuildContext context) {
+  final locale = Localizations.localeOf(context).toLanguageTag();
+  return _monthYearFormats.putIfAbsent(locale, () => DateFormat.yMMMM(locale));
+}
+
 /// First letter of [text] for an alphabetical index; digits and symbols
 /// share `#`.
 String _sectionInitial(String text) {
@@ -20,7 +29,7 @@ String _sectionInitial(String text) {
   for (final character in trimmed.characters) {
     final upper = character.toUpperCase();
     if (upper != character.toLowerCase()) return upper;
-    if (RegExp(r'[\p{L}]', unicode: true).hasMatch(character)) return upper;
+    if (_letterPattern.hasMatch(character)) return upper;
     return '#';
   }
   return '#';
@@ -79,9 +88,7 @@ extension _QueueTabSections on _QueueTabState {
       return _sectionInitial(item.albumName);
     }
     if (_dateSorts.contains(_sortMode)) {
-      return DateFormat.yMMMM(
-        Localizations.localeOf(context).toLanguageTag(),
-      ).format(item.addedAt);
+      return _monthYearFormat(context).format(item.addedAt);
     }
     return null;
   }
@@ -98,9 +105,7 @@ extension _QueueTabSections on _QueueTabState {
     }
     if (_artistSorts.contains(_sortMode)) return _sectionInitial(artist);
     if (_dateSorts.contains(_sortMode)) {
-      return DateFormat.yMMMM(
-        Localizations.localeOf(context).toLanguageTag(),
-      ).format(added);
+      return _monthYearFormat(context).format(added);
     }
     return null;
   }

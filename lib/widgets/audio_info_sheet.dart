@@ -671,9 +671,11 @@ String _peak(double value) {
   return '${value.toStringAsFixed(6)} · ${_db(dbfs).replaceFirst(' dB', ' dBFS')}';
 }
 
+final _numberPattern = RegExp(r'[-+]?\d+(?:\.\d+)?');
+
 /// Reads tag values such as "-6.52 dB" or "0.988831".
 double? _number(Object? raw) {
   if (raw is num) return raw.toDouble();
-  final match = RegExp(r'[-+]?\d+(?:\.\d+)?').firstMatch(raw?.toString() ?? '');
+  final match = _numberPattern.firstMatch(raw?.toString() ?? '');
   return match == null ? null : double.tryParse(match[0]!);
 }
