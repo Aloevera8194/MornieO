@@ -466,7 +466,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                 filteredGroupedLocalAlbums.isNotEmpty))
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: edge),
-            sliver: _AnimatedLibrarySliverGrid(
+            sliver: AnimatedLibrarySliverGrid(
               maxCrossAxisExtent: _libraryAlbumGridExtent,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
@@ -521,7 +521,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
           ),
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: edge),
-            sliver: _AnimatedLibrarySliverGrid(
+            sliver: AnimatedLibrarySliverGrid(
               maxCrossAxisExtent: _libraryAlbumGridExtent,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
@@ -562,7 +562,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
           if (historyViewMode == 'grid')
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: edge),
-              sliver: _AnimatedLibrarySliverGrid(
+              sliver: AnimatedLibrarySliverGrid(
                 maxCrossAxisExtent: _libraryGridExtent,
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
@@ -746,7 +746,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
           historyViewMode == 'grid'
               ? SliverPadding(
                   padding: EdgeInsets.symmetric(horizontal: edge),
-                  sliver: _AnimatedLibrarySliverGrid(
+                  sliver: AnimatedLibrarySliverGrid(
                     maxCrossAxisExtent: _libraryGridExtent,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
