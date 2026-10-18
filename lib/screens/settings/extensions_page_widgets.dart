@@ -24,7 +24,7 @@ class _ExtensionItem extends StatelessWidget {
         : null;
     final serviceHealthColor = serviceHealthStatus == null
         ? null
-        : _extensionHealthColor(context, serviceHealthStatus);
+        : extensionHealthColor(context, serviceHealthStatus);
 
     return ExtensionRow(
       showDivider: showDivider,
@@ -72,22 +72,6 @@ class _ExtensionItem extends StatelessWidget {
         onChanged: hasError ? null : onToggle,
       ),
     );
-  }
-}
-
-Color _extensionHealthColor(BuildContext context, String status) {
-  final colorScheme = Theme.of(context).colorScheme;
-  switch (status) {
-    case 'online':
-      return context.isMornye
-          ? CupertinoColors.systemGreen.resolveFrom(context)
-          : colorScheme.primary;
-    case 'degraded':
-      return colorScheme.tertiary;
-    case 'offline':
-      return colorScheme.error;
-    default:
-      return colorScheme.onSurfaceVariant;
   }
 }
 

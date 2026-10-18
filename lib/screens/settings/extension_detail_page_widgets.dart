@@ -186,43 +186,6 @@ class _CapabilityItem extends StatelessWidget {
   }
 }
 
-Color _healthStatusColor(BuildContext context, String status) {
-  final colorScheme = Theme.of(context).colorScheme;
-  switch (status) {
-    case 'online':
-      return context.isMornye
-          ? CupertinoColors.systemGreen.resolveFrom(context)
-          : colorScheme.primary;
-    case 'degraded':
-      return colorScheme.tertiary;
-    case 'offline':
-      return colorScheme.error;
-    default:
-      return colorScheme.onSurfaceVariant;
-  }
-}
-
-IconData _healthStatusIcon(BuildContext context, String status) {
-  if (context.isMornye) {
-    return switch (status) {
-      'online' => CupertinoIcons.check_mark_circled_solid,
-      'degraded' => CupertinoIcons.exclamationmark_triangle,
-      'offline' => CupertinoIcons.exclamationmark_circle,
-      _ => CupertinoIcons.question_circle,
-    };
-  }
-  switch (status) {
-    case 'online':
-      return Icons.check_circle;
-    case 'degraded':
-      return Icons.warning_amber_rounded;
-    case 'offline':
-      return Icons.error_outline;
-    default:
-      return Icons.help_outline;
-  }
-}
-
 String _healthStatusLabel(BuildContext context, String status) {
   switch (status) {
     case 'online':
@@ -253,7 +216,7 @@ class _HealthSummaryItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final statusValue = status?.status ?? 'unknown';
-    final color = _healthStatusColor(context, statusValue);
+    final color = extensionHealthColor(context, statusValue);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -262,7 +225,7 @@ class _HealthSummaryItem extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              AppIcon(_healthStatusIcon(context, statusValue), color: color),
+              AppIcon(extensionHealthIcon(context, statusValue), color: color),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -324,7 +287,7 @@ class _HealthCheckItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final color = _healthStatusColor(context, check.status);
+    final color = extensionHealthColor(context, check.status);
     final detailParts = <String>[
       _healthStatusLabel(context, check.status),
       if (check.httpStatus != null) 'HTTP ${check.httpStatus}',
@@ -347,7 +310,7 @@ class _HealthCheckItem extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppIcon(_healthStatusIcon(context, check.status), color: color),
+              AppIcon(extensionHealthIcon(context, check.status), color: color),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(

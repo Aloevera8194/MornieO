@@ -1,8 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart'
-    show CupertinoColors, CupertinoIcons, CupertinoTextField;
+import 'package:flutter/cupertino.dart' show CupertinoIcons, CupertinoTextField;
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
@@ -23,6 +22,7 @@ import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
+import 'package:spotiflac_android/widgets/extension_health.dart';
 
 part 'extension_detail_page_widgets.dart';
 
