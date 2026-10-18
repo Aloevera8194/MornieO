@@ -306,49 +306,10 @@ extension _QueueTabNavigation on _QueueTabState {
   }
 
   Future<void> _showCreatePlaylistDialog(BuildContext context) async {
-    final controller = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    final playlistName = await showAppDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AppAlertDialog(
-          title: Text(dialogContext.l10n.collectionCreatePlaylist),
-          content: Form(
-            key: formKey,
-            child: AppTextField(
-              controller: controller,
-              autofocus: true,
-              hint: dialogContext.l10n.collectionPlaylistNameHint,
-              validator: (value) {
-                final trimmed = value?.trim() ?? '';
-                if (trimmed.isEmpty) {
-                  return dialogContext.l10n.collectionPlaylistNameRequired;
-                }
-                return null;
-              },
-              onSubmitted: (_) {
-                if (formKey.currentState?.validate() != true) return;
-                Navigator.of(dialogContext).pop(controller.text.trim());
-              },
-            ),
-          ),
-          actions: [
-            AppDialogAction(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(dialogContext.l10n.dialogCancel),
-            ),
-            AppDialogAction(
-              filled: true,
-              onPressed: () {
-                if (formKey.currentState?.validate() != true) return;
-                Navigator.of(dialogContext).pop(controller.text.trim());
-              },
-              child: Text(dialogContext.l10n.actionCreate),
-            ),
-          ],
-        );
-      },
+    final playlistName = await promptPlaylistName(
+      context,
+      title: context.l10n.collectionCreatePlaylist,
+      confirmLabel: context.l10n.actionCreate,
     );
 
     if (playlistName == null || playlistName.isEmpty) return;

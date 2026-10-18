@@ -4,14 +4,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_text_field.dart';
 import 'package:spotiflac_android/widgets/collection_scaffold.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/expressive_button_group.dart';
 import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/widgets/track_card.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_snack_bar.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
@@ -818,49 +816,11 @@ class _LibraryTracksFolderScreenState
     String playlistId,
     String currentName,
   ) async {
-    final controller = TextEditingController(text: currentName);
-    final formKey = GlobalKey<FormState>();
-
-    final nextName = await showAppDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AppAlertDialog(
-          title: Text(dialogContext.l10n.collectionRenamePlaylist),
-          content: Form(
-            key: formKey,
-            child: AppTextField(
-              controller: controller,
-              autofocus: true,
-              hint: dialogContext.l10n.collectionPlaylistNameHint,
-              validator: (value) {
-                final trimmed = value?.trim() ?? '';
-                if (trimmed.isEmpty) {
-                  return dialogContext.l10n.collectionPlaylistNameRequired;
-                }
-                return null;
-              },
-              onSubmitted: (_) {
-                if (formKey.currentState?.validate() != true) return;
-                Navigator.of(dialogContext).pop(controller.text.trim());
-              },
-            ),
-          ),
-          actions: [
-            AppDialogAction(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(dialogContext.l10n.dialogCancel),
-            ),
-            AppDialogAction(
-              filled: true,
-              onPressed: () {
-                if (formKey.currentState?.validate() != true) return;
-                Navigator.of(dialogContext).pop(controller.text.trim());
-              },
-              child: Text(dialogContext.l10n.dialogSave),
-            ),
-          ],
-        );
-      },
+    final nextName = await promptPlaylistName(
+      context,
+      title: context.l10n.collectionRenamePlaylist,
+      confirmLabel: context.l10n.dialogSave,
+      initialName: currentName,
     );
 
     if (nextName == null || nextName.trim().isEmpty || !context.mounted) {

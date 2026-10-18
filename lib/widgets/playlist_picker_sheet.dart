@@ -225,9 +225,13 @@ class _PlaylistPickerSheetContentState
             enabled: !_isSubmitting,
             onTap: () async {
               if (_isSubmitting) return;
-              final name = await _promptPlaylistName(
+              final name = await promptPlaylistName(
                 context,
-                widget.playlistNamePrefill,
+                title: context.l10n.collectionCreatePlaylist,
+                confirmLabel: context.l10n.actionCreate,
+                initialName: widget.playlistNamePrefill,
+                textInputAction: TextInputAction.done,
+                isDefault: true,
               );
               if (name == null || name.trim().isEmpty || !context.mounted) {
                 return;
@@ -349,58 +353,99 @@ class _PlaylistPickerSheetContentState
   }
 }
 
-Future<String?> _promptPlaylistName(
-  BuildContext context,
-  String? playlistNamePrefill,
-) async {
-  final controller = TextEditingController(text: playlistNamePrefill);
-  final formKey = GlobalKey<FormState>();
-
-  final result = await showAppDialog<String>(
+/// Asks for a non-empty playlist name and returns it trimmed, or null when
+/// the dialog is cancelled.
+Future<String?> promptPlaylistName(
+  BuildContext context, {
+  required String title,
+  required String confirmLabel,
+  String? initialName,
+  TextInputAction? textInputAction,
+  bool isDefault = false,
+}) {
+  return showAppDialog<String>(
     context: context,
-    builder: (dialogContext) {
-      return AppAlertDialog(
-        title: Text(dialogContext.l10n.collectionCreatePlaylist),
-        content: Form(
-          key: formKey,
-          child: AppTextField(
-            controller: controller,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            hint: dialogContext.l10n.collectionPlaylistNameHint,
-            validator: (value) {
-              final trimmed = value?.trim() ?? '';
-              if (trimmed.isEmpty) {
-                return dialogContext.l10n.collectionPlaylistNameRequired;
-              }
-              return null;
-            },
-            onSubmitted: (_) {
-              if (formKey.currentState?.validate() != true) return;
-              Navigator.of(dialogContext).pop(controller.text.trim());
-            },
-          ),
-        ),
-        actions: [
-          AppDialogAction(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(dialogContext.l10n.dialogCancel),
-          ),
-          AppDialogAction(
-            filled: true,
-            isDefault: true,
-            onPressed: () {
-              if (formKey.currentState?.validate() != true) return;
-              Navigator.of(dialogContext).pop(controller.text.trim());
-            },
-            child: Text(dialogContext.l10n.actionCreate),
-          ),
-        ],
-      );
-    },
+    builder: (_) => _PlaylistNameDialog(
+      title: title,
+      confirmLabel: confirmLabel,
+      initialName: initialName,
+      textInputAction: textInputAction,
+      isDefault: isDefault,
+    ),
   );
+}
 
-  return result;
+class _PlaylistNameDialog extends StatefulWidget {
+  const _PlaylistNameDialog({
+    required this.title,
+    required this.confirmLabel,
+    required this.initialName,
+    required this.textInputAction,
+    required this.isDefault,
+  });
+
+  final String title;
+  final String confirmLabel;
+  final String? initialName;
+  final TextInputAction? textInputAction;
+  final bool isDefault;
+
+  @override
+  State<_PlaylistNameDialog> createState() => _PlaylistNameDialogState();
+}
+
+class _PlaylistNameDialogState extends State<_PlaylistNameDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState?.validate() != true) return;
+    Navigator.of(context).pop(_controller.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppAlertDialog(
+      title: Text(widget.title),
+      content: Form(
+        key: _formKey,
+        child: AppTextField(
+          controller: _controller,
+          autofocus: true,
+          textInputAction: widget.textInputAction,
+          hint: context.l10n.collectionPlaylistNameHint,
+          validator: (value) {
+            final trimmed = value?.trim() ?? '';
+            if (trimmed.isEmpty) {
+              return context.l10n.collectionPlaylistNameRequired;
+            }
+            return null;
+          },
+          onSubmitted: (_) => _submit(),
+        ),
+      ),
+      actions: [
+        AppDialogAction(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.l10n.dialogCancel),
+        ),
+        AppDialogAction(
+          filled: true,
+          isDefault: widget.isDefault,
+          onPressed: _submit,
+          child: Text(widget.confirmLabel),
+        ),
+      ],
+    );
+  }
 }
 
 class _PlaylistPickerRow extends StatelessWidget {
