@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/services/download_request_payload.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
 import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:spotiflac_android/utils/hash_utils.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
 part 'platform_bridge/bridge_codec.dart';
@@ -2326,11 +2327,7 @@ class PlatformBridge {
       'method': method,
       'arguments': arguments,
     });
-    var hash = 0x811c9dc5;
-    for (final byte in utf8.encode(identity)) {
-      hash ^= byte;
-      hash = (hash * 0x01000193) & 0xffffffff;
-    }
+    final hash = fnv1a32(utf8.encode(identity));
     final output = File(
       '${scanDir.path}${Platform.pathSeparator}'
       'library_scan_${hash.toRadixString(16).padLeft(8, '0')}.ndjson',
