@@ -6824,6 +6824,14 @@
   "@nowPlayingNoLyrics": {
     "description": "Empty state when the playing file has no embedded lyrics"
   },
+  "nowPlayingSearchLyricsOnline": "Cari online",
+  "@nowPlayingSearchLyricsOnline": {
+    "description": "Button in the player's empty lyrics state that looks up lyrics from the enabled lyrics providers"
+  },
+  "nowPlayingNoLyricsOnline": "Lirik tidak ditemukan online",
+  "@nowPlayingNoLyricsOnline": {
+    "description": "Empty state after an online lyrics search for the playing track found nothing"
+  },
   "nowPlayingLibraryEmpty": "Koleksi Anda kosong",
   "@nowPlayingLibraryEmpty": {
     "description": "Snackbar when shuffle library is requested but library has no tracks"

@@ -9,6 +9,7 @@ import 'package:spotiflac_android/utils/lyrics_parser.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/player_lyrics.dart';
 import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
 
@@ -47,7 +48,7 @@ class PlayerLyricsSection extends ConsumerWidget {
   }
 
   Widget _buildLyricsSection(BuildContext context, (bool, bool) visibility) {
-    if (metadata.loading) {
+    if (metadata.loading || metadata.searchingOnline) {
       return const Center(child: AppLoadingIndicator());
     }
     if (metadata.lyrics.isEmpty) {
@@ -62,11 +63,22 @@ class PlayerLyricsSection extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              context.l10n.nowPlayingNoLyrics,
+              metadata.onlineSearchMissed
+                  ? context.l10n.nowPlayingNoLyricsOnline
+                  : context.l10n.nowPlayingNoLyrics,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
+            if (metadata.canSearchOnline) ...[
+              const SizedBox(height: 16),
+              ExpressiveButton(
+                tonal: true,
+                onPressed: metadata.searchOnline,
+                icon: const Icon(Icons.manage_search),
+                child: Text(context.l10n.nowPlayingSearchLyricsOnline),
+              ),
+            ],
           ],
         ),
       );
