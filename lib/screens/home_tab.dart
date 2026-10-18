@@ -76,6 +76,7 @@ import 'package:spotiflac_android/widgets/error_card.dart';
 import 'package:spotiflac_android/widgets/in_library_badge.dart';
 import 'package:spotiflac_android/widgets/preview_button.dart';
 import 'package:spotiflac_android/widgets/app_search_field.dart';
+import 'package:spotiflac_android/widgets/track_detail_actions.dart';
 import 'package:spotiflac_android/widgets/view_queue_snackbar_action.dart';
 import 'package:spotiflac_android/widgets/profile_avatar.dart';
 import 'package:spotiflac_android/widgets/downloadable_cover.dart';
@@ -717,38 +718,14 @@ class _HomeTabState extends ConsumerState<HomeTab>
     final trackState = ref.read(trackProvider);
     if (index >= 0 && index < trackState.tracks.length) {
       final track = trackState.tracks[index];
-      final settings = ref.read(settingsProvider);
-
-      if (settings.askQualityBeforeDownload || forceQualityPicker) {
-        DownloadServicePicker.show(
-          context,
-          trackName: track.name,
-          artistName: track.artistName,
-          coverUrl: track.coverUrl,
-          recommendedService:
-              trackState.searchExtensionId ?? trackState.searchSource,
-          onSelect: (quality, service) {
-            ref
-                .read(downloadQueueProvider.notifier)
-                .addToQueue(track, service, qualityOverride: quality);
-            showAddedToQueueSnackBar(context, track.name);
-          },
-        );
-      } else {
-        final extensionState = ref.read(extensionProvider);
-        final service = resolveEffectiveDownloadService(
-          settings.defaultService,
-          extensionState,
-        );
-        if (service.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(context.l10n.extensionsNoDownloadProvider)),
-          );
-          return;
-        }
-        ref.read(downloadQueueProvider.notifier).addToQueue(track, service);
-        showAddedToQueueSnackBar(context, track.name);
-      }
+      downloadSingleTrack(
+        context,
+        ref,
+        track,
+        recommendedService:
+            trackState.searchExtensionId ?? trackState.searchSource,
+        forceQualityPicker: forceQualityPicker,
+      );
     }
   }
 
