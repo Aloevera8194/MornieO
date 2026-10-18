@@ -135,7 +135,8 @@ android/      Android platform bridge and foreground worker
 ios/          iOS platform bridge and application project
 test/         Flutter unit and widget tests
 integration_test/ Device and emulator tests (including performance drivers)
-third_party/  Vendored and patched packages (audio_service, Discord bridge)
+third_party/  Vendored and patched packages (audio_service, audioplayers forks,
+              Discord bridge and encrypted SDK)
 assets/       Images, fonts, and bundled resources
 docs/         Local documentation and migration archives (gitignored)
 scripts/      Reproducible project build helpers
@@ -188,7 +189,8 @@ fvm flutter test
 ```
 
 Some Dart tests render audio and need `ffmpeg` and `ffprobe` on `PATH`. Set
-`SPOTIFLAC_TEST_FFMPEG` to an `ffmpeg` binary to override the lookup.
+`SPOTIFLAC_TEST_FFMPEG` to an `ffmpeg` binary to override the path used by the
+automix renderer test; the other ffmpeg tests read `PATH` directly.
 
 Performance drive runs need a dedicated emulator, `--profile` on Android and
 `--debug` on iOS simulators. See the header of
