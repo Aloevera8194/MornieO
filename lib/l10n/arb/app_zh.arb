@@ -25,10 +25,6 @@
   "@homeTitle": {
     "description": "Home screen title"
   },
-  "homeSubtitle": "粘贴支持的 URL 或按名称搜索",
-  "@homeSubtitle": {
-    "description": "Subtitle shown below search box"
-  },
   "homeEmptyTitle": "暂无搜索提供商",
   "@homeEmptyTitle": {
     "description": "Title shown on home when no providers are available yet"
@@ -56,10 +52,6 @@
   "historyFilterSingles": "单曲",
   "@historyFilterSingles": {
     "description": "Filter chip - show singles only"
-  },
-  "historySearchHint": "搜索历史……",
-  "@historySearchHint": {
-    "description": "Search bar placeholder in history"
   },
   "settingsTitle": "设置",
   "@settingsTitle": {
@@ -404,10 +396,6 @@
   "aboutPCSource": "桌面版本源代码",
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
-  },
-  "aboutKeepAndroidOpen": "Keep Android Open（保持安卓开放）",
-  "@aboutKeepAndroidOpen": {
-    "description": "Link to Keep Android Open campaign website"
   },
   "aboutReportIssue": "报告一个问题",
   "@aboutReportIssue": {
@@ -1975,10 +1963,6 @@
   "@qualityHiResFlacMaxSubtitle": {
     "description": "Technical spec for hi-res max"
   },
-  "downloadLossy320": "Lossy 320kbps",
-  "@downloadLossy320": {
-    "description": "Quality option label for lossy 320kbps"
-  },
   "downloadLossyFormat": "Lossy Format",
   "@downloadLossyFormat": {
     "description": "Setting title to pick output format for lossy downloads"
@@ -2018,46 +2002,6 @@
   "downloadAutoConvertOpusSubtitle": "Best efficiency for modern players",
   "@downloadAutoConvertOpusSubtitle": {
     "description": "Opus automatic conversion option description"
-  },
-  "downloadLossy320Format": "Lossy 320kbps Format",
-  "@downloadLossy320Format": {
-    "description": "Title of the lossy format picker bottom sheet"
-  },
-  "downloadLossy320FormatDesc": "Choose the output format for 320kbps lossy downloads. The original stream will be converted to your selected format when needed.",
-  "@downloadLossy320FormatDesc": {
-    "description": "Description in the lossy format picker"
-  },
-  "downloadLossyMp3": "MP3 320kbps",
-  "@downloadLossyMp3": {
-    "description": "Lossy format option - MP3 320kbps"
-  },
-  "downloadLossyMp3Subtitle": "Best compatibility, ~10MB per track",
-  "@downloadLossyMp3Subtitle": {
-    "description": "Subtitle for MP3 320kbps lossy option"
-  },
-  "downloadLossyAac": "AAC/M4A 320kbps",
-  "@downloadLossyAac": {
-    "description": "Lossy format option - AAC in M4A container at 320kbps"
-  },
-  "downloadLossyAacSubtitle": "Best mobile compatibility, M4A container",
-  "@downloadLossyAacSubtitle": {
-    "description": "Subtitle for AAC/M4A 320kbps lossy option"
-  },
-  "downloadLossyOpus256": "Opus 256kbps",
-  "@downloadLossyOpus256": {
-    "description": "Lossy format option - Opus 256kbps"
-  },
-  "downloadLossyOpus256Subtitle": "Best quality Opus, ~8MB per track",
-  "@downloadLossyOpus256Subtitle": {
-    "description": "Subtitle for Opus 256kbps lossy option"
-  },
-  "downloadLossyOpus128": "Opus 128kbps",
-  "@downloadLossyOpus128": {
-    "description": "Lossy format option - Opus 128kbps"
-  },
-  "downloadLossyOpus128Subtitle": "Smallest size, ~4MB per track",
-  "@downloadLossyOpus128Subtitle": {
-    "description": "Subtitle for Opus 128kbps lossy option"
   },
   "downloadAskBeforeDownload": "Ask Before Download",
   "@downloadAskBeforeDownload": {
@@ -2391,15 +2335,6 @@
       }
     }
   },
-  "discographySelectedCount": "{count} selected",
-  "@discographySelectedCount": {
-    "description": "Selection count badge",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "discographyDownloadSelected": "Download Selected",
   "@discographyDownloadSelected": {
     "description": "Button - download selected albums"
@@ -2703,10 +2638,6 @@
   "libraryStorageAccessMessage": "SpotiFLAC needs storage access to scan your music library. Please grant permission in settings.",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
-  },
-  "libraryFolderNotExist": "Selected folder does not exist",
-  "@libraryFolderNotExist": {
-    "description": "Error when folder doesn't exist"
   },
   "librarySourceDownloaded": "Downloaded",
   "@librarySourceDownloaded": {
@@ -3171,10 +3102,6 @@
   "trackReEnrich": "Re-enrich",
   "@trackReEnrich": {
     "description": "Menu action - re-embed metadata into audio file"
-  },
-  "trackReEnrichOnlineSubtitle": "Search metadata online and embed into file",
-  "@trackReEnrichOnlineSubtitle": {
-    "description": "Subtitle for re-enrich metadata action for local items"
   },
   "trackReEnrichFieldCover": "Cover Art",
   "@trackReEnrichFieldCover": {
@@ -3739,10 +3666,6 @@
       }
     }
   },
-  "selectionShareNoFiles": "No shareable files found",
-  "@selectionShareNoFiles": {
-    "description": "Snackbar when no selected files exist on disk"
-  },
   "selectionConvertCount": "Convert {count} {count, plural, =1{track} other{tracks}}",
   "@selectionConvertCount": {
     "description": "Convert button text with count in selection mode",
@@ -3973,10 +3896,6 @@
   "@backupRestoreConfirmTitle": {
     "description": "Confirmation dialog title before restoring a backup"
   },
-  "backupRestoreConfirmMessage": "This will replace your current settings, download history, liked tracks, wishlist and playlists with the contents of the backup. This cannot be undone.",
-  "@backupRestoreConfirmMessage": {
-    "description": "Confirmation dialog message before restoring a backup"
-  },
   "backupRestoreConfirmButton": "Restore",
   "@backupRestoreConfirmButton": {
     "description": "Confirm button to proceed with restore"
@@ -4163,22 +4082,6 @@
   "downloadLocationSubtitle": "Choose where to save your downloaded tracks",
   "@downloadLocationSubtitle": {
     "description": "Subtitle shown in the download location picker sheet"
-  },
-  "storageModeAppFolder": "App Folder (Recommended)",
-  "@storageModeAppFolder": {
-    "description": "Storage mode option - app-managed folder"
-  },
-  "storageModeAppFolderSubtitle": "Saves to Music/SpotiFLAC by default",
-  "@storageModeAppFolderSubtitle": {
-    "description": "Subtitle for app folder storage mode"
-  },
-  "storageModeSaf": "Custom Folder (SAF)",
-  "@storageModeSaf": {
-    "description": "Storage mode option - Storage Access Framework"
-  },
-  "storageModeSafSubtitle": "Pick any folder, including SD card",
-  "@storageModeSafSubtitle": {
-    "description": "Subtitle for SAF storage mode"
   },
   "downloadFolderAccessLostTitle": "Download folder access lost",
   "@downloadFolderAccessLostTitle": {
@@ -4467,10 +4370,6 @@
       }
     }
   },
-  "editMetadataAutoFillFetch": "Fetch & Fill",
-  "@editMetadataAutoFillFetch": {
-    "description": "Button label to fetch online metadata and fill selected fields"
-  },
   "editMetadataAutoFillSearching": "Searching online...",
   "@editMetadataAutoFillSearching": {
     "description": "Snackbar shown while searching for online metadata"
@@ -4478,15 +4377,6 @@
   "editMetadataAutoFillNoResults": "No matching metadata found online",
   "@editMetadataAutoFillNoResults": {
     "description": "Snackbar when online metadata search returns no results"
-  },
-  "editMetadataAutoFillDone": "Filled {count} {count, plural, =1{field} other{fields}} from online metadata",
-  "@editMetadataAutoFillDone": {
-    "description": "Snackbar confirming how many fields were auto-filled",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "editMetadataAutoFillNoneSelected": "Select at least one field to auto-fill",
   "@editMetadataAutoFillNoneSelected": {
@@ -5705,10 +5595,6 @@
       }
     }
   },
-  "actionGo": "Go",
-  "@actionGo": {
-    "description": "Generic action button label"
-  },
   "logIssueSummary": "Issue Summary",
   "@logIssueSummary": {
     "description": "Header for log issue analysis summary"
@@ -6011,10 +5897,6 @@
   "libraryBuiltInPreviewPlayerSubtitle": "Play your music right inside SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
-  },
-  "libraryBuiltInPlayerInfo": "The built-in player is a preview tool for checking local tracks quickly. Use an external music player for actual listening.",
-  "@libraryBuiltInPlayerInfo": {
-    "description": "Info note explaining the built-in player is for previews only"
   },
   "nowPlayingTitle": "Now Playing",
   "@nowPlayingTitle": {

@@ -26,36 +26,12 @@
   "usbBitPerfectNoDevice": "USB ЦАП не подключен. Используется обычный аудиовыход.",
   "usbBitPerfectFallback": "Это устройство или аудиоформат не поддерживает вывод bit-perfect. Используется обычное воспроизведение.",
   "usbBitPerfectRouteChanged": "Маршрут USB-аудио изменился. Воспроизведение приостановлено; выберите трек для повторного подключения.",
-  "upgradeIntroWelcome": "Добро пожаловать в SpotiFLAC-Mobile 5.0",
   "upgradeIntroThemeTitle": "Создайте свой\nсобственный стиль.",
   "upgradeIntroThemeBody": "Выберите внешний вид. Изменения применятся сразу, и вы можете потом изменить его позже в настройках.",
-  "upgradeIntroThemeMaterialBody": "Привычный интерфейс с элементами Material и вашим акцентным цветом.",
   "upgradeIntroThemeMornyeBody": "Эффект стекла в навигации, обновленная медиатека и плеер с эффектом погружения.",
-  "upgradeIntroRustTitle": "Новый движок построенный на Rust.",
-  "upgradeIntroRustBody": "В 5.0 бэкенд приложения переехал из Go to Rust. Это движок, работающий за экраном, который вы используете каждый день.",
-  "upgradeIntroRustEngineTitle": "Работа за кулисами",
-  "upgradeIntroRustEngineBody": "Rust обеспечивает обработку загрузок, аудиометаданных, сканирование медиатеки и выполнение расширений на Android и iOS.",
-  "upgradeIntroRustMemoryTitle": "Больше осторожности с памятью",
-  "upgradeIntroRustMemoryBody": "Повторное использование буферов и сокращение количества копий позволяют уменьшить количество временных выделений памяти при обработке графических объектов и данных расширений.",
-  "upgradeIntroRustKeepTitle": "Вся ваша музыка останется с вами",
-  "upgradeIntroRustKeepBody": "Скачивать медиатеку заново не придётся. Ваша музыка и настройки на месте, повторная настройка не нужна.",
-  "upgradeIntroWelcomeBody": "Быстро расскажем, что изменилось и где это искать.",
-  "upgradeIntroMornyeBody": "Новый облик плеера, экрана текстов песен и навигации.",
-  "upgradeIntroLibrarySummary": "Просматривайте свою музыку по плейлистам, исполнителям или альбомам.",
-  "upgradeIntroRepoSummary": "Выбирайте источники музыки и провайдеров с помощью расширений.",
-  "upgradeIntroLibraryTitle": "Познакомьтесь со\nсвоей медиатекой.",
-  "upgradeIntroLibraryBody": "В Mornye вы можете просматривать треки по категориям или находить свои альбомы в разделе \"Недавно добавленные\".",
-  "upgradeIntroDownloadsBody": "Управляйте загрузками в правом верхнем углу. Готовая музыка переносится в «Недавно добавленные».",
-  "upgradeIntroSearchBody": "Здесь можно искать сохраненную музыку. На отдельной вкладке «Поиск» осуществляется поиск по вашим расширениям.",
-  "upgradeIntroPlayerTitle": "Настройте\nсвой плеер.",
-  "upgradeIntroPlayerBody": "Вы можете в любой момент изменить тему и настройки воспроизведения. Вот где их найти.",
-  "upgradeIntroAppearanceBody": "Изменить тему можно в меню «Настройки» → «Внешний вид». В Mornye прокрутите вниз для компактного вида навигации или вверх, чтобы развернуть её.",
-  "upgradeIntroAutoMixBody": "Синхронизировать темп и ритм между треками. Включить эту функцию можно в разделе «Настройки» → «Локальная медиатека» → «Воспроизведение». По умолчанию эта функция отключена.",
-  "upgradeIntroSettingsBody": "В Mornye нажмите на свой профиль на главной странице для открытия настроек и изменения вашего имени и фото.",
   "upgradeIntroSkip": "Пропустить",
   "upgradeIntroContinue": "Далее",
   "upgradeIntroDone": "Начать слушать",
-  "upgradeIntroReplay": "Что нового в 5.0",
   "cacheMotionArtwork": "Офлайн обложки с анимацией",
   "cacheMotionArtworkDesc": "Видео из альбомов сохраняются вместе с загруженными файлами. При их удалении музыкальные файлы и статичные обложки остаются.",
   "nowPlayingVolume": "Громкость",
@@ -118,10 +94,6 @@
   "@homeTitle": {
     "description": "Home screen title"
   },
-  "homeSubtitle": "Вставьте URL или ищите по названию",
-  "@homeSubtitle": {
-    "description": "Subtitle shown below search box"
-  },
   "homeEmptyTitle": "Нет поставщиков поиска",
   "@homeEmptyTitle": {
     "description": "Title shown on home when no providers are available yet"
@@ -155,10 +127,6 @@
   "libraryNoActiveDownloads": "Нет активных загрузок",
   "librarySearchHint": "Поиск в вашей медиатеке",
   "libraryEmptyCollection": "Ваша музыка появится здесь",
-  "historySearchHint": "Поиск в истории...",
-  "@historySearchHint": {
-    "description": "Search bar placeholder in history"
-  },
   "settingsTitle": "Настройки",
   "@settingsTitle": {
     "description": "Settings screen title"
@@ -543,10 +511,6 @@
   "aboutPCSource": "Исходный код ПК версии",
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
-  },
-  "aboutKeepAndroidOpen": "Сохранить Android открытым",
-  "@aboutKeepAndroidOpen": {
-    "description": "Link to Keep Android Open campaign website"
   },
   "aboutReportIssue": "Сообщить о проблеме",
   "@aboutReportIssue": {
@@ -2160,10 +2124,6 @@
   "@qualityHiResFlacMaxSubtitle": {
     "description": "Technical spec for hi-res max"
   },
-  "downloadLossy320": "С потерями 320 кбит/с",
-  "@downloadLossy320": {
-    "description": "Quality option label for lossy 320kbps"
-  },
   "downloadLossyFormat": "Формат с потерями",
   "@downloadLossyFormat": {
     "description": "Setting title to pick output format for lossy downloads"
@@ -2203,46 +2163,6 @@
   "downloadAutoConvertOpusSubtitle": "Лучшая эффективность для современных плееров",
   "@downloadAutoConvertOpusSubtitle": {
     "description": "Opus automatic conversion option description"
-  },
-  "downloadLossy320Format": "Формат с потерями 320 кбит/с",
-  "@downloadLossy320Format": {
-    "description": "Title of the lossy format picker bottom sheet"
-  },
-  "downloadLossy320FormatDesc": "Выберите выходной формат для загрузок с потерями в 320 кбит/с. При необходимости исходный поток будет конвертирован в выбранный вами формат.",
-  "@downloadLossy320FormatDesc": {
-    "description": "Description in the lossy format picker"
-  },
-  "downloadLossyMp3": "MP3 320 кбит/с",
-  "@downloadLossyMp3": {
-    "description": "Lossy format option - MP3 320kbps"
-  },
-  "downloadLossyMp3Subtitle": "Наилучшая совместимость, ~10 Мб на трек",
-  "@downloadLossyMp3Subtitle": {
-    "description": "Subtitle for MP3 320kbps lossy option"
-  },
-  "downloadLossyAac": "AAC/M4A 320kbps",
-  "@downloadLossyAac": {
-    "description": "Lossy format option - AAC in M4A container at 320kbps"
-  },
-  "downloadLossyAacSubtitle": "Лучшая мобильная совместимость, контейнер M4A",
-  "@downloadLossyAacSubtitle": {
-    "description": "Subtitle for AAC/M4A 320kbps lossy option"
-  },
-  "downloadLossyOpus256": "Opus 256 кбит/с",
-  "@downloadLossyOpus256": {
-    "description": "Lossy format option - Opus 256kbps"
-  },
-  "downloadLossyOpus256Subtitle": "Лучшее качество Opus, ~8MB на трек",
-  "@downloadLossyOpus256Subtitle": {
-    "description": "Subtitle for Opus 256kbps lossy option"
-  },
-  "downloadLossyOpus128": "Opus 128 кбит/с",
-  "@downloadLossyOpus128": {
-    "description": "Lossy format option - Opus 128kbps"
-  },
-  "downloadLossyOpus128Subtitle": "Минимальный размер, ~4 Мб на трек",
-  "@downloadLossyOpus128Subtitle": {
-    "description": "Subtitle for Opus 128kbps lossy option"
   },
   "downloadAskBeforeDownload": "Спрашивать перед скачиванием",
   "@downloadAskBeforeDownload": {
@@ -2576,15 +2496,6 @@
       }
     }
   },
-  "discographySelectedCount": "{count} выбрано",
-  "@discographySelectedCount": {
-    "description": "Selection count badge",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "discographyDownloadSelected": "Скачать выбранное",
   "@discographyDownloadSelected": {
     "description": "Button - download selected albums"
@@ -2892,10 +2803,6 @@
   "libraryStorageAccessMessage": "SpotiFLAC требуется доступ к хранилищу для сканирования вашей медиатеки. Пожалуйста, предоставьте разрешение в настройках.",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
-  },
-  "libraryFolderNotExist": "Выбранной папки не существует",
-  "@libraryFolderNotExist": {
-    "description": "Error when folder doesn't exist"
   },
   "librarySourceDownloaded": "Скачанные",
   "@librarySourceDownloaded": {
@@ -3360,10 +3267,6 @@
   "trackReEnrich": "Обновить",
   "@trackReEnrich": {
     "description": "Menu action - re-embed metadata into audio file"
-  },
-  "trackReEnrichOnlineSubtitle": "Поиск в сети метаданных и встраивание в файл",
-  "@trackReEnrichOnlineSubtitle": {
-    "description": "Subtitle for re-enrich metadata action for local items"
   },
   "trackReEnrichBatchSubtitle": "Выберите обновление через Интернет или вручную, а затем проверьте все изменения перед записью",
   "@trackReEnrichBatchSubtitle": {
@@ -3956,10 +3859,6 @@
       }
     }
   },
-  "selectionShareNoFiles": "Файлы, доступные для совместного доступа, не найдены",
-  "@selectionShareNoFiles": {
-    "description": "Snackbar when no selected files exist on disk"
-  },
   "selectionConvertCount": "Конвертировать {count} {count, plural, one {трек} few {трека} many {треков} =1{трек} other{треков}}",
   "@selectionConvertCount": {
     "description": "Convert button text with count in selection mode",
@@ -4189,10 +4088,6 @@
   "@backupRestoreConfirmTitle": {
     "description": "Confirmation dialog title before restoring a backup"
   },
-  "backupRestoreConfirmMessage": "Ваши текущие настройки, история загрузок, понравившиеся треки, список желаний и плейлисты будут заменены содержимым резервной копии. Это действие нельзя отменить.",
-  "@backupRestoreConfirmMessage": {
-    "description": "Confirmation dialog message before restoring a backup"
-  },
   "backupRestoreConfirmButton": "Восстановить",
   "@backupRestoreConfirmButton": {
     "description": "Confirm button to proceed with restore"
@@ -4392,22 +4287,6 @@
   "storageAutomaticDownloadFolder": "Использует папку «Download/SpotiFLAC», если она доступна для записи, в противном случае — хранилище приложения",
   "storageSafRecommended": "Выбрать папку (Рекомендуется)",
   "storageDownloadFolderHint": "В окне выбора папок Android откройте папку «Загрузки» и выберите SpotiFLAC. Если этой папки нет, создайте её, нажав «Новая папка», а затем нажмите «Использовать эту папку», чтобы предоставить доступ.",
-  "storageModeAppFolder": "Папка приложения (рекомендуется)",
-  "@storageModeAppFolder": {
-    "description": "Storage mode option - app-managed folder"
-  },
-  "storageModeAppFolderSubtitle": "Сохраняет Music/SpotiFLAC по умолчанию",
-  "@storageModeAppFolderSubtitle": {
-    "description": "Subtitle for app folder storage mode"
-  },
-  "storageModeSaf": "Пользовательская папка (SAF)",
-  "@storageModeSaf": {
-    "description": "Storage mode option - Storage Access Framework"
-  },
-  "storageModeSafSubtitle": "Выберите любую папку, включая SD-карту",
-  "@storageModeSafSubtitle": {
-    "description": "Subtitle for SAF storage mode"
-  },
   "downloadFolderAccessLostTitle": "Доступ к папке загрузок потерян",
   "@downloadFolderAccessLostTitle": {
     "description": "Title of the warning banner shown in Files settings when the saved SAF folder grant is no longer valid"
@@ -4695,10 +4574,6 @@
       }
     }
   },
-  "editMetadataAutoFillFetch": "Получить и заполнить",
-  "@editMetadataAutoFillFetch": {
-    "description": "Button label to fetch online metadata and fill selected fields"
-  },
   "editMetadataAutoFillSearching": "Поиск в сети...",
   "@editMetadataAutoFillSearching": {
     "description": "Snackbar shown while searching for online metadata"
@@ -4706,15 +4581,6 @@
   "editMetadataAutoFillNoResults": "Подходящие метаданные не найдены",
   "@editMetadataAutoFillNoResults": {
     "description": "Snackbar when online metadata search returns no results"
-  },
-  "editMetadataAutoFillDone": "Заполнено {count} {count, plural, =1{поле} few{поля} other{полей}} из онлайн-метаданных",
-  "@editMetadataAutoFillDone": {
-    "description": "Snackbar confirming how many fields were auto-filled",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "editMetadataAutoFillNoneSelected": "Выберите хотя бы одно поле для автозаполнения",
   "@editMetadataAutoFillNoneSelected": {
@@ -4972,10 +4838,6 @@
   "@hiResCheckVerdictFakeCertain": {
     "description": "Verdict: an exact fingerprint (padded bits or upsampling pattern) proves the file is not real Hi-Res"
   },
-  "hiResCheckVerdictFakeSuspect": "Возможно отфильтрованный мастеринг",
-  "@hiResCheckVerdictFakeSuspect": {
-    "description": "Verdict: fails the cutoff test but may be a genuine master low-pass filtered in mastering"
-  },
   "hiResCheckReasonSampleHold": "Каждый сэмпл повторяется: повышение частоты дискретизации путем дублирования",
   "@hiResCheckReasonSampleHold": {
     "description": "Reason: sample-and-hold upsampling detected"
@@ -4983,26 +4845,6 @@
   "hiResCheckReasonInterpolation": "Промежуточные семплы интерполированы линейно",
   "@hiResCheckReasonInterpolation": {
     "description": "Reason: linear-interpolation upsampling detected"
-  },
-  "hiResCheckReasonImaging": "Частоты выше 22 кГц дублируют слышимый диапазон",
-  "@hiResCheckReasonImaging": {
-    "description": "Reason: spectral imaging from upsampling detected"
-  },
-  "hiResCheckMusicContent": "Музыкальный контент",
-  "@hiResCheckMusicContent": {
-    "description": "Label for the highest frequency that still moves with the music"
-  },
-  "hiResCheckUltrasonicNoise": "Выше {cutoff} слышен только постоянный шум (характерный для DSD или аналоговых записей с ленты): файл с {rate} будет содержать всю музыку",
-  "@hiResCheckUltrasonicNoise": {
-    "description": "Shown when the ultrasonic content of a Hi-Res file is noise rather than music",
-    "placeholders": {
-      "cutoff": {
-        "type": "String"
-      },
-      "rate": {
-        "type": "String"
-      }
-    }
   },
   "hiResCheckTitle": "Hi-Res проверка",
   "@hiResCheckTitle": {
@@ -5063,10 +4905,6 @@
       }
     }
   },
-  "hiResCheckDescription": "Обнаружение поддельных файлов высокого разрешения с увеличенной частотой дискретизации или с повышением битности",
-  "@hiResCheckDescription": {
-    "description": "Explains what the Hi-Res authenticity check does"
-  },
   "hiResCheckRun": "Проверка",
   "@hiResCheckRun": {
     "description": "Button that starts the Hi-Res authenticity check"
@@ -5078,10 +4916,6 @@
   "hiResCheckVerdictFake": "Вероятно поддельный Hi-Res",
   "@hiResCheckVerdictFake": {
     "description": "Verdict: the file claims Hi-Res but does not measure as it"
-  },
-  "hiResCheckVerdictGenuine": "Оценено как подлинный Hi-Res",
-  "@hiResCheckVerdictGenuine": {
-    "description": "Verdict: no upsampling or padded bit depth found"
   },
   "hiResCheckVerdictStandard": "Стандартное разрешение, ничего примечательного",
   "@hiResCheckVerdictStandard": {
@@ -5095,35 +4929,11 @@
   "@hiResCheckUnsupported": {
     "description": "Shown when the file format cannot be decoded by the Hi-Res check"
   },
-  "hiResCheckCutoff": "Срез содержимого",
-  "@hiResCheckCutoff": {
-    "description": "Label for the highest frequency with real content"
-  },
-  "hiResCheckBitsInUse": "Используемые биты",
-  "@hiResCheckBitsInUse": {
-    "description": "Label for effective vs declared bit depth"
-  },
-  "hiResCheckDisclaimer": "Спектр обрывается рано, но нет никаких доказательств того, что он был подвергнут повышающению дискретизации: возможно, это подлинный мастер, пропущенный через фильтр при мастеринге. Он не заменяется автоматически.",
-  "@hiResCheckDisclaimer": {
-    "description": "Caveat shown under a fake Hi-Res verdict"
-  },
   "hiResCheckFailed": "Hi-Res проверка не удалась: {error}",
   "@hiResCheckFailed": {
     "description": "Error shown when the Hi-Res check fails",
     "placeholders": {
       "error": {
-        "type": "String"
-      }
-    }
-  },
-  "hiResCheckReasonRate": "Заявлена частота {sampleRate}, но содержимое обрывается на ~{cutoff}",
-  "@hiResCheckReasonRate": {
-    "description": "Reason for a fake verdict caused by upsampling",
-    "placeholders": {
-      "sampleRate": {
-        "type": "String"
-      },
-      "cutoff": {
         "type": "String"
       }
     }
@@ -6126,10 +5936,6 @@
       }
     }
   },
-  "actionGo": "ОК",
-  "@actionGo": {
-    "description": "Generic action button label"
-  },
   "logIssueSummary": "Краткое описание проблемы",
   "@logIssueSummary": {
     "description": "Header for log issue analysis summary"
@@ -6432,10 +6238,6 @@
   "libraryBuiltInPreviewPlayerSubtitle": "Слушайте музыку прямо в SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
-  },
-  "libraryBuiltInPlayerInfo": "Встроенный плеер предназначен для быстрого предпрослушивания локальных треков. Для полноценного прослушивания используйте внешний музыкальный плеер.",
-  "@libraryBuiltInPlayerInfo": {
-    "description": "Info note explaining the built-in player is for previews only"
   },
   "nowPlayingTitle": "Сейчас играет",
   "@nowPlayingTitle": {
@@ -6966,7 +6768,6 @@
   "@metadataCopyField": {
     "description": "Metadata menu action that copies the selected key and value"
   },
-  "mornyeShowTabs": "Показывать вкладки",
   "mornyeSearch": "Поиск",
   "mornyeContinuePlaying": "Продолжить воспроизведение",
   "metadataCopyAll": "Скопировать все метаданные",

@@ -26,36 +26,12 @@
   "usbBitPerfectNoDevice": "Aucun DAC USB n'est connecté. La sortie audio standard est utilisée.",
   "usbBitPerfectFallback": "Cet appareil ou ce format audio ne prend pas en charge la sortie « bit-perfect ». Lecture normale.",
   "usbBitPerfectRouteChanged": "La connexion audio USB a changé. La lecture est en pause ; sélectionnez un morceau pour rétablir la connexion.",
-  "upgradeIntroWelcome": "Bienvenue dans\nSpotiFLAC-Mobile 5.0",
   "upgradeIntroThemeTitle": "Faites-en\nvotre propre version.",
   "upgradeIntroThemeBody": "Choisissez un thème. Votre choix s'applique immédiatement, et vous pourrez le modifier ultérieurement dans la section « Apparence ».",
-  "upgradeIntroThemeMaterialBody": "Une mise en page familière, avec les commandes Material et votre couleur d'accent.",
   "upgradeIntroThemeMornyeBody": "Navigation en verre, bibliothèque repensée et lecteur immersif.",
-  "upgradeIntroRustTitle": "Un nouveau moteur.\nDéveloppé avec Rust.",
-  "upgradeIntroRustBody": "Dans la version 5.0, le backend de l'application est passé de Go à Rust. Il s'agit du moteur qui fonctionne en arrière-plan des écrans que vous utilisez tous les jours.",
-  "upgradeIntroRustEngineTitle": "Travaille en arrière-plan",
-  "upgradeIntroRustEngineBody": "Rust gère les téléchargements, les métadonnées audio, l'analyse des bibliothèques et l'exécution des extensions sur Android et iOS.",
-  "upgradeIntroRustMemoryTitle": "Faire plus attention à sa mémoire",
-  "upgradeIntroRustMemoryBody": "La réutilisation des tampons et la réduction du nombre de copies permettent de limiter les allocations temporaires lors du traitement des illustrations et des données d'extension.",
-  "upgradeIntroRustKeepTitle": "Conservez votre musique",
-  "upgradeIntroRustKeepBody": "Inutile de télécharger à nouveau votre bibliothèque. Votre musique et vos paramètres enregistrés sont conservés, aucune nouvelle configuration n'est nécessaire.",
-  "upgradeIntroWelcomeBody": "Un aperçu rapide des changements apportés et des endroits où les trouver.",
-  "upgradeIntroMornyeBody": "Un nouveau look pour votre lecteur, les paroles et la navigation.",
-  "upgradeIntroLibrarySummary": "Parcourez votre musique par playlist, artiste ou album.",
-  "upgradeIntroRepoSummary": "Choisissez vos sources musicales et vos fournisseurs grâce aux extensions.",
-  "upgradeIntroLibraryTitle": "Découvrez\nvotre bibliothèque.",
-  "upgradeIntroLibraryBody": "Sur Mornye, parcourez les albums par catégorie ou retrouvez vos albums dans la section « Ajouts récents ».",
-  "upgradeIntroDownloadsBody": "Mettez en pause, puis réessayez depuis la rubrique « Téléchargements » en haut à droite. Les morceaux terminés sont déplacés vers la rubrique « Ajoutés récemment ».",
-  "upgradeIntroSearchBody": "Recherchez ici la musique que vous avez enregistrée. L'onglet « Recherche » distinct passe en revue vos extensions.",
-  "upgradeIntroPlayerTitle": "Configurez\nvotre lecteur.",
-  "upgradeIntroPlayerBody": "Vous pouvez modifier votre thème et vos options de lecture à tout moment. Voici où les trouver.",
-  "upgradeIntroAppearanceBody": "Pour changer de thème, rendez-vous dans Paramètres → Apparence. Dans Mornye, faites défiler vers le bas pour afficher la navigation compacte ; faites défiler vers le haut pour l'agrandir.",
-  "upgradeIntroAutoMixBody": "Synchroniser le tempo et les temps entre les morceaux. Activez cette option dans Paramètres → Bibliothèque locale → Lecture. Désactivée par défaut.",
-  "upgradeIntroSettingsBody": "Dans Mornye, appuyez sur votre profil depuis la page d'accueil pour ouvrir les Paramètres et modifier votre nom et votre photo.",
   "upgradeIntroSkip": "Passer",
   "upgradeIntroContinue": "Continuer",
   "upgradeIntroDone": "Commencez à écouter",
-  "upgradeIntroReplay": "Nouveautés de la version 5.0",
   "cacheMotionArtwork": "Couverture de mouvement hors ligne",
   "cacheMotionArtworkDesc": "Les clips vidéo des albums sont enregistrés avec les téléchargements. Si vous les supprimez, vos fichiers musicaux et vos pochettes d'album resteront intacts.",
   "nowPlayingVolume": "Volume",
@@ -118,10 +94,6 @@
   "@homeTitle": {
     "description": "Home screen title"
   },
-  "homeSubtitle": "Collez une URL prise en charge ou effectuez une recherche par nom",
-  "@homeSubtitle": {
-    "description": "Subtitle shown below search box"
-  },
   "homeEmptyTitle": "Aucun moteur de recherche pour le moment",
   "@homeEmptyTitle": {
     "description": "Title shown on home when no providers are available yet"
@@ -155,10 +127,6 @@
   "libraryNoActiveDownloads": "Aucun téléchargement en cours",
   "librarySearchHint": "Rechercher dans votre bibliothèque",
   "libraryEmptyCollection": "Votre musique apparaîtra ici",
-  "historySearchHint": "Historique de recherche...",
-  "@historySearchHint": {
-    "description": "Search bar placeholder in history"
-  },
   "settingsTitle": "Paramètres",
   "@settingsTitle": {
     "description": "Settings screen title"
@@ -543,10 +511,6 @@
   "aboutPCSource": "Code source pour PC",
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
-  },
-  "aboutKeepAndroidOpen": "Garder Android ouvert",
-  "@aboutKeepAndroidOpen": {
-    "description": "Link to Keep Android Open campaign website"
   },
   "aboutReportIssue": "Signaler un problème",
   "@aboutReportIssue": {
@@ -2160,10 +2124,6 @@
   "@qualityHiResFlacMaxSubtitle": {
     "description": "Technical spec for hi-res max"
   },
-  "downloadLossy320": "Compression avec perte à 320 kbps",
-  "@downloadLossy320": {
-    "description": "Quality option label for lossy 320kbps"
-  },
   "downloadLossyFormat": "Format avec perte",
   "@downloadLossyFormat": {
     "description": "Setting title to pick output format for lossy downloads"
@@ -2203,46 +2163,6 @@
   "downloadAutoConvertOpusSubtitle": "Une efficacité optimale pour les lecteurs d'aujourd'hui",
   "@downloadAutoConvertOpusSubtitle": {
     "description": "Opus automatic conversion option description"
-  },
-  "downloadLossy320Format": "Format avec perte à 320 kbps",
-  "@downloadLossy320Format": {
-    "description": "Title of the lossy format picker bottom sheet"
-  },
-  "downloadLossy320FormatDesc": "Choisissez le format de sortie pour les téléchargements avec perte à 320 kbps. Le flux d'origine sera converti au format que vous aurez sélectionné lorsque cela sera nécessaire.",
-  "@downloadLossy320FormatDesc": {
-    "description": "Description in the lossy format picker"
-  },
-  "downloadLossyMp3": "MP3 320 kbps",
-  "@downloadLossyMp3": {
-    "description": "Lossy format option - MP3 320kbps"
-  },
-  "downloadLossyMp3Subtitle": "Compatibilité optimale, environ 10 Mo par piste",
-  "@downloadLossyMp3Subtitle": {
-    "description": "Subtitle for MP3 320kbps lossy option"
-  },
-  "downloadLossyAac": "AAC/M4A 320 kbps",
-  "@downloadLossyAac": {
-    "description": "Lossy format option - AAC in M4A container at 320kbps"
-  },
-  "downloadLossyAacSubtitle": "Compatibilité optimale avec les appareils mobiles, format M4A",
-  "@downloadLossyAacSubtitle": {
-    "description": "Subtitle for AAC/M4A 320kbps lossy option"
-  },
-  "downloadLossyOpus256": "Opus 256 kbps",
-  "@downloadLossyOpus256": {
-    "description": "Lossy format option - Opus 256kbps"
-  },
-  "downloadLossyOpus256Subtitle": "Opus en qualité optimale, environ 8 Mo par piste",
-  "@downloadLossyOpus256Subtitle": {
-    "description": "Subtitle for Opus 256kbps lossy option"
-  },
-  "downloadLossyOpus128": "Opus 128 kbps",
-  "@downloadLossyOpus128": {
-    "description": "Lossy format option - Opus 128kbps"
-  },
-  "downloadLossyOpus128Subtitle": "Taille minimale : environ 4 Mo par piste",
-  "@downloadLossyOpus128Subtitle": {
-    "description": "Subtitle for Opus 128kbps lossy option"
   },
   "downloadAskBeforeDownload": "Demander avant de télécharger",
   "@downloadAskBeforeDownload": {
@@ -2576,15 +2496,6 @@
       }
     }
   },
-  "discographySelectedCount": "{count} sélectionnés",
-  "@discographySelectedCount": {
-    "description": "Selection count badge",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "discographyDownloadSelected": "Télécharger la sélection",
   "@discographyDownloadSelected": {
     "description": "Button - download selected albums"
@@ -2892,10 +2803,6 @@
   "libraryStorageAccessMessage": "SpotiFLAC a besoin d'un accès au stockage pour analyser votre bibliothèque musicale. Veuillez lui accorder l'autorisation dans les paramètres.",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
-  },
-  "libraryFolderNotExist": "Le dossier sélectionné n'existe pas",
-  "@libraryFolderNotExist": {
-    "description": "Error when folder doesn't exist"
   },
   "librarySourceDownloaded": "Téléchargé",
   "@librarySourceDownloaded": {
@@ -3360,10 +3267,6 @@
   "trackReEnrich": "Réenrichir",
   "@trackReEnrich": {
     "description": "Menu action - re-embed metadata into audio file"
-  },
-  "trackReEnrichOnlineSubtitle": "Rechercher des métadonnées en ligne et les intégrer dans un fichier",
-  "@trackReEnrichOnlineSubtitle": {
-    "description": "Subtitle for re-enrich metadata action for local items"
   },
   "trackReEnrichBatchSubtitle": "Choisissez une mise à jour en ligne ou manuelle, puis vérifiez chaque modification avant de valider",
   "@trackReEnrichBatchSubtitle": {
@@ -3956,10 +3859,6 @@
       }
     }
   },
-  "selectionShareNoFiles": "Aucun fichier partageable n'a été trouvé",
-  "@selectionShareNoFiles": {
-    "description": "Snackbar when no selected files exist on disk"
-  },
   "selectionConvertCount": "Convertir {count} {count, plural, =1{titre} other{titres}}",
   "@selectionConvertCount": {
     "description": "Convert button text with count in selection mode",
@@ -4190,10 +4089,6 @@
   "@backupRestoreConfirmTitle": {
     "description": "Confirmation dialog title before restoring a backup"
   },
-  "backupRestoreConfirmMessage": "Cette opération remplacera vos paramètres actuels, votre historique de téléchargements, vos titres favoris, votre liste de souhaits et vos listes de lecture par le contenu de la sauvegarde. Cette opération est irréversible.",
-  "@backupRestoreConfirmMessage": {
-    "description": "Confirmation dialog message before restoring a backup"
-  },
   "backupRestoreConfirmButton": "Restaurer",
   "@backupRestoreConfirmButton": {
     "description": "Confirm button to proceed with restore"
@@ -4393,22 +4288,6 @@
   "storageAutomaticDownloadFolder": "Utilise « Download/SpotiFLAC » si l'espace de stockage est accessible en écriture, sinon le stockage de l'application",
   "storageSafRecommended": "Choisir un dossier (recommandé)",
   "storageDownloadFolderHint": "Dans le sélecteur de dossiers Android, ouvrez le dossier « Téléchargements » et sélectionnez « SpotiFLAC ». S'il n'existe pas, créez-le à l'aide de l'option « Nouveau dossier », puis appuyez sur « Utiliser ce dossier » pour autoriser l'accès.",
-  "storageModeAppFolder": "Dossier « Applications » (recommandé)",
-  "@storageModeAppFolder": {
-    "description": "Storage mode option - app-managed folder"
-  },
-  "storageModeAppFolderSubtitle": "Enregistrement par défaut dans le dossier « Musique/SpotiFLAC »",
-  "@storageModeAppFolderSubtitle": {
-    "description": "Subtitle for app folder storage mode"
-  },
-  "storageModeSaf": "Dossier personnalisé (SAF)",
-  "@storageModeSaf": {
-    "description": "Storage mode option - Storage Access Framework"
-  },
-  "storageModeSafSubtitle": "Choisissez n'importe quel dossier, y compris la carte SD",
-  "@storageModeSafSubtitle": {
-    "description": "Subtitle for SAF storage mode"
-  },
   "downloadFolderAccessLostTitle": "Accès au dossier de téléchargement perdu",
   "@downloadFolderAccessLostTitle": {
     "description": "Title of the warning banner shown in Files settings when the saved SAF folder grant is no longer valid"
@@ -4696,10 +4575,6 @@
       }
     }
   },
-  "editMetadataAutoFillFetch": "Récupérer & remplir",
-  "@editMetadataAutoFillFetch": {
-    "description": "Button label to fetch online metadata and fill selected fields"
-  },
   "editMetadataAutoFillSearching": "Recherche en ligne...",
   "@editMetadataAutoFillSearching": {
     "description": "Snackbar shown while searching for online metadata"
@@ -4707,15 +4582,6 @@
   "editMetadataAutoFillNoResults": "Aucune métadonnée correspondante n'a été trouvée en ligne",
   "@editMetadataAutoFillNoResults": {
     "description": "Snackbar when online metadata search returns no results"
-  },
-  "editMetadataAutoFillDone": "{count} {count, plural, =1{champ} other{champs}} renseignés à partir des métadonnées en ligne",
-  "@editMetadataAutoFillDone": {
-    "description": "Snackbar confirming how many fields were auto-filled",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "editMetadataAutoFillNoneSelected": "Sélectionnez au moins un champ pour le remplir automatiquement",
   "@editMetadataAutoFillNoneSelected": {
@@ -4973,10 +4839,6 @@
   "@hiResCheckVerdictFakeCertain": {
     "description": "Verdict: an exact fingerprint (padded bits or upsampling pattern) proves the file is not real Hi-Res"
   },
-  "hiResCheckVerdictFakeSuspect": "Peut-être une piste principale filtrée",
-  "@hiResCheckVerdictFakeSuspect": {
-    "description": "Verdict: fails the cutoff test but may be a genuine master low-pass filtered in mastering"
-  },
   "hiResCheckReasonSampleHold": "Chaque échantillon est répété : suréchantillonné par duplication",
   "@hiResCheckReasonSampleHold": {
     "description": "Reason: sample-and-hold upsampling detected"
@@ -4984,26 +4846,6 @@
   "hiResCheckReasonInterpolation": "Les échantillons intermédiaires sont interpolés de manière linéaire",
   "@hiResCheckReasonInterpolation": {
     "description": "Reason: linear-interpolation upsampling detected"
-  },
-  "hiResCheckReasonImaging": "Les fréquences supérieures à 22 kHz reflètent la bande audible",
-  "@hiResCheckReasonImaging": {
-    "description": "Reason: spectral imaging from upsampling detected"
-  },
-  "hiResCheckMusicContent": "Contenu musical",
-  "@hiResCheckMusicContent": {
-    "description": "Label for the highest frequency that still moves with the music"
-  },
-  "hiResCheckUltrasonicNoise": "Au-dessus de {cutoff}, on n'entend qu'un bruit constant (typique du DSD ou des transferts à partir de bandes analogiques) : un fichier {rate} contiendrait l'intégralité de la musique",
-  "@hiResCheckUltrasonicNoise": {
-    "description": "Shown when the ultrasonic content of a Hi-Res file is noise rather than music",
-    "placeholders": {
-      "cutoff": {
-        "type": "String"
-      },
-      "rate": {
-        "type": "String"
-      }
-    }
   },
   "hiResCheckTitle": "Authenticité haute résolution",
   "@hiResCheckTitle": {
@@ -5064,10 +4906,6 @@
       }
     }
   },
-  "hiResCheckDescription": "Détecter les faux fichiers « haute résolution » issus d'un suréchantillonnage ou d'un remplissage binaire",
-  "@hiResCheckDescription": {
-    "description": "Explains what the Hi-Res authenticity check does"
-  },
   "hiResCheckRun": "Vérifier",
   "@hiResCheckRun": {
     "description": "Button that starts the Hi-Res authenticity check"
@@ -5079,10 +4917,6 @@
   "hiResCheckVerdictFake": "Probablement une fausse image haute résolution",
   "@hiResCheckVerdictFake": {
     "description": "Verdict: the file claims Hi-Res but does not measure as it"
-  },
-  "hiResCheckVerdictGenuine": "Offre une véritable haute résolution",
-  "@hiResCheckVerdictGenuine": {
-    "description": "Verdict: no upsampling or padded bit depth found"
   },
   "hiResCheckVerdictStandard": "Définition standard, rien à signaler",
   "@hiResCheckVerdictStandard": {
@@ -5096,35 +4930,11 @@
   "@hiResCheckUnsupported": {
     "description": "Shown when the file format cannot be decoded by the Hi-Res check"
   },
-  "hiResCheckCutoff": "Fin du contenu",
-  "@hiResCheckCutoff": {
-    "description": "Label for the highest frequency with real content"
-  },
-  "hiResCheckBitsInUse": "Bits utilisés",
-  "@hiResCheckBitsInUse": {
-    "description": "Label for effective vs declared bit depth"
-  },
-  "hiResCheckDisclaimer": "Le spectre s'arrête prématurément, mais rien ne prouve qu'il ait été suréchantillonné : il peut s'agir d'un master authentique ayant subi un filtrage passe-bas lors du mastering. Il n'est pas remplacé automatiquement.",
-  "@hiResCheckDisclaimer": {
-    "description": "Caveat shown under a fake Hi-Res verdict"
-  },
   "hiResCheckFailed": "Échec de la vérification haute résolution : {error}",
   "@hiResCheckFailed": {
     "description": "Error shown when the Hi-Res check fails",
     "placeholders": {
       "error": {
-        "type": "String"
-      }
-    }
-  },
-  "hiResCheckReasonRate": "Indique {sampleRate}, mais le contenu s'arrête à environ {cutoff}",
-  "@hiResCheckReasonRate": {
-    "description": "Reason for a fake verdict caused by upsampling",
-    "placeholders": {
-      "sampleRate": {
-        "type": "String"
-      },
-      "cutoff": {
         "type": "String"
       }
     }
@@ -6127,10 +5937,6 @@
       }
     }
   },
-  "actionGo": "Aller",
-  "@actionGo": {
-    "description": "Generic action button label"
-  },
   "logIssueSummary": "Résumé du problème",
   "@logIssueSummary": {
     "description": "Header for log issue analysis summary"
@@ -6433,10 +6239,6 @@
   "libraryBuiltInPreviewPlayerSubtitle": "Écoutez votre musique directement dans SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
-  },
-  "libraryBuiltInPlayerInfo": "Le lecteur intégré est un outil de prévisualisation permettant de vérifier rapidement les morceaux stockés localement. Utilisez un lecteur de musique externe pour les écouter.",
-  "@libraryBuiltInPlayerInfo": {
-    "description": "Info note explaining the built-in player is for previews only"
   },
   "nowPlayingTitle": "En cours de lecture",
   "@nowPlayingTitle": {
@@ -6966,7 +6768,6 @@
   "@metadataCopyField": {
     "description": "Metadata menu action that copies the selected key and value"
   },
-  "mornyeShowTabs": "Afficher les onglets",
   "mornyeSearch": "Rechercher",
   "mornyeContinuePlaying": "Continuer à lire",
   "metadataCopyAll": "Copier toutes les métadonnées",

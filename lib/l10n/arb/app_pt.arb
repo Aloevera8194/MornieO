@@ -21,10 +21,6 @@
   "@homeTitle": {
     "description": "Home screen title"
   },
-  "homeSubtitle": "Paste a Spotify link or search by name",
-  "@homeSubtitle": {
-    "description": "Subtitle shown below search box"
-  },
   "homeSupports": "Supports: Track, Album, Playlist, Artist URLs",
   "@homeSupports": {
     "description": "Info text about supported URL types"
@@ -278,10 +274,6 @@
   "aboutPCSource": "PC source code",
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
-  },
-  "aboutKeepAndroidOpen": "Keep Android Open",
-  "@aboutKeepAndroidOpen": {
-    "description": "Link to Keep Android Open campaign website"
   },
   "aboutReportIssue": "Report an issue",
   "@aboutReportIssue": {
@@ -1566,10 +1558,6 @@
   "@navLibrary": {
     "description": "Bottom navigation - Library tab"
   },
-  "historySearchHint": "Search history...",
-  "@historySearchHint": {
-    "description": "Search bar placeholder in history"
-  },
   "downloadSingleFilenameFormat": "Single Filename Format",
   "@downloadSingleFilenameFormat": {
     "description": "Setting for output filename pattern for singles/EPs"
@@ -1886,45 +1874,9 @@
   "@extensionsFallbackSubtitle": {
     "description": "Subtitle for download fallback extensions menu"
   },
-  "downloadLossy320": "Lossy 320kbps",
-  "@downloadLossy320": {
-    "description": "Quality option label for lossy 320kbps"
-  },
   "downloadLossyFormat": "Lossy Format",
   "@downloadLossyFormat": {
     "description": "Setting title to pick output format for lossy downloads"
-  },
-  "downloadLossy320Format": "Lossy 320kbps Format",
-  "@downloadLossy320Format": {
-    "description": "Title of the lossy format picker bottom sheet"
-  },
-  "downloadLossy320FormatDesc": "Choose the output format for 320kbps lossy downloads. The original stream will be converted to your selected format when needed.",
-  "@downloadLossy320FormatDesc": {
-    "description": "Description in the lossy format picker"
-  },
-  "downloadLossyMp3": "MP3 320kbps",
-  "@downloadLossyMp3": {
-    "description": "lossy format option - MP3 320kbps"
-  },
-  "downloadLossyMp3Subtitle": "Best compatibility, ~10MB per track",
-  "@downloadLossyMp3Subtitle": {
-    "description": "Subtitle for MP3 320kbps lossy option"
-  },
-  "downloadLossyOpus256": "Opus 256kbps",
-  "@downloadLossyOpus256": {
-    "description": "lossy format option - Opus 256kbps"
-  },
-  "downloadLossyOpus256Subtitle": "Best quality Opus, ~8MB per track",
-  "@downloadLossyOpus256Subtitle": {
-    "description": "Subtitle for Opus 256kbps lossy option"
-  },
-  "downloadLossyOpus128": "Opus 128kbps",
-  "@downloadLossyOpus128": {
-    "description": "lossy format option - Opus 128kbps"
-  },
-  "downloadLossyOpus128Subtitle": "Smallest size, ~4MB per track",
-  "@downloadLossyOpus128Subtitle": {
-    "description": "Subtitle for Opus 128kbps lossy option"
   },
   "downloadUseAlbumArtistForFolders": "Use Album Artist for folders",
   "@downloadUseAlbumArtistForFolders": {
@@ -2098,15 +2050,6 @@
         "type": "int"
       },
       "total": {
-        "type": "int"
-      }
-    }
-  },
-  "discographySelectedCount": "{count} selected",
-  "@discographySelectedCount": {
-    "description": "Selection count badge",
-    "placeholders": {
-      "count": {
         "type": "int"
       }
     }
@@ -2367,10 +2310,6 @@
   "libraryStorageAccessMessage": "SpotiFLAC needs storage access to scan your music library. Please grant permission in settings.",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
-  },
-  "libraryFolderNotExist": "Selected folder does not exist",
-  "@libraryFolderNotExist": {
-    "description": "Error when folder doesn't exist"
   },
   "librarySourceDownloaded": "Downloaded",
   "@librarySourceDownloaded": {
@@ -2820,10 +2759,6 @@
   "@trackReEnrich": {
     "description": "Menu action - re-embed metadata into audio file"
   },
-  "trackReEnrichOnlineSubtitle": "Search metadata online and embed into file",
-  "@trackReEnrichOnlineSubtitle": {
-    "description": "Subtitle for re-enrich metadata action for local items"
-  },
   "trackReEnrichFieldCover": "Cover Art",
   "@trackReEnrichFieldCover": {
     "description": "Checkbox label for cover art field in re-enrich"
@@ -3260,10 +3195,6 @@
       }
     }
   },
-  "selectionShareNoFiles": "No shareable files found",
-  "@selectionShareNoFiles": {
-    "description": "Snackbar when no selected files exist on disk"
-  },
   "selectionConvertCount": "Convert {count} {count, plural, =1{track} other{tracks}}",
   "@selectionConvertCount": {
     "description": "Convert button text with count in selection mode",
@@ -3509,22 +3440,6 @@
   "@downloadLocationSubtitle": {
     "description": "Subtitle shown in the download location picker sheet"
   },
-  "storageModeAppFolder": "App Folder (Recommended)",
-  "@storageModeAppFolder": {
-    "description": "Storage mode option - app-managed folder"
-  },
-  "storageModeAppFolderSubtitle": "Saves to Music/SpotiFLAC by default",
-  "@storageModeAppFolderSubtitle": {
-    "description": "Subtitle for app folder storage mode"
-  },
-  "storageModeSaf": "Custom Folder (SAF)",
-  "@storageModeSaf": {
-    "description": "Storage mode option - Storage Access Framework"
-  },
-  "storageModeSafSubtitle": "Pick any folder, including SD card",
-  "@storageModeSafSubtitle": {
-    "description": "Subtitle for SAF storage mode"
-  },
   "downloadFilenameDescription": "Use {artist}, {title}, {album}, {track}, {year}, {date}, {disc} as placeholders.",
   "@downloadFilenameDescription": {
     "description": "Description shown in filename format editor"
@@ -3727,10 +3642,6 @@
   "@editMetadataAutoFillDesc": {
     "description": "Description for the auto-fill section"
   },
-  "editMetadataAutoFillFetch": "Fetch & Fill",
-  "@editMetadataAutoFillFetch": {
-    "description": "Button label to fetch online metadata and fill selected fields"
-  },
   "editMetadataAutoFillSearching": "Searching online...",
   "@editMetadataAutoFillSearching": {
     "description": "Snackbar shown while searching for online metadata"
@@ -3738,15 +3649,6 @@
   "editMetadataAutoFillNoResults": "No matching metadata found online",
   "@editMetadataAutoFillNoResults": {
     "description": "Snackbar when online metadata search returns no results"
-  },
-  "editMetadataAutoFillDone": "Filled {count} {count, plural, =1{field} other{fields}} from online metadata",
-  "@editMetadataAutoFillDone": {
-    "description": "Snackbar confirming how many fields were auto-filled",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "editMetadataAutoFillNoneSelected": "Select at least one field to auto-fill",
   "@editMetadataAutoFillNoneSelected": {

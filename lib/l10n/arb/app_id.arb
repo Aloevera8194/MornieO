@@ -215,36 +215,12 @@
   "usbBitPerfectNoDevice": "Tiada DAC USB terhubung. Menggunakan pemutaran normal.",
   "usbBitPerfectFallback": "Perangkat atau format audio tidak mendukung output Bit-Perfect. Menggunakan pemutaran normal.",
   "usbBitPerfectRouteChanged": "Rute audio USB berubah. Pemutaran dijeda; pilih lagu untuk menghubungkan ulang.",
-  "upgradeIntroWelcome": "Selamat datang di SpotiFLAC-Mobile 5.0",
   "upgradeIntroThemeTitle": "Pilih \ntampilan Anda.",
   "upgradeIntroThemeBody": "Pilih tampilan yang Anda suka. Pilihan langsung diterapkan dan Anda dapat mengubahnya lewat Tampilan.",
-  "upgradeIntroThemeMaterialBody": "Tampilan yang familiar, estetika Material dengan warna aksen pilihan Anda.",
   "upgradeIntroThemeMornyeBody": "Tampilan Liquid Glass, Koleksi yang didesain ulang dengan pemutar yang cantik.",
-  "upgradeIntroRustTitle": "Engine baru.\nDibuat dengan Rust.",
-  "upgradeIntroRustBody": "Di versi 5.0, backend aplikasi dialihkan dari Go ke Rust. Ini adalah engine yang bekerja di balik layar yang Anda gunakan tiap hari.",
-  "upgradeIntroRustEngineTitle": "Bekerja di balik layar",
-  "upgradeIntroRustEngineBody": "Rust menangani download, metadata audio, pemindaian koleksi, dan runtime ekstensi di Android dan iOS.",
-  "upgradeIntroRustMemoryTitle": "Lebih hemat penggunaan memori",
-  "upgradeIntroRustMemoryBody": "Pemakaian ulang buffer dan pengurangan penyalinan data dapat mengurangi penggunaan memori saat memroses artwork dan data ekstensi.",
-  "upgradeIntroRustKeepTitle": "Musik Anda tetap ada",
-  "upgradeIntroRustKeepBody": "Tidak perlu mendownload ulang koleksi Anda. Musik tersimpan dan setelan Anda masih sama, tidak perlu penyiapan ulang.",
-  "upgradeIntroWelcomeBody": "Sedikit pemahaman mengenai apa yang baru, dan di mana mencarinya.",
-  "upgradeIntroMornyeBody": "Tampilan pemutar, lirik, dan navigasi baru Anda.",
-  "upgradeIntroLibrarySummary": "Telusuri musik Anda lewat playlist, artis, atau album.",
-  "upgradeIntroRepoSummary": "Pilih sumber musik dan provider Anda melalui ekstensi.",
-  "upgradeIntroLibraryTitle": "Mengenal Koleksi Anda.",
-  "upgradeIntroLibraryBody": "Di tampilan Mornye, telusuri dengan kategori atau cari album Anda di Baru Ditambahkan.",
-  "upgradeIntroDownloadsBody": "Jeda dan coba lagi dari Download di kanan atas. Lagu yang didownload akan muncul di Baru Ditambahkan.",
-  "upgradeIntroSearchBody": "Telusuri lagu tersimpan di sini. Tab Penelusuran kini dipisah dan ada di kanan Repo.",
-  "upgradeIntroPlayerTitle": "Atur\npemutar Anda.",
-  "upgradeIntroPlayerBody": "Anda dapat mengatur setelan tema dan pemutaran kapan saja. Atur saja di sini.",
-  "upgradeIntroAppearanceBody": "Atur tema lewat Setelan → Tampilan. Di Mornye, gulir bawah akan mengecilkan bilah navigasi; dan sebaliknya akan mengembalikannya.",
-  "upgradeIntroAutoMixBody": "Cocokkan tempo dan beat pada setiap lagu. Hidupkan di Setelan → Koleksi Lokal → Pemutaran. Defaultnya dimatikan.",
-  "upgradeIntroSettingsBody": "Di Mornye, ketuk foto profil di kanan atas untuk membuka Setelan dan mengedit nama dan foto profil.",
   "upgradeIntroSkip": "Lewati",
   "upgradeIntroContinue": "Lanjut",
   "upgradeIntroDone": "Mulai mendengarkan",
-  "upgradeIntroReplay": "Yang baru di versi 5.0",
   "whatsNewReplay": "Yang baru di versi {version}",
   "whatsNewWelcomeTitle": "Selamat datang di\nSpotiFLAC-Mobile {version}",
   "whatsNewWelcomeBody": "Tampilan yang lebih ekspresif, pemutar yang lebih lengkap, dan lirik yang bisa dibagikan.",
@@ -350,10 +326,6 @@
   "@homeTitle": {
     "description": "Home screen title"
   },
-  "homeSubtitle": "Tempel URL yang didukung atau cari berdasarkan nama",
-  "@homeSubtitle": {
-    "description": "Subtitle shown below search box"
-  },
   "homeEmptyTitle": "Belum ada provider penelusuran",
   "@homeEmptyTitle": {
     "description": "Title shown on home when no providers are available yet"
@@ -387,10 +359,6 @@
   "libraryNoActiveDownloads": "Tidak sedang download",
   "librarySearchHint": "Telusuri koleksi Anda",
   "libraryEmptyCollection": "Musik Anda akan muncul di sini",
-  "historySearchHint": "Telusuri histori...",
-  "@historySearchHint": {
-    "description": "Search bar placeholder in history"
-  },
   "settingsTitle": "Setelan",
   "@settingsTitle": {
     "description": "Settings screen title"
@@ -784,10 +752,6 @@
   "aboutPCSource": "Source code versi PC",
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
-  },
-  "aboutKeepAndroidOpen": "Jaga Android tetap terbuka",
-  "@aboutKeepAndroidOpen": {
-    "description": "Link to Keep Android Open campaign website"
   },
   "aboutReportIssue": "Laporkan masalah",
   "@aboutReportIssue": {
@@ -2412,10 +2376,6 @@
   "@qualityHiResFlacMaxSubtitle": {
     "description": "Technical spec for hi-res max"
   },
-  "downloadLossy320": "Lossy 320kbps",
-  "@downloadLossy320": {
-    "description": "Quality option label for lossy 320kbps"
-  },
   "downloadLossyFormat": "Format Lossy",
   "@downloadLossyFormat": {
     "description": "Setting title to pick output format for lossy downloads"
@@ -2455,46 +2415,6 @@
   "downloadAutoConvertOpusSubtitle": "Bagus untuk pemutar terbaru",
   "@downloadAutoConvertOpusSubtitle": {
     "description": "Opus automatic conversion option description"
-  },
-  "downloadLossy320Format": "Format Lossy 320kbps",
-  "@downloadLossy320Format": {
-    "description": "Title of the lossy format picker bottom sheet"
-  },
-  "downloadLossy320FormatDesc": "Pilih format output untuk download lossy 320kbps. Data stream asli akan dikonversi ke format yang Anda pilih bila diperlukan.",
-  "@downloadLossy320FormatDesc": {
-    "description": "Description in the lossy format picker"
-  },
-  "downloadLossyMp3": "MP3 320kbps",
-  "@downloadLossyMp3": {
-    "description": "Lossy format option - MP3 320kbps"
-  },
-  "downloadLossyMp3Subtitle": "Putar di mana saja, ~10MB per lagu",
-  "@downloadLossyMp3Subtitle": {
-    "description": "Subtitle for MP3 320kbps lossy option"
-  },
-  "downloadLossyAac": "AAC/M4A 320kbps",
-  "@downloadLossyAac": {
-    "description": "Lossy format option - AAC in M4A container at 320kbps"
-  },
-  "downloadLossyAacSubtitle": "Putar di perangkat mobile, format M4A",
-  "@downloadLossyAacSubtitle": {
-    "description": "Subtitle for AAC/M4A 320kbps lossy option"
-  },
-  "downloadLossyOpus256": "Opus 256kbps",
-  "@downloadLossyOpus256": {
-    "description": "Lossy format option - Opus 256kbps"
-  },
-  "downloadLossyOpus256Subtitle": "Opus kualitas terbaik, ~8MB per lagu",
-  "@downloadLossyOpus256Subtitle": {
-    "description": "Subtitle for Opus 256kbps lossy option"
-  },
-  "downloadLossyOpus128": "Opus 128kbps",
-  "@downloadLossyOpus128": {
-    "description": "Lossy format option - Opus 128kbps"
-  },
-  "downloadLossyOpus128Subtitle": "Ukuran terkecil, ~4MB per lagu",
-  "@downloadLossyOpus128Subtitle": {
-    "description": "Subtitle for Opus 128kbps lossy option"
   },
   "downloadAskBeforeDownload": "Tanya Sebelum Download",
   "@downloadAskBeforeDownload": {
@@ -2828,15 +2748,6 @@
       }
     }
   },
-  "discographySelectedCount": "{count} dipilih",
-  "@discographySelectedCount": {
-    "description": "Selection count badge",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "discographyDownloadSelected": "Download Terpilih",
   "@discographyDownloadSelected": {
     "description": "Button - download selected albums"
@@ -3144,10 +3055,6 @@
   "libraryStorageAccessMessage": "SpotiFLAC butuh akses penyimpanan untuk memindai Koleksi musik Anda. Mohon berikan perizinan di Setelan.",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
-  },
-  "libraryFolderNotExist": "Folder terpilih tidak ada",
-  "@libraryFolderNotExist": {
-    "description": "Error when folder doesn't exist"
   },
   "librarySourceDownloaded": "Didownload",
   "@librarySourceDownloaded": {
@@ -3612,10 +3519,6 @@
   "trackReEnrich": "Update Metadata",
   "@trackReEnrich": {
     "description": "Menu action - re-embed metadata into audio file"
-  },
-  "trackReEnrichOnlineSubtitle": "Telusuri metadata di internet lalu sematkan ke file",
-  "@trackReEnrichOnlineSubtitle": {
-    "description": "Subtitle for re-enrich metadata action for local items"
   },
   "trackReEnrichBatchSubtitle": "Pilih update online atau offline, lalu tinjau setiap perubahan sebelum diubah",
   "@trackReEnrichBatchSubtitle": {
@@ -4208,10 +4111,6 @@
       }
     }
   },
-  "selectionShareNoFiles": "Tidak ditemukan file untuk dibagikan",
-  "@selectionShareNoFiles": {
-    "description": "Snackbar when no selected files exist on disk"
-  },
   "selectionConvertCount": "Ubah format {count} {count, plural, =1{lagu} other{lagu}}",
   "@selectionConvertCount": {
     "description": "Convert button text with count in selection mode",
@@ -4454,10 +4353,6 @@
   "@backupRestoreConfirmTitle": {
     "description": "Confirmation dialog title before restoring a backup"
   },
-  "backupRestoreConfirmMessage": "Ini akan mengubah setelan sekarang, histori download, lagu yang disukai, wishlist, dan playlist Anda dengan isi cadangan ini. Tindakan tidak dapat dipulihkan.",
-  "@backupRestoreConfirmMessage": {
-    "description": "Confirmation dialog message before restoring a backup"
-  },
   "backupRestoreConfirmButton": "Pulihkan",
   "@backupRestoreConfirmButton": {
     "description": "Confirm button to proceed with restore"
@@ -4657,22 +4552,6 @@
   "storageAutomaticDownloadFolder": "Menyimpan di folder Download/SpotiFLAC, atau di data aplikasi",
   "storageSafRecommended": "Pilih folder (Disarankan)",
   "storageDownloadFolderHint": "Begitu pemilih folder Android terbuka, buka folder Download dan pilih SpotiFLAC. Jika belum ada, buat folder baru, lalu ketuk Gunakan folder ini untuk memberi akses.",
-  "storageModeAppFolder": "Folder Aplikasi (Disarankan)",
-  "@storageModeAppFolder": {
-    "description": "Storage mode option - app-managed folder"
-  },
-  "storageModeAppFolderSubtitle": "Disimpan ke Music/SpotiFLAC secara default",
-  "@storageModeAppFolderSubtitle": {
-    "description": "Subtitle for app folder storage mode"
-  },
-  "storageModeSaf": "Pilih Folder (SAF)",
-  "@storageModeSaf": {
-    "description": "Storage mode option - Storage Access Framework"
-  },
-  "storageModeSafSubtitle": "Pilih folder apapun, termasuk kartu SD",
-  "@storageModeSafSubtitle": {
-    "description": "Subtitle for SAF storage mode"
-  },
   "downloadFolderAccessLostTitle": "Akses folder download hilang",
   "@downloadFolderAccessLostTitle": {
     "description": "Title of the warning banner shown in Files settings when the saved SAF folder grant is no longer valid"
@@ -4960,10 +4839,6 @@
       }
     }
   },
-  "editMetadataAutoFillFetch": "Gunakan metadata online",
-  "@editMetadataAutoFillFetch": {
-    "description": "Button label to fetch online metadata and fill selected fields"
-  },
   "editMetadataAutoFillSearching": "Menelusuri internet...",
   "@editMetadataAutoFillSearching": {
     "description": "Snackbar shown while searching for online metadata"
@@ -4971,15 +4846,6 @@
   "editMetadataAutoFillNoResults": "Tidak ada metadata yang cocok di internet",
   "@editMetadataAutoFillNoResults": {
     "description": "Snackbar when online metadata search returns no results"
-  },
-  "editMetadataAutoFillDone": "Berhasil mengisi {count} {count, plural, =1{kolom} other{kolom}} dari metadata online",
-  "@editMetadataAutoFillDone": {
-    "description": "Snackbar confirming how many fields were auto-filled",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "editMetadataAutoFillNoneSelected": "Pilih setidaknya satu tag untuk diisi otomatis",
   "@editMetadataAutoFillNoneSelected": {
@@ -5237,10 +5103,6 @@
   "@hiResCheckVerdictFakeCertain": {
     "description": "Verdict: an exact fingerprint (padded bits or upsampling pattern) proves the file is not real Hi-Res"
   },
-  "hiResCheckVerdictFakeSuspect": "Kemungkinan low-passnya difilter",
-  "@hiResCheckVerdictFakeSuspect": {
-    "description": "Verdict: fails the cutoff test but may be a genuine master low-pass filtered in mastering"
-  },
   "hiResCheckReasonSampleHold": "Data suara terulang: diupsample dengan menggandakan data",
   "@hiResCheckReasonSampleHold": {
     "description": "Reason: sample-and-hold upsampling detected"
@@ -5248,26 +5110,6 @@
   "hiResCheckReasonInterpolation": "Data antar suara diinterpolasi secara linear",
   "@hiResCheckReasonInterpolation": {
     "description": "Reason: linear-interpolation upsampling detected"
-  },
-  "hiResCheckReasonImaging": "Data suara di atas 22 kHz menjiplak data yang ada",
-  "@hiResCheckReasonImaging": {
-    "description": "Reason: spectral imaging from upsampling detected"
-  },
-  "hiResCheckMusicContent": "Konten musikal",
-  "@hiResCheckMusicContent": {
-    "description": "Label for the highest frequency that still moves with the music"
-  },
-  "hiResCheckUltrasonicNoise": "Di atas {cutoff} hanya ada desis statis (mirip hasil rekam ulang kaset DSD/analog): file {rate} itu sudah cukup",
-  "@hiResCheckUltrasonicNoise": {
-    "description": "Shown when the ultrasonic content of a Hi-Res file is noise rather than music",
-    "placeholders": {
-      "cutoff": {
-        "type": "String"
-      },
-      "rate": {
-        "type": "String"
-      }
-    }
   },
   "hiResCheckTitle": "Keaslian Hi-Res",
   "@hiResCheckTitle": {
@@ -5328,10 +5170,6 @@
       }
     }
   },
-  "hiResCheckDescription": "Periksa file Hi-Res palsu yang diupsample atau dibit-pad",
-  "@hiResCheckDescription": {
-    "description": "Explains what the Hi-Res authenticity check does"
-  },
   "hiResCheckRun": "Periksa",
   "@hiResCheckRun": {
     "description": "Button that starts the Hi-Res authenticity check"
@@ -5343,10 +5181,6 @@
   "hiResCheckVerdictFake": "Sepertinya Hi-Res palsu",
   "@hiResCheckVerdictFake": {
     "description": "Verdict: the file claims Hi-Res but does not measure as it"
-  },
-  "hiResCheckVerdictGenuine": "Tergolong Hi-Res asli",
-  "@hiResCheckVerdictGenuine": {
-    "description": "Verdict: no upsampling or padded bit depth found"
   },
   "hiResCheckVerdictStandard": "Kualitas biasa, tidak ada yang aneh",
   "@hiResCheckVerdictStandard": {
@@ -5360,35 +5194,11 @@
   "@hiResCheckUnsupported": {
     "description": "Shown when the file format cannot be decoded by the Hi-Res check"
   },
-  "hiResCheckCutoff": "Cutoff konten",
-  "@hiResCheckCutoff": {
-    "description": "Label for the highest frequency with real content"
-  },
-  "hiResCheckBitsInUse": "Bit digunakan",
-  "@hiResCheckBitsInUse": {
-    "description": "Label for effective vs declared bit depth"
-  },
-  "hiResCheckDisclaimer": "Grafik spektrum berhenti di awal, tidak ada bukti itu diupsample: mungkin ini file master asli yang di filter low-pass saat mastering. File tidak diganti otomatis.",
-  "@hiResCheckDisclaimer": {
-    "description": "Caveat shown under a fake Hi-Res verdict"
-  },
   "hiResCheckFailed": "Pemeriksaan Hi-Res gagal: {error}",
   "@hiResCheckFailed": {
     "description": "Error shown when the Hi-Res check fails",
     "placeholders": {
       "error": {
-        "type": "String"
-      }
-    }
-  },
-  "hiResCheckReasonRate": "Tertulis {sampleRate} tapi data musik berhenti di ~{cutoff}",
-  "@hiResCheckReasonRate": {
-    "description": "Reason for a fake verdict caused by upsampling",
-    "placeholders": {
-      "sampleRate": {
-        "type": "String"
-      },
-      "cutoff": {
         "type": "String"
       }
     }
@@ -6393,10 +6203,6 @@
       }
     }
   },
-  "actionGo": "Mulai",
-  "@actionGo": {
-    "description": "Generic action button label"
-  },
   "logIssueSummary": "Ringkasan Masalah",
   "@logIssueSummary": {
     "description": "Header for log issue analysis summary"
@@ -6699,10 +6505,6 @@
   "libraryBuiltInPreviewPlayerSubtitle": "Putar musik langsung di SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
-  },
-  "libraryBuiltInPlayerInfo": "Pemutar built-in masih tahap beta untuk memeriksa lagu dengan cepat. Gunakan pemutar musik eksternal untuk mendengarkan.",
-  "@libraryBuiltInPlayerInfo": {
-    "description": "Info note explaining the built-in player is for previews only"
   },
   "nowPlayingTitle": "Sedang Memutar",
   "@nowPlayingTitle": {
@@ -7246,7 +7048,6 @@
   "@metadataCopyField": {
     "description": "Metadata menu action that copies the selected key and value"
   },
-  "mornyeShowTabs": "Tampilkan tab",
   "mornyeSearch": "Telusuri",
   "mornyeContinuePlaying": "Lanjut Memutar",
   "metadataCopyAll": "Salin semua metadata",
@@ -7423,7 +7224,6 @@
   "audioInfoFrequencyRange": "Rentang frekuensi",
   "audioInfoFrequencyRangeValue": "Hingga {frequency} (Nyquist)",
   "audioInfoDynamicRange": "Rentang dinamis teoretis",
-  "audioInfoSamples": "Sampel per kanal",
   "audioInfoTrackGain": "Gain lagu",
   "audioInfoTrackPeak": "Puncak lagu",
   "audioInfoAlbumGain": "Gain album",
