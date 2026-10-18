@@ -1084,16 +1084,12 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
           }
         }
 
-        final useSnapshotBridge =
-            Platform.isAndroid && existingFiles.isNotEmpty;
         final snapshotPath = nativeIngestion
             ? await _db.writeNativeFileModTimesSnapshot(
                 activeSourceId,
                 requestId: _nativeLibraryRequestId!,
                 isCancelled: () => _scanCancelRequested || !ref.mounted,
               )
-            : useSnapshotBridge
-            ? await _db.writeFileModTimesSnapshot(existingFiles)
             : null;
 
         Map<String, dynamic> result;
@@ -1113,25 +1109,15 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
               isCancelled: () => _scanCancelRequested || !ref.mounted,
             );
           } else if (isSaf) {
-            result = useSnapshotBridge && snapshotPath != null
-                ? await PlatformBridge.scanSafTreeIncrementalFromSnapshot(
-                    effectiveFolderPath,
-                    snapshotPath,
-                  )
-                : await PlatformBridge.scanSafTreeIncremental(
-                    effectiveFolderPath,
-                    existingFiles,
-                  );
+            result = await PlatformBridge.scanSafTreeIncremental(
+              effectiveFolderPath,
+              existingFiles,
+            );
           } else {
-            result = useSnapshotBridge && snapshotPath != null
-                ? await PlatformBridge.scanLibraryFolderIncrementalFromSnapshot(
-                    effectiveFolderPath,
-                    snapshotPath,
-                  )
-                : await PlatformBridge.scanLibraryFolderIncremental(
-                    effectiveFolderPath,
-                    existingFiles,
-                  );
+            result = await PlatformBridge.scanLibraryFolderIncremental(
+              effectiveFolderPath,
+              existingFiles,
+            );
           }
         } finally {
           if (snapshotPath != null) {

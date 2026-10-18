@@ -2262,20 +2262,6 @@ class PlatformBridge {
     );
   }
 
-  static Future<Map<String, dynamic>> scanLibraryFolderIncrementalFromSnapshot(
-    String folderPath,
-    String snapshotPath,
-  ) async {
-    final result = await _channel.invokeMethod(
-      'scanLibraryFolderIncrementalFromSnapshot',
-      {'folder_path': folderPath, 'snapshot_path': snapshotPath},
-    );
-    return _decodeRequiredMapResultAsync(
-      result,
-      'scanLibraryFolderIncrementalFromSnapshot',
-    );
-  }
-
   static Future<LibraryScanNDJSONFile> scanSafTreeToNDJSONFile(
     String treeUri, {
     bool forceFullScan = false,
@@ -2378,21 +2364,6 @@ class PlatformBridge {
       'existing_files': jsonEncode(existingFiles),
     });
     return _decodeRequiredMapResultAsync(result, 'scanSafTreeIncremental');
-  }
-
-  static Future<Map<String, dynamic>> scanSafTreeIncrementalFromSnapshot(
-    String treeUri,
-    String snapshotPath,
-  ) async {
-    _ensureBackendEventHandler();
-    final result = await _channel.invokeMethod(
-      'scanSafTreeIncrementalFromSnapshot',
-      {'tree_uri': treeUri, 'snapshot_path': snapshotPath},
-    );
-    return _decodeRequiredMapResultAsync(
-      result,
-      'scanSafTreeIncrementalFromSnapshot',
-    );
   }
 
   static Future<Map<String, int>> getSafFileModTimes(List<String> uris) async {
