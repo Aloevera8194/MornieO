@@ -1017,52 +1017,14 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
           _log.i('Skipped $skippedDownloads files already in download history');
         }
 
-        final now = DateTime.now();
-        _sourceVersion++;
-        await _db.updateSourceState(
-          activeSourceId,
-          available: true,
-          lastSeenAt: now,
-          lastScannedAt: now,
-          clearLastScanError: true,
-        );
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await writeLocalLibraryLastScannedAt(prefs, now);
-          await prefs.setInt(_excludedDownloadedCountKey, skippedDownloads);
-          _log.d('Saved lastScannedAt: $now');
-        } catch (e) {
-          _log.w('Failed to save lastScannedAt: $e');
-        }
-
-        await _refreshSummaryFromStorage(
-          lastScannedAt: now,
-          excludedDownloadedCount: skippedDownloads,
-        );
-        if (!ref.mounted) return;
-        state = state.copyWith(
-          isScanning: false,
-          scanIsFinalizing: false,
-          scanProgress: 100,
-          lastScannedAt: now,
-          scanWasCancelled: false,
-          excludedDownloadedCount: skippedDownloads,
-        );
-        await _pruneLibraryCoverCache();
-
-        final summary =
-            'Full scan complete: ${state.totalCount} tracks found, '
-            '$skippedDownloads already in downloads, '
-            '${state.scanErrorCount} errors';
-        if (state.scanErrorCount > 0) {
-          _log.e(summary);
-        } else {
-          _log.i(summary);
-        }
-        await _showScanCompleteNotification(
-          totalTracks: state.totalCount,
-          excludedDownloadedCount: skippedDownloads,
-          errorCount: state.scanErrorCount,
+        await _finishScan(
+          sourceId: activeSourceId,
+          skippedDownloads: skippedDownloads,
+          pruneCoverCache: true,
+          summary: () =>
+              'Full scan complete: ${state.totalCount} tracks found, '
+              '$skippedDownloads already in downloads, '
+              '${state.scanErrorCount} errors',
         );
       } else {
         final nativeIngestion = PlatformBridge.supportsCoreBackend;
@@ -1220,52 +1182,15 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
           _log.i('Deleted $deleteCount items from database');
         }
 
-        final now = DateTime.now();
-        _sourceVersion++;
-        await _db.updateSourceState(
-          activeSourceId,
-          available: true,
-          lastSeenAt: now,
-          lastScannedAt: now,
-          clearLastScanError: true,
-        );
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          await writeLocalLibraryLastScannedAt(prefs, now);
-          await prefs.setInt(_excludedDownloadedCountKey, skippedDownloads);
-          _log.d('Saved lastScannedAt: $now');
-        } catch (e) {
-          _log.w('Failed to save lastScannedAt: $e');
-        }
-
-        await _refreshSummaryFromStorage(
-          lastScannedAt: now,
-          excludedDownloadedCount: skippedDownloads,
-        );
-        if (!ref.mounted) return;
-        state = state.copyWith(
-          isScanning: false,
-          scanIsFinalizing: false,
-          scanProgress: 100,
-          lastScannedAt: now,
-          scanWasCancelled: false,
-          excludedDownloadedCount: skippedDownloads,
-        );
-
-        final summary =
-            'Incremental scan complete: ${state.totalCount} total tracks '
-            '($scannedCount new/updated, $skippedCount unchanged, '
-            '$deletedCount removed, $skippedDownloads already in downloads, '
-            '${state.scanErrorCount} errors)';
-        if (state.scanErrorCount > 0) {
-          _log.e(summary);
-        } else {
-          _log.i(summary);
-        }
-        await _showScanCompleteNotification(
-          totalTracks: state.totalCount,
-          excludedDownloadedCount: skippedDownloads,
-          errorCount: state.scanErrorCount,
+        await _finishScan(
+          sourceId: activeSourceId,
+          skippedDownloads: skippedDownloads,
+          pruneCoverCache: false,
+          summary: () =>
+              'Incremental scan complete: ${state.totalCount} total tracks '
+              '($scannedCount new/updated, $skippedCount unchanged, '
+              '$deletedCount removed, $skippedDownloads already in downloads, '
+              '${state.scanErrorCount} errors)',
         );
       }
     } catch (e, stack) {
@@ -1318,6 +1243,61 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
         _log.w('Failed to clear active library scan marker: $e');
       }
     }
+  }
+
+  /// Shared completion tail of a successful full or incremental scan.
+  /// [summary] is evaluated after the final state update so it reads the
+  /// refreshed totals.
+  Future<void> _finishScan({
+    required String sourceId,
+    required int skippedDownloads,
+    required bool pruneCoverCache,
+    required String Function() summary,
+  }) async {
+    final now = DateTime.now();
+    _sourceVersion++;
+    await _db.updateSourceState(
+      sourceId,
+      available: true,
+      lastSeenAt: now,
+      lastScannedAt: now,
+      clearLastScanError: true,
+    );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await writeLocalLibraryLastScannedAt(prefs, now);
+      await prefs.setInt(_excludedDownloadedCountKey, skippedDownloads);
+      _log.d('Saved lastScannedAt: $now');
+    } catch (e) {
+      _log.w('Failed to save lastScannedAt: $e');
+    }
+
+    await _refreshSummaryFromStorage(
+      lastScannedAt: now,
+      excludedDownloadedCount: skippedDownloads,
+    );
+    if (!ref.mounted) return;
+    state = state.copyWith(
+      isScanning: false,
+      scanIsFinalizing: false,
+      scanProgress: 100,
+      lastScannedAt: now,
+      scanWasCancelled: false,
+      excludedDownloadedCount: skippedDownloads,
+    );
+    if (pruneCoverCache) await _pruneLibraryCoverCache();
+
+    final message = summary();
+    if (state.scanErrorCount > 0) {
+      _log.e(message);
+    } else {
+      _log.i(message);
+    }
+    await _showScanCompleteNotification(
+      totalTracks: state.totalCount,
+      excludedDownloadedCount: skippedDownloads,
+      errorCount: state.scanErrorCount,
+    );
   }
 
   void _startProgressPolling() {
