@@ -4,12 +4,13 @@ use super::{
     AlbumAvailability, TrackAvailability, album, deezer_id_from_metadata, from_deezer, from_links,
     resolved_links,
 };
+use crate::coalescer::{Coalescer, Flight, Waiter};
 use crate::deezer::MetadataLookup;
 use crate::lyrics::{LyricsError, builtin::TrackResolver};
 use crate::resolver::{Check, PlatformResolverService, Resolver, ResolverError};
 use std::collections::BTreeMap;
 use std::panic::{AssertUnwindSafe, catch_unwind};
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
 
@@ -38,25 +39,12 @@ struct Entry {
     result: Outcome,
     expires: Instant,
 }
-#[derive(Default)]
-struct Flight {
-    waiters: AtomicUsize,
-    result: Mutex<Option<Outcome>>,
-    ready: Condvar,
-}
-struct Waiter(Arc<Flight>);
-impl Drop for Waiter {
-    fn drop(&mut self) {
-        self.0.waiters.fetch_sub(1, Ordering::AcqRel);
-    }
-}
 
 struct State {
     generation: u64,
     region: String,
     cache: BTreeMap<Key, Entry>,
-    flights: BTreeMap<(u64, Key), Arc<Flight>>,
-    active: usize,
+    flights: Coalescer<(u64, Key), Outcome>,
 }
 
 struct Inner {
@@ -82,8 +70,7 @@ impl AvailabilityService {
                     generation: 0,
                     region: "US".into(),
                     cache: BTreeMap::new(),
-                    flights: BTreeMap::new(),
-                    active: 0,
+                    flights: Coalescer::default(),
                 }),
                 closed: AtomicBool::new(false),
                 idle: Condvar::new(),
@@ -225,26 +212,21 @@ impl AvailabilityService {
             state.cache.remove(&key);
             let generation = state.generation;
             let flight_key = (generation, key.clone());
-            let existing = state
-                .flights
-                .get(&flight_key)
-                .filter(|flight| flight.waiters.load(Ordering::Acquire) > 0)
-                .cloned();
+            let existing = state.flights.existing(&flight_key);
             let (flight, start) = if let Some(flight) = existing {
                 (flight, false)
             } else {
-                if state.active >= 64 {
+                if state.flights.is_full() {
                     return Err(ResolverError::Busy);
                 }
-                let flight = Arc::new(Flight::default());
+                let flight = Flight::new(());
                 state.flights.insert(flight_key, flight.clone());
-                state.active += 1;
                 (flight, true)
             };
-            flight.waiters.fetch_add(1, Ordering::AcqRel);
+            flight.join();
             (key, generation, flight, start)
         };
-        let _waiter = Waiter(flight.clone());
+        let _waiter = Waiter::new(flight.clone());
         if start {
             let inner = self.inner.clone();
             let worker_key = key.clone();
@@ -253,13 +235,11 @@ impl AvailabilityService {
                 .name("platform-availability".into())
                 .spawn(move || {
                     let check = || {
-                        if inner.closed.load(Ordering::Acquire) {
-                            Err("availability service closed".into())
-                        } else if worker_flight.waiters.load(Ordering::Acquire) == 0 {
-                            Err("availability request cancelled".into())
-                        } else {
-                            Ok(())
-                        }
+                        worker_flight.check(
+                            &inner.closed,
+                            "availability service closed",
+                            "availability request cancelled",
+                        )
                     };
                     let result =
                         catch_unwind(AssertUnwindSafe(|| inner.fetch(&worker_key, &check)))
@@ -278,28 +258,13 @@ impl AvailabilityService {
                 );
             }
         }
-        loop {
-            self.inner.check(check)?;
-            let result = flight.result.lock().unwrap();
-            if let Some(value) = result.as_ref() {
-                let value = value.clone();
-                drop(result);
-                self.inner.check(check)?;
-                return value;
-            }
-            drop(
-                flight
-                    .ready
-                    .wait_timeout(result, Duration::from_millis(25))
-                    .unwrap(),
-            );
-        }
+        flight.wait(|| self.inner.check(check))?
     }
 
     pub fn shutdown(&self) {
         self.inner.closed.store(true, Ordering::Release);
         let mut state = self.inner.state.lock().unwrap();
-        while state.active != 0 {
+        while state.flights.active() != 0 {
             state = self.inner.idle.wait(state).unwrap();
         }
         state.cache.clear();
@@ -391,7 +356,7 @@ impl Inner {
         }
     }
 
-    fn finish(&self, generation: u64, key: &Key, flight: &Arc<Flight>, result: Outcome) {
+    fn finish(&self, generation: u64, key: &Key, flight: &Arc<Flight<Outcome>>, result: Outcome) {
         let mut state = self.state.lock().unwrap();
         if generation == state.generation
             && !self.closed.load(Ordering::Acquire)
@@ -430,18 +395,9 @@ impl Inner {
                 },
             );
         }
-        *flight.result.lock().unwrap() = Some(result);
-        flight.ready.notify_all();
-        let flight_key = (generation, key.clone());
-        if state
+        state
             .flights
-            .get(&flight_key)
-            .is_some_and(|value| Arc::ptr_eq(value, flight))
-        {
-            state.flights.remove(&flight_key);
-        }
-        state.active -= 1;
-        self.idle.notify_all();
+            .finish(&(generation, key.clone()), flight, result, &self.idle);
     }
 }
 
@@ -450,6 +406,7 @@ mod tests {
     use super::*;
     use crate::resolver::{Metadata, Resolution};
     use spotiflac_core::metadata::TrackMetadata;
+    use std::sync::atomic::AtomicUsize;
 
     #[derive(Default)]
     struct Probe {
@@ -547,8 +504,7 @@ mod tests {
                 .values()
                 .next()
                 .unwrap()
-                .waiters
-                .load(Ordering::Acquire)
+                .waiters()
                 == 2
         });
         cancelled.store(true, Ordering::Release);
@@ -627,7 +583,7 @@ mod tests {
         assert_eq!(service.set_region("ID"), Err(ResolverError::Closed));
         assert_eq!(service.region(), Err(ResolverError::Closed));
         assert_eq!(service.clear_cache(), Err(ResolverError::Closed));
-        assert_eq!(service.inner.state.lock().unwrap().active, 0);
+        assert_eq!(service.inner.state.lock().unwrap().flights.active(), 0);
     }
 
     #[test]
@@ -694,7 +650,7 @@ mod tests {
             ),
             Err(ResolverError::Cancelled(_))
         ));
-        until(|| service.inner.state.lock().unwrap().active == 0);
+        until(|| service.inner.state.lock().unwrap().flights.active() == 0);
         assert!(
             !service
                 .inner
@@ -718,7 +674,7 @@ mod tests {
                 service.check_track(&index.to_string(), "", &|| Ok(()))
             }));
         }
-        until(|| service.inner.state.lock().unwrap().active == 64);
+        until(|| service.inner.state.lock().unwrap().flights.active() == 64);
         assert_eq!(
             service.check_track("over-limit", "", &|| Ok(())),
             Err(ResolverError::Busy)

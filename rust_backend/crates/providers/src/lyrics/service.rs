@@ -2,6 +2,7 @@
 //! in-flight requests, and caches negative results.
 
 use super::{CallGraph, CallNode, Check, LyricsError, cache::LyricsCache};
+use crate::coalescer::{Coalescer, Flight, Waiter};
 use spotiflac_core::lyrics::{LyricsResponse, config, config::FetchOptions, matching};
 use spotiflac_core::matching::lowercase;
 use std::collections::BTreeMap;
@@ -16,7 +17,6 @@ const NEGATIVE_TTL: Duration = Duration::from_secs(5 * 60);
 const UNAVAILABLE_COOLDOWN: Duration = Duration::from_secs(10 * 60);
 const PRIORITY_GRACE: Duration = Duration::from_secs(5);
 const MAX_NEGATIVE: usize = 500;
-const MAX_FLIGHTS: usize = 64;
 
 #[derive(Clone, Debug, Default)]
 pub struct SearchRequest {
@@ -56,20 +56,8 @@ pub trait LyricsFetcher: Send + Sync + 'static {
 }
 
 type FetchResult = Result<LyricsResponse, LyricsError>;
-
-struct Flight {
-    node: CallNode,
-    waiters: AtomicUsize,
-    result: Mutex<Option<FetchResult>>,
-    ready: Condvar,
-}
-
-struct Waiter(Arc<Flight>);
-impl Drop for Waiter {
-    fn drop(&mut self) {
-        self.0.waiters.fetch_sub(1, Ordering::AcqRel);
-    }
-}
+/// Each flight carries the call-graph node its worker runs under.
+type LyricsFlight = Flight<FetchResult, CallNode>;
 
 #[derive(Default)]
 struct State {
@@ -79,8 +67,7 @@ struct State {
     generation: u64,
     negative: BTreeMap<String, Instant>,
     health: BTreeMap<String, Instant>,
-    flights: BTreeMap<(u64, String), Arc<Flight>>,
-    active: usize,
+    flights: Coalescer<(u64, String), FetchResult, CallNode>,
 }
 
 struct Inner {
@@ -209,44 +196,33 @@ impl LyricsService {
             }
             state.negative.remove(&key);
             let flight_key = (state.generation, key);
-            let existing = state
-                .flights
-                .get(&flight_key)
-                .filter(|flight| flight.waiters.load(Ordering::Acquire) > 0)
-                .cloned();
+            let existing = state.flights.existing(&flight_key);
             let (flight, start) = if let Some(flight) = existing {
                 (flight, false)
             } else {
-                if state.active >= MAX_FLIGHTS {
+                if state.flights.is_full() {
                     return Err(LyricsError::Other(
                         "too many concurrent lyrics searches".into(),
                     ));
                 }
-                let flight = Arc::new(Flight {
-                    node: self.inner.calls.node(),
-                    waiters: AtomicUsize::new(0),
-                    result: Mutex::new(None),
-                    ready: Condvar::new(),
-                });
-                (flight, true)
+                (Flight::new(self.inner.calls.node()), true)
             };
             let dependency = request
                 .caller
                 .as_ref()
-                .map(|caller| caller.wait_for(&flight.node))
+                .map(|caller| caller.wait_for(flight.tag()))
                 .transpose()
                 .map_err(LyricsError::Recursive)?;
             if start {
                 state
                     .flights
                     .insert(flight_key.clone(), Arc::clone(&flight));
-                state.active += 1;
             }
-            request.caller = Some(flight.node.clone());
-            flight.waiters.fetch_add(1, Ordering::AcqRel);
+            request.caller = Some(flight.tag().clone());
+            flight.join();
             (flight, start, flight_key, providers, dependency)
         };
-        let _waiter = Waiter(Arc::clone(&flight));
+        let _waiter = Waiter::new(Arc::clone(&flight));
         if start {
             let inner = Arc::clone(&self.inner);
             let worker_flight = Arc::clone(&flight);
@@ -255,13 +231,11 @@ impl LyricsService {
                 .name("lyrics-search".into())
                 .spawn(move || {
                     let check = || {
-                        if inner.closed.load(Ordering::Acquire) {
-                            Err("lyrics service is closed".into())
-                        } else if worker_flight.waiters.load(Ordering::Acquire) == 0 {
-                            Err("lyrics request cancelled".into())
-                        } else {
-                            Ok(())
-                        }
+                        worker_flight.check(
+                            &inner.closed,
+                            "lyrics service is closed",
+                            "lyrics request cancelled",
+                        )
                     };
                     let result = catch_unwind(AssertUnwindSafe(|| {
                         inner.fetch_uncached(
@@ -283,22 +257,7 @@ impl LyricsService {
                 );
             }
         }
-        loop {
-            self.inner.check(check)?;
-            let result = flight.result.lock().expect("lyrics flight lock");
-            if let Some(value) = result.as_ref() {
-                let value = value.clone();
-                drop(result);
-                self.inner.check(check)?;
-                return value;
-            }
-            drop(
-                flight
-                    .ready
-                    .wait_timeout(result, POLL)
-                    .expect("lyrics flight lock"),
-            );
-        }
+        flight.wait(|| self.inner.check(check))?
     }
 
     /// Cancel workers, wait for their HTTP/extension calls to unwind, then flush
@@ -306,7 +265,7 @@ impl LyricsService {
     pub fn shutdown(&self) -> Result<(), String> {
         self.inner.closed.store(true, Ordering::Release);
         let mut state = self.inner.state.lock().expect("lyrics service lock");
-        while state.active > 0 {
+        while state.flights.active() > 0 {
             state = self.inner.idle.wait(state).expect("lyrics service lock");
         }
         drop(state);
@@ -329,7 +288,7 @@ impl Inner {
         self.fetcher.check()
     }
 
-    fn finish(&self, key: &(u64, String), flight: &Arc<Flight>, result: FetchResult) {
+    fn finish(&self, key: &(u64, String), flight: &Arc<LyricsFlight>, result: FetchResult) {
         let mut state = self.state.lock().expect("lyrics service lock");
         if state.generation == key.0 && !self.closed.load(Ordering::Acquire) {
             if result.as_ref().is_err_and(|error| {
@@ -345,17 +304,7 @@ impl Inner {
                 state.negative.remove(&key.1);
             }
         }
-        *flight.result.lock().expect("lyrics flight lock") = Some(result);
-        flight.ready.notify_all();
-        if state
-            .flights
-            .get(key)
-            .is_some_and(|current| Arc::ptr_eq(current, flight))
-        {
-            state.flights.remove(key);
-        }
-        state.active -= 1;
-        self.idle.notify_all();
+        state.flights.finish(key, flight, result, &self.idle);
     }
 
     fn fetch_uncached(

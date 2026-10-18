@@ -52,7 +52,7 @@ fn waiters(service: &LyricsService) -> usize {
         .unwrap()
         .flights
         .values()
-        .map(|flight| flight.waiters.load(Ordering::Acquire))
+        .map(|flight| flight.waiters())
         .sum()
 }
 fn wait_gate(gate: &AtomicBool, check: &Check<'_>) -> Result<(), LyricsError> {
@@ -143,7 +143,7 @@ fn abandoning_all_waiters_cancels_work_without_negative_caching() {
         worker.join().unwrap(),
         Err(LyricsError::Cancelled(_))
     ));
-    until(|| service.inner.state.lock().unwrap().active == 0);
+    until(|| service.inner.state.lock().unwrap().flights.active() == 0);
     assert_eq!(
         service.fetch(request(), &|| Ok(())).unwrap().source,
         "LRCLIB"
@@ -389,7 +389,7 @@ fn instrumental_heuristic_skips_network_and_provider_panics_release_workers() {
     assert_eq!(response.source, "Heuristic: Instrumental");
     assert!(service.fetch(request(), &|| Ok(())).is_err());
     service.shutdown().unwrap();
-    assert_eq!(service.inner.state.lock().unwrap().active, 0);
+    assert_eq!(service.inner.state.lock().unwrap().flights.active(), 0);
 }
 
 #[test]
