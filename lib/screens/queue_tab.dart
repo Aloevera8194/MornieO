@@ -81,6 +81,7 @@ import 'package:spotiflac_android/services/cover_cache_manager.dart';
 import 'package:spotiflac_android/screens/library_tracks_folder_screen.dart';
 import 'package:spotiflac_android/screens/local_album_screen.dart';
 import 'package:spotiflac_android/screens/mornye_library_screen.dart';
+import 'package:spotiflac_android/controllers/completion_bridge_tracker.dart';
 import 'package:spotiflac_android/controllers/queue_library_pager.dart';
 import 'package:spotiflac_android/controllers/queue_library_refresh_policy.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
@@ -106,37 +107,7 @@ part 'queue_tab_download_labels.dart';
 part 'queue_tab_download_dialogs.dart';
 part 'queue_tab_filter_sheet.dart';
 
-DownloadHistoryItem? _historyItemForCompletionBridge(
-  DownloadItem item,
-  List<DownloadHistoryItem> historyItems,
-) {
-  final filePath = item.filePath?.trim();
-  if (filePath != null && filePath.isNotEmpty) {
-    for (final historyItem in historyItems) {
-      if (historyItem.filePath == filePath) return historyItem;
-    }
-  }
-
-  for (final historyItem in historyItems) {
-    if (historyItem.id == item.id) return historyItem;
-  }
-
-  final trackId = item.track.id.trim();
-  if (trackId.isNotEmpty) {
-    for (final historyItem in historyItems) {
-      if (historyItem.spotifyId == trackId) return historyItem;
-    }
-  }
-
-  final isrc = item.track.isrc?.trim();
-  if (isrc != null && isrc.isNotEmpty) {
-    for (final historyItem in historyItems) {
-      if (historyItem.isrc == isrc) return historyItem;
-    }
-  }
-
-  return null;
-}
+const _historyItemForCompletionBridge = CompletionBridgeTracker.historyItemFor;
 
 class QueueTab extends ConsumerStatefulWidget {
   final String? librarySection;
@@ -204,9 +175,14 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   final FocusNode _searchFocusNode = FocusNode();
   String _searchQuery = '';
   Timer? _searchDebounce;
-  final Map<String, DownloadItem> _completionBridge = {};
-  final Map<String, DateTime> _completionBridgeAt = {};
-  final Set<String> _bridgePrecacheStarted = {};
+  final CompletionBridgeTracker _completionBridgeTracker =
+      CompletionBridgeTracker();
+  Map<String, DownloadItem> get _completionBridge =>
+      _completionBridgeTracker.items;
+  Map<String, DateTime> get _completionBridgeAt =>
+      _completionBridgeTracker.addedAt;
+  Set<String> get _bridgePrecacheStarted =>
+      _completionBridgeTracker.precacheStarted;
   String? _filterSource;
   String? _filterQuality;
   String? _filterFormat;
@@ -468,6 +444,11 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     return _fileExistsCache.listenable(filePath);
   }
 
+  void _refreshCompletionBridgePath(String? filePath) {
+    _fileExistsCache.refreshForPath(filePath);
+    _completionBridgePlayableProbe.refreshForPath(filePath);
+  }
+
   int get _activeFilterCount {
     int count = 0;
     if (_filterSource != null) count++;
@@ -506,56 +487,22 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     );
 
     ref.listen(downloadQueueLookupProvider, (previous, next) {
-      if (previous == null) return;
-      if (_completionBridge.keys.any((id) => !next.byItemId.containsKey(id))) {
-        setState(() {
-          _completionBridge.removeWhere(
-            (id, _) => !next.byItemId.containsKey(id),
-          );
-          _completionBridgeAt.removeWhere(
-            (id, _) => !next.byItemId.containsKey(id),
-          );
-          _bridgePrecacheStarted.removeWhere(
-            (id) => !next.byItemId.containsKey(id),
-          );
-        });
-      }
-      if (identical(previous.notCompletedItemIds, next.notCompletedItemIds)) {
-        return;
-      }
-      for (final id in previous.notCompletedItemIds) {
-        final prevItem = previous.byItemId[id];
-        final nextItem = next.byItemId[id];
-        if (prevItem == null) continue;
-        final wasActive =
-            prevItem.status == DownloadStatus.downloading ||
-            prevItem.status == DownloadStatus.finalizing ||
-            prevItem.status == DownloadStatus.queued;
-        final nowCompleted =
-            nextItem != null && nextItem.status == DownloadStatus.completed;
-        if (wasActive && nowCompleted) {
-          _fileExistsCache.refreshForPath(nextItem.filePath);
-          _completionBridgePlayableProbe.refreshForPath(nextItem.filePath);
-          _completionBridge[id] = nextItem;
-          _completionBridgeAt[id] = DateTime.now();
-        }
-      }
+      _completionBridgeTracker.onQueueLookupChanged(
+        previous,
+        next,
+        setState: setState,
+        refreshPath: _refreshCompletionBridgePath,
+      );
     });
     ref.listen<int>(
       downloadHistoryProvider.select((state) => state.loadedIndexVersion),
       (previous, next) {
         if (previous == null || previous == next) return;
         final historyItems = ref.read(downloadHistoryProvider).items;
-        for (final bridgeItem in _completionBridge.values) {
-          _fileExistsCache.refreshForPath(bridgeItem.filePath);
-          _completionBridgePlayableProbe.refreshForPath(bridgeItem.filePath);
-          final historyPath = _historyItemForCompletionBridge(
-            bridgeItem,
-            historyItems,
-          )?.filePath;
-          _fileExistsCache.refreshForPath(historyPath);
-          _completionBridgePlayableProbe.refreshForPath(historyPath);
-        }
+        _completionBridgeTracker.refreshPaths(
+          historyItems,
+          refreshPath: _refreshCompletionBridgePath,
+        );
         // The family provider already reruns for the new revision. Retain its
         // last successful page while SQLite is loading so metadata backfills
         // and download completions cannot flash the Library as empty.
