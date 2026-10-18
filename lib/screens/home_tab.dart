@@ -54,7 +54,7 @@ import 'package:spotiflac_android/screens/track_metadata_screen.dart';
 import 'package:spotiflac_android/screens/album_screen.dart';
 import 'package:spotiflac_android/screens/artist_screen.dart';
 import 'package:spotiflac_android/screens/extension_collection_screens.dart';
-import 'package:spotiflac_android/screens/home_search_logic.dart';
+import 'package:spotiflac_android/controllers/home_search_logic.dart';
 import 'package:spotiflac_android/services/csv_import_service.dart';
 import 'package:spotiflac_android/services/cover_download_service.dart';
 import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';

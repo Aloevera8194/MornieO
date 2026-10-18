@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/screens/queue_library_refresh_policy.dart';
+import 'package:spotiflac_android/controllers/queue_library_refresh_policy.dart';
 import 'package:spotiflac_android/services/library_database.dart';
 
 void main() {

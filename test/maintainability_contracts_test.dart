@@ -6,7 +6,7 @@ import 'package:spotiflac_android/models/download_item.dart';
 import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/download_queue_state.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/screens/home_search_logic.dart';
+import 'package:spotiflac_android/controllers/home_search_logic.dart';
 import 'package:spotiflac_android/services/audio_metadata_mapper.dart';
 import 'package:spotiflac_android/services/ffmpeg_models.dart';
 import 'package:spotiflac_android/services/id3v23_lyrics.dart';

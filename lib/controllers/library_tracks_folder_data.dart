@@ -1,5 +1,5 @@
 import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/screens/track_history_snapshot.dart';
+import 'package:spotiflac_android/controllers/track_history_snapshot.dart';
 import 'package:spotiflac_android/providers/library_collections_provider.dart';
 import 'package:spotiflac_android/services/history_database.dart';
 
