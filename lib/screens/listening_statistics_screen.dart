@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/providers/listening_statistics_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/screens/listening_rewind_screen.dart';
 import 'package:spotiflac_android/services/listening_statistics.dart';
@@ -22,17 +23,7 @@ import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/player_artwork.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
-final listeningSummaryProvider = FutureProvider.autoDispose
-    .family<ListeningSummary, ({int days, int year})>((ref, period) async {
-      await listeningRecorder.flush();
-      final now = DateTime.now();
-      final tomorrow = DateTime(now.year, now.month, now.day + 1);
-      final start = period.days == 0
-          ? DateTime(period.year)
-          : DateTime(now.year, now.month, now.day - period.days + 1);
-      final end = period.days == 0 ? DateTime(period.year + 1) : tomorrow;
-      return ListeningStatisticsStore.instance.load(start, end);
-    });
+export 'package:spotiflac_android/providers/listening_statistics_provider.dart';
 
 class ListeningStatisticsScreen extends ConsumerStatefulWidget {
   const ListeningStatisticsScreen({super.key});

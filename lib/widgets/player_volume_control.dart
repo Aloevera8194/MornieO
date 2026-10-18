@@ -4,43 +4,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/providers/system_volume_provider.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/app_slider.dart';
 import 'package:spotiflac_android/widgets/mornye_player_slider.dart';
 import 'package:spotiflac_android/utils/logger.dart';
-import 'package:volume_controller/volume_controller.dart';
 import 'package:spotiflac_android/services/music_playback_deck.dart';
-import 'package:spotiflac_android/services/system_volume_service.dart';
 
-final usbVolumeProvider = StreamProvider.autoDispose<UsbVolumeState?>((ref) {
-  final events = StreamController<UsbVolumeState?>();
-  void changed() => events.add(usbHardwareVolume.value);
-  usbHardwareVolume.addListener(changed);
-  changed();
-  ref.onDispose(() {
-    usbHardwareVolume.removeListener(changed);
-    unawaited(events.close());
-  });
-  return events.stream;
-});
-
-/// A single shared subscription for the visible player, including hardware
-/// volume-button changes. This controls system volume, not ReplayGain gain.
-final systemVolumeProvider = StreamProvider.autoDispose<double>(
-  (ref) => SystemVolumeService.instance.changes,
-);
-
-final systemVolumeWriterProvider = Provider<Future<void> Function(double)>((
-  ref,
-) {
-  return (value) {
-    if (usbHardwareVolume.value != null) return setUsbHardwareVolume(value);
-    final volume = VolumeController.instance;
-    volume.showSystemUI = false;
-    return volume.setVolume(value.clamp(0, 1));
-  };
-});
+export 'package:spotiflac_android/providers/system_volume_provider.dart';
 
 /// System (or USB hardware) volume slider for the player and USB settings.
 /// Mornye draws its glass slider between speaker glyphs; Material draws the
