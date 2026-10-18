@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/banner-readme-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/readme/banner-readme-light.png">
-  <img alt="SpotiFLAC Mobile" src="assets/readme/banner-readme-light.png" width="650" height="auto">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/banner-readme-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/readme/banner-readme-light.svg">
+  <img alt="SpotiFLAC Mobile" src="assets/readme/banner-readme-light.svg" width="650" height="auto">
 </picture>
 
 <p align="center">
@@ -47,18 +47,16 @@
   </a>
 </p>
 
-## Screenshots
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-screenshots-dark.svg"><img src="assets/readme/sections/section-screenshots-light.svg" height="32" align="top" alt=""></picture> Screenshots
 
-<p align="center">
-  <img src="assets/readme/1.jpg?v=4" width="200" alt="Home" />
-  <img src="assets/readme/2.jpg?v=3" width="200" alt="Library" />
-  <img src="assets/readme/3.jpg?v=3" width="200" alt="Now Playing" />
-  <img src="assets/readme/4.jpg?v=4" width="200" alt="Equalizer" />
-</p>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/showcase-dark.png">
+  <img src="assets/readme/showcase-light.png" width="100%" alt="SpotiFLAC Mobile screens: Home, Library, Now Playing and Equalizer">
+</picture>
 
 ---
 
-## Features
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-features-dark.svg"><img src="assets/readme/sections/section-features-light.svg" height="32" align="top" alt=""></picture> Features
 
 <table>
   <tr>
@@ -224,7 +222,7 @@
 
 ---
 
-## Development
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-development-dark.svg"><img src="assets/readme/sections/section-development-light.svg" height="32" align="top" alt=""></picture> Development
 
 SpotiFLAC Mobile combines a Flutter/Dart UI, a Rust backend from
 [`rust_backend/`](rust_backend/), and thin Android/iOS platform bridges.
@@ -234,7 +232,7 @@ Full/Lite variants, crash symbols, validation, and pull request guidelines.
 
 ---
 
-## Related Projects
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-related-dark.svg"><img src="assets/readme/sections/section-related-light.svg" height="32" align="top" alt=""></picture> Related Projects
 
 ### [SpotiFLAC (Desktop)](https://github.com/afkarxyz/SpotiFLAC)
 Download music in true lossless FLAC from extension-provided sources on Windows, macOS & Linux.
@@ -244,16 +242,17 @@ Python library for SpotiFLAC integration, maintained by [@BartolomeoRusso9](http
 
 ---
 
-## FAQ
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-faq-dark.svg"><img src="assets/readme/sections/section-faq-light.svg" height="32" align="top" alt=""></picture> FAQ
 
 <details>
-<summary><b>Why does the Store tab ask me to enter a URL?</b></summary>
+<summary><b>Why does the Repo tab ask me to enter a URL?</b></summary>
 <br>
 
-Starting from version 3.8.0, SpotiFLAC Mobile uses a decentralized extension
-repository system. Extensions are hosted independently rather than on a
-built-in server, so anyone can create and host a compatible repository. Enter
-a repository URL in the Store tab to browse and install extensions.
+SpotiFLAC Mobile uses a decentralized extension repository system.
+Extensions are hosted independently rather than on a built-in server, so
+anyone can create and host a compatible repository. In the **Repo** tab, tap
+**Add Repository** and enter a GitHub repository URL that contains a
+`registry.json` file to browse and install its extensions.
 
 </details>
 
@@ -261,7 +260,11 @@ a repository URL in the Store tab to browse and install extensions.
 <summary><b>Why is my download failing with "Song not found"?</b></summary>
 <br>
 
-The track may not be available from your enabled providers. Try enabling more providers under **Settings > Extensions > Provider Priority**, or install additional download extensions from the Store.
+The track may not be available from your enabled providers. Under
+**Settings > Extensions > Provider Priority**, reorder providers and choose
+which download extensions may be used as a fallback; the app tries them from
+top to bottom. You can also install more download extensions from the
+**Repo** tab.
 
 </details>
 
@@ -269,25 +272,86 @@ The track may not be available from your enabled providers. Try enabling more pr
 <summary><b>Why are some tracks downloading in lower quality?</b></summary>
 <br>
 
-Quality depends on what's available from the source and the installed download extension. Check each extension's quality options and service notes in the app.
+Quality depends on what is available from the source and the installed
+download extension. Pick your preferred service and quality under
+**Settings > Download**, and check each extension's quality options and
+service notes in the app.
 
 </details>
 
 <details>
-<summary><b>Can I download playlists?</b></summary>
+<summary><b>Can I download whole albums and playlists?</b></summary>
 <br>
 
-Yes! Just paste the playlist URL in the search bar. The app will fetch all tracks and queue them for download.
+Yes. Paste an album or playlist link into the search bar on Home and the app
+fetches every track and queues it. An artist link opens the artist page, where
+**Download Discography** queues their releases. To bring in a list from elsewhere,
+tap the search bar and use the import button to load a CSV or M3U playlist
+file.
 
 </details>
 
 <details>
-<summary><b>Why do I need to grant storage permission?</b></summary>
+<summary><b>Can I play music I already have?</b></summary>
 <br>
 
-The app needs a writable destination for downloaded files. On Android, choose a
-folder with the system folder picker (SAF), or use the app-specific folder. If
-Android revokes a saved folder grant, select the folder again in Settings.
+Yes. Add your music folders under **Settings > Local Library**. The app scans
+them, merges them with your downloads in the Library tab, and plays everything
+in the built-in player. It can also point out duplicates.
+
+</details>
+
+<details>
+<summary><b>Can I play music from my NAS or home server?</b></summary>
+<br>
+
+Yes. Open **Settings > Network storage** and connect to an SMB, WebDAV or
+HTTP / HTTPS server, then browse its folders and play from it. Sign-in details
+are stored securely on your device.
+
+</details>
+
+<details>
+<summary><b>Why doesn't the equalizer change the sound?</b></summary>
+<br>
+
+Bit-perfect, Direct USB and exclusive Hi-Res outputs bypass the equalizer so
+the audio reaches your DAC untouched. Turn bit-perfect output off to use the
+equalizer. External players also apply their own effects instead. The
+equalizer lives in **Settings > Playback** and in the Now Playing menu.
+
+</details>
+
+<details>
+<summary><b>How do I get bit-perfect playback on a USB DAC?</b></summary>
+<br>
+
+Turn on **Hi-res and bit-perfect audio** under **Settings > Playback**, then
+choose the direct USB driver or AAudio exclusive mode. Without either, Android
+USB output needs Android 14 or later. Direct USB can be much louder than
+normal playback and the phone's volume buttons may not control it, so lower
+your DAC or amplifier volume before you press play.
+
+</details>
+
+<details>
+<summary><b>Where are my listening statistics stored?</b></summary>
+<br>
+
+Only on your device. Listening statistics and Rewind record plays from the
+built-in player; pauses, buffering and seeking add no listening time, and a
+play counts after 30 seconds.
+
+</details>
+
+<details>
+<summary><b>Which download folder should I choose?</b></summary>
+<br>
+
+On Android, **App Folder** saves to `Music/SpotiFLAC` by default. You can
+instead pick any folder with the system folder picker. If Android later
+revokes access to that folder, select it again under
+**Settings > Files & Folders**.
 
 </details>
 
@@ -304,7 +368,10 @@ inspected directly in this repository.
 <summary><b>Why is downloading not working in my country?</b></summary>
 <br>
 
-Some countries have restricted access to certain streaming service APIs. If downloads are failing, try using a VPN to connect through a different region.
+Some countries have restricted access to certain streaming service APIs. If
+downloads are failing, try a VPN to connect through a different region. For
+the Home feed only, **Settings > Extensions > Home feed country** shows
+another country's recommendations without a VPN.
 
 </details>
 
@@ -329,7 +396,7 @@ In AltStore/SideStore, go to **Browse > Sources**, tap **+**, and paste the link
 
 ---
 
-## Contributors
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-contributors-dark.svg"><img src="assets/readme/sections/section-contributors-light.svg" height="32" align="top" alt=""></picture> Contributors
 
 Thanks to everyone who has contributed to SpotiFLAC Mobile!
 
@@ -343,16 +410,21 @@ Interested in contributing? Check out the [Contributing Guide](CONTRIBUTING.md) 
 
 ---
 
-## API Credits
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-credits-dark.svg"><img src="assets/readme/sections/section-credits-light.svg" height="32" align="top" alt=""></picture> API Credits
 
-| | | | | |
-|---|---|---|---|---|
-| [MusicDL](https://www.musicdl.me) | [LRCLib](https://lrclib.net) | [Paxsenix](https://lyrics.paxsenix.org) | [Cobalt](https://cobalt.tools) | [Song.link](https://song.link) |
-| [UniTune](https://github.com/FlazeIGuess/unitune-api) | [MusicBrainz](https://musicbrainz.org) | [Squigly](https://squigly.link) |  |  |
+<p align="center">
+  <a href="https://lrclib.net"><b>LRCLib</b></a> &nbsp;·&nbsp;
+  <a href="https://lyrics.paxsenix.org"><b>Paxsenix</b></a> &nbsp;·&nbsp;
+  <a href="https://developers.deezer.com"><b>Deezer</b></a> &nbsp;·&nbsp;
+  <a href="https://musicbrainz.org"><b>MusicBrainz</b></a> &nbsp;·&nbsp;
+  <a href="https://song.link"><b>Song.link</b></a> &nbsp;·&nbsp;
+  <a href="https://github.com/FlazeIGuess/unitune-api"><b>UniTune</b></a> &nbsp;·&nbsp;
+  <a href="https://squigly.link"><b>Squigly</b></a>
+</p>
 
 ---
 
-## Disclaimer
+## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-disclaimer-dark.svg"><img src="assets/readme/sections/section-disclaimer-light.svg" height="32" align="top" alt=""></picture> Disclaimer
 
 This repository and its contents are provided strictly for educational and research purposes. The software is provided "as-is" without warranty of any kind, express or implied, as stated in the [MIT License](LICENSE).
 
