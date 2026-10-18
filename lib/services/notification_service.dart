@@ -8,6 +8,7 @@ import 'package:spotiflac_android/constants/app_info.dart';
 import 'package:spotiflac_android/l10n/app_localizations.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/services/verification_notification.dart';
+import 'package:spotiflac_android/utils/string_utils.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -571,8 +572,8 @@ class NotificationService {
     if (!_isInitialized) await initialize();
 
     final percentage = total > 0 ? (received * 100 ~/ total) : 0;
-    final receivedMB = (received / 1024 / 1024).toStringAsFixed(1);
-    final totalMB = (total / 1024 / 1024).toStringAsFixed(1);
+    final receivedMB = formatMegabytes(received);
+    final totalMB = formatMegabytes(total);
     final title =
         _l10n?.notifDownloadingUpdate(version) ??
         'Downloading ${AppInfo.appName} v$version';
