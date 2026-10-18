@@ -10,7 +10,6 @@ publish.workspace = true
 spotiflac-core.workspace = true
 spotiflac-network.workspace = true
 spotiflac-providers.workspace = true
-tokio.workspace = true
 rquickjs.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -35,7 +34,7 @@ cap-std.workspace = true
 rustix.workspace = true
 
 [dev-dependencies]
-libc = "=0.2.190"
+libc.workspace = true
 rustls.workspace = true
 rcgen = { version = "=0.14.10", default-features = false, features = ["crypto", "ring", "pem"] }
 

@@ -40,7 +40,6 @@ serde_json = { version = "1.0", features = ["float_roundtrip", "raw_value"] }
 thiserror = "2.0"
 uniffi = { version = "=0.32.2", default-features = false }
 tokio = { version = "=1.53.2", features = ["rt-multi-thread", "net", "time", "sync", "io-util", "macros"] }
-hyper = { version = "=1.12.0", features = ["client", "http1", "http2"] }
 hyper-util = { version = "=0.1.21", features = ["client-legacy", "http1", "http2", "tokio"] }
 hyper-rustls = { version = "=0.27.10", default-features = false, features = ["http1", "http2", "ring", "tls12"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
@@ -72,6 +71,9 @@ tz-rs = "=0.7.3"
 httpdate = "=1.0.3"
 cap-std = "=4.0.3"
 rustix = { version = "=1.1.5", features = ["fs"] }
+roxmltree = "=0.21.1"
+rusqlite = { version = "=0.40.2", features = ["bundled", "modern_sqlite", "hooks"] }
+libc = "=0.2.190"
 
 [workspace.lints.rust]
 unsafe_code = "deny"
