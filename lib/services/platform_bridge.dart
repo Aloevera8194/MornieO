@@ -9,6 +9,13 @@ import 'package:spotiflac_android/services/download_request_payload.dart';
 import 'package:spotiflac_android/utils/audio_format_utils.dart';
 import 'package:spotiflac_android/utils/logger.dart';
 
+part 'platform_bridge/bridge_codec.dart';
+part 'platform_bridge/bridge_events.dart';
+part 'platform_bridge/bridge_library_scan.dart';
+part 'platform_bridge/bridge_lookup_cache.dart';
+part 'platform_bridge/bridge_native_worker.dart';
+part 'platform_bridge/bridge_saf.dart';
+
 final _log = AppLogger('PlatformBridge');
 
 const foregroundServiceStartNotAllowedCode =
@@ -17,119 +24,6 @@ const foregroundServiceStartNotAllowedCode =
 bool isForegroundServiceStartNotAllowed(Object error) {
   return error is PlatformException &&
       error.code == foregroundServiceStartNotAllowedCode;
-}
-
-Object? _decodeJsonInBackground(String json) => jsonDecode(json);
-String _encodeJsonInBackground(Object? value) => jsonEncode(value);
-
-class _NativeDataJobState {
-  bool dispatched = false;
-  bool cancelled = false;
-}
-
-String _encodeBoundedLookupCacheInBackground(Map<String, dynamic> entries) {
-  final result = StringBuffer('{');
-  var bytes = 2; // Opening and closing braces.
-  var count = 0;
-  for (final entry in entries.entries) {
-    final fragment =
-        '${_encodeJsonInBackground(entry.key)}:${_encodeJsonInBackground(entry.value)}';
-    final entryBytes = utf8.encode(fragment).length;
-    final separatorBytes = count == 0 ? 0 : 1;
-    if (entryBytes > PlatformBridge._persistentCacheMaxEntryBytes ||
-        bytes + separatorBytes + entryBytes >
-            PlatformBridge._persistentCacheMaxBytes) {
-      continue;
-    }
-    if (count > 0) result.write(',');
-    result.write(fragment);
-    bytes += separatorBytes + entryBytes;
-    count++;
-  }
-  result.write('}');
-  return result.toString();
-}
-
-Object? _decodeJsonFileInBackground(String path) {
-  final contents = File(path).readAsStringSync();
-  return contents.isEmpty ? null : jsonDecode(contents);
-}
-
-class LibraryScanNDJSONFile {
-  final File file;
-  final int expectedCount;
-  final int errorCount;
-
-  const LibraryScanNDJSONFile({
-    required this.file,
-    required this.expectedCount,
-    this.errorCount = 0,
-  });
-
-  Stream<Map<String, dynamic>> rows() async* {
-    await for (final line
-        in file
-            .openRead()
-            .transform(utf8.decoder)
-            .transform(const LineSplitter())) {
-      if (line.trim().isEmpty) continue;
-      final decoded = jsonDecode(line);
-      if (decoded is! Map) {
-        throw const FormatException('Library scan NDJSON row is not an object');
-      }
-      yield Map<String, dynamic>.from(decoded);
-    }
-  }
-
-  Future<void> delete() async {
-    try {
-      if (await file.exists()) await file.delete();
-    } catch (_) {}
-    // Remove the resumable scan checkpoint after ingestion.
-    try {
-      final checkpoint = File('${file.path}.state');
-      if (await checkpoint.exists()) await checkpoint.delete();
-    } catch (_) {}
-  }
-}
-
-class ExtensionSessionGrantEvent {
-  final String extensionId;
-  final bool success;
-
-  const ExtensionSessionGrantEvent({
-    required this.extensionId,
-    required this.success,
-  });
-}
-
-/// Folder picked via the native iOS document picker: the filesystem path plus
-/// the security-scoped bookmark that re-grants access across app launches.
-class IosPickedDirectory {
-  final String path;
-  final String bookmark;
-
-  const IosPickedDirectory({required this.path, required this.bookmark});
-}
-
-class IosSecurityScopedAccess {
-  final String path;
-  final String token;
-
-  const IosSecurityScopedAccess({required this.path, required this.token});
-}
-
-class ContentUriPlaybackLease {
-  final String path;
-  final String token;
-
-  final String? displayName;
-
-  const ContentUriPlaybackLease({
-    required this.path,
-    required this.token,
-    this.displayName,
-  });
 }
 
 class InstallationState {
@@ -165,46 +59,6 @@ bool shouldResetRestoredInstallation({
       !installState.markerExisted &&
       installState.markerCreated &&
       installState.freshPackageInstall;
-}
-
-class _BridgeCacheEntry {
-  final Map<String, dynamic> value;
-  final DateTime expiresAt;
-  final int bytes;
-
-  const _BridgeCacheEntry({
-    required this.value,
-    required this.expiresAt,
-    required this.bytes,
-  });
-
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
-}
-
-class _BridgeListCacheEntry {
-  final List<Map<String, dynamic>> value;
-  final DateTime expiresAt;
-  final int bytes;
-
-  const _BridgeListCacheEntry({
-    required this.value,
-    required this.expiresAt,
-    required this.bytes,
-  });
-
-  bool get isExpired => DateTime.now().isAfter(expiresAt);
-}
-
-class _BridgeInFlight<T> {
-  final String requestId;
-  final String scopeKey;
-  final Future<T> future;
-
-  const _BridgeInFlight({
-    required this.requestId,
-    required this.scopeKey,
-    required this.future,
-  });
 }
 
 class PlatformBridge {
@@ -1022,6 +876,8 @@ class PlatformBridge {
     return result as String;
   }
 
+  // ---- SAF ----
+
   static Future<Map<String, dynamic>?> pickSafTree({
     bool forSetup = false,
   }) async {
@@ -1261,6 +1117,8 @@ class PlatformBridge {
     });
     return result as bool? ?? false;
   }
+
+  // ---- Media files ----
 
   static Future<String> getLyricsLRC(
     String spotifyId,
@@ -2395,6 +2253,8 @@ class PlatformBridge {
       }
     }
   }
+
+  // ---- Library scan ----
 
   static Future<void> setLibraryCoverCacheDir(String cacheDir) async {
     await _channel.invokeMethod('setLibraryCoverCacheDir', {
