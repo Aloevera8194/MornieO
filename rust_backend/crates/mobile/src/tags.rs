@@ -126,31 +126,6 @@ impl ExtensionManager {
             .map_err(ExtensionManagerError::Operation)
     }
 
-    #[allow(clippy::too_many_arguments)]
-    pub fn scan_cue_file_for_library(
-        &self,
-        path: String,
-        audio_directory: String,
-        virtual_prefix: String,
-        mod_time: i64,
-        cache_key: String,
-        scan_time: String,
-        lease: Option<Arc<RequestLease>>,
-    ) -> Result<String, ExtensionManagerError> {
-        self.inner
-            .scan_cue_file_for_library(
-                &path,
-                &audio_directory,
-                &virtual_prefix,
-                mod_time,
-                &cache_key,
-                &scan_time,
-                &|| check_lease(lease.as_deref()),
-            )
-            .map(|value| value.to_string())
-            .map_err(ExtensionManagerError::Operation)
-    }
-
     pub fn scan_library_folder_incremental(
         &self,
         folder: String,

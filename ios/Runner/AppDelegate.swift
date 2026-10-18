@@ -277,7 +277,7 @@ import UniformTypeIdentifiers
             result(nil)
             return
         }
-        if coreBackend.routesApplication && !osMethods.contains(call.method) {
+        if !osMethods.contains(call.method) {
             if call.method == "cancelNativeDataJob" {
                 do {
                     result(try coreBackend.invokeApplication(method: call.method, arguments: call.arguments))
@@ -484,7 +484,7 @@ import UniformTypeIdentifiers
             return [
                 "filename": coreBackend.implementation,
                 "file_metadata": coreBackend.fileMetadataImplementation(path: (call.arguments as? [String: Any])?["file_path"] as? String ?? ""),
-                "extensions": coreBackend.routesApplication ? "rust" : "go",
+                "extensions": coreBackend.implementation,
                 "downloads": coreBackend.implementation,
             ]
 

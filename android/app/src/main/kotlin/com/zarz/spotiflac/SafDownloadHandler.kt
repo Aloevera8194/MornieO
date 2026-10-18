@@ -185,30 +185,19 @@ object SafDownloadHandler {
         var document = createOrReuseDocumentFile(context, targetDir, stagedMimeType, stagedFileName)
             ?: return errorJson("Failed to create SAF file")
 
-        var pfd: android.os.ParcelFileDescriptor? = null
-        var detachedFd: Int? = null
         var workingFile: File? = null
         try {
-            if (backend.supportsOutputDescriptors) {
-                val descriptor = context.contentResolver.openFileDescriptor(document.uri, "rw")
-                    ?: throw IllegalStateException("Failed to open SAF file")
-                pfd = descriptor
-                detachedFd = descriptor.detachFd()
-                req.put("output_path", "")
-                req.put("output_fd", detachedFd)
-            } else {
-                // The OS adapter retains descriptor ownership. A path-based
-                // backend writes into its granted staging directory, then the
-                // existing SAF copy/promotion publishes the completed output.
-                val staged = backend.createTemporaryMediaFile(
-                    context,
-                    "native_saf_work_",
-                    outputExt.ifBlank { ".tmp" },
-                )
-                workingFile = staged
-                req.put("output_path", staged.absolutePath)
-                req.remove("output_fd")
-            }
+            // The OS adapter retains descriptor ownership. The backend writes
+            // into its granted staging directory, then the existing SAF
+            // copy/promotion publishes the completed output.
+            val staged = backend.createTemporaryMediaFile(
+                context,
+                "native_saf_work_",
+                outputExt.ifBlank { ".tmp" },
+            )
+            workingFile = staged
+            req.put("output_path", staged.absolutePath)
+            req.remove("output_fd")
             req.put("output_ext", outputExt)
             val response = backend.downloadByStrategy(req.toString())
             val respObj = JSONObject(response)
@@ -301,12 +290,6 @@ object SafDownloadHandler {
             return errorJson("SAF download failed: ${e.message}")
         } finally {
             workingFile?.delete()
-            if (detachedFd == null) {
-                try {
-                    pfd?.close()
-                } catch (_: Exception) {
-                }
-            }
         }
     }
 

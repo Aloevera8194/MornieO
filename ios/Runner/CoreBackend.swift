@@ -154,7 +154,6 @@ final class CoreDirectoryScope {
 /// Native migration boundary; each process selects one stateful backend.
 protocol CoreBackend {
     var implementation: String { get }
-    var routesApplication: Bool { get }
     func prepareApplicationArguments(method: String, arguments: Any?) throws -> Any?
     func invokeApplication(method: String, arguments: Any?) throws -> Any?
     func completeAuthCallback(state: String, code: String, sessionGrant: Bool, onResolved: (String) -> Void) throws
@@ -189,21 +188,9 @@ protocol CoreBackend {
     func releaseMemoryUnderPressure() throws
 }
 
-extension CoreBackend {
-    var routesApplication: Bool { false }
-
-    func prepareApplicationArguments(method: String, arguments: Any?) throws -> Any? { arguments }
-
-    func invokeApplication(method: String, arguments: Any?) throws -> Any? {
-        throw NSError(domain: "CoreBackend", code: 1, userInfo: [NSLocalizedDescriptionKey: "Application routing is unavailable for \(method)"])
-    }
-}
-
-
 final class RustCoreBackend: CoreBackend {
     static let shared = RustCoreBackend()
     let implementation = "rust"
-    let routesApplication = true
     private let root = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("rust-core-pilot", isDirectory: true)
     private let ownerLock = NSLock()
     private var manager: ExtensionManager?

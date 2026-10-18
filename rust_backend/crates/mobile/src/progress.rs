@@ -100,17 +100,6 @@ impl DownloadState {
         self.inner.progress.snapshot().map_err(Into::into)
     }
 
-    pub fn wait_progress_delta(
-        &self,
-        since: i64,
-        timeout_ms: i64,
-    ) -> Result<String, DownloadProgressError> {
-        self.inner
-            .progress
-            .wait_delta(since, timeout_ms)
-            .map_err(Into::into)
-    }
-
     pub fn subscribe_progress(
         &self,
     ) -> Result<Arc<DownloadProgressSubscription>, DownloadProgressError> {

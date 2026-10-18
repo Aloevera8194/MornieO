@@ -62,7 +62,6 @@ internal suspend fun MainActivity.dispatchBackendApplication(call: MethodCall, r
 
 internal object RustCoreBackend : CoreBackend {
     override val implementation = "rust"
-    override val routesApplication = true
     private lateinit var workspace: NativeMediaWorkspace
     private var manager: ExtensionManager? = null
     private var repository: ExtensionRepository? = null
@@ -395,14 +394,6 @@ internal object RustCoreBackend : CoreBackend {
         }
     }
 
-    override fun scanCueForLibrary(path: String, audioDirectory: String, virtualPrefix: String, modTime: Long, cacheKey: String): String {
-        val cue = File(path).canonicalFile
-        val audio = if (audioDirectory.isEmpty()) cue.parentFile!! else File(audioDirectory).canonicalFile
-        return withLibraryDirectories(listOf(cue.parent, audio.path)) {
-            it.scanCueFileForLibrary(cue.path, audio.path, virtualPrefix, modTime, cacheKey, java.time.Instant.now().toString(), null)
-        }
-    }
-
     override fun scanCueForLibraryWithResolvedAudio(path: String, audioPath: String, audioName: String, virtualPrefix: String, modTime: Long, cacheKey: String): String {
         val cue = File(path).canonicalFile
         fun scan(descriptor: Int): String {
@@ -537,11 +528,6 @@ internal object RustCoreBackend : CoreBackend {
             }
             override fun close() { commands.close() }
         }
-    }
-
-    override fun waitForDownloadProgressDelta(since: Long, timeoutMs: Long): String {
-        val current = owner()
-        return current.withDownloadState { state -> state.waitProgressDelta(since, timeoutMs) }
     }
 
     override fun openDownloadProgress(): CoreDownloadProgress {

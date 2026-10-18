@@ -1169,7 +1169,7 @@ class MainActivity: FlutterFragmentActivity() {
                                 mapOf(
                                     "filename" to coreBackend.implementation,
                                     "file_metadata" to coreBackend.fileMetadataImplementation(call.argument<String>("file_path") ?: ""),
-                                    "extensions" to if (coreBackend.routesApplication) "rust" else "go",
+                                    "extensions" to coreBackend.implementation,
                                     "downloads" to coreBackend.implementation,
                                 )
                             )
