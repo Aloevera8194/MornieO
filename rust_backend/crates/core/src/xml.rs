@@ -1,5 +1,5 @@
 //! Bounds for the recursive tokenizer used by our native XML readers.
-pub(crate) fn check_depth(input: &str) -> Result<(), String> {
+pub fn check_depth(input: &str) -> Result<(), String> {
     // roxmltree's tokenizer recurses through nested elements. Guard its input
     // before parsing so pathological metadata returns an error, not a native
     // stack overflow. Ordinary TTML is only a handful of elements deep.
@@ -48,7 +48,7 @@ pub(crate) fn check_depth(input: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub(crate) fn markup_end(input: &str, doctype: bool) -> Option<usize> {
+pub fn markup_end(input: &str, doctype: bool) -> Option<usize> {
     let bytes = input.as_bytes();
     let (mut quote, mut brackets, mut position) = (None, 0_usize, 0);
     while position < bytes.len() {

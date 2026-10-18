@@ -5,6 +5,9 @@ use serde_json::value::RawValue;
 use std::collections::{BTreeMap, BTreeSet};
 use std::sync::LazyLock;
 
+mod ttml;
+pub use ttml::ttml_lyrics;
+
 #[derive(Clone, Debug, Default, Serialize)]
 pub struct PaxDetail {
     pub text: String,
@@ -240,17 +243,33 @@ pub fn format_spotiflac_apple(
 ) -> Result<String, String> {
     let payload: ApplePayload = json::decode(raw)
         .map_err(|error| format!("invalid SpotiFLAC-Mobile Lyrics response: {error}"))?;
+    format_apple_payload(
+        &payload,
+        "SpotiFLAC-Mobile Lyrics",
+        multi_person,
+        word_timing,
+    )
+}
+
+/// Shared by every source that exposes Apple's own line structure, either as
+/// first-party JSON or as the TTML document it is derived from.
+fn format_apple_payload(
+    payload: &ApplePayload,
+    label: &str,
+    multi_person: bool,
+    word_timing: bool,
+) -> Result<String, String> {
     let kind = json::field_name(&payload.kind);
     if kind == "unsynced" && !payload.plain.trim().is_empty() {
         return Ok(payload.plain.trim().into());
     }
     if !matches!(kind.as_str(), "syllable" | "line" | "unsynced") {
-        return Err("unsupported SpotiFLAC-Mobile Lyrics sync type".into());
+        return Err(format!("unsupported {label} sync type"));
     }
     let lines = payload
         .content
         .as_deref()
-        .ok_or("missing SpotiFLAC-Mobile Lyrics content")?;
+        .ok_or_else(|| format!("missing {label} content"))?;
     let timed = kind != "unsynced";
     let words = word_timing && kind == "syllable";
     let mut output = String::new();
@@ -290,7 +309,7 @@ pub fn format_spotiflac_apple(
         }
     }
     Ok(if timed && multi_person {
-        apple_vocal_sides(output.trim(), &payload)
+        apple_vocal_sides(output.trim(), payload)
     } else {
         output.trim().into()
     })

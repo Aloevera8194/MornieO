@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -18,7 +19,8 @@ import 'package:spotiflac_android/utils/logger.dart';
 const _settingsKey = 'app_settings';
 const _settingsCorruptBackupKey = 'app_settings_corrupt_backup';
 const _migrationVersionKey = 'settings_migration_version';
-const _currentMigrationVersion = 12;
+const _currentMigrationVersion = 13;
+const _legacyDefaultLyricsProviders = ['apple_music', 'lrclib'];
 const _spotifyClientSecretKey = 'spotify_client_secret';
 const _retiredBuiltInProviderIds = {'deezer', 'qobuz', 'tidal', 'youtube'};
 final _log = AppLogger('SettingsProvider');
@@ -314,6 +316,27 @@ class SettingsNotifier extends Notifier<AppSettings> {
         state = state.copyWith(
           libraryQualityLabelMode: AppSettings.libraryQualityLabelBitDepthOnly,
         );
+      }
+      // Migration 13: SpotiFLAC-Mobile Lyrics left Apple Music's Paxsenix
+      // fallback chain. Untouched defaults move to the new defaults; a custom
+      // order keeps the former fallback right after Apple Music.
+      if (lastMigration < 13) {
+        final providers = state.lyricsProviders;
+        if (listEquals(providers, _legacyDefaultLyricsProviders)) {
+          state = state.copyWith(
+            lyricsProviders: const AppSettings().lyricsProviders,
+          );
+        } else if (providers.contains('apple_music') &&
+            !providers.contains('spotiflac_lyrics')) {
+          state = state.copyWith(
+            lyricsProviders: [
+              for (final provider in providers) ...[
+                provider,
+                if (provider == 'apple_music') 'spotiflac_lyrics',
+              ],
+            ],
+          );
+        }
       }
       await prefs.setInt(_migrationVersionKey, _currentMigrationVersion);
       await _saveSettings();

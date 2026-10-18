@@ -27,6 +27,7 @@ class _LyricsProviderPriorityPageState
     'netease',
     'musixmatch',
     'apple_music',
+    'spotiflac_lyrics',
     'qqmusic',
     'spotify',
     'deezer',
@@ -34,6 +35,8 @@ class _LyricsProviderPriorityPageState
     'kugou',
     'genius',
     'lyricsplus',
+    'lrcred',
+    'betterlyrics',
   ];
 
   late List<String> _enabledProviders;
@@ -226,6 +229,12 @@ class _LyricsProviderPriorityPageState
           description: context.l10n.lyricsProviderAppleMusicDesc,
           icon: Icons.music_note,
         );
+      case 'spotiflac_lyrics':
+        return _LyricsProviderInfo(
+          name: 'SpotiFLAC-Mobile Lyrics',
+          description: context.l10n.lyricsProviderSpotiflacLyricsDesc,
+          icon: Icons.verified_outlined,
+        );
       case 'qqmusic':
         return _LyricsProviderInfo(
           name: 'QQ Music',
@@ -267,6 +276,18 @@ class _LyricsProviderPriorityPageState
           name: 'LyricsPlus',
           description: context.l10n.lyricsProviderLyricsPlusDesc,
           icon: Icons.lyrics_outlined,
+        );
+      case 'lrcred':
+        return _LyricsProviderInfo(
+          name: 'lrc.red',
+          description: context.l10n.lyricsProviderLrcRedDesc,
+          icon: Icons.fingerprint,
+        );
+      case 'betterlyrics':
+        return _LyricsProviderInfo(
+          name: 'BetterLyrics',
+          description: context.l10n.lyricsProviderBetterLyricsDesc,
+          icon: Icons.local_fire_department_outlined,
         );
       default:
         return _LyricsProviderInfo(

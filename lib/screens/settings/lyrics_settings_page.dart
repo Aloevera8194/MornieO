@@ -198,6 +198,7 @@ class LyricsSettingsPage extends ConsumerWidget {
     'netease': 'Netease',
     'musixmatch': 'Musixmatch',
     'apple_music': 'Apple Music',
+    'spotiflac_lyrics': 'SpotiFLAC-Mobile Lyrics',
     'qqmusic': 'QQ Music',
     'spotify': 'Spotify',
     'deezer': 'Deezer',
@@ -205,6 +206,8 @@ class LyricsSettingsPage extends ConsumerWidget {
     'kugou': 'Kugou',
     'genius': 'Genius',
     'lyricsplus': 'LyricsPlus',
+    'lrcred': 'lrc.red',
+    'betterlyrics': 'BetterLyrics',
   };
 
   String _getLyricsProvidersSubtitle(

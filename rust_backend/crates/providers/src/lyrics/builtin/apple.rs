@@ -10,29 +10,11 @@ static INDEX: LazyLock<Regex> =
 static TOKEN: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+").unwrap());
 
+/// Both providers read Apple's catalog song; only the lyrics host differs.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum AppleLyricsSource {
     Paxsenix,
     SpotiFlac,
-}
-
-fn apple_with_fallback(
-    check: &Check<'_>,
-    mut fetch: impl FnMut(AppleLyricsSource) -> Result<LyricsResponse, LyricsError>,
-) -> Result<LyricsResponse, LyricsError> {
-    check().map_err(LyricsError::Cancelled)?;
-    match fetch(AppleLyricsSource::Paxsenix) {
-        Err(primary @ (LyricsError::Unavailable(_) | LyricsError::Other(_))) => {
-            check().map_err(LyricsError::Cancelled)?;
-            match fetch(AppleLyricsSource::SpotiFlac) {
-                // An outage followed by a missing backup must not be cached
-                // as proof that the primary has no lyrics for this song.
-                Err(LyricsError::NotFound(_)) => Err(primary),
-                result => result,
-            }
-        }
-        result => result,
-    }
 }
 
 impl BuiltinLyricsClient {
@@ -120,6 +102,24 @@ impl BuiltinLyricsClient {
         request: &SearchRequest,
         check: &Check<'_>,
     ) -> Result<LyricsResponse, LyricsError> {
+        let id = self.apple_song_id(request, check)?;
+        self.apple_lyrics(&id, AppleLyricsSource::Paxsenix, request, check)
+    }
+
+    pub(super) fn spotiflac_lyrics(
+        &self,
+        request: &SearchRequest,
+        check: &Check<'_>,
+    ) -> Result<LyricsResponse, LyricsError> {
+        let id = self.apple_song_id(request, check)?;
+        self.apple_lyrics(&id, AppleLyricsSource::SpotiFlac, request, check)
+    }
+
+    fn apple_song_id(
+        &self,
+        request: &SearchRequest,
+        check: &Check<'_>,
+    ) -> Result<String, LyricsError> {
         let query = format!("{} {}", request.track, request.artist);
         if query.trim().is_empty() {
             return Err(LyricsError::NotFound("empty search query".into()));
@@ -166,9 +166,8 @@ impl BuiltinLyricsClient {
         })
         .filter(|(id, _)| !id.trim().is_empty())
         .ok_or_else(|| LyricsError::NotFound("no songs found on apple music".into()))?;
-        apple_with_fallback(check, |source| {
-            self.apple_lyrics(selected.0.trim(), source, request, check)
-        })
+        check().map_err(LyricsError::Cancelled)?;
+        Ok(selected.0.trim().into())
     }
 
     fn apple_lyrics(
@@ -214,7 +213,7 @@ impl BuiltinLyricsClient {
         }
         let multi_person = request.options.multi_person_word_by_word;
         let word_timing = request.options.apple_elrc_word_sync;
-        let (text, credit) = match source {
+        let (text, name) = match source {
             AppleLyricsSource::Paxsenix => {
                 let text = match payloads::format_apple(raw, multi_person, word_timing) {
                     Ok(text) => text,
@@ -231,7 +230,7 @@ impl BuiltinLyricsClient {
                 "SpotiFLAC-Mobile Lyrics",
             ),
         };
-        let mut lyrics = from_text(&text, "Apple Music", credit)?;
+        let mut lyrics = from_text(&text, name, name)?;
         payloads::apple_supplements(raw, &mut lyrics);
         Ok(lyrics)
     }
@@ -250,98 +249,20 @@ mod tests {
     }
 
     #[test]
-    fn primary_success_never_calls_backup() {
-        let expected = LyricsResponse::from_text("[00:01.00]Example", "Apple Music", "Apple Music");
-        let mut calls = Vec::new();
-        let actual = apple_with_fallback(&|| Ok(()), |source| {
-            calls.push(source);
-            Ok(expected.clone())
-        });
-        assert_eq!(actual, Ok(expected));
-        assert_eq!(calls, [AppleLyricsSource::Paxsenix]);
-    }
-
-    #[test]
-    fn outages_try_backup_after_primary_and_keep_source_credit() {
-        for error in [
-            LyricsError::Unavailable("timeout".into()),
-            LyricsError::Unavailable("HTTP 503".into()),
-            LyricsError::Other("HTTP 403".into()),
-            LyricsError::Unavailable("invalid payload".into()),
-        ] {
-            let mut calls = Vec::new();
-            let result = apple_with_fallback(&|| Ok(()), |source| {
-                calls.push(source);
-                match source {
-                    AppleLyricsSource::Paxsenix => Err(error.clone()),
-                    AppleLyricsSource::SpotiFlac => Ok(LyricsResponse::from_text(
-                        "[00:01.00]Example",
-                        "Apple Music",
-                        "SpotiFLAC-Mobile Lyrics",
-                    )),
-                }
-            })
-            .unwrap();
-            assert_eq!(
-                calls,
-                [AppleLyricsSource::Paxsenix, AppleLyricsSource::SpotiFlac]
-            );
-            assert_eq!(result.provider, "Apple Music");
-            assert_eq!(result.source, "SpotiFLAC-Mobile Lyrics");
-            let saved = spotiflac_core::lyrics::lrc::with_metadata(&result, "Track", "Artist");
-            assert!(!saved.contains("Paxsenix"));
-        }
-    }
-
-    #[test]
-    fn missing_lyrics_and_cancellation_do_not_start_backup() {
-        for error in [
-            LyricsError::NotFound("no lyrics".into()),
-            LyricsError::Cancelled("cancelled".into()),
-            LyricsError::Recursive("recursive".into()),
-        ] {
-            let mut calls = Vec::new();
-            let result = apple_with_fallback(&|| Ok(()), |source| {
-                calls.push(source);
-                Err(error.clone())
-            });
-            assert_eq!(result, Err(error));
-            assert_eq!(calls, [AppleLyricsSource::Paxsenix]);
-        }
-        let checks = AtomicUsize::new(0);
-        let mut calls = Vec::new();
-        let result = apple_with_fallback(
-            &|| {
-                if checks.fetch_add(1, Ordering::AcqRel) > 0 {
-                    Err("cancel before backup".into())
-                } else {
-                    Ok(())
-                }
-            },
-            |source| {
-                calls.push(source);
-                Err(LyricsError::Unavailable("timeout".into()))
-            },
+    fn spotiflac_lyrics_credit_never_names_the_proxy() {
+        let lyrics = LyricsResponse::from_text(
+            "[00:01.00]Example",
+            "SpotiFLAC-Mobile Lyrics",
+            "SpotiFLAC-Mobile Lyrics",
         );
-        assert_eq!(
-            result,
-            Err(LyricsError::Cancelled("cancel before backup".into()))
-        );
-        assert_eq!(calls, [AppleLyricsSource::Paxsenix]);
-    }
-
-    #[test]
-    fn missing_backup_does_not_turn_primary_outage_into_negative_cache() {
-        let result = apple_with_fallback(&|| Ok(()), |source| match source {
-            AppleLyricsSource::Paxsenix => Err(LyricsError::Unavailable("HTTP 503".into())),
-            AppleLyricsSource::SpotiFlac => Err(LyricsError::NotFound("no lyrics".into())),
-        });
-        assert_eq!(result, Err(LyricsError::Unavailable("HTTP 503".into())));
+        let saved = spotiflac_core::lyrics::lrc::with_metadata(&lyrics, "Track", "Artist");
+        assert!(saved.contains("source: SpotiFLAC-Mobile Lyrics"));
+        assert!(!saved.contains("Paxsenix"));
     }
 
     #[test]
     #[ignore = "requires live Apple catalog and SpotiFLAC-Mobile Lyrics access"]
-    fn live_apple_backup_after_primary_failure() {
+    fn live_spotiflac_lyrics_works_without_paxsenix() {
         let network = NetworkService::new().unwrap();
         let client = BuiltinLyricsClient::with_endpoints(
             &network,
@@ -359,10 +280,10 @@ mod tests {
             duration: 213.0,
             ..SearchRequest::default()
         };
-        let lyrics = client.apple(&request, &|| Ok(())).unwrap();
+        let lyrics = client.spotiflac_lyrics(&request, &|| Ok(())).unwrap();
         assert!(lyrics.has_usable_text());
         assert!(lyrics.is_synced());
-        assert_eq!(lyrics.provider, "Apple Music");
+        assert_eq!(lyrics.provider, "SpotiFLAC-Mobile Lyrics");
         assert_eq!(lyrics.source, "SpotiFLAC-Mobile Lyrics");
     }
 

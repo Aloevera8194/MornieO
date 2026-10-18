@@ -2475,6 +2475,7 @@ dependencies = [
  "claxon",
  "image",
  "regex",
+ "roxmltree",
  "rustix",
  "serde",
  "serde_json",

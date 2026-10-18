@@ -2,12 +2,19 @@ use crate::matching::lowercase;
 use serde::Serialize;
 use std::collections::HashSet;
 
-pub const DEFAULT_PROVIDERS: &[&str] = &["apple_music", "lrclib"];
+pub const DEFAULT_PROVIDERS: &[&str] = &[
+    "apple_music",
+    "lrcred",
+    "spotiflac_lyrics",
+    "lyricsplus",
+    "lrclib",
+];
 pub const BUILTIN_PROVIDERS: &[&str] = &[
     "lrclib",
     "netease",
     "musixmatch",
     "apple_music",
+    "spotiflac_lyrics",
     "qqmusic",
     "spotify",
     "deezer",
@@ -15,6 +22,8 @@ pub const BUILTIN_PROVIDERS: &[&str] = &[
     "kugou",
     "genius",
     "lyricsplus",
+    "lrcred",
+    "betterlyrics",
 ];
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -103,7 +112,13 @@ pub fn available_providers() -> Vec<AvailableProvider> {
             "apple_music",
             "Apple Music",
             true,
-            "Apple Music synced lyrics with a SpotiFLAC-Mobile fallback",
+            "Apple Music synced lyrics via Paxsenix",
+        ),
+        (
+            "spotiflac_lyrics",
+            "SpotiFLAC-Mobile Lyrics",
+            false,
+            "Word-by-word Apple Music lyrics from SpotiFLAC-Mobile",
         ),
         (
             "qqmusic",
@@ -121,6 +136,18 @@ pub fn available_providers() -> Vec<AvailableProvider> {
             "LyricsPlus",
             true,
             "Word-by-word karaoke lyrics (Apple/Musixmatch/Spotify/QQ)",
+        ),
+        (
+            "lrcred",
+            "lrc.red",
+            false,
+            "Word-by-word Apple Music lyrics matched by recording",
+        ),
+        (
+            "betterlyrics",
+            "BetterLyrics",
+            false,
+            "Word-by-word Apple Music lyrics for popular songs",
         ),
     ]
     .into_iter()

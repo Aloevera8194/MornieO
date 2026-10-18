@@ -18,4 +18,5 @@ pub mod progress;
 pub mod resolver;
 pub mod tags;
 mod text;
+pub mod xml;
 pub use text::json_surrogates as normalize_json_surrogates;

@@ -20,7 +20,6 @@ mod native_listing;
 mod native_lyrics;
 mod native_playlist_write;
 mod native_playlists;
-mod native_xml;
 mod network_tags;
 mod progress;
 mod repository;

@@ -4360,6 +4360,18 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
+  "lyricsProviderSpotiflacLyricsDesc": "Word-by-word Apple Music lyrics from SpotiFLAC-Mobile",
+  "@lyricsProviderSpotiflacLyricsDesc": {
+    "description": "Description for the first-party SpotiFLAC-Mobile Lyrics provider"
+  },
+  "lyricsProviderLrcRedDesc": "Word-by-word Apple Music lyrics, matched by recording",
+  "@lyricsProviderLrcRedDesc": {
+    "description": "Description for lrc.red provider"
+  },
+  "lyricsProviderBetterLyricsDesc": "Word-by-word Apple Music lyrics for popular songs",
+  "@lyricsProviderBetterLyricsDesc": {
+    "description": "Description for BetterLyrics provider, which only answers songs it has already cached"
+  },
   "lyricsProviderExtensionDesc": "Extension provider",
   "@lyricsProviderExtensionDesc": {
     "description": "Generic description for extension-based lyrics providers"

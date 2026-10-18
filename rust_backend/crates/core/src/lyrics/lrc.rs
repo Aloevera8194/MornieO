@@ -161,6 +161,8 @@ pub fn source_uses_proxy(source: &str) -> bool {
             "kugou direct",
             "qq music direct",
             "genius direct",
+            "lrc.red",
+            "betterlyrics",
             "extension:",
             "heuristic",
         ]

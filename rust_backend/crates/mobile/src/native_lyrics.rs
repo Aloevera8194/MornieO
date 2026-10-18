@@ -689,7 +689,7 @@ fn parse_ttml(
     text: &str,
     check: &dyn Fn() -> Result<(), String>,
 ) -> Result<Option<Parsed>, String> {
-    crate::native_xml::check_depth(text)?;
+    spotiflac_core::xml::check_depth(text)?;
     let normalized = xml_source(text, true);
     let Ok(doc) = Document::parse_with_options(
         &normalized,
@@ -861,7 +861,7 @@ fn xml_source(input: &str, drop_cdata: bool) -> String {
             break;
         }
         if tail.starts_with("<!DOCTYPE") {
-            if let Some(end) = crate::native_xml::markup_end(tail, true) {
+            if let Some(end) = spotiflac_core::xml::markup_end(tail, true) {
                 result.push_str(&tail[..end]);
                 index += end;
                 continue;
@@ -931,7 +931,7 @@ fn with_credits(raw: &str, lyrics: &mut Parsed) -> Result<(), String> {
             .into()
     });
     if looks_ttml(raw) {
-        crate::native_xml::check_depth(raw)?;
+        spotiflac_core::xml::check_depth(raw)?;
         let normalized = xml_source(raw, false);
         match Document::parse_with_options(
             &normalized,
@@ -1070,7 +1070,7 @@ mod tests {
         let raw = format!(
             "<?xml version=\"1.0\"?><!DOCTYPE tt [<!-- ]> {opaque} --> <!ENTITY markup \"{opaque}\">]><tt><!--{opaque}--><body><p begin='1s' end='2s' data=\">\"><![CDATA[{opaque}]]><span data='>'>Line</span></p></body></tt>"
         );
-        crate::native_xml::check_depth(&raw).unwrap();
+        spotiflac_core::xml::check_depth(&raw).unwrap();
         let parsed = execute(&serde_json::json!({"raw":raw}), None, &|| Ok(())).unwrap();
         assert_eq!(parsed["plainText"], "Line");
     }

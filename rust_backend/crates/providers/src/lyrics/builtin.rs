@@ -1,6 +1,7 @@
 mod apple;
 mod direct;
 mod proxy;
+mod ttml;
 
 pub use direct::genius_text;
 
@@ -77,6 +78,7 @@ impl BuiltinLyricsClient {
             "netease" => self.netease(request, check),
             "musixmatch" => self.musixmatch(request, check),
             "apple_music" => self.apple(request, check),
+            "spotiflac_lyrics" => self.spotiflac_lyrics(request, check),
             "spotify" => self.spotify(request, check),
             "deezer" => self.deezer(request, check),
             "youtube" => self.youtube(request, check),
@@ -84,6 +86,8 @@ impl BuiltinLyricsClient {
             "qqmusic" => self.qqmusic(request, check),
             "kugou" => self.kugou(request, check),
             "genius" => self.genius(request, check),
+            "lrcred" => self.lrc_red(request, check),
+            "betterlyrics" => self.better_lyrics(request, check),
             _ => Err(LyricsError::Other(format!("unknown provider: {provider}"))),
         }
     }
@@ -143,7 +147,7 @@ impl LyricsFetcher for BuiltinLyricsClient {
             && simplified != request.track
             && matches!(
                 provider,
-                "netease" | "spotify" | "youtube" | "kugou" | "genius" | "lyricsplus"
+                "netease" | "spotify" | "youtube" | "kugou" | "genius" | "lyricsplus" | "lrcred"
             )
         {
             attempt.track = simplified;

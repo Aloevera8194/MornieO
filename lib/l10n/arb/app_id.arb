@@ -4366,6 +4366,18 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
+  "lyricsProviderSpotiflacLyricsDesc": "Lirik Apple Music per kata dari SpotiFLAC-Mobile",
+  "@lyricsProviderSpotiflacLyricsDesc": {
+    "description": "Description for the first-party SpotiFLAC-Mobile Lyrics provider"
+  },
+  "lyricsProviderLrcRedDesc": "Lirik Apple Music per kata, dicocokkan per rekaman",
+  "@lyricsProviderLrcRedDesc": {
+    "description": "Description for lrc.red provider"
+  },
+  "lyricsProviderBetterLyricsDesc": "Lirik Apple Music per kata untuk lagu populer",
+  "@lyricsProviderBetterLyricsDesc": {
+    "description": "Description for BetterLyrics provider, which only answers songs it has already cached"
+  },
   "lyricsProviderExtensionDesc": "Provider ekstensi",
   "@lyricsProviderExtensionDesc": {
     "description": "Generic description for extension-based lyrics providers"
