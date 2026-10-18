@@ -52,7 +52,8 @@ class HistoryBatchLookupRequest {
   const HistoryBatchLookupRequest(this.tracks);
 
   /// An immutable request whose hash is computed only once. Use for lists
-  /// retained across widget builds; the legacy constructor remains available.
+  /// retained across widget builds; the const constructor recomputes the hash
+  /// on every use.
   factory HistoryBatchLookupRequest.snapshot(
     Iterable<HistoryLookupRequest> tracks,
   ) = _HistoryBatchLookupSnapshot;
@@ -339,6 +340,8 @@ class HistoryDatabase {
     return (value ?? '').trim().toLowerCase();
   }
 
+  /// Returns '' for an empty track name, unlike [LibraryDatabase.matchKeyFor],
+  /// which returns '|artist' in that case.
   static String matchKeyFor(String? trackName, String? artistName) {
     final track = normalizeLookupText(trackName);
     if (track.isEmpty) return '';

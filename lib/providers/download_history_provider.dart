@@ -118,11 +118,11 @@ class DownloadHistoryNotifier extends Notifier<DownloadHistoryState> {
   @override
   DownloadHistoryState build() {
     ref.onDispose(() => _indexBumpTimer?.cancel());
-    _loadFromDatabaseSync();
+    _scheduleLoadFromDatabase();
     return DownloadHistoryState();
   }
 
-  void _loadFromDatabaseSync() {
+  void _scheduleLoadFromDatabase() {
     if (_isLoaded) return;
     _isLoaded = true;
     Future.microtask(() async {

@@ -2479,68 +2479,64 @@ class PlatformBridge {
       '${scanDir.path}${Platform.pathSeparator}'
       'library_scan_${hash.toRadixString(16).padLeft(8, '0')}.ndjson',
     );
-    try {
-      if (isCancelled?.call() == true) {
-        throw StateError('Library scan cancelled before native scan');
-      }
-      if (forceFullScan) {
-        // An explicit rescan must not resume metadata from an earlier attempt.
-        for (final file in [output, File('${output.path}.state')]) {
-          if (await file.exists()) await file.delete();
-        }
-        // Preserve covers referenced by the current DB until ingestion succeeds.
-        // Fresh paths bypass native disk and Flutter image caches together.
-        final covers = Directory('${scanDir.path}/library_covers');
-        await covers.create(recursive: true);
-        final freshCovers = await covers.createTemp('full_scan_');
-        await setLibraryCoverCacheDir(freshCovers.path);
-      }
-      if (isCancelled?.call() == true) {
-        throw StateError('Library scan cancelled before native scan');
-      }
-      final result = await _channel.invokeMethod(method, {
-        ...arguments,
-        'output_path': output.path,
-      });
-      if (result is! Map) {
-        throw FormatException('$method returned ${result.runtimeType}');
-      }
-      if (result['cancelled'] == true) {
-        throw FormatException('$method returned a cancelled partial scan');
-      }
-      final errors = result['error_count'];
-      if (errors is! num ||
-          !errors.isFinite ||
-          errors < 0 ||
-          errors != errors.toInt()) {
-        throw FormatException('$method returned an invalid error count');
-      }
-      final pathValue = result['path'];
-      final countValue = result['count'];
-      if (pathValue is! String || pathValue.trim().isEmpty) {
-        throw FormatException('$method returned an invalid output path');
-      }
-      if (countValue is! num ||
-          !countValue.isFinite ||
-          countValue < 0 ||
-          countValue != countValue.toInt()) {
-        throw FormatException('$method returned an invalid row count');
-      }
-      final path = pathValue;
-      final count = countValue.toInt();
-      final file = File(path);
-      if (!await file.exists()) {
-        throw FormatException('$method did not create its output file');
-      }
-      return LibraryScanNDJSONFile(
-        file: file,
-        expectedCount: count,
-        errorCount: errors.toInt(),
-      );
-    } catch (_) {
-      // Keep partial output; native SAF scan resumes from its sidecar.
-      rethrow;
+    // Partial output is kept on failure; native SAF scan resumes from its sidecar.
+    if (isCancelled?.call() == true) {
+      throw StateError('Library scan cancelled before native scan');
     }
+    if (forceFullScan) {
+      // An explicit rescan must not resume metadata from an earlier attempt.
+      for (final file in [output, File('${output.path}.state')]) {
+        if (await file.exists()) await file.delete();
+      }
+      // Preserve covers referenced by the current DB until ingestion succeeds.
+      // Fresh paths bypass native disk and Flutter image caches together.
+      final covers = Directory('${scanDir.path}/library_covers');
+      await covers.create(recursive: true);
+      final freshCovers = await covers.createTemp('full_scan_');
+      await setLibraryCoverCacheDir(freshCovers.path);
+    }
+    if (isCancelled?.call() == true) {
+      throw StateError('Library scan cancelled before native scan');
+    }
+    final result = await _channel.invokeMethod(method, {
+      ...arguments,
+      'output_path': output.path,
+    });
+    if (result is! Map) {
+      throw FormatException('$method returned ${result.runtimeType}');
+    }
+    if (result['cancelled'] == true) {
+      throw FormatException('$method returned a cancelled partial scan');
+    }
+    final errors = result['error_count'];
+    if (errors is! num ||
+        !errors.isFinite ||
+        errors < 0 ||
+        errors != errors.toInt()) {
+      throw FormatException('$method returned an invalid error count');
+    }
+    final pathValue = result['path'];
+    final countValue = result['count'];
+    if (pathValue is! String || pathValue.trim().isEmpty) {
+      throw FormatException('$method returned an invalid output path');
+    }
+    if (countValue is! num ||
+        !countValue.isFinite ||
+        countValue < 0 ||
+        countValue != countValue.toInt()) {
+      throw FormatException('$method returned an invalid row count');
+    }
+    final path = pathValue;
+    final count = countValue.toInt();
+    final file = File(path);
+    if (!await file.exists()) {
+      throw FormatException('$method did not create its output file');
+    }
+    return LibraryScanNDJSONFile(
+      file: file,
+      expectedCount: count,
+      errorCount: errors.toInt(),
+    );
   }
 
   static Future<Map<String, dynamic>> scanSafTreeIncremental(
