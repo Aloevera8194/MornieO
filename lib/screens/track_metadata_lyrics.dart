@@ -55,13 +55,10 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                   child: AppLoadingIndicator(),
                 ),
               )
+            // Status rows sit flat on the lyrics card instead of a second box.
             else if (_lyricsError != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colorScheme.errorContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(
                   children: [
                     Icon(
@@ -73,7 +70,7 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                     Expanded(
                       child: Text(
                         _lyricsError!,
-                        style: TextStyle(color: colorScheme.onErrorContainer),
+                        style: TextStyle(color: colorScheme.onSurface),
                       ),
                     ),
                     ExpressiveButton(
@@ -85,25 +82,21 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                 ),
               )
             else if (_isInstrumental)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
                       Icons.music_note,
-                      color: colorScheme.tertiary,
+                      color: colorScheme.onSurfaceVariant,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
                     Text(
                       context.l10n.trackInstrumental,
                       style: TextStyle(
-                        color: colorScheme.onTertiaryContainer,
+                        color: colorScheme.onSurfaceVariant,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -147,14 +140,8 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
             else if (_embeddedLyricsChecked && _fileExists)
               Column(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest.withValues(
-                        alpha: 0.5,
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
                         Icon(

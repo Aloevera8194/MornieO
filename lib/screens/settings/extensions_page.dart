@@ -98,7 +98,10 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
                     ),
                     child: Row(
                       children: [
-                        AppIcon(Icons.error_outline, color: colorScheme.error),
+                        AppIcon(
+                          Icons.error_outline,
+                          color: colorScheme.onErrorContainer,
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(

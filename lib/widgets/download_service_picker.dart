@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/providers/extension_provider.dart';
 import 'package:spotiflac_android/theme/app_motion.dart';
+import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
 import 'package:spotiflac_android/theme/mornye_icons.dart';
@@ -40,16 +41,13 @@ class DownloadServicePicker extends ConsumerStatefulWidget {
     String? recommendedService,
     required void Function(String quality, String service) onSelect,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     final mornye = context.isMornye;
 
     showModalBottomSheet<void>(
       context: context,
       sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
-      backgroundColor: mornye
-          ? Colors.transparent
-          : colorScheme.surfaceContainerHigh,
+      backgroundColor: mornye ? Colors.transparent : null,
       elevation: mornye ? 0 : null,
       // Only the glass draws the sheet outline, including its bottom corners.
       shape: mornye ? const RoundedRectangleBorder() : null,
@@ -192,10 +190,12 @@ class _DownloadServicePickerState extends ConsumerState<DownloadServicePicker> {
                 artistName: widget.artistName,
                 coverUrl: widget.coverUrl,
               ),
-              Divider(
-                height: 1,
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-              ),
+              // Material sheets separate the header by space alone.
+              if (context.isMornye)
+                Divider(
+                  height: 1,
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
             ],
 
             Padding(
@@ -512,63 +512,69 @@ class _ServiceChip extends StatelessWidget {
         ),
       );
     }
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primaryContainer
-              : colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? null
-              : Border.all(
-                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (healthServiceId != null) ...[
-              _ServiceHealthDot(serviceId: healthServiceId!),
-              const SizedBox(width: 8),
-            ],
-            if (iconPath != null) ...[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: Image.file(
-                  File(iconPath!),
-                  width: 18,
-                  height: 18,
-                  cacheWidth: (18 * MediaQuery.devicePixelRatioOf(context))
-                      .ceil(),
-                  cacheHeight: (18 * MediaQuery.devicePixelRatioOf(context))
-                      .ceil(),
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Icon(
-                    Icons.extension,
-                    size: 18,
-                    color: isSelected
-                        ? colorScheme.onPrimaryContainer
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                ),
+    // The chip stays compact; the tap area around it is the 48dp minimum.
+    final chip = AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? colorScheme.primaryContainer
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: isSelected
+            ? null
+            : Border.all(
+                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
-              const SizedBox(width: 6),
-            ],
-            Text(
-              accessibleLabel,
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected
-                    ? colorScheme.onPrimaryContainer
-                    : colorScheme.onSurfaceVariant,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (healthServiceId != null) ...[
+            _ServiceHealthDot(serviceId: healthServiceId!),
+            const SizedBox(width: 8),
+          ],
+          if (iconPath != null) ...[
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.file(
+                File(iconPath!),
+                width: 18,
+                height: 18,
+                cacheWidth: (18 * MediaQuery.devicePixelRatioOf(context))
+                    .ceil(),
+                cacheHeight: (18 * MediaQuery.devicePixelRatioOf(context))
+                    .ceil(),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Icon(
+                  Icons.extension,
+                  size: 18,
+                  color: isSelected
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
+            const SizedBox(width: 6),
           ],
-        ),
+          Text(
+            accessibleLabel,
+            style: TextStyle(
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              color: isSelected
+                  ? colorScheme.onPrimaryContainer
+                  : colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
+    );
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: context.tokens.minTouchTarget),
+        child: Center(widthFactor: 1, heightFactor: 1, child: chip),
       ),
     );
   }

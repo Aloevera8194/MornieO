@@ -4,6 +4,7 @@ import 'package:spotiflac_android/theme/mornye_icons.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
+import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:spotiflac_android/widgets/metadata_text_field.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 
@@ -56,22 +57,14 @@ class MetadataEditorQuickSelectButton extends StatelessWidget {
         ),
       );
     }
-    return InkWell(
-      onTap: fetching ? null : onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cs.outline.withValues(alpha: 0.5)),
-        ),
-        child: Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.labelSmall?.copyWith(color: cs.primary),
-        ),
+    // The shared outlined button keeps the 48dp touch target.
+    return ExpressiveButton(
+      outlined: true,
+      onPressed: fetching ? null : onTap,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
       ),
+      child: Text(label),
     );
   }
 }

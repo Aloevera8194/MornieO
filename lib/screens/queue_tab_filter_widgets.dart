@@ -1044,8 +1044,8 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                   memCacheHeight: 300,
                 )
               : null,
-          badgeColor: colorScheme.primaryContainer,
-          badgeTextColor: colorScheme.onPrimaryContainer,
+          badgeColor: colorScheme.surfaceContainerHighest,
+          badgeTextColor: colorScheme.onSurfaceVariant,
           badgeIcon: Icons.music_note,
           coverUrl: album.coverUrl,
           onTap: () => _navigateToDownloadedAlbum(album),
@@ -1081,8 +1081,8 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                     _albumPlaceholder(colorScheme),
               )
             : null,
-        badgeColor: colorScheme.tertiaryContainer,
-        badgeTextColor: colorScheme.onTertiaryContainer,
+        badgeColor: colorScheme.surfaceContainerHighest,
+        badgeTextColor: colorScheme.onSurfaceVariant,
         badgeIcon: Icons.folder,
         onTap: () => _navigateToLocalAlbum(album),
       ),

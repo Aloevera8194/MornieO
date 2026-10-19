@@ -105,7 +105,10 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
       useRootNavigator: true,
       isScrollControlled: true,
       showDragHandle: true,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+      // Material sheets share the theme's sheet surface.
+      backgroundColor: context.isMornye
+          ? Theme.of(context).colorScheme.surfaceContainerHigh
+          : null,
       builder: (sheetContext) {
         final cs = Theme.of(sheetContext).colorScheme;
         final items = options(sheetContext);

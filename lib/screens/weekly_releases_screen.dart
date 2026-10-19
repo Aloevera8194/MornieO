@@ -6,11 +6,12 @@ import 'package:spotiflac_android/providers/weekly_releases_provider.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/clickable_metadata.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
-import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:spotiflac_android/widgets/error_card.dart';
+import 'package:spotiflac_android/widgets/settings_group.dart';
 
 class WeeklyReleasesScreen extends ConsumerStatefulWidget {
   const WeeklyReleasesScreen({super.key});
@@ -60,17 +61,15 @@ class _WeeklyReleasesScreenState extends ConsumerState<WeeklyReleasesScreen> {
                         children: [
                           Text(context.l10n.weeklyReleasesDescription),
                           const SizedBox(height: 16),
-                          Wrap(
-                            spacing: 8,
-                            children: [
+                          SettingsSegmentedChoice<int>(
+                            selected: _days,
+                            onChanged: (days) => setState(() => _days = days),
+                            semanticLabel: context.l10n.weeklyReleases,
+                            options: [
                               for (final days in [7, 30])
-                                AppChoiceChip(
-                                  label: Text(
-                                    context.l10n.listeningStatsDays(days),
-                                  ),
-                                  selected: _days == days,
-                                  onSelected: (_) =>
-                                      setState(() => _days = days),
+                                SettingsSegmentOption(
+                                  value: days,
+                                  label: context.l10n.listeningStatsDays(days),
                                 ),
                             ],
                           ),
@@ -87,8 +86,12 @@ class _WeeklyReleasesScreenState extends ConsumerState<WeeklyReleasesScreen> {
                     error: (_, _) => [
                       SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Text(context.l10n.weeklyReleasesLoadError),
+                          padding: const EdgeInsets.all(16),
+                          child: ErrorCard(
+                            error: context.l10n.weeklyReleasesLoadError,
+                            colorScheme: Theme.of(context).colorScheme,
+                            onRetry: _reload,
+                          ),
                         ),
                       ),
                     ],

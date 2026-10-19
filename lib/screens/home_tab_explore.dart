@@ -432,7 +432,8 @@ extension _HomeTabExploreUI on _HomeTabState {
       context: context,
       sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
-      backgroundColor: colorScheme.surface,
+      // Material sheets share the theme's sheet surface.
+      backgroundColor: context.isMornye ? colorScheme.surface : null,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -494,7 +495,8 @@ extension _HomeTabExploreUI on _HomeTabState {
                 ],
               ),
             ),
-            const Divider(height: 1),
+            // Material sheets separate the header by space alone.
+            if (context.isMornye) const Divider(height: 1),
             ListTile(
               leading: Icon(Icons.download, color: colorScheme.primary),
               title: Text(context.l10n.downloadTitle),

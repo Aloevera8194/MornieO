@@ -740,7 +740,6 @@ class _LibraryTracksFolderScreenState
     showAppModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
       builder: (sheetContext) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -761,12 +760,12 @@ class _LibraryTracksFolderScreenState
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
+                        color: colorScheme.secondaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
                         Icons.image_outlined,
-                        color: colorScheme.onPrimaryContainer,
+                        color: colorScheme.onSecondaryContainer,
                       ),
                     ),
               title: Text(context.l10n.collectionPlaylistChangeCover),

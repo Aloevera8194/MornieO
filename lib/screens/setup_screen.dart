@@ -440,7 +440,6 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
       context: context,
       sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,

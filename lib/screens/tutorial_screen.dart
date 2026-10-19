@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/scroll_edge_fade.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
@@ -129,7 +130,6 @@ class _TutorialScreenState extends ConsumerState<TutorialScreen> {
                     index: 0,
                     currentIndex: _currentPage,
                     icon: Icons.waving_hand_rounded,
-                    iconColor: Colors.amber,
                     title: l10n.tutorialWelcomeTitle,
                     description: l10n.tutorialWelcomeDesc,
                     content: _buildFeatureList(context, [
@@ -412,21 +412,12 @@ class _InteractiveSearchExampleState extends State<_InteractiveSearchExample> {
             duration: const Duration(milliseconds: 400),
             curve: Curves.easeOutBack,
             child: _showResult
+                // The result is a plain row inside the demo frame, not a
+                // second card.
                 ? Padding(
                     padding: const EdgeInsets.only(top: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Row(
                         children: [
                           Container(
@@ -609,38 +600,54 @@ class _InteractiveDownloadExampleState
                     : context.l10n.tutorialStartDownloadSemantics,
                 child: GestureDetector(
                   onTap: _startDownload,
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    padding: EdgeInsets.all(buttonPadding),
-                    decoration: BoxDecoration(
-                      color: _isCompleted ? Colors.green : colorScheme.primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              (_isCompleted
-                                      ? Colors.green
-                                      : colorScheme.primary)
-                                  .withValues(alpha: 0.3),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+                  // The visual can shrink on narrow screens; the hit box
+                  // keeps the minimum touch target.
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minWidth: context.tokens.minTouchTarget,
+                      minHeight: context.tokens.minTouchTarget,
                     ),
-                    child: _isDownloading
-                        ? AppLoadingIndicator(
-                            size: buttonIconSize,
-                            color: colorScheme.onPrimary,
-                          )
-                        : ExcludeSemantics(
-                            child: Icon(
-                              _isCompleted
-                                  ? Icons.check_rounded
-                                  : Icons.download_rounded,
-                              color: colorScheme.onPrimary,
-                              size: buttonIconSize,
+                    child: Center(
+                      widthFactor: 1,
+                      heightFactor: 1,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        padding: EdgeInsets.all(buttonPadding),
+                        decoration: BoxDecoration(
+                          color: _isCompleted
+                              ? colorScheme.tertiary
+                              : colorScheme.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  (_isCompleted
+                                          ? colorScheme.tertiary
+                                          : colorScheme.primary)
+                                      .withValues(alpha: 0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
                             ),
-                          ),
+                          ],
+                        ),
+                        child: _isDownloading
+                            ? AppLoadingIndicator(
+                                size: buttonIconSize,
+                                color: colorScheme.onPrimary,
+                              )
+                            : ExcludeSemantics(
+                                child: Icon(
+                                  _isCompleted
+                                      ? Icons.check_rounded
+                                      : Icons.download_rounded,
+                                  color: _isCompleted
+                                      ? colorScheme.onTertiary
+                                      : colorScheme.onPrimary,
+                                  size: buttonIconSize,
+                                ),
+                              ),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -659,8 +666,6 @@ class _TutorialPage extends StatelessWidget {
   final String title;
   final String description;
   final Widget content;
-  final Color? iconColor;
-
   const _TutorialPage({
     required this.index,
     required this.currentIndex,
@@ -668,7 +673,6 @@ class _TutorialPage extends StatelessWidget {
     required this.title,
     required this.description,
     required this.content,
-    this.iconColor,
   });
 
   @override
@@ -716,15 +720,13 @@ class _TutorialPage extends StatelessWidget {
                       ),
                       padding: EdgeInsets.all(iconPadding),
                       decoration: BoxDecoration(
-                        color: (iconColor ?? colorScheme.primary).withValues(
-                          alpha: 0.15,
-                        ),
+                        color: colorScheme.primary.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         icon,
                         size: iconSize,
-                        color: iconColor ?? colorScheme.primary,
+                        color: colorScheme.primary,
                       ),
                     ),
                     SizedBox(height: iconTextGap),

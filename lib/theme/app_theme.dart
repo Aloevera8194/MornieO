@@ -177,10 +177,9 @@ class AppTheme {
 
   static TextButtonThemeData _textButtonTheme(ColorScheme scheme) =>
       TextButtonThemeData(
+        // Same full-round shape as the filled and outlined buttons.
         style: TextButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(_tokens.radiusControl),
-          ),
+          shape: const StadiumBorder(),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         ),
       );

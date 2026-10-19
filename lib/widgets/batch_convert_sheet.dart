@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_action_button.dart';
+import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/mornye_chrome.dart';
 import 'package:spotiflac_android/widgets/app_switch.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
@@ -457,10 +458,10 @@ class _BatchConvertSheetState extends State<BatchConvertSheet> {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
+      // Same borderless surface as SettingsGroup cards.
       decoration: BoxDecoration(
         color: settingsGroupColor(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
@@ -499,32 +500,11 @@ class _BatchConvertSheetState extends State<BatchConvertSheet> {
         glass: false,
       );
     }
-    return Material(
-      color: selected ? cs.primaryContainer : cs.surface,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: selected
-                  ? Colors.transparent
-                  : cs.outlineVariant.withValues(alpha: 0.6),
-            ),
-          ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: selected ? cs.onPrimaryContainer : cs.onSurface,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-            ),
-          ),
-        ),
-      ),
+    return AppChoiceChip(
+      singleChoice: true,
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
     );
   }
 }

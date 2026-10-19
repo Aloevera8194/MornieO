@@ -994,26 +994,50 @@ class HomeSearchSkeleton extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          margin: EdgeInsets.symmetric(horizontal: 16 + inset),
-          decoration: BoxDecoration(
-            color: groupColor,
-            borderRadius: BorderRadius.circular(mornye ? 24 : 20),
-          ),
-          child: Column(
-            children: [
-              for (var index = 0; index < rows.length; index++) ...[
-                if (index > 0)
-                  Divider(
-                    height: 1,
-                    indent: mornye ? 80 : 88,
-                    endIndent: mornye ? 12 : 16,
-                  ),
-                ShimmerLoading(surface: groupColor, child: rows[index]),
+        if (mornye)
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 16 + inset),
+            decoration: BoxDecoration(
+              color: groupColor,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              children: [
+                for (var index = 0; index < rows.length; index++) ...[
+                  if (index > 0)
+                    const Divider(height: 1, indent: 80, endIndent: 12),
+                  ShimmerLoading(surface: groupColor, child: rows[index]),
+                ],
               ],
-            ],
+            ),
+          )
+        else
+          // Matches the connected result list: one surface per row.
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16 + inset),
+            child: Column(
+              children: [
+                for (var index = 0; index < rows.length; index++) ...[
+                  if (index > 0) const SizedBox(height: 2),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: groupColor,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(index == 0 ? 20 : 4),
+                        bottom: Radius.circular(
+                          index == rows.length - 1 ? 20 : 4,
+                        ),
+                      ),
+                    ),
+                    child: ShimmerLoading(
+                      surface: groupColor,
+                      child: rows[index],
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

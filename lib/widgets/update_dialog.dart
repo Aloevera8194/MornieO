@@ -146,7 +146,6 @@ class _UpdateDialogState extends State<UpdateDialog> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PopScope(
       canPop: !widget.forced,
@@ -214,27 +213,14 @@ class _UpdateDialogState extends State<UpdateDialog> {
                     horizontal: 16,
                     vertical: 12,
                   ),
-                  decoration: BoxDecoration(
-                    color: context.isMornye
-                        ? MornyeTheme.controlFill(context)
-                        : isDark
-                        ? Color.alphaBlend(
-                            Colors.white.withValues(alpha: 0.08),
-                            colorScheme.surface,
-                          )
-                        : Color.alphaBlend(
-                            Colors.black.withValues(alpha: 0.04),
-                            colorScheme.surface,
-                          ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: context.isMornye
-                        ? null
-                        : Border.all(
-                            color: colorScheme.outlineVariant.withValues(
-                              alpha: 0.5,
-                            ),
-                          ),
-                  ),
+                  // Material's version chips carry their own containers, so
+                  // the row is not boxed a second time.
+                  decoration: context.isMornye
+                      ? BoxDecoration(
+                          color: MornyeTheme.controlFill(context),
+                          borderRadius: BorderRadius.circular(16),
+                        )
+                      : null,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -267,21 +253,16 @@ class _UpdateDialogState extends State<UpdateDialog> {
 
                 if (_isDownloading) ...[
                   Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: context.isMornye
-                          ? MornyeTheme.controlFill(context)
-                          : isDark
-                          ? Color.alphaBlend(
-                              Colors.white.withValues(alpha: 0.05),
-                              colorScheme.surface,
-                            )
-                          : Color.alphaBlend(
-                              Colors.black.withValues(alpha: 0.03),
-                              colorScheme.surface,
-                            ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
+                    padding: context.isMornye
+                        ? const EdgeInsets.all(16)
+                        : EdgeInsets.zero,
+                    // Material shows progress directly on the dialog surface.
+                    decoration: context.isMornye
+                        ? BoxDecoration(
+                            color: MornyeTheme.controlFill(context),
+                            borderRadius: BorderRadius.circular(16),
+                          )
+                        : null,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -343,18 +324,12 @@ class _UpdateDialogState extends State<UpdateDialog> {
                   const SizedBox(height: 8),
                   Container(
                     constraints: const BoxConstraints(maxHeight: 180),
+                    // The scroll well uses the next tonal step above the
+                    // dialog surface.
                     decoration: BoxDecoration(
                       color: context.isMornye
                           ? MornyeTheme.controlFill(context)
-                          : isDark
-                          ? Color.alphaBlend(
-                              Colors.white.withValues(alpha: 0.05),
-                              colorScheme.surface,
-                            )
-                          : Color.alphaBlend(
-                              Colors.black.withValues(alpha: 0.03),
-                              colorScheme.surface,
-                            ),
+                          : colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: SingleChildScrollView(

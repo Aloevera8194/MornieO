@@ -701,7 +701,7 @@ class _PostProcessingHookItem extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.isMornye
                       ? Colors.transparent
-                      : colorScheme.tertiaryContainer,
+                      : colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: AppIcon(
@@ -710,7 +710,7 @@ class _PostProcessingHookItem extends StatelessWidget {
                       : Icons.auto_fix_high,
                   color: context.isMornye
                       ? colorScheme.primary
-                      : colorScheme.onTertiaryContainer,
+                      : colorScheme.onSecondaryContainer,
                   size: 20,
                 ),
               ),
@@ -810,14 +810,14 @@ class _URLHandlerInfo extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.isMornye
                       ? Colors.transparent
-                      : colorScheme.tertiaryContainer,
+                      : colorScheme.secondaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: AppIcon(
                   context.isMornye ? CupertinoIcons.link : Icons.link,
                   color: context.isMornye
                       ? colorScheme.primary
-                      : colorScheme.onTertiaryContainer,
+                      : colorScheme.onSecondaryContainer,
                   size: 24,
                 ),
               ),

@@ -4,6 +4,7 @@ import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_sliver_header.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/settings_group.dart';
 
 class PrioritySettingsScaffold extends StatelessWidget {
   final bool hasChanges;
@@ -93,31 +94,10 @@ class PrioritySettingsScaffold extends StatelessWidget {
                   16 + wideInset,
                   16,
                 ),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: colorScheme.tertiaryContainer.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        size: 20,
-                        color: colorScheme.tertiary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          infoText,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: colorScheme.onTertiaryContainer,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
+                child: SettingsInfoCard(
+                  icon: Icons.info_outline,
+                  message: infoText,
+                  margin: EdgeInsets.zero,
                 ),
               ),
             ),

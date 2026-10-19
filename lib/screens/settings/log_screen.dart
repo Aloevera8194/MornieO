@@ -262,7 +262,7 @@ class _LogScreenState extends State<LogScreen> {
       case 'FATAL':
         return colorScheme.error;
       case 'WARN':
-        return Colors.orange;
+        return colorScheme.tertiary;
       case 'INFO':
         return colorScheme.primary;
       case 'DEBUG':

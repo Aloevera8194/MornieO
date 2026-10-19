@@ -130,11 +130,12 @@ class DolbyAtmosBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+      // Sits beside the quality badge, which keeps the only accent role.
       decoration: BoxDecoration(
-        color: colorScheme.tertiaryContainer.withValues(alpha: 0.6),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: context.tokens.borderRadiusBadge,
       ),
-      child: DolbyAtmosLogo(color: colorScheme.onTertiaryContainer),
+      child: DolbyAtmosLogo(color: colorScheme.onSurfaceVariant),
     );
   }
 }

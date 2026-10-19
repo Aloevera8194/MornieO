@@ -5583,7 +5583,7 @@
   "@searchTracks": {
     "description": "Search filter label - tracks"
   },
-  "homeSearchHintDefault": "Paste supported URL or search...",
+  "homeSearchHintDefault": "Search or paste a supported URL...",
   "@homeSearchHintDefault": {
     "description": "Default placeholder for the main search field on Home"
   },
@@ -7026,6 +7026,10 @@
   "extensionVerificationCopyLink": "Copy link",
   "@extensionVerificationCopyLink": {
     "description": "Button to copy the extension verification URL"
+  },
+  "extensionVerificationPasteCallback": "Paste callback",
+  "@extensionVerificationPasteCallback": {
+    "description": "Button that completes extension verification from a callback URL in the clipboard"
   },
   "extensionVerificationLinkCopied": "Verification link copied",
   "@extensionVerificationLinkCopied": {

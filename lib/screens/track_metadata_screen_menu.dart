@@ -270,7 +270,10 @@ extension _TrackMetadataMenu on _TrackMetadataScreenState {
       context: screenContext,
       sheetAnimationStyle: AppMotion.surfaceEntrance(screenContext),
       useRootNavigator: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
+      // Material sheets share the theme's sheet surface.
+      backgroundColor: screenContext.isMornye
+          ? colorScheme.surfaceContainerHigh
+          : null,
       isScrollControlled: true,
       builder: buildMenu,
     );

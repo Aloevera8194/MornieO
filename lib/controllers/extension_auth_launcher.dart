@@ -423,7 +423,7 @@ Future<bool> showExtensionVerificationHelpDialog(
                           setDialogState(() => clipboardGrantInFlight = false);
                         }
                       },
-                child: const Text('Paste callback'),
+                child: Text(dialogL10n.extensionVerificationPasteCallback),
               ),
               ExpressiveButton(
                 icon: const Icon(Icons.open_in_browser),

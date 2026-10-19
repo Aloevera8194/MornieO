@@ -49,7 +49,6 @@ class _SpectrogramView extends StatelessWidget {
                       onSelected: channelLoading
                           ? null
                           : (_) => onChannelChanged(-1),
-                      visualDensity: VisualDensity.compact,
                     ),
                     for (var channel = 0; channel < channels; channel++) ...[
                       const SizedBox(width: 6),
@@ -60,7 +59,6 @@ class _SpectrogramView extends StatelessWidget {
                         onSelected: channelLoading
                             ? null
                             : (_) => onChannelChanged(channel),
-                        visualDensity: VisualDensity.compact,
                       ),
                     ],
                   ],

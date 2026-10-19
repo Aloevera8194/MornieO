@@ -53,7 +53,10 @@ class TrackCollectionQuickActions extends ConsumerWidget {
       sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: colorScheme.surfaceContainerHigh,
+      // Material sheets share the theme's sheet surface.
+      backgroundColor: context.isMornye
+          ? colorScheme.surfaceContainerHigh
+          : null,
       builder: (_) => _TrackOptionsSheet(
         track: track,
         hasLocalPlaybackCandidate: hasLocalPlaybackCandidate,
@@ -298,10 +301,12 @@ class _TrackOptionsSheet extends ConsumerWidget {
                   ),
                 ],
               ),
-              Divider(
-                height: 1,
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-              ),
+              // Material sheets separate the header by space alone.
+              if (context.isMornye)
+                Divider(
+                  height: 1,
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
 
               if (qualityVariantAction == QualityVariantMenuAction.playLocal)
                 _OptionTile(

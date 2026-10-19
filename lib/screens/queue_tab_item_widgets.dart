@@ -811,12 +811,9 @@ extension _QueueTabItemWidgets on _QueueTabState {
     final sourceLabel = isDownloaded
         ? context.l10n.librarySourceDownloaded
         : context.l10n.librarySourceLocal;
-    final sourceColor = isDownloaded
-        ? colorScheme.primaryContainer
-        : colorScheme.secondaryContainer;
-    final sourceTextColor = isDownloaded
-        ? colorScheme.onPrimaryContainer
-        : colorScheme.onSecondaryContainer;
+    // The label text tells the sources apart; rows keep one neutral role.
+    final sourceColor = colorScheme.surfaceContainerHighest;
+    final sourceTextColor = colorScheme.onSurfaceVariant;
 
     return Semantics(
       label: context.l10n.a11yTrackByArtist(item.trackName, item.artistName),
@@ -1001,18 +998,15 @@ extension _QueueTabItemWidgets on _QueueTabState {
             top: 4,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              // The glyph tells the sources apart; the badge stays neutral.
               decoration: BoxDecoration(
-                color: isDownloaded
-                    ? colorScheme.primaryContainer
-                    : colorScheme.secondaryContainer,
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: context.tokens.borderRadiusBadge,
               ),
               child: AppIcon(
                 isDownloaded ? Icons.download_done : Icons.folder,
                 size: 12,
-                color: isDownloaded
-                    ? colorScheme.onPrimaryContainer
-                    : colorScheme.onSecondaryContainer,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),

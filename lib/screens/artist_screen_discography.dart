@@ -48,7 +48,8 @@ extension _ArtistScreenDiscography on _ArtistScreenState {
                 ],
               ),
             ),
-            const Divider(height: 1),
+            // Material sheets separate the header by space; dividers are Mornye's.
+            if (context.isMornye) const Divider(height: 1),
             if (albums.isNotEmpty)
               _DiscographyOptionTile(
                 icon: Icons.library_music,
@@ -109,9 +110,7 @@ extension _ArtistScreenDiscography on _ArtistScreenState {
       sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: context.isMornye
-          ? Colors.transparent
-          : colorScheme.surfaceContainerHigh,
+      backgroundColor: context.isMornye ? Colors.transparent : null,
       builder: (sheetContext) => sheetContext.isMornye
           ? Theme(
               data: MornyeTheme.fromContext(
@@ -408,10 +407,10 @@ class _DiscographyOptionTile extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer,
+          color: colorScheme.secondaryContainer,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Icon(icon, color: colorScheme.onPrimaryContainer, size: 24),
+        child: Icon(icon, color: colorScheme.onSecondaryContainer, size: 24),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       subtitle: Text(

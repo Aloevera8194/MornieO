@@ -5583,7 +5583,7 @@
   "@searchTracks": {
     "description": "Search filter label - tracks"
   },
-  "homeSearchHintDefault": "Tempel URL yang didukung atau telusuri...",
+  "homeSearchHintDefault": "Telusuri atau tempel URL yang didukung...",
   "@homeSearchHintDefault": {
     "description": "Default placeholder for the main search field on Home"
   },
@@ -7032,6 +7032,10 @@
   "extensionVerificationCopyLink": "Salin link",
   "@extensionVerificationCopyLink": {
     "description": "Button to copy the extension verification URL"
+  },
+  "extensionVerificationPasteCallback": "Tempel callback",
+  "@extensionVerificationPasteCallback": {
+    "description": "Button that completes extension verification from a callback URL in the clipboard"
   },
   "extensionVerificationLinkCopied": "Link verifikasi disalin",
   "@extensionVerificationLinkCopied": {

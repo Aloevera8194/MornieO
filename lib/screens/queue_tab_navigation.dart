@@ -388,12 +388,12 @@ extension _QueueTabNavigation on _QueueTabState {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: const Color(0xFF5085A5),
+        color: colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(8),
       ),
       child: AppIcon(
         Icons.queue_music,
-        color: Colors.white,
+        color: colorScheme.onSecondaryContainer,
         size: size != null ? size * 0.5 : 40,
       ),
     );

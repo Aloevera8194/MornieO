@@ -345,7 +345,16 @@ class _ReEnrichFieldSheetState extends State<_ReEnrichFieldSheet> {
   }
 
   Widget _options({required List<Widget> children, bool grouped = true}) {
-    if (!context.isMornye) return SettingsGroup(children: children);
+    if (!context.isMornye) {
+      // Material separates rows with gaps; the dividers are Mornye's.
+      return SettingsGroup(
+        connected: true,
+        children: [
+          for (final child in children)
+            if (child is! Divider) child,
+        ],
+      );
+    }
     final content = Column(mainAxisSize: MainAxisSize.min, children: children);
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: grouped ? 16 : 4, vertical: 4),

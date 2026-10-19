@@ -207,15 +207,16 @@ class _ExtensionDetailsScreenState
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    // Only the installed state is emphasized.
                     _Badge(
                       label: 'v${ext.version}',
-                      color: colorScheme.secondaryContainer,
-                      textColor: colorScheme.onSecondaryContainer,
+                      color: colorScheme.surfaceContainerHighest,
+                      textColor: colorScheme.onSurfaceVariant,
                     ),
                     _Badge(
                       label: _getCategoryName(context, ext.category),
-                      color: colorScheme.tertiaryContainer,
-                      textColor: colorScheme.onTertiaryContainer,
+                      color: colorScheme.surfaceContainerHighest,
+                      textColor: colorScheme.onSurfaceVariant,
                     ),
                     if (ext.isInstalled)
                       _Badge(
@@ -724,7 +725,8 @@ class _MetadataRow extends StatelessWidget {
             ],
           ),
         ),
-        if (!isLast)
+        // Material groups rows by the card alone; dividers are Mornye's.
+        if (!isLast && context.isMornye)
           Divider(
             height: 1,
             thickness: 1,
@@ -784,7 +786,7 @@ class _CapabilityRow extends StatelessWidget {
             ],
           ),
         ),
-        if (!isLast)
+        if (!isLast && context.isMornye)
           Divider(
             height: 1,
             thickness: 1,

@@ -59,9 +59,10 @@ extension _TrackMetadataFileActions on _TrackMetadataScreenState {
       sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
+      // Material sheets share the theme's sheet surface.
       backgroundColor: context.isMornye
           ? colorScheme.surfaceContainerLow
-          : colorScheme.surface,
+          : null,
       builder: (sheetContext) => EditMetadataSheet(
         colorScheme: colorScheme,
         initialValues: initialValues,
@@ -281,19 +282,6 @@ extension _TrackMetadataFileActions on _TrackMetadataScreenState {
         return Icons.shopping_cart;
       default:
         return Icons.cloud_download;
-    }
-  }
-
-  Color _getServiceColor(String service, ColorScheme colorScheme) {
-    switch (service.toLowerCase()) {
-      case MusicServices.tidal:
-        return const Color(0xFF0077B5);
-      case MusicServices.qobuz:
-        return const Color(0xFF0052CC);
-      case MusicServices.amazon:
-        return const Color(0xFFFF9900);
-      default:
-        return colorScheme.primary;
     }
   }
 }

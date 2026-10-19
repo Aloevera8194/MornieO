@@ -91,15 +91,15 @@ class _LogEntryTile extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.teal.withValues(alpha: 0.15),
+                            color: colorScheme.secondaryContainer,
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             'Native',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
-                              color: Colors.teal,
+                              color: colorScheme.onSecondaryContainer,
                             ),
                           ),
                         ),
@@ -239,7 +239,7 @@ class _LogSummaryCard extends StatelessWidget {
                   label: context.l10n.logIssueRateLimitedLabel,
                   description: context.l10n.logIssueRateLimitedDescription,
                   suggestion: context.l10n.logIssueRateLimitedSuggestion,
-                  color: Colors.orange,
+                  color: colorScheme.tertiary,
                 ),
                 const SizedBox(height: 8),
               ],

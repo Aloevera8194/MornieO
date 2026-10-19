@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:spotiflac_android/services/app_remote_config_service.dart';
+import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
@@ -281,11 +282,13 @@ class _DonateLinksCard extends StatelessWidget {
               ),
             ),
           ),
-          Divider(
-            height: 1,
-            thickness: 1,
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-          ),
+          // Material groups rows by the card alone; dividers are Mornye's.
+          if (context.isMornye)
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            ),
           if (!config.enabled)
             Padding(
               padding: const EdgeInsets.all(20),
@@ -302,7 +305,7 @@ class _DonateLinksCard extends StatelessWidget {
                 method: config.methods[index],
                 colorScheme: colorScheme,
               ),
-              if (index < config.methods.length - 1)
+              if (context.isMornye && index < config.methods.length - 1)
                 Divider(
                   height: 1,
                   thickness: 1,
@@ -478,8 +481,7 @@ class _DonateMethodItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Color(method.color);
-
+    // Every method shares the icon container role; the glyph identifies it.
     return InkWell(
       onTap: () => _handleTap(context),
       child: Padding(
@@ -490,10 +492,12 @@ class _DonateMethodItem extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: color,
+                color: colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Center(child: _methodIcon(method)),
+              child: Center(
+                child: _methodIcon(method, colorScheme.onSecondaryContainer),
+              ),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -588,37 +592,29 @@ class _NoticeLine extends StatelessWidget {
   }
 }
 
-Widget _methodIcon(DonateMethod method) {
+Widget _methodIcon(DonateMethod method, Color color) {
   switch (method.icon.toLowerCase()) {
     case 'kofi':
     case 'ko-fi':
-      return const KofiIcon(size: 22, color: Colors.white);
+      return KofiIcon(size: 22, color: color);
     case 'github':
     case 'github-sponsors':
-      return const GitHubIcon(size: 22, color: Colors.white);
+      return GitHubIcon(size: 22, color: color);
     case 'crypto':
     case 'wallet':
-      return const Text(
+      return Text(
         '\$',
         style: TextStyle(
-          color: Colors.white,
+          color: color,
           fontSize: 22,
           fontWeight: FontWeight.bold,
         ),
       );
     case 'coffee':
-      return const AppIcon(
-        Icons.local_cafe_rounded,
-        color: Colors.white,
-        size: 22,
-      );
+      return AppIcon(Icons.local_cafe_rounded, color: color, size: 22);
     case 'heart':
     default:
-      return const AppIcon(
-        Icons.favorite_rounded,
-        color: Colors.white,
-        size: 22,
-      );
+      return AppIcon(Icons.favorite_rounded, color: color, size: 22);
   }
 }
 

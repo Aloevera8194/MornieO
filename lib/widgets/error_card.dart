@@ -41,12 +41,9 @@ class ErrorCard extends StatelessWidget {
         ? context.l10n.errorRateLimitedMessage
         : displayError;
     final icon = isRateLimit ? Icons.timer_off : Icons.error_outline;
-    final background = isRateLimit
-        ? colorScheme.errorContainer
-        : colorScheme.errorContainer.withValues(alpha: 0.5);
-    final foreground = isRateLimit
-        ? colorScheme.onErrorContainer
-        : colorScheme.error;
+    // A solid container with its paired on-color keeps text contrast.
+    final background = colorScheme.errorContainer;
+    final foreground = colorScheme.onErrorContainer;
 
     return AppContentCard(
       elevation: 0,
@@ -58,7 +55,7 @@ class ErrorCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: foreground),
+            AppIcon.adaptive(icon, color: foreground),
             SizedBox(width: tokens.gapMd),
             Expanded(
               child: Column(

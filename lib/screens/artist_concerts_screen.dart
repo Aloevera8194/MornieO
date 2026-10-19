@@ -188,9 +188,7 @@ class _ArtistConcertsScreenState extends State<ArtistConcertsScreen> {
                                       ).format(concert.date),
                                       maxLines: 1,
                                       style: TextStyle(
-                                        color: context.isMornye
-                                            ? scheme.primary
-                                            : scheme.error,
+                                        color: scheme.primary,
                                         fontSize: 10,
                                         fontWeight: FontWeight.w600,
                                       ),

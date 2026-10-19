@@ -592,11 +592,13 @@ extension _EditMetadataSheetAutoFill on _EditMetadataSheetState {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              // The button is disabled while fetching, so the spinner uses
+              // the disabled foreground role instead of a fixed white.
               icon: _fetching
-                  ? const AppLoadingIndicator(
+                  ? AppLoadingIndicator(
                       size: 16,
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: cs.onSurfaceVariant,
                     )
                   : const Icon(Icons.auto_fix_high),
               label: Text(

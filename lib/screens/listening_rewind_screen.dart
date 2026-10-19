@@ -150,13 +150,14 @@ class _MonthlyRewindBanner extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final mornye = context.isMornye;
-    // Mornye keeps its neutral control fill and accent tint.
-    final foreground = mornye ? colors.onSurface : colors.onTertiaryContainer;
+    // Mornye keeps its neutral control fill and accent tint. Material keeps
+    // the card neutral too: the statistics hero is the strong container.
+    final foreground = colors.onSurface;
     final accent = mornye ? colors.primary : colors.tertiary;
     final onAccent = mornye ? colors.onPrimary : colors.onTertiary;
     return AppContentCard(
       margin: margin,
-      color: colors.tertiaryContainer,
+      color: colors.surfaceContainerHigh,
       shape: RoundedRectangleBorder(
         borderRadius: context.tokens.borderRadiusCard,
       ),

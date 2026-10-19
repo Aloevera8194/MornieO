@@ -68,7 +68,8 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
       return AppContentCard(
         elevation: 0,
         mornyeSurface: false,
-        color: colorScheme.errorContainer.withValues(alpha: 0.5),
+        // Matches ErrorCard: a solid container with its paired on-color.
+        color: colorScheme.errorContainer,
         shape: RoundedRectangleBorder(
           borderRadius: context.tokens.borderRadiusCard,
         ),
@@ -76,7 +77,7 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              Icon(Icons.link_off, color: colorScheme.error),
+              Icon(Icons.link_off, color: colorScheme.onErrorContainer),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -85,16 +86,16 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
                     Text(
                       l10n.errorUrlNotRecognized,
                       style: TextStyle(
-                        color: colorScheme.error,
+                        color: colorScheme.onErrorContainer,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       l10n.errorUrlNotRecognizedMessage,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onErrorContainer,
+                      ),
                     ),
                   ],
                 ),
@@ -493,38 +494,34 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
                         ),
                 ),
               ),
+              // Keeps ExpressiveButton's 48dp minimum touch target.
               if (showSortButton)
-                SizedBox(
-                  height: 32,
-                  child: ExpressiveButton(
-                    text: true,
-                    onPressed: () => _showSortOptions(colorScheme),
-                    icon: mornye
-                        ? null
-                        : Icon(
-                            Icons.swap_vert,
-                            size: 18,
-                            color:
-                                _searchSortOption !=
-                                    HomeSearchSortOption.defaultOrder
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
-                          ),
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      visualDensity: VisualDensity.compact,
-                    ),
-                    child: Text(
-                      _searchSortOption != HomeSearchSortOption.defaultOrder
-                          ? _sortOptionLabel(_searchSortOption)
-                          : context.l10n.libraryFilterSort,
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color:
-                            _searchSortOption !=
-                                HomeSearchSortOption.defaultOrder
-                            ? colorScheme.primary
-                            : colorScheme.onSurfaceVariant,
-                      ),
+                ExpressiveButton(
+                  text: true,
+                  onPressed: () => _showSortOptions(colorScheme),
+                  icon: mornye
+                      ? null
+                      : Icon(
+                          Icons.swap_vert,
+                          size: 18,
+                          color:
+                              _searchSortOption !=
+                                  HomeSearchSortOption.defaultOrder
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                        ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  child: Text(
+                    _searchSortOption != HomeSearchSortOption.defaultOrder
+                        ? _sortOptionLabel(_searchSortOption)
+                        : context.l10n.libraryFilterSort,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color:
+                          _searchSortOption != HomeSearchSortOption.defaultOrder
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ),
@@ -550,21 +547,24 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
                 ),
               );
             }
+            // Connected list: each result is its own surface, separated by a
+            // 2dp gap with tight inner corners instead of row dividers.
+            const inner = Radius.circular(4);
             return StaggeredListItem(
               index: index,
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
+                margin: EdgeInsets.fromLTRB(16, 0, 16, isLast ? 0 : 2),
                 decoration: BoxDecoration(
                   color: sectionColor,
                   borderRadius: BorderRadius.vertical(
-                    top: isFirst ? const Radius.circular(20) : Radius.zero,
-                    bottom: isLast ? const Radius.circular(20) : Radius.zero,
+                    top: isFirst ? const Radius.circular(20) : inner,
+                    bottom: isLast ? const Radius.circular(20) : inner,
                   ),
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: Material(
                   color: Colors.transparent,
-                  child: itemBuilder(index, !isLast),
+                  child: itemBuilder(index, false),
                 ),
               ),
             );

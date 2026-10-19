@@ -6,6 +6,7 @@ import 'package:spotiflac_android/providers/library_collections_provider.dart';
 import 'package:spotiflac_android/screens/artist_screen.dart';
 import 'package:spotiflac_android/screens/weekly_releases_screen.dart';
 import 'package:spotiflac_android/services/cover_cache_manager.dart';
+import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/utils/nav_bar_inset.dart';
 import 'package:spotiflac_android/widgets/animation_utils.dart';
@@ -77,7 +78,10 @@ class FavoriteArtistsScreen extends ConsumerWidget {
               padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
               sliver: SliverList.separated(
                 itemCount: artists.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
+                // Material lists separate rows by space; dividers are Mornye's.
+                separatorBuilder: (_, _) => context.isMornye
+                    ? const Divider(height: 1)
+                    : const SizedBox.shrink(),
                 itemBuilder: (context, index) {
                   final artist = artists[index];
                   return ListTile(

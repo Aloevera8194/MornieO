@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:spotiflac_android/widgets/error_card.dart';
 import 'package:spotiflac_android/widgets/mornye_artist_header.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -161,20 +161,13 @@ class _LoadingOrErrorScaffold extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              context.friendlyError(error),
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-            const SizedBox(height: 16),
-            ExpressiveButton(
-              tonal: true,
-              onPressed: onRetry,
-              child: Text(context.l10n.dialogRetry),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: ErrorCard(
+            error: error ?? '',
+            colorScheme: Theme.of(context).colorScheme,
+            onRetry: onRetry,
+          ),
         ),
       ),
     );

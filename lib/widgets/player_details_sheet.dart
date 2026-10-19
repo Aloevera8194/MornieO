@@ -25,9 +25,7 @@ Future<void> showPlayerDetailsSheet(
     isScrollControlled: true,
     useRootNavigator: mornye,
     showDragHandle: !mornye,
-    backgroundColor: mornye
-        ? Colors.transparent
-        : colorScheme.surfaceContainerHigh,
+    backgroundColor: mornye ? Colors.transparent : null,
     builder: (context) {
       return DraggableScrollableSheet(
         expand: false,

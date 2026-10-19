@@ -157,13 +157,13 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: context.tokens.borderRadiusBadge,
             ),
             child: AppIcon(
               Icons.download_done,
               size: 12,
-              color: colorScheme.onPrimaryContainer,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:spotiflac_android/theme/app_tokens.dart';
 import 'package:spotiflac_android/utils/adaptive_layout.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
+import 'package:spotiflac_android/widgets/app_icon.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 
 /// Home notice for a crash saved by the previous session. Styled like
@@ -30,7 +31,7 @@ class AppCrashBanner extends ConsumerWidget {
       child: AppContentCard(
         elevation: 0,
         margin: EdgeInsets.zero,
-        color: colorScheme.errorContainer.withValues(alpha: 0.5),
+        color: colorScheme.errorContainer,
         mornyeSurface: false,
         shape: RoundedRectangleBorder(borderRadius: tokens.borderRadiusCard),
         child: Padding(
@@ -38,7 +39,10 @@ class AppCrashBanner extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.error_outline, color: colorScheme.error),
+              AppIcon.adaptive(
+                Icons.error_outline,
+                color: colorScheme.onErrorContainer,
+              ),
               SizedBox(width: tokens.gapMd),
               Expanded(
                 child: Column(
@@ -48,7 +52,7 @@ class AppCrashBanner extends ConsumerWidget {
                     Text(
                       l10n.appCrashTitle,
                       style: TextStyle(
-                        color: colorScheme.error,
+                        color: colorScheme.onErrorContainer,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -56,7 +60,7 @@ class AppCrashBanner extends ConsumerWidget {
                     Text(
                       l10n.appCrashMessage,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.error,
+                        color: colorScheme.onErrorContainer,
                       ),
                     ),
                     SizedBox(height: tokens.gapSm),
@@ -66,9 +70,9 @@ class AppCrashBanner extends ConsumerWidget {
                           : crash.description,
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodySmall?.copyWith(color: colorScheme.error),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onErrorContainer,
+                      ),
                     ),
                     SizedBox(height: tokens.gapMd),
                     Wrap(

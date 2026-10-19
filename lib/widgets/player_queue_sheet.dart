@@ -212,8 +212,9 @@ class PlayerQueueSheet extends ConsumerWidget {
                     ),
                     trailing: ReorderableDragStartListener(
                       index: i,
+                      // 24dp glyph plus padding gives a 48dp drag target.
                       child: Padding(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(12),
                         child: AppIcon(
                           Icons.drag_handle,
                           color: colorScheme.onSurfaceVariant,

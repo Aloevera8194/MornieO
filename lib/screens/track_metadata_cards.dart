@@ -627,7 +627,12 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
             allMetadata: items,
           ),
           borderRadius: BorderRadius.circular(8),
-          child: Padding(
+          // Copyable rows keep the 48dp minimum touch target.
+          child: Container(
+            constraints: BoxConstraints(
+              minHeight: context.tokens.minTouchTarget,
+            ),
+            alignment: AlignmentDirectional.centerStart,
             padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -754,6 +759,45 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
     }.contains(label.toUpperCase());
   }
 
+  /// One file detail pill. Only the format is emphasized, so the group keeps
+  /// a single strong container; the others stay neutral.
+  Widget _fileInfoPill(
+    ColorScheme colorScheme,
+    String label, {
+    bool emphasized = false,
+    IconData? icon,
+  }) {
+    final foreground = emphasized
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.onSurfaceVariant;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: emphasized
+            ? colorScheme.primaryContainer
+            : colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: foreground),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              color: foreground,
+              fontWeight: FontWeight.w600,
+              fontSize: 12,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildFileInfoCard(
     BuildContext context,
     ColorScheme colorScheme,
@@ -787,158 +831,35 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
               spacing: 8,
               runSpacing: 8,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    fileExtension,
-                    style: TextStyle(
-                      color: colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
+                _fileInfoPill(colorScheme, fileExtension, emphasized: true),
                 if (fileSize != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.secondaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      formatBytes(fileSize),
-                      style: TextStyle(
-                        color: colorScheme.onSecondaryContainer,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
+                  _fileInfoPill(colorScheme, formatBytes(fileSize)),
                 if (_isBitrateFormatLabel(fileExtension) &&
                     lossyBitrateLabel != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      lossyBitrateLabel,
-                      style: TextStyle(
-                        color: colorScheme.onTertiaryContainer,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  )
+                  _fileInfoPill(colorScheme, lossyBitrateLabel)
                 else if (_audioBitrate != null &&
                     _audioBitrate! > 0 &&
                     _isBitrateFormatLabel(fileExtension))
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${_audioBitrate}kbps',
-                      style: TextStyle(
-                        color: colorScheme.onTertiaryContainer,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  )
+                  _fileInfoPill(colorScheme, '${_audioBitrate}kbps')
                 else if (bitDepth != null &&
                     bitDepth! > 0 &&
                     sampleRate != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      buildDisplayAudioQuality(
-                            bitDepth: bitDepth,
-                            sampleRate: sampleRate,
-                          ) ??
-                          '',
-                      style: TextStyle(
-                        color: colorScheme.onTertiaryContainer,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
+                  _fileInfoPill(
+                    colorScheme,
+                    buildDisplayAudioQuality(
+                          bitDepth: bitDepth,
+                          sampleRate: sampleRate,
+                        ) ??
+                        '',
                   ),
                 if (!_isBitrateFormatLabel(fileExtension) &&
                     _audioBitrate != null &&
                     _audioBitrate! > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.tertiaryContainer,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '${_audioBitrate}kbps',
-                      style: TextStyle(
-                        color: colorScheme.onTertiaryContainer,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getServiceColor(_service, colorScheme),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        _getServiceIcon(_service),
-                        size: 14,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _service.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
+                  _fileInfoPill(colorScheme, '${_audioBitrate}kbps'),
+                _fileInfoPill(
+                  colorScheme,
+                  _service.toUpperCase(),
+                  icon: _getServiceIcon(_service),
                 ),
               ],
             ),
@@ -948,12 +869,21 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
             InkWell(
               onTap: () => _copyToClipboard(context, cleanFilePath),
               borderRadius: BorderRadius.circular(12),
+              // Material keeps the path as a flat copy row like the metadata
+              // rows above, instead of a filled box inside the card.
               child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                constraints: BoxConstraints(
+                  minHeight: context.tokens.minTouchTarget,
                 ),
+                padding: context.isMornye
+                    ? const EdgeInsets.all(12)
+                    : const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                decoration: context.isMornye
+                    ? BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                      )
+                    : null,
                 child: Row(
                   children: [
                     Expanded(

@@ -409,7 +409,6 @@ class _TourPage extends StatelessWidget {
           for (var index = 0; index < features.length; index++)
             _FeatureRow(
               feature: features[index],
-              index: index,
               first: index == 0,
               last: index == features.length - 1,
             ),
@@ -686,20 +685,11 @@ class _TourFeature {
 class _FeatureRow extends StatelessWidget {
   const _FeatureRow({
     required this.feature,
-    required this.index,
     required this.first,
     required this.last,
   });
 
-  static const _shapes = [
-    M3EShapeKind.cookie4Sided,
-    M3EShapeKind.pentagon,
-    M3EShapeKind.cookie6Sided,
-    M3EShapeKind.clover4Leaf,
-  ];
-
   final _TourFeature feature;
-  final int index;
   final bool first;
   final bool last;
 
@@ -724,8 +714,10 @@ class _FeatureRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Icon containers in one list share the plain circle; abstract
+              // shapes are reserved for the decorative hero above.
               AppShapeBadge(
-                kind: _shapes[index % _shapes.length],
+                kind: M3EShapeKind.circle,
                 size: 44,
                 color: scheme.secondaryContainer,
                 child: Icon(
