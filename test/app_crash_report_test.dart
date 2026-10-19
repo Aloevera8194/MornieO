@@ -8,6 +8,7 @@ import 'package:spotiflac_android/providers/app_crash_provider.dart';
 import 'package:spotiflac_android/services/app_crash_service.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/logger.dart';
+import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_crash_banner.dart';
 
 Map<String, dynamic> _report() => {
@@ -169,6 +170,13 @@ void main() {
       expect(clipboard, contains('Example Phone'));
       expect(clipboard, isNot(contains('secret-value')));
       expect(find.text('Aplikasi sebelumnya mengalami crash'), findsOneWidget);
+      // The full report opens in a sheet rather than expanding on Home.
+      expect(find.textContaining('Abort message'), findsNothing);
+      await tester.tap(find.text('Lihat error dan log'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Abort message: invalid pointer'), findsOne);
+      Navigator.of(tester.element(find.byType(AppCrashBanner))).pop();
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Tutup'));
       await tester.pumpAndSettle();
       expect(find.text('Aplikasi sebelumnya mengalami crash'), findsNothing);
@@ -186,6 +194,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(AppCrashBanner), findsOneWidget);
     expect(find.text('The app previously crashed'), findsNothing);
-    expect(find.byType(ExpansionTile), findsNothing);
+    expect(find.byType(AppContentCard), findsNothing);
   });
 }
