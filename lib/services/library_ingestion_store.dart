@@ -40,11 +40,13 @@ class LibraryIngestionStore {
     if (paths.isEmpty) return {};
     if (paths.length > 64) throw ArgumentError('Too many network scan paths');
     final db = await database;
-    final rows = await db.query(
-      'library',
-      where:
-          'source_id = ? AND file_path IN (${List.filled(paths.length, '?').join(',')})',
-      whereArgs: [sourceId, ...paths],
+    // Without statistics SQLite can prefer source_id and revisit every track
+    // in the source for each batch. Seek only the requested paths instead.
+    final rows = await db.rawQuery(
+      'SELECT * FROM library INDEXED BY idx_library_file_path '
+      'WHERE source_id = ? '
+      'AND file_path IN (${List.filled(paths.length, '?').join(',')})',
+      [sourceId, ...paths],
     );
     return {
       for (final row in rows)
