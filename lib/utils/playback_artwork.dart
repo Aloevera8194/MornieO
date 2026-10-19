@@ -1,19 +1,25 @@
 import 'dart:io';
 
-/// Recover a scanned document's missing thumbnail without rescanning its NAS.
+/// Use a local file's embedded cover when its thumbnail is missing or only an
+/// online cover is known, so playback offline still shows the file's own art.
 /// Callers run this separately from preparing audio and discard stale results.
-Future<String?> resolveMissingDocumentArtworkUri(
+Future<String?> resolveEmbeddedArtworkUri(
   String source,
   String? artwork, {
   required Future<String?> Function(String) extract,
 }) async {
-  if (!source.startsWith('content://')) return null;
+  if (!source.startsWith('content://') && !source.startsWith('/')) {
+    return null;
+  }
   try {
     if (artwork != null && artwork.isNotEmpty) {
       final uri = Uri.parse(artwork);
-      if (uri.hasScheme && uri.scheme != 'file') return null;
-      final path = uri.scheme == 'file' ? uri.toFilePath() : artwork;
-      if (await File(path).exists()) return null;
+      final remote = uri.scheme == 'http' || uri.scheme == 'https';
+      if (uri.hasScheme && uri.scheme != 'file' && !remote) return null;
+      if (!remote) {
+        final path = uri.scheme == 'file' ? uri.toFilePath() : artwork;
+        if (await File(path).exists()) return null;
+      }
     }
     final cover = await extract(source);
     return cover == null ? null : Uri.file(cover).toString();

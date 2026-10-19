@@ -1422,8 +1422,8 @@ class MusicPlayerHandler extends BaseAudioHandler
     _broadcastState(playerState: PlayerState.playing, loading: true);
     await _claimHardwareMediaButtons();
     if (!_isCurrentPlayRequest(generation, media)) return;
-    if (media.isContentUri) {
-      unawaited(_recoverDocumentArtwork(media, generation));
+    if (!media.isNetwork) {
+      unawaited(_recoverEmbeddedArtwork(media, generation));
     }
     if (media.networkArtworkSource != null) {
       try {
@@ -1573,11 +1573,11 @@ class MusicPlayerHandler extends BaseAudioHandler
     }
   }
 
-  Future<void> _recoverDocumentArtwork(
+  Future<void> _recoverEmbeddedArtwork(
     PlayableMedia media,
     int generation,
   ) async {
-    final artwork = await resolveMissingDocumentArtworkUri(
+    final artwork = await resolveEmbeddedArtworkUri(
       media.source,
       media.artUri,
       extract: (source) =>
