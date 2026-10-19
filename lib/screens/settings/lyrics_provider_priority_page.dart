@@ -231,7 +231,7 @@ class _LyricsProviderPriorityPageState
         );
       case 'spotiflac_lyrics':
         return _LyricsProviderInfo(
-          name: 'SpotiFLAC-Mobile Lyrics',
+          name: 'Zarz-LRC',
           description: context.l10n.lyricsProviderSpotiflacLyricsDesc,
           icon: Icons.verified_outlined,
         );

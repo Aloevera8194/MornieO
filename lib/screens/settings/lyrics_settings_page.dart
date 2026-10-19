@@ -198,7 +198,7 @@ class LyricsSettingsPage extends ConsumerWidget {
     'netease': 'Netease',
     'musixmatch': 'Musixmatch',
     'apple_music': 'Apple Music',
-    'spotiflac_lyrics': 'SpotiFLAC-Mobile Lyrics',
+    'spotiflac_lyrics': 'Zarz-LRC',
     'qqmusic': 'QQ Music',
     'spotify': 'Spotify',
     'deezer': 'Deezer',

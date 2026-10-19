@@ -1,4 +1,4 @@
-//! Built-in Apple Music and SpotiFLAC lyrics providers.
+//! Built-in Apple Music and Zarz-LRC providers.
 
 use super::*;
 use crate::lyrics::http;
@@ -229,7 +229,7 @@ impl BuiltinLyricsClient {
             AppleLyricsSource::SpotiFlac => (
                 payloads::format_spotiflac_apple(raw, multi_person, word_timing)
                     .map_err(LyricsError::Unavailable)?,
-                "SpotiFLAC-Mobile Lyrics",
+                "Zarz-LRC",
             ),
         };
         let mut lyrics = from_text(&text, name, name)?;
@@ -252,18 +252,14 @@ mod tests {
 
     #[test]
     fn spotiflac_lyrics_credit_never_names_the_proxy() {
-        let lyrics = LyricsResponse::from_text(
-            "[00:01.00]Example",
-            "SpotiFLAC-Mobile Lyrics",
-            "SpotiFLAC-Mobile Lyrics",
-        );
+        let lyrics = LyricsResponse::from_text("[00:01.00]Example", "Zarz-LRC", "Zarz-LRC");
         let saved = spotiflac_core::lyrics::lrc::with_metadata(&lyrics, "Track", "Artist");
-        assert!(saved.contains("source: SpotiFLAC-Mobile Lyrics"));
+        assert!(saved.contains("source: Zarz-LRC"));
         assert!(!saved.contains("Paxsenix"));
     }
 
     #[test]
-    #[ignore = "requires live Apple catalog and SpotiFLAC-Mobile Lyrics access"]
+    #[ignore = "requires live Apple catalog and Zarz-LRC access"]
     fn live_spotiflac_lyrics_works_without_paxsenix() {
         let network = NetworkService::new().unwrap();
         let client = BuiltinLyricsClient::with_endpoints(
@@ -285,8 +281,8 @@ mod tests {
         let lyrics = client.spotiflac_lyrics(&request, &|| Ok(())).unwrap();
         assert!(lyrics.has_usable_text());
         assert!(lyrics.is_synced());
-        assert_eq!(lyrics.provider, "SpotiFLAC-Mobile Lyrics");
-        assert_eq!(lyrics.source, "SpotiFLAC-Mobile Lyrics");
+        assert_eq!(lyrics.provider, "Zarz-LRC");
+        assert_eq!(lyrics.source, "Zarz-LRC");
     }
 
     #[test]

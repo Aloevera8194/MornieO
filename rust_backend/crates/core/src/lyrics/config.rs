@@ -116,9 +116,9 @@ pub fn available_providers() -> Vec<AvailableProvider> {
         ),
         (
             "spotiflac_lyrics",
-            "SpotiFLAC-Mobile Lyrics",
+            "Zarz-LRC",
             false,
-            "Word-by-word Apple Music lyrics from SpotiFLAC-Mobile",
+            "Word-by-word Apple Music lyrics from Zarz-LRC",
         ),
         (
             "qqmusic",

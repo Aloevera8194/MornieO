@@ -159,6 +159,8 @@ pub fn source_uses_proxy(source: &str) -> bool {
     !source.is_empty()
         && ![
             "lrclib",
+            "zarz-lrc",
+            // Retain credits embedded before the provider was renamed.
             "spotiflac-mobile lyrics",
             "kugou direct",
             "qq music direct",
@@ -257,6 +259,8 @@ mod tests {
     #[test]
     fn first_party_lyrics_do_not_credit_paxsenix() {
         for source in [
+            "Zarz-LRC",
+            "Zarz-LRC (cached)",
             "SpotiFLAC-Mobile Lyrics",
             "SpotiFLAC-Mobile Lyrics (cached)",
         ] {

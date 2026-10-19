@@ -4265,9 +4265,9 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
-  "lyricsProviderSpotiflacLyricsDesc": "Lirik Apple Music per kata dari SpotiFLAC-Mobile",
+  "lyricsProviderSpotiflacLyricsDesc": "Lirik Apple Music per kata dari Zarz-LRC",
   "@lyricsProviderSpotiflacLyricsDesc": {
-    "description": "Description for the first-party SpotiFLAC-Mobile Lyrics provider"
+    "description": "Description for the first-party Zarz-LRC provider"
   },
   "lyricsProviderLrcRedDesc": "Lirik Apple Music per kata, dicocokkan per rekaman",
   "@lyricsProviderLrcRedDesc": {

@@ -337,11 +337,8 @@ mod tests {
     fn current_snapshot_restores_supplementary_text() {
         let file = tempfile::NamedTempFile::new().unwrap();
         let now = UNIX_EPOCH + Duration::from_secs(100);
-        let mut lyrics = LyricsResponse::from_text(
-            "[00:01.009]Original",
-            "Apple Music",
-            "SpotiFLAC-Mobile Lyrics",
-        );
+        let mut lyrics =
+            LyricsResponse::from_text("[00:01.009]Original", "Apple Music", "Zarz-LRC");
         let line = &mut lyrics.lines.as_mut().unwrap()[0];
         line.romanization = Some("Romanized".into());
         line.romanization_words = Some(vec![spotiflac_core::lyrics::LyricsWord {

@@ -749,7 +749,7 @@
   },
   "aboutLyricsWebsite": "Lyrics website",
   "@aboutLyricsWebsite": {
-    "description": "Link to the SpotiFLAC-Mobile Lyrics website for searching and saving word-timed lyrics"
+    "description": "Link to the Zarz-LRC website for searching and saving word-timed lyrics"
   },
   "aboutServiceStatus": "Service status",
   "@aboutServiceStatus": {
@@ -4259,9 +4259,9 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
-  "lyricsProviderSpotiflacLyricsDesc": "Word-by-word Apple Music lyrics from SpotiFLAC-Mobile",
+  "lyricsProviderSpotiflacLyricsDesc": "Word-by-word Apple Music lyrics from Zarz-LRC",
   "@lyricsProviderSpotiflacLyricsDesc": {
-    "description": "Description for the first-party SpotiFLAC-Mobile Lyrics provider"
+    "description": "Description for the first-party Zarz-LRC provider"
   },
   "lyricsProviderLrcRedDesc": "Word-by-word Apple Music lyrics, matched by recording",
   "@lyricsProviderLrcRedDesc": {

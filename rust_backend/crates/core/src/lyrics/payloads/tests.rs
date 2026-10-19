@@ -28,8 +28,7 @@ fn spotiflac_apple_preserves_syllables_and_separate_background_groups() {
         let text = format_spotiflac_apple(&raw, true, words).unwrap();
         assert!(text.starts_with("[00:01.009]v1:"));
         assert_eq!(text.matches("[bg:").count(), 2);
-        let lyrics =
-            LyricsResponse::from_text(&text, "SpotiFLAC-Mobile Lyrics", "SpotiFLAC-Mobile Lyrics");
+        let lyrics = LyricsResponse::from_text(&text, "Zarz-LRC", "Zarz-LRC");
         assert_eq!(lyrics.lines().len(), 1);
         assert_eq!(lyrics.lines()[0].start_time_ms, 1009);
         if words {
