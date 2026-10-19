@@ -25,14 +25,19 @@ internal object AppCrashReporter {
     private val storageLock = Any()
     private val handlingCrash = AtomicBoolean(false)
 
-    fun isUnexpectedExit(reason: Int): Boolean = reason in setOf(
+    fun isUnexpectedExit(reason: Int, status: Int = 0): Boolean = when (reason) {
         ApplicationExitInfo.REASON_CRASH,
         ApplicationExitInfo.REASON_CRASH_NATIVE,
-        ApplicationExitInfo.REASON_ANR,
-        ApplicationExitInfo.REASON_LOW_MEMORY,
-        ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE,
-        ApplicationExitInfo.REASON_SIGNALED,
-    )
+        ApplicationExitInfo.REASON_ANR -> true
+        // Linux fatal signals: ILL, TRAP, ABRT, BUS, FPE, SEGV, SYS.
+        // SIGKILL/SIGTERM and OS resource reclamation are not crash notices.
+        ApplicationExitInfo.REASON_SIGNALED -> status in setOf(4, 5, 6, 7, 8, 11, 31)
+        else -> false
+    }
+
+    fun shouldShowSavedReport(report: JSONObject): Boolean =
+        !report.has("reason_code") ||
+            isUnexpectedExit(report.optInt("reason_code"), report.optInt("status"))
 
     fun shouldKeepSavedReport(savedAt: Long, exitAt: Long, currentStart: Long): Boolean =
         savedAt >= currentStart || savedAt > exitAt + 5000L
@@ -87,6 +92,9 @@ internal object AppCrashReporter {
         recovery?.get()
         return synchronized(storageLock) {
             val report = readJson("pending") ?: return@synchronized null
+            // Older versions saved low-memory and ordinary OS kills as
+            // crashes. Apply the same policy to those already persisted.
+            if (!shouldShowSavedReport(report)) return@synchronized null
             val prefs = context.getSharedPreferences("app_crash_reports", Context.MODE_PRIVATE)
             if (report.optLong("timestamp") <= prefs.getLong("dismissed_at", 0L)) return@synchronized null
             report.keys().asSequence().associateWith { key ->
@@ -125,7 +133,7 @@ internal object AppCrashReporter {
                     it.timestamp < sessionStartedAt
             } ?: return
         // Do not call force-stop, updates, or ordinary task removal a crash.
-        if (!isUnexpectedExit(exit.reason)) return
+        if (!isUnexpectedExit(exit.reason, exit.status)) return
         val prefs = context.getSharedPreferences("app_crash_reports", Context.MODE_PRIVATE)
         if (exit.timestamp <= prefs.getLong("dismissed_at", 0L)) return
 
@@ -135,6 +143,11 @@ internal object AppCrashReporter {
             .put("reason_code", exit.reason)
             .put("description", exit.description.orEmpty().take(2000))
             .put("status", exit.status)
+            .put("process_name", exit.processName)
+            .put("process_id", exit.pid)
+            .put("importance_code", exit.importance)
+            .put("importance_label", LibraryScanExitInfo.importanceLabel(exit.importance))
+            .put("session_duration_ms", (exit.timestamp - previousStart).coerceAtLeast(0L))
             .put("pss_kb", exit.pss)
             .put("rss_kb", exit.rss)
         try {

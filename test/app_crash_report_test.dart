@@ -90,6 +90,31 @@ void main() {
     expect(report.report, contains('Fatal signal 6 (SIGABRT)'));
   });
 
+  test('crash reports preserve process importance and session duration', () {
+    final values = _report()
+      ..remove('trace')
+      ..addAll({
+        'reason_code': 5,
+        'process_name': 'example.app',
+        'process_id': 123,
+        'importance_code': 100,
+        'importance_label': 'Foreground activity',
+        'session_duration_ms': 65000,
+        'pss_kb': 0,
+        'rss_kb': 245104,
+      });
+    final report = AppCrashReport.fromMap(values).report;
+    expect(report, contains('Process state before exit: Foreground activity'));
+    expect(
+      report,
+      contains('Process importance before exit (Android code): 100'),
+    );
+    expect(report, contains('Session duration before exit (ms): 65000'));
+    expect(report, contains('Last sampled PSS (KB): 0'));
+    expect(report, contains('Last sampled RSS (KB): 245104'));
+    expect(report, contains('Android did not provide a stack trace'));
+  });
+
   test(
     'pending report survives provider recreation until explicitly dismissed',
     () async {

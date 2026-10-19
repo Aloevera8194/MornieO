@@ -1,5 +1,6 @@
 package com.zarz.spotiflac
 
+import android.app.ActivityManager
 import android.app.ApplicationExitInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -7,6 +8,23 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LibraryScanExitInfoTest {
+    @Test
+    fun distinguishesForegroundUiPlaybackServicesAndCachedProcesses() {
+        assertEquals(
+            "Foreground activity",
+            LibraryScanExitInfo.importanceLabel(ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND),
+        )
+        assertEquals(
+            "Foreground service",
+            LibraryScanExitInfo.importanceLabel(ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE),
+        )
+        assertEquals(
+            "Cached background process",
+            LibraryScanExitInfo.importanceLabel(ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED),
+        )
+        assertEquals("Unknown (999)", LibraryScanExitInfo.importanceLabel(999))
+    }
+
     @Test
     fun excludesOldDeathsAndUnrelatedProcesses() {
         assertTrue(LibraryScanExitInfo.matches("example.app", 200L, "example.app", 100L))

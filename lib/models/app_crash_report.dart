@@ -33,6 +33,11 @@ class AppCrashReport {
       ('reason_code', 'Android exit reason code'),
       ('description', 'Original error'),
       ('status', 'Exit status / signal'),
+      ('process_name', 'Process name'),
+      ('process_id', 'Process ID'),
+      ('importance_code', 'Process importance before exit (Android code)'),
+      ('importance_label', 'Process state before exit'),
+      ('session_duration_ms', 'Session duration before exit (ms)'),
       ('pss_kb', 'Last sampled PSS (KB)'),
       ('rss_kb', 'Last sampled RSS (KB)'),
     ]) {
