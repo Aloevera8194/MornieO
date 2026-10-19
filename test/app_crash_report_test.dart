@@ -34,20 +34,37 @@ void main() {
   Map<Object?, Object?>? runtimeError;
   String? clipboard;
   var failDismiss = false;
+  String? dismissedId;
+  String? shownId;
+  var shownCalls = 0;
 
   setUp(() {
     stored = _report();
     runtimeError = null;
     clipboard = null;
     failDismiss = false;
+    dismissedId = null;
+    shownId = null;
+    shownCalls = 0;
     messenger.setMockMethodCallHandler(backend, (call) async {
       switch (call.method) {
         case 'getPendingAppCrash':
+          if (stored?['id'] == shownId || stored?['id'] == dismissedId) {
+            return null;
+          }
           return stored;
+        case 'getLatestAppCrash':
+          return stored;
+        case 'markAppCrashShown':
+          shownCalls++;
+          if ((call.arguments as Map)['id'] == stored?['id']) {
+            shownId = stored?['id'] as String?;
+          }
+          return null;
         case 'dismissAppCrash':
           if (failDismiss) throw PlatformException(code: 'disk_full');
           if ((call.arguments as Map)['id'] == stored?['id']) {
-            stored = null;
+            dismissedId = stored?['id'] as String?;
           }
           return null;
         case 'recordAppRuntimeError':
@@ -116,7 +133,7 @@ void main() {
   });
 
   test(
-    'pending report survives provider recreation until explicitly dismissed',
+    'reading alone does not consume a notice and dismissal preserves diagnostics',
     () async {
       var container = ProviderContainer();
       expect((await container.read(appCrashProvider.future))?.id, '123456');
@@ -126,9 +143,110 @@ void main() {
       expect((await container.read(appCrashProvider.future))?.id, '123456');
       await container.read(appCrashProvider.notifier).dismiss('123456');
       expect(container.read(appCrashProvider).value, isNull);
-      expect(stored, isNull);
+      expect(stored, isNotNull);
+      expect(
+        (await container.read(latestAppCrashProvider.future))?.id,
+        '123456',
+      );
     },
   );
+
+  test('ANR classification uses the native reason code', () {
+    expect(AppCrashReport.fromMap(_report()).isAnr, isFalse);
+    expect(
+      AppCrashReport.fromMap(_report()..['reason_code'] = 6).isAnr,
+      isTrue,
+    );
+  });
+
+  testWidgets(
+    'rendered notice stays usable but does not return on next launch',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const Scaffold(
+              body: SingleChildScrollView(child: AppCrashBanner()),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(shownId, '123456');
+      expect(shownCalls, 1);
+      expect(find.text('The app previously crashed'), findsOneWidget);
+      await tester.tap(find.text('Copy report for developer'));
+      await tester.pumpAndSettle();
+      expect(clipboard, contains('invalid pointer'));
+      expect(shownCalls, 1);
+      final nextLaunch = ProviderContainer();
+      expect(await nextLaunch.read(appCrashProvider.future), isNull);
+      expect(
+        (await nextLaunch.read(latestAppCrashProvider.future))?.id,
+        '123456',
+      );
+      nextLaunch.dispose();
+    },
+  );
+
+  testWidgets('diagnostics can open a seen ANR without another notification', (
+    tester,
+  ) async {
+    shownId = '123456';
+    stored!['reason_code'] = 6;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('id'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(
+            body: SingleChildScrollView(
+              child: AppCrashBanner(diagnostic: true),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Aplikasi sebelumnya berhenti merespons'), findsOneWidget);
+    expect(find.text('Aplikasi sebelumnya mengalami crash'), findsNothing);
+    expect(find.text('Tutup'), findsNothing);
+    expect(shownCalls, 0);
+    await tester.tap(find.text('Salin laporan untuk developer'));
+    await tester.pumpAndSettle();
+    expect(clipboard, contains('Android exit reason code: 6'));
+  });
+
+  testWidgets('an inactive tab does not consume its crash notice', (
+    tester,
+  ) async {
+    final active = ValueNotifier(false);
+    addTearDown(active.dispose);
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: ValueListenableBuilder<bool>(
+              valueListenable: active,
+              builder: (context, enabled, child) =>
+                  TickerMode(enabled: enabled, child: child!),
+              child: const SingleChildScrollView(child: AppCrashBanner()),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(shownCalls, 0);
+    active.value = true;
+    await tester.pumpAndSettle();
+    expect(shownCalls, 1);
+  });
 
   test('failed dismissal retains the report for another attempt', () async {
     final container = ProviderContainer();

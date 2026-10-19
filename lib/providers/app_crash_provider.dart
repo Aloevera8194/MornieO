@@ -8,6 +8,13 @@ final appCrashProvider =
       AppCrashNotifier.new,
     );
 
+final latestAppCrashProvider = FutureProvider.autoDispose<AppCrashReport?>((
+  ref,
+) async {
+  final report = await PlatformBridge.getLatestAppCrash();
+  return report == null ? null : AppCrashReport.fromMap(report);
+});
+
 class AppCrashNotifier extends AsyncNotifier<AppCrashReport?> {
   @override
   Future<AppCrashReport?> build() async {
@@ -24,6 +31,14 @@ class AppCrashNotifier extends AsyncNotifier<AppCrashReport?> {
     await PlatformBridge.dismissAppCrash(id);
     if (ref.mounted && state.value?.id == id) {
       state = const AsyncData(null);
+    }
+  }
+
+  Future<void> markShown(String id) async {
+    try {
+      await PlatformBridge.markAppCrashShown(id);
+    } catch (error) {
+      AppLogger('AppCrash').e('Could not mark crash notice as shown: $error');
     }
   }
 }

@@ -2251,6 +2251,19 @@ class PlatformBridge {
     await _channel.invokeMethod<void>('dismissAppCrash', {'id': id});
   }
 
+  static Future<Map<String, dynamic>?> getLatestAppCrash() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
+    return _decodeNullableMapResult(
+      await _channel.invokeMethod('getLatestAppCrash'),
+      'getLatestAppCrash',
+    );
+  }
+
+  static Future<void> markAppCrashShown(String id) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    await _channel.invokeMethod<void>('markAppCrashShown', {'id': id});
+  }
+
   static Future<void> recordAppRuntimeError({
     required String error,
     required String stack,

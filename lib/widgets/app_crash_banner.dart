@@ -14,13 +14,41 @@ import 'package:spotiflac_android/widgets/expressive_button.dart';
 /// Home notice for a crash saved by the previous session. Styled like
 /// `ErrorCard`; the full report opens in a sheet instead of expanding inline,
 /// so Home never nests a second scroll area.
-class AppCrashBanner extends ConsumerWidget {
-  const AppCrashBanner({super.key});
+class AppCrashBanner extends ConsumerStatefulWidget {
+  const AppCrashBanner({super.key, this.diagnostic = false});
+
+  /// Allows opening the latest saved report even after its Home notice was seen.
+  final bool diagnostic;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final crash = ref.watch(appCrashProvider).value;
+  ConsumerState<AppCrashBanner> createState() => _AppCrashBannerState();
+}
+
+class _AppCrashBannerState extends ConsumerState<AppCrashBanner> {
+  String? _shownId;
+
+  @override
+  Widget build(BuildContext context) {
+    final crash = widget.diagnostic
+        ? ref.watch(latestAppCrashProvider).value
+        : ref.watch(appCrashProvider).value;
     if (crash == null) return const SizedBox.shrink();
+    final noticeVisible =
+        !widget.diagnostic &&
+        TickerMode.valuesOf(context).enabled &&
+        (ModalRoute.isCurrentOf(context) ?? true);
+    if (noticeVisible && _shownId != crash.id) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted &&
+            !widget.diagnostic &&
+            _shownId != crash.id &&
+            TickerMode.valuesOf(context).enabled &&
+            (ModalRoute.isCurrentOf(context) ?? true)) {
+          _shownId = crash.id;
+          ref.read(appCrashProvider.notifier).markShown(crash.id);
+        }
+      });
+    }
     final tokens = context.tokens;
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = context.l10n;
@@ -50,7 +78,7 @@ class AppCrashBanner extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      l10n.appCrashTitle,
+                      crash.isAnr ? l10n.appAnrTitle : l10n.appCrashTitle,
                       style: TextStyle(
                         color: colorScheme.onErrorContainer,
                         fontWeight: FontWeight.bold,
@@ -58,7 +86,7 @@ class AppCrashBanner extends ConsumerWidget {
                     ),
                     SizedBox(height: tokens.gapXs),
                     Text(
-                      l10n.appCrashMessage,
+                      crash.isAnr ? l10n.appAnrMessage : l10n.appCrashMessage,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onErrorContainer,
                       ),
@@ -90,11 +118,12 @@ class AppCrashBanner extends ConsumerWidget {
                           onPressed: () => _showReport(context, crash),
                           child: Text(l10n.appCrashDetails),
                         ),
-                        ExpressiveButton(
-                          text: true,
-                          onPressed: () => _dismiss(context, ref, crash),
-                          child: Text(l10n.appCrashDismiss),
-                        ),
+                        if (!widget.diagnostic)
+                          ExpressiveButton(
+                            text: true,
+                            onPressed: () => _dismiss(context, ref, crash),
+                            child: Text(l10n.appCrashDismiss),
+                          ),
                       ],
                     ),
                   ],

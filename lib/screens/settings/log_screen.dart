@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_content_card.dart';
+import 'package:spotiflac_android/widgets/app_crash_banner.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart' show ShareParams, SharePlus;
@@ -378,6 +379,7 @@ class _LogScreenState extends State<LogScreen> {
                     ],
             ),
 
+            const SliverToBoxAdapter(child: AppCrashBanner(diagnostic: true)),
             SliverToBoxAdapter(
               child: SettingsSectionHeader(
                 title: context.l10n.logFilterSection,

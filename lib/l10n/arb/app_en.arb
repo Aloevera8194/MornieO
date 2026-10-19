@@ -7578,6 +7578,14 @@
   "lyricsTextSize": "Lyrics text size",
   "lyricsTextPreview": "Follow every line of your favorite song",
   "appCrashTitle": "The app previously crashed",
+  "appAnrTitle": "The app previously stopped responding",
+  "@appAnrTitle": {
+    "description": "Title for an Android ANR report, distinct from a crash."
+  },
+  "appAnrMessage": "A diagnostic report was saved. You can copy it and send it to the developer to help investigate.",
+  "@appAnrMessage": {
+    "description": "Message shown for an Android process exit due to an ANR."
+  },
   "appCrashMessage": "A crash report was saved. Copy it and send it to the developer to help investigate.",
   "appCrashDetails": "View error and log",
   "appCrashCopy": "Copy report for developer",

@@ -10,12 +10,15 @@ class AppCrashReport {
       description = redactDiagnosticText(
         values['description'] as String? ?? '',
       ),
+      // ApplicationExitInfo.REASON_ANR is part of the Android channel contract.
+      isAnr = values['reason_code'] == 6,
       report = _formatReport(values);
 
   final String id;
   final DateTime timestamp;
   final String reason;
   final String description;
+  final bool isAnr;
   final String report;
 
   static String _formatReport(Map<String, dynamic> values) {

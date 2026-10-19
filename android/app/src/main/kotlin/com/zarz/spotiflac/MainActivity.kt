@@ -557,6 +557,12 @@ class MainActivity: FlutterFragmentActivity() {
                         "getLibraryScanProgress" -> handleGetLibraryScanProgress(call, result)
                         "getLibraryScanExitInfo" -> handleGetLibraryScanExitInfo(call, result)
                         "getPendingAppCrash" -> result.success(withContext(Dispatchers.IO) { AppCrashReporter.pendingReport() })
+                        "getLatestAppCrash" -> result.success(withContext(Dispatchers.IO) { AppCrashReporter.pendingReport(noticeOnly = false) })
+                        "markAppCrashShown" -> {
+                            val id = call.argument<String>("id") ?: ""
+                            withContext(Dispatchers.IO) { AppCrashReporter.markReportShown(id) }
+                            result.success(null)
+                        }
                         "dismissAppCrash" -> {
                             val id = call.argument<String>("id") ?: ""
                             withContext(Dispatchers.IO) { AppCrashReporter.dismissReport(id) }

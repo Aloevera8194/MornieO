@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 internal object AppCrashReporter {
     private const val MAX_TEXT = 128 * 1024
     private const val MAX_TRACE_BYTES = 2 * 1024 * 1024
+    private const val MAX_NOTICE_AGE_MS = 7L * 24 * 60 * 60 * 1000
     private lateinit var context: Context
     private var sessionStartedAt = 0L
     private var recovery: Future<*>? = null
@@ -41,6 +42,16 @@ internal object AppCrashReporter {
 
     fun shouldKeepSavedReport(savedAt: Long, exitAt: Long, currentStart: Long): Boolean =
         savedAt >= currentStart || savedAt > exitAt + 5000L
+
+    fun shouldNotify(report: JSONObject, notifiedAt: Long, dismissedAt: Long, now: Long): Boolean {
+        val timestamp = report.optLong("timestamp")
+        val age = now - timestamp
+        val importance = report.optInt("importance_code", 0)
+        return shouldShowSavedReport(report) && timestamp > maxOf(notifiedAt, dismissedAt) &&
+            age in 0L..MAX_NOTICE_AGE_MS &&
+            importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED &&
+            importance != ActivityManager.RunningAppProcessInfo.IMPORTANCE_GONE
+    }
 
     fun initialize(applicationContext: Context) {
         context = applicationContext
@@ -88,7 +99,7 @@ internal object AppCrashReporter {
         executor.shutdown()
     }
 
-    fun pendingReport(): Map<String, Any?>? {
+    fun pendingReport(noticeOnly: Boolean = true): Map<String, Any?>? {
         recovery?.get()
         return synchronized(storageLock) {
             val report = readJson("pending") ?: return@synchronized null
@@ -96,10 +107,24 @@ internal object AppCrashReporter {
             // crashes. Apply the same policy to those already persisted.
             if (!shouldShowSavedReport(report)) return@synchronized null
             val prefs = context.getSharedPreferences("app_crash_reports", Context.MODE_PRIVATE)
-            if (report.optLong("timestamp") <= prefs.getLong("dismissed_at", 0L)) return@synchronized null
+            if (noticeOnly && !shouldNotify(
+                    report, prefs.getLong("notified_at", 0L), prefs.getLong("dismissed_at", 0L),
+                    System.currentTimeMillis(),
+                )
+            ) return@synchronized null
             report.keys().asSequence().associateWith { key ->
                 report.get(key).takeUnless { it == JSONObject.NULL }
             }
+        }
+    }
+
+    fun markReportShown(id: String) {
+        recovery?.get()
+        synchronized(storageLock) {
+            val report = readJson("pending") ?: return
+            if (report.optString("id") != id) return
+            val prefs = context.getSharedPreferences("app_crash_reports", Context.MODE_PRIVATE)
+            check(prefs.edit().putLong("notified_at", report.optLong("timestamp")).commit())
         }
     }
 
@@ -110,7 +135,7 @@ internal object AppCrashReporter {
             if (report.optString("id") != id) return
             val prefs = context.getSharedPreferences("app_crash_reports", Context.MODE_PRIVATE)
             check(prefs.edit().putLong("dismissed_at", report.optLong("timestamp")).commit())
-            file("pending").delete()
+            // Keep the latest report available in diagnostics after hiding the notice.
         }
     }
 
