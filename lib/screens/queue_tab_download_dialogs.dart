@@ -37,9 +37,8 @@ extension _QueueTabDownloadDialogs on _QueueTabState {
     final colorScheme = Theme.of(context).colorScheme;
     final isRateLimit = item.errorType == DownloadErrorType.rateLimit;
     final isCancelled = item.status == DownloadStatus.skipped;
-    final isFolderAccessLost =
-        item.errorMessage == safPermissionLostErrorMessage ||
-        item.errorMessage == downloadFolderAccessLostErrorMessage;
+    final errorMessage = _downloadErrorForDisplay(item);
+    final isFolderAccessLost = _requiresFolderReselection(item);
     final title = isCancelled
         ? context.l10n.queueCancelledTitle
         : isRateLimit
@@ -49,8 +48,8 @@ extension _QueueTabDownloadDialogs on _QueueTabState {
         ? context.l10n.queueCancelledMessage
         : isRateLimit
         ? context.l10n.queueRateLimitMessage
-        : (item.errorMessage.trim().isNotEmpty
-              ? _localizedDownloadError(context, item.errorMessage)
+        : (errorMessage.trim().isNotEmpty
+              ? _localizedDownloadError(context, errorMessage)
               : context.l10n.updateDownloadFailed);
     final action = await showAppDialog<String>(
       context: context,

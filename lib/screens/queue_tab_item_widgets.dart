@@ -197,6 +197,27 @@ extension _QueueTabItemWidgets on _QueueTabState {
     );
   }
 
+  bool _requiresFolderReselection(DownloadItem item) =>
+      item.status == DownloadStatus.failed &&
+      item.networkDownloadFolder.isEmpty &&
+      (item.errorType == DownloadErrorType.permission ||
+          item.error == safPermissionLostErrorMessage ||
+          item.error == downloadFolderAccessLostErrorMessage);
+
+  /// Preserve folder recovery errors before the model's generic type mapping.
+  /// Legacy permission failures also need the picker instead of another retry.
+  String _downloadErrorForDisplay(DownloadItem item) {
+    final raw = item.error;
+    if (raw == safPermissionLostErrorMessage ||
+        raw == downloadFolderAccessLostErrorMessage) {
+      return raw!;
+    }
+    if (_requiresFolderReselection(item)) {
+      return downloadFolderAccessLostErrorMessage;
+    }
+    return item.errorMessage;
+  }
+
   /// Download error messages are stored as fixed English sentinels on the
   /// item (so code can match on them); translate the known ones for display.
   String _localizedDownloadError(BuildContext context, String raw) {
@@ -219,7 +240,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
   ) {
     if (item.errorType != DownloadErrorType.rateLimit) {
       return Text(
-        _localizedDownloadError(context, item.errorMessage),
+        _localizedDownloadError(context, _downloadErrorForDisplay(item)),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(
@@ -533,14 +554,23 @@ extension _QueueTabItemWidgets on _QueueTabState {
         );
       case DownloadStatus.failed:
       case DownloadStatus.skipped:
+        final requiresFolderReselection = _requiresFolderReselection(item);
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             AppIconButton(
-              onPressed: () =>
-                  ref.read(downloadQueueProvider.notifier).retryItem(item.id),
-              icon: Icon(Icons.refresh, color: colorScheme.primary),
-              tooltip: context.l10n.dialogRetry,
+              onPressed: requiresFolderReselection
+                  ? () => _showDownloadErrorDialog(context, item)
+                  : () => ref
+                        .read(downloadQueueProvider.notifier)
+                        .retryItem(item.id),
+              icon: Icon(
+                requiresFolderReselection ? Icons.folder_open : Icons.refresh,
+                color: colorScheme.primary,
+              ),
+              tooltip: requiresFolderReselection
+                  ? context.l10n.downloadFolderReselect
+                  : context.l10n.dialogRetry,
               style: IconButton.styleFrom(
                 backgroundColor: colorScheme.primaryContainer.withValues(
                   alpha: 0.3,
