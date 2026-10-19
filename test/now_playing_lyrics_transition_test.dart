@@ -2679,6 +2679,71 @@ void main() {
     }
   }
 
+  for (final mornye in [false, true]) {
+    testWidgets('swiping up the mini player opens the player '
+        '(Mornye: $mornye)', (tester) async {
+      await pumpNowPlaying(
+        tester,
+        theme: mornye ? MornyeTheme.build(Brightness.dark) : ThemeData(),
+        size: const Size(393, 852),
+        // Paused, so the Material progress bar lets the frames settle.
+        wrapPlayer: (_) => const Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12, 0, 12, 90),
+              child: MiniPlayer(),
+            ),
+          ),
+        ),
+      );
+      mediaItems.add(item('first'));
+      await settlePlayer(tester);
+      final title = find.descendant(
+        of: find.byType(MiniPlayer),
+        matching: find.text('First'),
+      );
+      final player = find.byType(NowPlayingScreen);
+
+      // A downward drag never opens the player.
+      await tester.drag(title, const Offset(0, 120));
+      await settlePlayer(tester);
+      expect(player, findsNothing);
+
+      // A nudge, or a pull taken back down, leaves it closed.
+      for (final moves in [
+        [const Offset(0, -30)],
+        [const Offset(0, -120), const Offset(0, 110)],
+      ]) {
+        final gesture = await tester.startGesture(tester.getCenter(title));
+        for (final move in moves) {
+          await gesture.moveBy(move);
+        }
+        await tester.pump(const Duration(milliseconds: 200));
+        await gesture.up();
+        await settlePlayer(tester);
+        expect(player, findsNothing);
+      }
+
+      // A slow pull that stops before release opens it.
+      final gesture = await tester.startGesture(tester.getCenter(title));
+      await gesture.moveBy(const Offset(0, -150));
+      await tester.pump(const Duration(milliseconds: 200));
+      await gesture.up();
+      await settlePlayer(tester);
+      expect(player, findsOneWidget);
+      expect(tester.getTopLeft(player).dy, 0);
+      Navigator.of(tester.element(player)).pop();
+      await settlePlayer(tester);
+      expect(player, findsNothing);
+
+      await tester.fling(title, const Offset(0, -60), 1500);
+      await settlePlayer(tester);
+      expect(player, findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final lyrics in [true, false]) {
     testWidgets(
       'tapping the compact motion cover returns from ${lyrics ? 'lyrics' : 'queue'}',
