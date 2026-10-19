@@ -32,6 +32,10 @@ class NotificationService {
   String get embeddingMetadataLabel =>
       _l10n?.notifEmbeddingMetadata ?? 'Embedding metadata...';
 
+  String get libraryScanInterruptedMessage =>
+      _l10n?.notifLibraryScanInterruptedBody ??
+      'The previous library scan was interrupted. Scan the folder again to continue. Your indexed tracks are still available.';
+
   static const String libraryScanWorkKind = 'library_scan';
   static const String updateDownloadWorkKind = 'app_update';
 

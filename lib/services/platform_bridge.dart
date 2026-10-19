@@ -2238,6 +2238,16 @@ class PlatformBridge {
 
   // ---- Library scan ----
 
+  static Future<Map<String, dynamic>?> getLibraryScanExitInfo({
+    required int startedAfter,
+  }) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
+    final result = await _channel.invokeMethod('getLibraryScanExitInfo', {
+      'started_after': startedAfter,
+    });
+    return _decodeNullableMapResult(result, 'getLibraryScanExitInfo');
+  }
+
   static Future<void> setLibraryCoverCacheDir(String cacheDir) async {
     await _channel.invokeMethod('setLibraryCoverCacheDir', {
       'cache_dir': cacheDir,

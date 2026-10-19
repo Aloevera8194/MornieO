@@ -2,6 +2,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const localLibraryLastScannedAtKey = 'local_library_last_scanned_at';
 const localLibraryActiveScanSourceKey = 'local_library_active_scan_source';
+const localLibraryActiveScanStartedAtKey =
+    'local_library_active_scan_started_at';
+const localLibraryRecoveredScanKey = 'local_library_recovered_scan';
 
 DateTime? readLocalLibraryLastScannedAt(SharedPreferences prefs) {
   final lastScannedAtStr = prefs.getString(localLibraryLastScannedAtKey);

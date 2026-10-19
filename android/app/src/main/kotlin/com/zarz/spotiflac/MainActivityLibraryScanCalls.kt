@@ -79,6 +79,14 @@ internal suspend fun MainActivity.handleGetLibraryScanProgress(call: MethodCall,
     result.success(parseJsonPayload(response))
 }
 
+internal suspend fun MainActivity.handleGetLibraryScanExitInfo(call: MethodCall, result: MethodChannel.Result) {
+    val startedAfter = call.argument<Number>("started_after")?.toLong() ?: 0L
+    val response = withContext(Dispatchers.IO) {
+        LibraryScanExitInfo.read(applicationContext, startedAfter)
+    }
+    result.success(response)
+}
+
 internal suspend fun MainActivity.handleCancelLibraryScan(call: MethodCall, result: MethodChannel.Result) {
     withContext(Dispatchers.IO) {
         safScanCancel = true

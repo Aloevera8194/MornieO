@@ -76,6 +76,7 @@ class MainActivity: FlutterFragmentActivity() {
         "scanSafTreeToNDJSONFile",
         "scanSafTreeIncremental",
         "getLibraryScanProgress",
+        "getLibraryScanExitInfo",
         "cancelLibraryScan",
         "pauseLibraryScan",
         "resumeLibraryScan",
@@ -553,6 +554,7 @@ class MainActivity: FlutterFragmentActivity() {
                         "scanSafTreeIncremental" -> handleScanSafTreeIncremental(call, result)
                         "getSafFileModTimes" -> handleGetSafFileModTimes(call, result)
                         "getLibraryScanProgress" -> handleGetLibraryScanProgress(call, result)
+                        "getLibraryScanExitInfo" -> handleGetLibraryScanExitInfo(call, result)
                         "cancelLibraryScan" -> handleCancelLibraryScan(call, result)
                         "pauseLibraryScan" -> handlePauseLibraryScan(call, result)
                         "resumeLibraryScan" -> handleResumeLibraryScan(call, result)

@@ -5475,6 +5475,10 @@
   "@notifLibraryScanFailed": {
     "description": "Notification title when library scan fails"
   },
+  "notifLibraryScanInterruptedBody": "The previous library scan was interrupted. Scan the folder again to continue. Your indexed tracks are still available.",
+  "@notifLibraryScanInterruptedBody": {
+    "description": "Recovery notice after the app stops during a library scan"
+  },
   "notifLibraryScanCancelled": "Library scan cancelled",
   "@notifLibraryScanCancelled": {
     "description": "Notification title when library scan is cancelled by the user"

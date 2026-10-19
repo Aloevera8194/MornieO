@@ -170,6 +170,8 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
   bool _isLoaded = false;
   bool _hasLoadedFromDatabase = false;
   Future<void>? _loadFuture;
+  Future<void>? _scanRecovery;
+  Future<void> _scanNotificationTail = Future<void>.value();
   bool _scanCancelRequested = false;
   bool _scanPauseRequested = false;
   bool _scanInProgress = false;
@@ -255,6 +257,8 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
     state = state.copyWith(isLoading: true, loadFailed: false);
 
     try {
+      await _recoverInterruptedScan();
+      if (!ref.mounted) return;
       // Folder configuration is independent of the potentially expensive
       // track index and storage probes. Publish it before either can fail.
       final configuredSources = await _db.getSources();
@@ -459,6 +463,8 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
     String? iosBookmark,
     String? sourceId,
   }) async {
+    if (!ref.mounted) return;
+    await _recoverInterruptedScan();
     if (!ref.mounted) return;
     if (_scanInProgress || state.isScanning) {
       _log.w('Scan already in progress');

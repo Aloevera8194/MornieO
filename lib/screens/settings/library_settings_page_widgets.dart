@@ -142,7 +142,12 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
                 child: const AppIcon(Icons.sd_storage_outlined, size: 16),
               )
             : null,
-        subtitle: pathLine == null ? details : '$pathLine\n$details',
+        subtitle: [
+          if (pathLine != null) pathLine,
+          details,
+          if (!isScanning && source.lastScanError?.trim().isNotEmpty == true)
+            context.friendlyError(source.lastScanError!),
+        ].join('\n'),
         onTap: () => _showActions(context),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

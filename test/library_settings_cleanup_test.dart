@@ -112,6 +112,38 @@ Future<void> _mount(
 
 void main() {
   for (final mornye in [false, true]) {
+    testWidgets('source shows the scan failure reason (Mornye: $mornye)', (
+      tester,
+    ) async {
+      const error =
+          'The previous library scan was interrupted. Scan again to continue.';
+      final library = _Library(
+        LocalLibraryState(
+          totalCount: 1877,
+          sources: const [
+            LocalLibrarySource(
+              id: 'music',
+              path: '/music',
+              displayName: 'Saved music',
+              trackCount: 1877,
+              lastScanError: error,
+            ),
+          ],
+        ),
+        () async => 0,
+      );
+      await _mount(
+        tester,
+        mornye: mornye,
+        library: library,
+        history: _History(0, () async => 0),
+      );
+      await tester.scrollUntilVisible(find.text('Saved music'), 200);
+      await tester.pumpAndSettle();
+      expect(find.textContaining(error), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('failed load shows saved folder and offers retry ($mornye)', (
       tester,
     ) async {

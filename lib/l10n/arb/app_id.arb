@@ -5475,6 +5475,10 @@
   "@notifLibraryScanFailed": {
     "description": "Notification title when library scan fails"
   },
+  "notifLibraryScanInterruptedBody": "Pemindaian koleksi sebelumnya terputus. Pindai ulang folder untuk melanjutkan. Lagu yang sudah terindeks tetap tersedia.",
+  "@notifLibraryScanInterruptedBody": {
+    "description": "Recovery notice after the app stops during a library scan"
+  },
   "notifLibraryScanCancelled": "Pindai koleksi dibatalkan",
   "@notifLibraryScanCancelled": {
     "description": "Notification title when library scan is cancelled by the user"
