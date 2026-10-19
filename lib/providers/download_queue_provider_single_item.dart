@@ -998,8 +998,6 @@ class _DownloadRun {
       await _embedLocalFlac(path);
     } else if (metadataEmbeddingEnabled &&
         !isContentUriPath &&
-        effectiveSafMode &&
-        result.deferredSafPublish &&
         !isFlacFile &&
         !isM4aFile &&
         !wasExisting) {
@@ -1008,11 +1006,15 @@ class _DownloadRun {
           path.toLowerCase().endsWith('.ogg') ||
           resultOutputExt == '.opus' ||
           resultOutputExt == '.ogg';
-      await _embedFinalMetadata(
-        path,
-        format: isOpus ? 'opus' : 'mp3',
-        writeExternalLrc: false,
-      );
+      final isMp3 =
+          path.toLowerCase().endsWith('.mp3') || resultOutputExt == '.mp3';
+      if (isOpus || isMp3) {
+        await _embedFinalMetadata(
+          path,
+          format: isOpus ? 'opus' : 'mp3',
+          writeExternalLrc: false,
+        );
+      }
     }
   }
 

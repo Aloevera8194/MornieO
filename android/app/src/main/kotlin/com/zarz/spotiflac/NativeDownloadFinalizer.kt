@@ -477,7 +477,11 @@ object NativeDownloadFinalizer {
         )
 
     internal fun metadataCoverUrl(input: FinalizeInput): String =
-        trackString(input, "coverUrl", requestString(input, "cover_url"))
+        NativeFinalizationPolicy.metadataCoverUrl(
+            resultValue = resultString(input, "cover_url"),
+            requestValue = requestString(input, "cover_url"),
+            trackValue = trackString(input, "coverUrl", ""),
+        )
 
     internal fun trackInt(input: FinalizeInput, key: String, fallback: Int): Int {
         val value = input.track.optInt(key, 0)

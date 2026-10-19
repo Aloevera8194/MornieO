@@ -898,7 +898,7 @@ impl Backend {
         // Go backend's local FLAC embed step; provider lyrics are reused.
         let embed = request.embed_metadata && resolved.output_ext == ".flac";
         let cover = if embed {
-            let url = [text(&response, "cover_url"), &request.cover_url]
+            let url = [request.cover_url.as_str(), text(&response, "cover_url")]
                 .into_iter()
                 .map(str::trim)
                 .find(|url| !url.is_empty())

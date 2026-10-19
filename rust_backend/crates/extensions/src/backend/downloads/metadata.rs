@@ -167,7 +167,11 @@ pub(super) fn apply_metadata(request: &mut DownloadRequest, track: &Value, sourc
             continue;
         }
         if (text(&value, target).is_empty()
-            || (source && matches!(target, "isrc" | "tidal_id" | "qobuz_id" | "deezer_id")))
+            || (source
+                && matches!(
+                    target,
+                    "isrc" | "cover_url" | "tidal_id" | "qobuz_id" | "deezer_id"
+                )))
             && !text(track, key).is_empty()
         {
             value[target] = track[key].clone();

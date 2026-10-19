@@ -197,6 +197,34 @@ void main() {
 
   for (final format in ['flac', 'm4a', 'mp3', 'opus']) {
     test(
+      '$format embeds enriched artwork at the configured resolution',
+      () async {
+        final cover = await File(
+          '${directory.path}/full-size.png',
+        ).writeAsBytes([1, 2, 3]);
+        final harness = EmbeddingHarness(
+          loadCover: (url, dimension) async {
+            expect(url, 'https://example.test/cover/3000.jpg');
+            expect(dimension, 0);
+            return cover.path;
+          },
+        );
+        await harness.service.embed(
+          '${directory.path}/song.$format',
+          track.copyWith(coverUrl: 'https://example.test/cover/3000.jpg'),
+          settings: const AppSettings(embedLyrics: false),
+          extensionState: const ExtensionState(),
+          format: format,
+        );
+        expect(harness.nativeWrites.single['cover_path'], cover.path);
+        harness.service.clearCoverCache();
+        await _expectDeleted([cover.path]);
+      },
+    );
+  }
+
+  for (final format in ['flac', 'm4a', 'mp3', 'opus']) {
+    test(
       '$format native tags retain writer-specific keys and full credits',
       () async {
         final harness = EmbeddingHarness();

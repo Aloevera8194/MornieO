@@ -8,6 +8,16 @@ import org.junit.Test
 
 class NativeFinalizationPolicyTest {
     @Test
+    fun metadataCoverUsesEnrichedResultBeforeTheOriginalThumbnail() {
+        val fullSize = "https://example.test/cover/3000.jpg"
+        val thumbnail = "https://example.test/cover/300.jpg"
+        assertEquals(fullSize, NativeFinalizationPolicy.metadataCoverUrl(fullSize, thumbnail, thumbnail))
+        assertEquals(fullSize, NativeFinalizationPolicy.metadataCoverUrl("", fullSize, thumbnail))
+        assertEquals(thumbnail, NativeFinalizationPolicy.metadataCoverUrl(null, "null", thumbnail))
+        assertEquals("", NativeFinalizationPolicy.metadataCoverUrl(null, " ", null))
+    }
+
+    @Test
     fun metadataSeparatorsPreserveNamesAndSourceDefaults() {
         assertEquals("A; B; C", NativeFinalizationPolicy.metadataTagValue(" A, B ; C ", "; "))
         assertEquals(" A, B ", NativeFinalizationPolicy.metadataTagValue(" A, B ", ""))

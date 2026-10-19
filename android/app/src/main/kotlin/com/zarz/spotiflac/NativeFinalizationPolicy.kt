@@ -373,6 +373,15 @@ internal object NativeFinalizationPolicy {
             ?: ""
     }
 
+    fun metadataCoverUrl(resultValue: String?, requestValue: String?, trackValue: String?): String {
+        // The backend result preserves the selected metadata cover, including
+        // full-size artwork returned by source enrichment.
+        return normalizeOptional(resultValue)
+            ?: normalizeOptional(requestValue)
+            ?: normalizeOptional(trackValue)
+            ?: ""
+    }
+
     // Same separator set as the Rust writer and Dart's primaryArtistTagValue.
     // Android's regex engine rejects Pattern.UNICODE_CHARACTER_CLASS when this
     // object initializes, so Unicode spaces are listed explicitly instead.

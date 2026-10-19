@@ -16,6 +16,40 @@ const RECORDING: &str = r#"{"recordings":[{"tags":[{"name":"rock","count":1}],"r
 const CATALOG: &str = r#"{"id":7,"album":{"id":9},"genres":{"data":[{"name":"Jazz"}]},"label":"Label","copyright":"Copyright"}"#;
 
 #[test]
+fn source_enrichment_upgrades_artwork_without_supplemental_artwork_overrides() {
+    let mut request = DownloadRequest {
+        cover_url: "https://example.test/selected/300.jpg".into(),
+        ..Default::default()
+    };
+    let enriched = json!({"cover_url":"https://example.test/selected/3000.jpg"});
+    apply_metadata(&mut request, &enriched, true);
+    assert_eq!(request.cover_url, enriched["cover_url"]);
+    apply_metadata(&mut request, &json!({"cover_url":""}), true);
+    assert_eq!(request.cover_url, enriched["cover_url"]);
+    apply_metadata(
+        &mut request,
+        &json!({"cover_url":"https://example.test/other-release/300.jpg"}),
+        false,
+    );
+    assert_eq!(request.cover_url, enriched["cover_url"]);
+    for format in ["flac", "mp3", "opus", "ogg", "m4a"] {
+        let response = success(
+            &request,
+            &json!({"cover_url":"https://example.test/audio-provider/300.jpg"}),
+            &format!("track.{format}"),
+            false,
+            &ExtensionManifest::default(),
+            &|| Ok(()),
+        )
+        .unwrap();
+        assert_eq!(response["cover_url"], enriched["cover_url"]);
+    }
+    request.cover_url.clear();
+    apply_metadata(&mut request, &enriched, false);
+    assert_eq!(request.cover_url, enriched["cover_url"]);
+}
+
+#[test]
 fn download_preserves_source_artist_credits_in_response_and_embedded_tags() {
     let manifest = ExtensionManifest {
         name: "audio-provider".into(),

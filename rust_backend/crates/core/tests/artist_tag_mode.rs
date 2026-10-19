@@ -1,9 +1,67 @@
-use spotiflac_core::tags::{embed_flac_metadata, read_audio_tags, rewrite_audio_tags};
+use spotiflac_core::tags::{
+    embed_flac_metadata, extract_cover, read_audio_tags, rewrite_audio_tags,
+};
 use std::collections::BTreeMap;
 use std::io::Cursor;
 
 const PAYLOAD: &[u8] = b"\xff\xf8\x12\x34unchanged audio payload";
 const CREDITS: &str = "Artist A, Artist B & Artist C";
+
+#[test]
+fn high_resolution_artwork_replaces_embedded_thumbnails_without_changing_audio() {
+    let image = |size| {
+        let mut output = Cursor::new(Vec::new());
+        image::DynamicImage::new_rgb8(size, size)
+            .write_to(&mut output, image::ImageFormat::Png)
+            .unwrap();
+        output.into_inner()
+    };
+    let thumbnail = image(300);
+    let full_size = image(1200);
+    let fields = BTreeMap::from([("title".into(), "Example".into())]);
+    for format in ["flac", "mp3", "m4a", "opus", "ogg", "wav", "aiff"] {
+        let original = source(if format == "ogg" { "opus" } else { format });
+        let mut low_resolution = Vec::new();
+        rewrite_audio_tags(
+            &mut Cursor::new(original),
+            &mut low_resolution,
+            format,
+            &fields,
+            Some(&thumbnail),
+            &|| Ok(()),
+        )
+        .unwrap();
+        let mut output = Vec::new();
+        rewrite_audio_tags(
+            &mut Cursor::new(low_resolution),
+            &mut output,
+            format,
+            &fields,
+            Some(&full_size),
+            &|| Ok(()),
+        )
+        .unwrap();
+        let cover = extract_cover(&mut Cursor::new(&output), format, &|| Ok(())).unwrap();
+        assert_eq!(cover.data.len(), full_size.len(), "{format}");
+        assert_eq!(cover.data, full_size, "{format}");
+        let decoded = image::load_from_memory(&cover.data).unwrap();
+        assert_eq!(
+            (decoded.width(), decoded.height()),
+            (1200, 1200),
+            "{format}"
+        );
+        assert_eq!(
+            read_audio_tags(&mut Cursor::new(&output), format, &|| Ok(()))
+                .unwrap()
+                .title,
+            "Example"
+        );
+        assert!(
+            output.windows(PAYLOAD.len()).any(|chunk| chunk == PAYLOAD),
+            "{format}"
+        );
+    }
+}
 
 #[test]
 fn custom_separators_round_trip_all_tag_writers_without_touching_audio() {
