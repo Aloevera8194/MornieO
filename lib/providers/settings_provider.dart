@@ -689,6 +689,20 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _saveSettings();
   }
 
+  void setMusicHapticsSensitivity(double value) {
+    state = state.copyWith(
+      musicHapticsSensitivity: musicHapticsLevelFromJson(value),
+    );
+    _saveSettings();
+  }
+
+  void setMusicHapticsStrength(double value) {
+    state = state.copyWith(
+      musicHapticsStrength: musicHapticsLevelFromJson(value),
+    );
+    _saveSettings();
+  }
+
   void setPlayerCoverStyle(String style) {
     state = state.copyWith(playerCoverStyle: playerCoverStyleFromJson(style));
     _saveSettings();

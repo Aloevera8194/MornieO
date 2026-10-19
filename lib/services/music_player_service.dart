@@ -205,6 +205,8 @@ class MusicPlayerHandler extends BaseAudioHandler
       _refreshPlaybackAutomation();
     }
     if (previous.musicHaptics != settings.musicHaptics ||
+        previous.musicHapticsSensitivity != settings.musicHapticsSensitivity ||
+        previous.musicHapticsStrength != settings.musicHapticsStrength ||
         previous.playerMode != settings.playerMode) {
       _updateHaptics();
     }
@@ -385,6 +387,10 @@ class MusicPlayerHandler extends BaseAudioHandler
         (document || !path.contains('://')) &&
         _settings.musicHaptics &&
         _settings.playerMode == 'internal';
+    _haptics.configure(
+      sensitivity: _settings.musicHapticsSensitivity,
+      strength: _settings.musicHapticsStrength,
+    );
     _haptics.update(local ? path : null);
   }
 

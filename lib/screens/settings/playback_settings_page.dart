@@ -18,6 +18,7 @@ import 'package:spotiflac_android/widgets/player_volume_control.dart';
 import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/discord_presence_settings.dart';
 import 'package:spotiflac_android/widgets/automix_settings.dart';
+import 'package:spotiflac_android/widgets/music_haptics_settings.dart';
 
 class PlaybackSettingsPage extends ConsumerStatefulWidget {
   const PlaybackSettingsPage({super.key});
@@ -153,6 +154,10 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                       .read(settingsProvider.notifier)
                       .setMusicHaptics(value),
                 ),
+                if (settings.musicHaptics)
+                  MusicHapticsSettings(
+                    enabled: settings.playerMode == 'internal',
+                  ),
                 SettingsSwitchItem(
                   icon: Icons.compare_arrows,
                   title: 'AutoMix',

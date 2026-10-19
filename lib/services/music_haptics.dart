@@ -17,17 +17,56 @@ import 'package:spotiflac_android/utils/logger.dart' show AppLogger;
 const musicHapticsSampleRate = 4000;
 const _hop = 40; // 10 ms frames.
 const _maxSeconds = 1200;
+const _minimumGapMilliseconds = 150; // At most about six pulses per second.
+const _minimumScore = 0.5; // The most sensitive setting halves the threshold.
+
+/// The threshold multiple a hit must clear at [sensitivity] (0 to 1).
+///
+/// The middle setting keeps the tuned threshold; the ends make it 1.6 times
+/// stricter or twice as permissive.
+double musicHapticsScoreFor(double sensitivity) {
+  final value = sensitivity.clamp(0.0, 1.0);
+  return value < 0.5 ? 1.6 - 1.2 * value : 1.5 - value;
+}
 
 /// One pulse per detected hit, stored compactly for a whole song.
 class HapticTrack {
-  HapticTrack(this.times, this.intensity, this.sharpness);
+  HapticTrack(this.times, this.intensity, this.sharpness, [this.scores]);
 
   /// Pulse starts in milliseconds, ascending.
   final Int32List times;
   final Uint8List intensity;
   final Uint8List sharpness;
 
+  /// How many times each candidate clears the tuned threshold. Null when the
+  /// pulses are already selected and play as given.
+  final Float32List? scores;
+
   int get length => times.length;
+
+  /// The pulses that clear [sensitivity], spaced as the analysis would have.
+  ///
+  /// Candidates are kept for the whole range, so a new sensitivity applies
+  /// without decoding the song again.
+  HapticTrack select(double sensitivity) {
+    final scores = this.scores;
+    if (scores == null) return this;
+    final required = musicHapticsScoreFor(sensitivity);
+    final kept = <int>[];
+    var last = -_minimumGapMilliseconds;
+    for (var n = 0; n < times.length; n++) {
+      if (scores[n] <= required || times[n] - last < _minimumGapMilliseconds) {
+        continue;
+      }
+      kept.add(n);
+      last = times[n];
+    }
+    return HapticTrack(
+      Int32List.fromList([for (final n in kept) times[n]]),
+      Uint8List.fromList([for (final n in kept) intensity[n]]),
+      Uint8List.fromList([for (final n in kept) sharpness[n]]),
+    );
+  }
 
   /// The first pulse at or after [milliseconds].
   int indexAt(int milliseconds) {
@@ -52,10 +91,18 @@ class HapticTrack {
 /// as they are what a phone's motor renders well. An adaptive threshold
 /// follows the song's own density, so busy and sparse passages both produce
 /// a readable pattern instead of a constant buzz.
+///
+/// The result holds every candidate down to the most sensitive setting; use
+/// [HapticTrack.select] to pick the pulses for one setting.
 HapticTrack analyzeHapticPcm(Uint8List pcm) {
   final samples = ByteData.sublistView(pcm);
   final frames = pcm.length ~/ (2 * _hop);
-  final empty = HapticTrack(Int32List(0), Uint8List(0), Uint8List(0));
+  final empty = HapticTrack(
+    Int32List(0),
+    Uint8List(0),
+    Uint8List(0),
+    Float32List(0),
+  );
   if (frames < 8) return empty;
   final low = Float64List(frames);
   final high = Float64List(frames);
@@ -110,12 +157,11 @@ HapticTrack analyzeHapticPcm(Uint8List pcm) {
 
   const radius = 40; // ±0.4 s of context for the threshold.
   const peak = 3; // A hit must be the largest rise within ±30 ms.
-  const minimumGap = 15; // At most about six pulses per second.
   final found = <int>[];
   final excess = <double>[];
-  var last = -minimumGap;
+  final score = <double>[];
   for (var i = 2; i < frames; i++) {
-    if (loudness[i] < gate || i - last < minimumGap) continue;
+    if (loudness[i] < gate) continue;
     final value = onset[i];
     final from = max(0, i - radius);
     final to = min(frames, i + radius + 1);
@@ -123,7 +169,7 @@ HapticTrack analyzeHapticPcm(Uint8List pcm) {
       0.15,
       (prefix[to] - prefix[from]) / (to - from) * 2.4,
     );
-    if (value <= threshold) continue;
+    if (value <= threshold * _minimumScore) continue;
     var largest = true;
     for (var j = max(0, i - peak); j <= min(frames - 1, i + peak); j++) {
       if (onset[j] > value) {
@@ -134,14 +180,22 @@ HapticTrack analyzeHapticPcm(Uint8List pcm) {
     if (!largest) continue;
     found.add(i);
     excess.add(value - threshold);
-    last = i;
+    score.add(value / threshold);
   }
   if (found.isEmpty) return empty;
-  final ranked = List<double>.of(excess)..sort();
-  final reference = max(1e-6, ranked[(ranked.length * 0.95).floor()]);
+  // Scale accents against the hits the tuned threshold keeps, so the default
+  // setting feels the same and extra hits from higher sensitivity stay soft.
+  final ranked = [
+    for (final value in excess)
+      if (value > 0) value,
+  ]..sort();
+  final reference = ranked.isEmpty
+      ? 1e-6
+      : max(1e-6, ranked[(ranked.length * 0.95).floor()]);
   final times = Int32List(found.length);
   final intensity = Uint8List(found.length);
   final sharpness = Uint8List(found.length);
+  final scores = Float32List.fromList(score);
   for (var n = 0; n < found.length; n++) {
     final i = found[n];
     // Log rises ignore level, so compare the bands' linear rises instead.
@@ -155,7 +209,7 @@ HapticTrack analyzeHapticPcm(Uint8List pcm) {
         .clamp(1, 255);
     sharpness[n] = (255 * (1 - bass)).round().clamp(0, 255);
   }
-  return HapticTrack(times, intensity, sharpness);
+  return HapticTrack(times, intensity, sharpness, scores);
 }
 
 /// Decodes a low-rate mono copy of a local song once and caches its pulses.
@@ -332,18 +386,34 @@ class MusicHaptics {
   final Duration lead;
 
   String? _path;
+  HapticTrack? _analyzed;
   HapticTrack? _track;
   Timer? _timer;
   int _generation = 0;
   bool _unsupported = false;
+  double _sensitivity = 0.5;
+  double _gain = 1;
 
   @visibleForTesting
   HapticTrack? get track => _track;
+
+  /// Applies the user's [sensitivity] and [strength], both 0 to 1 with the
+  /// tuned behaviour at 0.5. A loaded song is reselected without decoding.
+  void configure({required double sensitivity, required double strength}) {
+    _gain = 0.4 + 1.2 * strength.clamp(0.0, 1.0);
+    if (sensitivity == _sensitivity) return;
+    _sensitivity = sensitivity;
+    final analyzed = _analyzed;
+    if (analyzed == null) return;
+    _track = analyzed.select(sensitivity);
+    _schedule();
+  }
 
   /// [path] is null when haptics are off or the song is not a local file.
   void update(String? path) {
     if (path != _path) {
       _path = path;
+      _analyzed = null;
       _track = null;
       _timer?.cancel();
       _generation++;
@@ -357,7 +427,8 @@ class MusicHaptics {
   Future<void> _load(String path, int generation) async {
     final track = await _analyzer.analyze(path);
     if (generation != _generation) return;
-    _track = track;
+    _analyzed = track;
+    _track = track?.select(_sensitivity);
     _schedule();
   }
 
@@ -397,7 +468,7 @@ class MusicHaptics {
       if (offset >= -40) {
         unawaited(
           _pulse(
-            track.intensity[index] / 255,
+            (track.intensity[index] / 255 * _gain).clamp(0.0, 1.0),
             track.sharpness[index] / 255,
           ).catchError((Object error) {
             if (error is MissingPluginException) {

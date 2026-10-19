@@ -51,7 +51,7 @@ class _PendingAnalyzer extends MusicHapticsAnalyzer {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   test('a kick on every beat becomes one deep pulse per beat', () {
-    final track = analyzeHapticPcm(_pcm(6, _hits(60, 0.5, 0.25)));
+    final track = analyzeHapticPcm(_pcm(6, _hits(60, 0.5, 0.25))).select(0.5);
     expect(track.length, inInclusiveRange(11, 12));
     for (var n = 0; n < track.length; n++) {
       final beat = ((track.times[n] - 250) / 500).round();
@@ -64,7 +64,7 @@ void main() {
   });
 
   test('bright hits are sharper than bass hits', () {
-    final track = analyzeHapticPcm(_pcm(4, _hits(1200, 0.4, 0.2)));
+    final track = analyzeHapticPcm(_pcm(4, _hits(1200, 0.4, 0.2))).select(0.5);
     expect(track.length, greaterThan(6));
     expect(track.sharpness.reduce(min), greaterThan(128));
   });
@@ -73,8 +73,68 @@ void main() {
     expect(analyzeHapticPcm(_pcm(3, (_) => 0)).length, 0);
     final tone = analyzeHapticPcm(
       _pcm(3, (time) => 0.5 * sin(2 * pi * 220 * time)),
-    );
+    ).select(1);
     expect(tone.length, lessThanOrEqualTo(1));
+  });
+
+  test('higher sensitivity adds softer hits and keeps the spacing', () {
+    // Loud kicks on the beat, quieter ones between them.
+    final loud = _hits(60, 0.5, 0.25);
+    final soft = _hits(60, 0.5, 0.5);
+    HapticTrack candidates(double level) =>
+        analyzeHapticPcm(_pcm(6, (time) => loud(time) + level * soft(time)));
+
+    final faint = candidates(0.1);
+    expect(faint.select(0.5).length, inInclusiveRange(11, 12));
+    final loose = faint.select(1);
+    expect(loose.length, greaterThan(20));
+    for (var n = 1; n < loose.length; n++) {
+      expect(loose.times[n] - loose.times[n - 1], greaterThanOrEqualTo(150));
+    }
+
+    final quiet = candidates(0.15);
+    expect(quiet.select(0.5).length, greaterThan(20));
+    expect(quiet.select(0).length, inInclusiveRange(11, 12));
+  });
+
+  test('sensitivity maps to the tuned threshold at its midpoint', () {
+    expect(musicHapticsScoreFor(0), closeTo(1.6, 1e-9));
+    expect(musicHapticsScoreFor(0.5), closeTo(1, 1e-9));
+    expect(musicHapticsScoreFor(1), closeTo(0.5, 1e-9));
+  });
+
+  testWidgets('settings reselect pulses and scale strength without decoding', (
+    tester,
+  ) async {
+    final state = PlaybackState(
+      playing: true,
+      processingState: AudioProcessingState.ready,
+      updatePosition: Duration.zero,
+    );
+    final pulses = <double>[];
+    final analyzer = _Analyzer(
+      HapticTrack(
+        Int32List.fromList([80, 300, 600]),
+        Uint8List.fromList([255, 51, 255]),
+        Uint8List(3),
+        Float32List.fromList([2, 0.8, 2]),
+      ),
+    );
+    final haptics = MusicHaptics(
+      state: () => state,
+      analyzer: analyzer,
+      pulse: (intensity, _) async => pulses.add(intensity),
+    );
+    haptics.update('/music/song.flac');
+    await tester.pump();
+    expect(haptics.track?.times, [80, 600]);
+
+    haptics.configure(sensitivity: 1, strength: 1);
+    expect(haptics.track?.times, [80, 300, 600]);
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(pulses, [1.0, closeTo(0.32, 1e-9)]);
+    expect(analyzer.paths, ['/music/song.flac']);
+    haptics.dispose();
   });
 
   // Pulse timing runs on the widget binding's fake clock: the scheduler uses

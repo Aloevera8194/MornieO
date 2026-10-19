@@ -45,16 +45,23 @@ class MusicHapticsPlugin : FlutterPlugin {
     private fun pulse(intensity: Double, sharpness: Double) {
         val vibrator = vibrator ?: return
         if (Build.VERSION.SDK_INT < 26 || !vibrator.hasVibrator() || intensity <= 0) return
+        // Without tuned primitives the motor is often an eccentric mass that
+        // needs tens of milliseconds to spin up, and stays still at low
+        // amplitudes. Shorter or weaker one-shots are not felt at all.
         val effect = composed(vibrator, intensity, sharpness)
             ?: if (vibrator.hasAmplitudeControl()) {
                 // Bass hits are longer and softer; bright hits short and crisp.
                 VibrationEffect.createOneShot(
-                    (14 + 16 * (1 - sharpness)).toLong(),
-                    (intensity * 255).toInt().coerceIn(1, 255),
+                    (20 + 20 * (1 - sharpness)).toLong(),
+                    (MIN_AMPLITUDE + (255 - MIN_AMPLITUDE) * intensity).toInt()
+                        .coerceIn(MIN_AMPLITUDE, 255),
                 )
-            } else if (intensity >= 0.6) {
-                // On/off motors cannot express accents; render strong hits only.
-                VibrationEffect.createOneShot(12, VibrationEffect.DEFAULT_AMPLITUDE)
+            } else if (intensity >= 0.35) {
+                // On/off motors cannot vary strength; accents last longer.
+                VibrationEffect.createOneShot(
+                    (25 + 25 * intensity).toLong(),
+                    VibrationEffect.DEFAULT_AMPLITUDE,
+                )
             } else {
                 return
             }
@@ -88,5 +95,10 @@ class MusicHapticsPlugin : FlutterPlugin {
         return VibrationEffect.startComposition()
             .addPrimitive(primitive, intensity.toFloat())
             .compose()
+    }
+
+    private companion object {
+        /** The lowest amplitude that reliably moves an eccentric mass motor. */
+        const val MIN_AMPLITUDE = 70
     }
 }

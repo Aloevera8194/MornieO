@@ -7104,6 +7104,14 @@
   "@musicHapticsDescription": {
     "description": "Subtitle of the music haptics setting"
   },
+  "musicHapticsSensitivity": "Sensitivitas",
+  "@musicHapticsSensitivity": {
+    "description": "Slider for how many beats trigger music haptics; higher values vibrate on softer hits"
+  },
+  "musicHapticsStrength": "Kekuatan",
+  "@musicHapticsStrength": {
+    "description": "Slider for how strongly the phone vibrates with music haptics"
+  },
   "autoMixOn": "AutoMix hidup",
   "autoMixOff": "AutoMix mati",
   "autoplayOn": "Autoplay hidup",

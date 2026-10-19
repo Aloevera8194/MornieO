@@ -8,6 +8,9 @@ part 'settings.g.dart';
 String playerCoverStyleFromJson(Object? value) =>
     value == 'fullscreen' ? 'fullscreen' : 'default';
 
+double musicHapticsLevelFromJson(Object? value) =>
+    value is num && value.isFinite ? value.toDouble().clamp(0, 1) : 0.5;
+
 @JsonSerializable(explicitToJson: true)
 class AppSettings {
   static const String homeFeedProviderOff = '__off__';
@@ -69,6 +72,10 @@ class AppSettings {
   final bool autoplay;
   final bool autoplayPersonalization;
   final bool musicHaptics;
+  @JsonKey(fromJson: musicHapticsLevelFromJson)
+  final double musicHapticsSensitivity;
+  @JsonKey(fromJson: musicHapticsLevelFromJson)
+  final double musicHapticsStrength;
   @JsonKey(fromJson: playerCoverStyleFromJson)
   final String playerCoverStyle; // 'default' or 'fullscreen'
   final bool isFirstLaunch;
@@ -206,6 +213,8 @@ class AppSettings {
     this.autoplay = false,
     this.autoplayPersonalization = true,
     this.musicHaptics = false,
+    this.musicHapticsSensitivity = 0.5,
+    this.musicHapticsStrength = 0.5,
     this.playerCoverStyle = 'default',
     this.isFirstLaunch = true,
     this.checkForUpdates = true,
@@ -323,6 +332,8 @@ class AppSettings {
     bool? autoplay,
     bool? autoplayPersonalization,
     bool? musicHaptics,
+    double? musicHapticsSensitivity,
+    double? musicHapticsStrength,
     String? playerCoverStyle,
     bool? isFirstLaunch,
     bool? checkForUpdates,
@@ -434,6 +445,9 @@ class AppSettings {
       autoplayPersonalization:
           autoplayPersonalization ?? this.autoplayPersonalization,
       musicHaptics: musicHaptics ?? this.musicHaptics,
+      musicHapticsSensitivity:
+          musicHapticsSensitivity ?? this.musicHapticsSensitivity,
+      musicHapticsStrength: musicHapticsStrength ?? this.musicHapticsStrength,
       playerCoverStyle: playerCoverStyle ?? this.playerCoverStyle,
       isFirstLaunch: isFirstLaunch ?? this.isFirstLaunch,
       checkForUpdates: checkForUpdates ?? this.checkForUpdates,
