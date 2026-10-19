@@ -577,7 +577,7 @@
   "metadataSeparators": "Розділювачі метаданих",
   "metadataSeparatorsDescription": "Виберіть, як об’єднувати значення, розділені комою або крапкою з комою, у майбутніх завантаженнях. Для власних роздільників виконавців використовується об’єднаний тег; правило «Тільки головний виконавець» залишається в силі. Імена, що містять & або /, зберігаються.",
   "metadataSeparatorSource": "Зберегти формат оригіналу",
-  "metadataSeparatorComma": "",
+  "metadataSeparatorComma": "Кома()",
   "metadataSeparatorSemicolon": "Крапка з комою (;)",
   "metadataSeparatorSlash": "Слеш (/)",
   "metadataSeparatorCustom": "Custom separator",
