@@ -7274,6 +7274,13 @@
   "audioInfoCopied": "Info audio disalin",
   "lyricsTextSize": "Ukuran teks lirik",
   "lyricsTextPreview": "Ikuti setiap baris lagu favoritmu",
+  "appCrashTitle": "Aplikasi sebelumnya mengalami crash",
+  "appCrashMessage": "Laporan crash telah disimpan. Salin dan kirimkan ke developer untuk membantu pemeriksaan.",
+  "appCrashDetails": "Lihat error dan log",
+  "appCrashCopy": "Salin laporan untuk developer",
+  "appCrashDismiss": "Tutup",
+  "appCrashCopyFailed": "Laporan crash belum bisa disalin. Silakan coba lagi.",
+  "appCrashDismissFailed": "Laporan crash belum bisa ditutup. Silakan coba lagi.",
   "optionsEmbeddedCoverSizeOriginal": "Resolusi asli",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"

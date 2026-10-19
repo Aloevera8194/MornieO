@@ -74,6 +74,9 @@ String _redactSensitiveText(String value) {
   return redacted;
 }
 
+/// Crash reports use the same secret filtering as the ordinary log export.
+String redactDiagnosticText(String value) => _redactSensitiveText(value);
+
 class LogEntry {
   final DateTime timestamp;
   final String level;

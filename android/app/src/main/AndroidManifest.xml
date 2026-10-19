@@ -31,7 +31,7 @@
 
     <application
         android:label="SpotiFLAC Mobile"
-        android:name="${applicationName}"
+        android:name=".SpotiFlacApplication"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules_legacy"

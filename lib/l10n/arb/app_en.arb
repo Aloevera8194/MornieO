@@ -7531,6 +7531,13 @@
   "audioInfoCopied": "Audio info copied",
   "lyricsTextSize": "Lyrics text size",
   "lyricsTextPreview": "Follow every line of your favorite song",
+  "appCrashTitle": "The app previously crashed",
+  "appCrashMessage": "A crash report was saved. Copy it and send it to the developer to help investigate.",
+  "appCrashDetails": "View error and log",
+  "appCrashCopy": "Copy report for developer",
+  "appCrashDismiss": "Dismiss",
+  "appCrashCopyFailed": "Could not copy the crash report. Please try again.",
+  "appCrashDismissFailed": "Could not dismiss the crash report. Please try again.",
   "optionsEmbeddedCoverSizeOriginal": "Original resolution",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"

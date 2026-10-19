@@ -80,6 +80,7 @@ import 'package:spotiflac_android/widgets/track_detail_actions.dart';
 import 'package:spotiflac_android/widgets/view_queue_snackbar_action.dart';
 import 'package:spotiflac_android/widgets/profile_avatar.dart';
 import 'package:spotiflac_android/widgets/downloadable_cover.dart';
+import 'package:spotiflac_android/widgets/app_crash_banner.dart';
 
 export 'package:spotiflac_android/screens/extension_collection_screens.dart';
 
@@ -922,6 +923,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
               _buildHeaderSliver(greeting: greeting),
+              if (_showsHome) const SliverToBoxAdapter(child: AppCrashBanner()),
               _buildHomeIntroSliver(
                 sectionMotion: sectionMotion,
                 hasResults: hasResults,

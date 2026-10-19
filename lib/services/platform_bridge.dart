@@ -2236,6 +2236,34 @@ class PlatformBridge {
     }
   }
 
+  // ---- Application crash diagnostics ----
+
+  static Future<Map<String, dynamic>?> getPendingAppCrash() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return null;
+    return _decodeNullableMapResult(
+      await _channel.invokeMethod('getPendingAppCrash'),
+      'getPendingAppCrash',
+    );
+  }
+
+  static Future<void> dismissAppCrash(String id) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    await _channel.invokeMethod<void>('dismissAppCrash', {'id': id});
+  }
+
+  static Future<void> recordAppRuntimeError({
+    required String error,
+    required String stack,
+    required String logs,
+  }) async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
+    await _channel.invokeMethod<void>('recordAppRuntimeError', {
+      'error': error,
+      'stack': stack,
+      'logs': logs,
+    });
+  }
+
   // ---- Library scan ----
 
   static Future<Map<String, dynamic>?> getLibraryScanExitInfo({

@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import org.json.JSONTokener
@@ -77,6 +78,9 @@ class MainActivity: FlutterFragmentActivity() {
         "scanSafTreeIncremental",
         "getLibraryScanProgress",
         "getLibraryScanExitInfo",
+        "getPendingAppCrash",
+        "dismissAppCrash",
+        "recordAppRuntimeError",
         "cancelLibraryScan",
         "pauseLibraryScan",
         "resumeLibraryScan",
@@ -555,6 +559,19 @@ class MainActivity: FlutterFragmentActivity() {
                         "getSafFileModTimes" -> handleGetSafFileModTimes(call, result)
                         "getLibraryScanProgress" -> handleGetLibraryScanProgress(call, result)
                         "getLibraryScanExitInfo" -> handleGetLibraryScanExitInfo(call, result)
+                        "getPendingAppCrash" -> result.success(withContext(Dispatchers.IO) { AppCrashReporter.pendingReport() })
+                        "dismissAppCrash" -> {
+                            val id = call.argument<String>("id") ?: ""
+                            withContext(Dispatchers.IO) { AppCrashReporter.dismissReport(id) }
+                            result.success(null)
+                        }
+                        "recordAppRuntimeError" -> {
+                            val error = call.argument<String>("error") ?: ""
+                            val stack = call.argument<String>("stack") ?: ""
+                            val logs = call.argument<String>("logs") ?: ""
+                            withContext(Dispatchers.IO) { AppCrashReporter.recordRuntimeError(error, stack, logs) }
+                            result.success(null)
+                        }
                         "cancelLibraryScan" -> handleCancelLibraryScan(call, result)
                         "pauseLibraryScan" -> handlePauseLibraryScan(call, result)
                         "resumeLibraryScan" -> handleResumeLibraryScan(call, result)
