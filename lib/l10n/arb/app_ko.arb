@@ -1,42 +1,160 @@
 {
   "networkDownloadDestination": "네트워크 다운로드 대상",
+  "@networkDownloadDestination": {
+    "description": "Files settings item that opens network storage to choose a folder for downloaded music"
+  },
   "networkUseForDownloads": "이 폴더에 다운로드",
+  "@networkUseForDownloads": {
+    "description": "Action to select the current network folder as the download destination; also the settings subtitle when no network destination is selected"
+  },
   "networkDownloadSelected": "선택된 다운로드 대상",
+  "@networkDownloadSelected": {
+    "description": "Status label replacing the download destination action when the current network folder is already selected"
+  },
   "networkUseLocalDownloads": "로컬 다운로드 폴더 사용",
+  "@networkUseLocalDownloads": {
+    "description": "Files settings action that clears the network download destination and returns downloads to the local folder"
+  },
   "networkDownloadAccessFailed": "이 폴더에 쓸 수 없습니다",
+  "@networkDownloadAccessFailed": {
+    "description": "Snackbar prefix when the write-access check fails while selecting a network download folder; followed by a specific network error message"
+  },
   "networkUploading": "네트워크 저장소에 업로드 중",
+  "@networkUploading": {
+    "description": "Download queue status during upload of prepared audio to the network destination; a progress percentage may follow"
+  },
   "networkDownloadDescription": "이 기기에서 음악을 준비한 다음 NAS에 업로드하세요. 업로드가 완료될 때까지 앱을 열어 둔 상태로 유지하세요. 다시 시도하면 준비된 오디오를 다시 사용합니다. 기존 파일은 그대로 유지되며, 같은 이름으로 새로 다운로드한 파일에는 번호가 붙은 접미사가 추가됩니다.",
+  "@networkDownloadDescription": {
+    "description": "Help below the network download destination action explaining local preparation, upload, retry behavior, and preservation of existing files; NAS means network-attached storage"
+  },
   "networkAddToLibrary": "라이브러리에 폴더 추가",
+  "@networkAddToLibrary": {
+    "description": "Action that adds the current network folder as a Library source and starts scanning it"
+  },
   "networkLibraryAdded": "라이브러리에 폴더가 추가됨",
+  "@networkLibraryAdded": {
+    "description": "Status label replacing the add-to-Library action after the network folder has been added as a source; does not mean scanning has finished"
+  },
   "networkLibraryDescription": "이 폴더와 그 하위 폴더를 검색합니다. 음악 파일은 서버에 저장되고, 메타데이터와 앨범 아트워크는 이 기기에 저장됩니다. 로컬 라이브러리 설정에서 관리하거나 다시 검색할 수 있습니다",
+  "@networkLibraryDescription": {
+    "description": "Help below the add-to-Library action explaining recursive scanning, local metadata and artwork storage, and management in Local Library settings"
+  },
   "networkStorage": "네트워크 저장소",
+  "@networkStorage": {
+    "description": "Title and navigation label for the screen used to manage network connections and browse remote music folders"
+  },
   "networkErrorUnreachable": "서버에 연결할 수 없습니다. 이 휴대폰에서 해당 네트워크에 접속할 수 있는지, 그리고 파일 공유 서비스가 실행 중인지 확인하세요. SMB의 경우 포트 445에 연결할 수 있어야 합니다",
+  "@networkErrorUnreachable": {
+    "description": "Network access error for an unreachable server, with connection troubleshooting and the SMB port requirement"
+  },
   "networkErrorTimeout": "서버가 제때 응답하지 않았습니다. 연결 상태를 확인한 후 다시 시도하세요",
+  "@networkErrorTimeout": {
+    "description": "Network access error when a server operation exceeds its time limit"
+  },
   "networkErrorAuthentication": "서버에서 로그인을 거부했습니다. 사용자 이름, 비밀번호 및 도메인을 확인하세요. 서버에서 도메인을 요구하지 않는 한 도메인 입력란은 비워 두세요",
+  "@networkErrorAuthentication": {
+    "description": "Network access error when the server rejects credentials; domain refers to the optional SMB authentication domain"
+  },
   "networkErrorPermission": "이 계정에는 해당 공유 폴더 또는 폴더를 열 수 있는 권한이 없습니다. 서버에서 해당 계정의 읽기 권한을 확인하세요",
+  "@networkErrorPermission": {
+    "description": "Network access error when the server denies account permissions for a shared folder; distinct from the device's local network permission"
+  },
+  "networkErrorLocalPermission": "Local network access is not allowed. Allow Nearby devices for SpotiFLAC Mobile in Android app settings, then try again.",
+  "@networkErrorLocalPermission": {
+    "description": "Network access error when Android denies local network permission; Nearby devices is the Android app permission setting"
+  },
   "networkErrorShare": "공유 폴더 또는 폴더를 찾을 수 없습니다. SMB의 경우 서버 주소 뒤에 서버의 공유 폴더 이름을 입력하세요 (예시: smb://server/Music/)",
+  "@networkErrorShare": {
+    "description": "Network access error for a missing share or folder; share means an SMB shared folder and the example illustrates its URL path"
+  },
   "networkErrorProtocol": "서버와 이 SMB 클라이언트가 지원되는 프로토콜에 합의하지 못하였습니다. 서버에서 SMB2 또는 SMB3를 활성화하세요. SMB1은 지원되지 않습니다",
+  "@networkErrorProtocol": {
+    "description": "Network access error for incompatible SMB protocol versions; preserve the version names SMB1, SMB2, and SMB3"
+  },
   "networkErrorAddress": "서버 주소를 확인하세요. SMB의 경우 smb://server/share/ 형식을 사용하고, WebDAV 및 HTTP의 경우 http:// 또는 https:// 주소를 사용하세요.",
+  "@networkErrorAddress": {
+    "description": "Network access error for an invalid address, with URL scheme examples for SMB, WebDAV, and HTTP connections"
+  },
   "networkConnections": "저장된 연결",
+  "@networkConnections": {
+    "description": "Section heading above the list of saved network storage connections"
+  },
   "networkServer": "서버",
+  "@networkServer": {
+    "description": "Connection form section heading above the display name and server or audio URL fields"
+  },
   "networkCredentials": "로그인 (선택 사항)",
+  "@networkCredentials": {
+    "description": "Connection form section heading for optional server credentials"
+  },
   "networkRefresh": "새로고침",
+  "@networkRefresh": {
+    "description": "Toolbar tooltip for reloading saved connections or the current network folder listing"
+  },
   "networkStorageDescription": "NAS 또는 음악 서버에 연결하여 폴더를 탐색하세요. 로그인 정보는 이 기기에 안전하게 저장됩니다",
+  "@networkStorageDescription": {
+    "description": "Introduction shown in the empty connections screen and connection form, explaining remote folder browsing and secure local credential storage; NAS means network-attached storage"
+  },
   "networkAddConnection": "연결 추가",
+  "@networkAddConnection": {
+    "description": "Action label, toolbar tooltip, and form title for adding a network storage connection"
+  },
   "networkEditConnection": "연결 편집",
+  "@networkEditConnection": {
+    "description": "Edit button tooltip and form title for changing an existing network storage connection"
+  },
   "networkConnectionName": "이름",
+  "@networkConnectionName": {
+    "description": "Required connection form field for a user-chosen display name identifying the saved connection"
+  },
   "networkAddress": "서버 또는 오디오 URL",
+  "@networkAddress": {
+    "description": "Required connection form field for the server or direct audio URL, using the scheme appropriate to the selected protocol"
+  },
   "networkProtocol": "프로토콜",
+  "@networkProtocol": {
+    "description": "Connection form section heading for choosing SMB, WebDAV, or HTTP / HTTPS"
+  },
   "networkUsername": "사용자 이름 (선택 사항)",
+  "@networkUsername": {
+    "description": "Optional connection form field for the server account username"
+  },
   "networkPassword": "비밀번호 (선택 사항)",
+  "@networkPassword": {
+    "description": "Optional connection form field for the server account password, with input characters hidden"
+  },
   "networkDomain": "도메인 (선택 사항)",
+  "@networkDomain": {
+    "description": "Optional connection form field shown only for SMB; refers to the authentication domain, not the server's internet domain name"
+  },
   "networkConnectSave": "연결 및 저장",
+  "@networkConnectSave": {
+    "description": "Connection form action that checks access to the network source before saving the connection"
+  },
   "networkErrorCertificate": "서버의 HTTPS 인증서를 확인할 수 없습니다. 이 연결을 편집하여 인증서를 검토하고 신뢰하도록 설정하거나, 서버의 HTTPS 구성을 확인하세요",
+  "@networkErrorCertificate": {
+    "description": "Network access error for HTTPS certificate verification failure, directing the user to review the certificate in the connection form; unrelated to SMB authentication"
+  },
   "networkCertificatePrompt": "이 서버는 신뢰할 수 없는 HTTPS 인증서를 사용하고 있습니다. 라우터와 NAS 장치는 자체 서명된 인증서를 사용하는 경우가 많습니다. 신뢰하기 전에 서버 주소와 SHA-256 지문을 확인하세요. 인증서 신뢰 설정은 이 서버의 해당 인증서에만 적용되며, 인증서가 변경되면 다시 승인이 필요합니다",
+  "@networkCertificatePrompt": {
+    "description": "Connection form warning shown above the HTTPS origin and certificate SHA-256 fingerprint; approval trusts only that fingerprint for this connection's HTTPS origin, not a global certificate authority or an SMB server"
+  },
   "networkTrustCertificate": "인증서를 신뢰하고 다시 시도",
+  "@networkTrustCertificate": {
+    "description": "Action approving the displayed certificate SHA-256 fingerprint for this connection's HTTPS origin and retrying connect-and-save; does not grant global certificate trust"
+  },
   "networkRemoveConnection": "연결 제거",
+  "@networkRemoveConnection": {
+    "description": "Connection form action that removes the saved connection and its credentials, without deleting files on the server"
+  },
   "networkNoFiles": "지원되는 음악 파일이나 폴더를 찾을 수 없습니다",
+  "@networkNoFiles": {
+    "description": "Empty folder message when the network listing contains no directories or supported audio files"
+  },
   "networkConnectionError": "네트워크 소스에 접근할 수 없습니다. 서버 주소, 로그인 정보 및 연결 상태를 확인한 후 다시 시도하세요",
+  "@networkConnectionError": {
+    "description": "Fallback network access error when the failure has no more specific classification"
+  },
   "extensionAccountTitle": "확장 계정",
   "extensionAccountInvalidForm": "확장 기능에서 잘못된 계정 양식을 반환했습니다",
   "extensionAccountRestartLogin": "계속하려면 계정 로그인을 다시 시작하세요",
@@ -69,36 +187,69 @@
   "usbBitPerfectNoDevice": "USB DAC이 연결되어 있지 않습니다. 일반 오디오 출력을 사용합니다",
   "usbBitPerfectFallback": "이 기기 또는 오디오 형식은 Bit-Perfect 출력을 지원하지 않습니다. 일반 재생을 사용합니다",
   "usbBitPerfectRouteChanged": "USB 오디오 출력 경로가 변경되었습니다. 재생이 일시 중지되었습니다. 다시 연결하려면 트랙을 선택하세요",
-  "upgradeIntroWelcome": "SpotiFLAC Mobile 5.0에 오신 것을 환영합니다",
   "upgradeIntroThemeTitle": "나만의 스타일로\n꾸며보세요",
   "upgradeIntroThemeBody": "스타일을 선택하세요. 선택한 스타일은 즉시 적용되며, 나중에 디자인 설정에서 변경할 수 있습니다",
-  "upgradeIntroThemeMaterialBody": "Material 디자인 컨트롤과 선택한 강조 색상이 적용된 익숙한 레이아웃",
   "upgradeIntroThemeMornyeBody": "글래스 스타일의 하단바, 새롭게 디자인된 라이브러리, 그리고 몰입감 있는 플레이어",
-  "upgradeIntroRustTitle": "Rust로 제작된\n새로운 엔진",
-  "upgradeIntroRustBody": "5.0 버전에서는 앱의 백엔드가 Go에서 Rust로 변경되었습니다. 이는 여러분이 매일 사용하는 화면 뒤에서 작동하는 핵심 엔진입니다",
-  "upgradeIntroRustEngineTitle": "화면 뒤에서 작동",
-  "upgradeIntroRustEngineBody": "Rust는 Android와 iOS에서 다운로드, 오디오 메타데이터, 라이브러리 검색, 확장 기능 런타임을 처리합니다",
-  "upgradeIntroRustMemoryTitle": "메모리를 더욱 신중하게 사용",
-  "upgradeIntroRustMemoryBody": "버퍼를 재사용하고 데이터 복사 횟수를 줄여, 아트워크와 확장 기능 데이터를 처리할 때 발생하는 임시 메모리 할당을 줄였습니다",
-  "upgradeIntroRustKeepTitle": "음악을 그대로 유지",
-  "upgradeIntroRustKeepBody": "컬렉션을 다시 다운로드할 필요가 없습니다. 저장된 음악과 설정이 그대로 유지되며, 새로 설정할 필요도 없습니다",
-  "upgradeIntroWelcomeBody": "변경된 내용과 해당 기능을 찾을 수 있는 위치를 간단히 확인해 보세요",
-  "upgradeIntroMornyeBody": "플레이어, 가사 및 하단바 화면이 새로운 모습으로 바뀌었습니다",
-  "upgradeIntroLibrarySummary": "재생목록, 아티스트 또는 앨범별로 음악을 탐색할 수 있습니다",
-  "upgradeIntroRepoSummary": "확장 기능을 통해 음악 소스와 제공자를 선택할 수 있습니다",
-  "upgradeIntroLibraryTitle": "라이브러리를\n알아보세요",
-  "upgradeIntroLibraryBody": "Mornye에서는 카테고리별로 음악을 탐색하거나, 최근 추가됨에서 앨범을 찾을 수 있습니다",
-  "upgradeIntroDownloadsBody": "오른쪽 상단의 다운로드에서 일시정지하거나 다시 시도할 수 있습니다. 다운로드가 완료된 음악은 최근 추가됨으로 이동합니다",
-  "upgradeIntroSearchBody": "여기에서 저장된 음악을 검색할 수 있습니다. 별도의 검색 탭에서는 확장 기능을 통해 제공되는 음악까지 검색합니다",
-  "upgradeIntroPlayerTitle": "플레이어를\n설정하세요",
-  "upgradeIntroPlayerBody": "테마와 재생 옵션은 언제든지 변경할 수 있습니다. 여기에서 해당 설정을 찾을 수 있습니다",
-  "upgradeIntroAppearanceBody": "'설정 → 디자인'에서 테마를 변경할 수 있습니다. Mornye에서는 아래로 스크롤하면 탐색 메뉴가 축소되고, 위로 스크롤하면 다시 확장됩니다",
-  "upgradeIntroAutoMixBody": "트랙 간 템포와 비트를 맞춥니다. '설정 → 로컬 라이브러리 → 재생'에서 활성화하세요. 기본적으로 비활성화되어 있습니다",
-  "upgradeIntroSettingsBody": "Mornye에서 홈 화면의 프로필을 탭하면 설정을 열어 이름과 사진을 수정할 수 있습니다",
   "upgradeIntroSkip": "건너뛰기",
   "upgradeIntroContinue": "계속",
   "upgradeIntroDone": "듣기 시작",
-  "upgradeIntroReplay": "5.0의 새로운 기능",
+  "whatsNewReplay": "What’s new in {version}",
+  "@whatsNewReplay": {
+    "description": "About page entry that replays the release tour",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewWelcomeTitle": "Welcome to\nSpotiFLAC-Mobile {version}",
+  "@whatsNewWelcomeTitle": {
+    "description": "First page title of the release tour",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewWelcomeBody": "A more expressive look, a more capable player and lyrics worth sharing.",
+  "whatsNewSummaryExpressiveBody": "New shapes, Material Symbols and spring motion across the app.",
+  "whatsNewSummaryPlayerTitle": "Built-in player",
+  "whatsNewSummaryPlayerBody": "Equalizer, full-screen covers and detailed audio information.",
+  "whatsNewSummaryLyricsBody": "Turn your favorite lines into a card for stories.",
+  "whatsNewThemeMaterialBody": "Material 3 Expressive, with your accent color, rounded shapes and lively motion.",
+  "whatsNewExpressiveTitle": "Material,\nmade expressive.",
+  "whatsNewExpressiveBody": "Material 3 Expressive now shapes the whole app, from icons to motion.",
+  "whatsNewSymbolsTitle": "Shapes and symbols",
+  "whatsNewSymbolsBody": "Rounded Material Symbols, expressive shapes and connected settings rows.",
+  "whatsNewMotionTitle": "Spring motion",
+  "whatsNewMotionBody": "Buttons, headers and progress move with natural, springy physics.",
+  "whatsNewLargeScreenTitle": "Room on bigger screens",
+  "whatsNewLargeScreenBody": "Tablet navigation and centered layouts make wide screens feel at home.",
+  "whatsNewPlayerTitle": "A player that\ndoes more.",
+  "whatsNewPlayerBody": "New ways to hear and see your music in the built-in player.",
+  "whatsNewEqualizerBody": "Shape your sound with a multiband EQ and presets. Find it in Settings → Playback.",
+  "whatsNewCoverTitle": "Full-screen cover",
+  "whatsNewCoverBody": "Let the artwork fill the top of the player. Choose it under Settings → Playback → Cover art.",
+  "whatsNewAudioInfoTitle": "Audio details",
+  "whatsNewAudioInfoBody": "Tap the quality label in the player to see the source, processing and output.",
+  "whatsNewHapticsBody": "Feel the beat through gentle vibration on downloaded and local songs. Off by default.",
+  "whatsNewLyricsTitle": "Lyrics worth\nsharing.",
+  "whatsNewLyricsBody": "Quote the lines you love and share them as a card.",
+  "whatsNewLyricCardsTitle": "Lyric cards",
+  "whatsNewLyricCardsBody": "Long-press a line, or open the player menu, then pick up to five lines and a background.",
+  "whatsNewLyricSyncTitle": "Smoother timing",
+  "whatsNewLyricSyncBody": "Timed vocals and background lines now transition more naturally.",
+  "whatsNewLyricFallbackTitle": "Lyrics stay available",
+  "whatsNewLyricFallbackBody": "When a lyrics provider is down, a SpotiFLAC fallback keeps lyrics coming.",
+  "whatsNewLibraryTitle": "Your library,\nrevisited.",
+  "whatsNewLibraryBody": "Easier to browse, with a look back at what you played.",
+  "whatsNewBrowseTitle": "Sectioned browsing",
+  "whatsNewBrowseBody": "Songs, albums, artists and playlists, with sections and fast scrolling.",
+  "whatsNewRewindBody": "Relive the highlights of recent weeks and months from your listening statistics.",
+  "whatsNewGreetingTitle": "A personal Home",
+  "whatsNewGreetingBody": "Home greets you by name, with a little variety each time.",
+  "whatsNewWidgetsTitle": "New widgets",
+  "whatsNewWidgetsBody": "Redesigned player and download widgets that follow your wallpaper colors.",
   "cacheMotionArtwork": "오프라인 모션 커버",
   "cacheMotionArtworkDesc": "앨범 동영상은 다운로드할 때 함께 저장됩니다. 동영상을 삭제해도 음악 파일과 정적 앨범 커버는 그대로 유지됩니다",
   "nowPlayingVolume": "볼륨",
@@ -169,10 +320,6 @@
   "@homeTitle": {
     "description": "Home screen title"
   },
-  "homeSubtitle": "지원 URL 붙여넣기 또는 이름으로 검색",
-  "@homeSubtitle": {
-    "description": "Subtitle shown below search box"
-  },
   "homeEmptyTitle": "아직 검색 제공자가 없음",
   "@homeEmptyTitle": {
     "description": "Title shown on home when no providers are available yet"
@@ -206,10 +353,6 @@
   "libraryNoActiveDownloads": "진행 중인 다운로드가 없습니다",
   "librarySearchHint": "라이브러리 검색",
   "libraryEmptyCollection": "음악이 여기에 표시됩니다",
-  "historySearchHint": "기록 검색...",
-  "@historySearchHint": {
-    "description": "Search bar placeholder in history"
-  },
   "settingsTitle": "설정",
   "@settingsTitle": {
     "description": "Settings screen title"
@@ -431,6 +574,15 @@
     }
   },
   "optionsArtistTagMode": "아티스트 태그 모드",
+  "metadataSeparators": "Metadata separators",
+  "metadataSeparatorsDescription": "Choose how comma- or semicolon-separated values are joined in future downloads. Custom artist separators use a joined tag; Primary artist only still applies. Names containing & or / are preserved.",
+  "metadataSeparatorSource": "Keep source formatting",
+  "metadataSeparatorComma": "Comma (,)",
+  "metadataSeparatorSemicolon": "Semicolon (;)",
+  "metadataSeparatorSlash": "Slash (/)",
+  "metadataSeparatorCustom": "Custom separator",
+  "metadataSeparatorPreview": "Preview",
+  "metadataSeparatorInvalid": "Use 1–16 characters without line breaks or control characters.",
   "@optionsArtistTagMode": {
     "description": "Setting title for how artist metadata is written into files"
   },
@@ -595,9 +747,13 @@
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
   },
-  "aboutKeepAndroidOpen": "Keep Android Open",
-  "@aboutKeepAndroidOpen": {
-    "description": "Link to Keep Android Open campaign website"
+  "aboutLyricsWebsite": "Lyrics website",
+  "@aboutLyricsWebsite": {
+    "description": "Link to the Zarz-LRC website for searching and saving word-timed lyrics"
+  },
+  "aboutServiceStatus": "Service status",
+  "@aboutServiceStatus": {
+    "description": "Link to the status page of the SpotiFLAC-Mobile online services"
   },
   "aboutReportIssue": "문제 신고",
   "@aboutReportIssue": {
@@ -2224,10 +2380,6 @@
   "@qualityHiResFlacMaxSubtitle": {
     "description": "Technical spec for hi-res max"
   },
-  "downloadLossy320": "손실 압축 320kbps",
-  "@downloadLossy320": {
-    "description": "Quality option label for lossy 320kbps"
-  },
   "downloadLossyFormat": "손실 압축 형식",
   "@downloadLossyFormat": {
     "description": "Setting title to pick output format for lossy downloads"
@@ -2267,46 +2419,6 @@
   "downloadAutoConvertOpusSubtitle": "최신 플레이어에 최적화된 효율성",
   "@downloadAutoConvertOpusSubtitle": {
     "description": "Opus automatic conversion option description"
-  },
-  "downloadLossy320Format": "손실 압축 320kbps 형식",
-  "@downloadLossy320Format": {
-    "description": "Title of the lossy format picker bottom sheet"
-  },
-  "downloadLossy320FormatDesc": "320kbps 손실 다운로드의 출력 형식을 선택하세요. 필요에 따라 원본 스트림이 선택한 형식으로 변환됩니다",
-  "@downloadLossy320FormatDesc": {
-    "description": "Description in the lossy format picker"
-  },
-  "downloadLossyMp3": "MP3 320kbps",
-  "@downloadLossyMp3": {
-    "description": "Lossy format option - MP3 320kbps"
-  },
-  "downloadLossyMp3Subtitle": "최상의 호환성, 트랙당 약 10MB",
-  "@downloadLossyMp3Subtitle": {
-    "description": "Subtitle for MP3 320kbps lossy option"
-  },
-  "downloadLossyAac": "AAC/M4A 320kbps",
-  "@downloadLossyAac": {
-    "description": "Lossy format option - AAC in M4A container at 320kbps"
-  },
-  "downloadLossyAacSubtitle": "최상의 모바일 호환성, M4A 컨테이너",
-  "@downloadLossyAacSubtitle": {
-    "description": "Subtitle for AAC/M4A 320kbps lossy option"
-  },
-  "downloadLossyOpus256": "Opus 256kbps",
-  "@downloadLossyOpus256": {
-    "description": "Lossy format option - Opus 256kbps"
-  },
-  "downloadLossyOpus256Subtitle": "최고 음질 Opus, 트랙당 약 8MB",
-  "@downloadLossyOpus256Subtitle": {
-    "description": "Subtitle for Opus 256kbps lossy option"
-  },
-  "downloadLossyOpus128": "Opus 128kbps",
-  "@downloadLossyOpus128": {
-    "description": "Lossy format option - Opus 128kbps"
-  },
-  "downloadLossyOpus128Subtitle": "트랙당 최소 크기, 약 4MB",
-  "@downloadLossyOpus128Subtitle": {
-    "description": "Subtitle for Opus 128kbps lossy option"
   },
   "downloadAskBeforeDownload": "다운로드 전 확인",
   "@downloadAskBeforeDownload": {
@@ -2640,15 +2752,6 @@
       }
     }
   },
-  "discographySelectedCount": "{count} 개 선택됨",
-  "@discographySelectedCount": {
-    "description": "Selection count badge",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "discographyDownloadSelected": "선택 항목 다운로드",
   "@discographyDownloadSelected": {
     "description": "Button - download selected albums"
@@ -2956,10 +3059,6 @@
   "libraryStorageAccessMessage": "SpotifyFLAC은 음악 라이브러리를 스캔하기 위해 저장소 접근 권한이 필요합니다. 설정에서 권한을 부여해 주세요",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
-  },
-  "libraryFolderNotExist": "선택한 폴더가 존재하지 않음",
-  "@libraryFolderNotExist": {
-    "description": "Error when folder doesn't exist"
   },
   "librarySourceDownloaded": "다운로드됨",
   "@librarySourceDownloaded": {
@@ -3424,10 +3523,6 @@
   "trackReEnrich": "보강",
   "@trackReEnrich": {
     "description": "Menu action - re-embed metadata into audio file"
-  },
-  "trackReEnrichOnlineSubtitle": "온라인에서 메타데이터를 검색하고 파일에 삽입",
-  "@trackReEnrichOnlineSubtitle": {
-    "description": "Subtitle for re-enrich metadata action for local items"
   },
   "trackReEnrichBatchSubtitle": "온라인 업데이트 또는 수동 업데이트를 선택한 다음, 변경 사항을 모두 검토한 후 적용하세요",
   "@trackReEnrichBatchSubtitle": {
@@ -4020,10 +4115,6 @@
       }
     }
   },
-  "selectionShareNoFiles": "공유할 수 있는 파일을 찾을 수 없음",
-  "@selectionShareNoFiles": {
-    "description": "Snackbar when no selected files exist on disk"
-  },
   "selectionConvertCount": "{count} 개의 {count, plural, =1{트랙} other{트랙}} 변환",
   "@selectionConvertCount": {
     "description": "Convert button text with count in selection mode",
@@ -4178,6 +4269,18 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
+  "lyricsProviderSpotiflacLyricsDesc": "Word-by-word Apple Music lyrics from Zarz-LRC",
+  "@lyricsProviderSpotiflacLyricsDesc": {
+    "description": "Description for the first-party Zarz-LRC provider"
+  },
+  "lyricsProviderLrcRedDesc": "Word-by-word Apple Music lyrics, matched by recording",
+  "@lyricsProviderLrcRedDesc": {
+    "description": "Description for lrc.red provider"
+  },
+  "lyricsProviderBetterLyricsDesc": "Word-by-word Apple Music lyrics for popular songs",
+  "@lyricsProviderBetterLyricsDesc": {
+    "description": "Description for BetterLyrics provider, which only answers songs it has already cached"
+  },
   "lyricsProviderExtensionDesc": "확장 기능 제공자",
   "@lyricsProviderExtensionDesc": {
     "description": "Generic description for extension-based lyrics providers"
@@ -4253,10 +4356,6 @@
   "backupRestoreConfirmTitle": "이 백업을 복원하시겠습니까?",
   "@backupRestoreConfirmTitle": {
     "description": "Confirmation dialog title before restoring a backup"
-  },
-  "backupRestoreConfirmMessage": "현재 설정, 다운로드 기록, 좋아요 표시한 음악, 위시리스트 및 재생목록이 백업 파일의 내용으로 대체됩니다. 이 작업은 되돌릴 수 없습니다",
-  "@backupRestoreConfirmMessage": {
-    "description": "Confirmation dialog message before restoring a backup"
   },
   "backupRestoreConfirmButton": "복원",
   "@backupRestoreConfirmButton": {
@@ -4457,22 +4556,6 @@
   "storageAutomaticDownloadFolder": "쓰기 가능하면 Download/SpotiFLAC을 사용하고, 그렇지 않으면 앱 저장소를 사용합니다",
   "storageSafRecommended": "폴더 선택 (추천)",
   "storageDownloadFolderHint": "안드로이드 폴더 선택기에서 Download 폴더를 열고 SpotiFLAC을 선택하세요.\n해당 폴더가 없다면 '새 폴더'를 사용해 만든 다음, '이 폴더 사용'을 탭하여 접근 권한을 허용하세요",
-  "storageModeAppFolder": "앱 폴더 (추천)",
-  "@storageModeAppFolder": {
-    "description": "Storage mode option - app-managed folder"
-  },
-  "storageModeAppFolderSubtitle": "기본적으로 Music/SpotiFLAC에 저장",
-  "@storageModeAppFolderSubtitle": {
-    "description": "Subtitle for app folder storage mode"
-  },
-  "storageModeSaf": "사용자 정의 폴더 (SAF)",
-  "@storageModeSaf": {
-    "description": "Storage mode option - Storage Access Framework"
-  },
-  "storageModeSafSubtitle": "SD 카드를 포함한 아무 폴더나 선택하세요",
-  "@storageModeSafSubtitle": {
-    "description": "Subtitle for SAF storage mode"
-  },
   "downloadFolderAccessLostTitle": "다운로드 폴더 접근 손실",
   "@downloadFolderAccessLostTitle": {
     "description": "Title of the warning banner shown in Files settings when the saved SAF folder grant is no longer valid"
@@ -4760,10 +4843,6 @@
       }
     }
   },
-  "editMetadataAutoFillFetch": "가져오기 및 채우기",
-  "@editMetadataAutoFillFetch": {
-    "description": "Button label to fetch online metadata and fill selected fields"
-  },
   "editMetadataAutoFillSearching": "온라인에서 검색하는 중...",
   "@editMetadataAutoFillSearching": {
     "description": "Snackbar shown while searching for online metadata"
@@ -4771,15 +4850,6 @@
   "editMetadataAutoFillNoResults": "온라인에서 일치하는 메타데이터를 찾을 수 없음",
   "@editMetadataAutoFillNoResults": {
     "description": "Snackbar when online metadata search returns no results"
-  },
-  "editMetadataAutoFillDone": "온라인 메타데이터로부터 {count} 개의 {count, plural, =1{필드} other{필드}}가 채워짐",
-  "@editMetadataAutoFillDone": {
-    "description": "Snackbar confirming how many fields were auto-filled",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "editMetadataAutoFillNoneSelected": "자동 채우기를 위해 하나 이상의 필드를 선택하세요",
   "@editMetadataAutoFillNoneSelected": {
@@ -5037,10 +5107,6 @@
   "@hiResCheckVerdictFakeCertain": {
     "description": "Verdict: an exact fingerprint (padded bits or upsampling pattern) proves the file is not real Hi-Res"
   },
-  "hiResCheckVerdictFakeSuspect": "필터링된 마스터일 가능성이 있음",
-  "@hiResCheckVerdictFakeSuspect": {
-    "description": "Verdict: fails the cutoff test but may be a genuine master low-pass filtered in mastering"
-  },
   "hiResCheckReasonSampleHold": "모든 샘플이 반복됨: 복제 방식으로 업샘플링됨",
   "@hiResCheckReasonSampleHold": {
     "description": "Reason: sample-and-hold upsampling detected"
@@ -5048,26 +5114,6 @@
   "hiResCheckReasonInterpolation": "샘플 사이의 값이 선형 보간됨",
   "@hiResCheckReasonInterpolation": {
     "description": "Reason: linear-interpolation upsampling detected"
-  },
-  "hiResCheckReasonImaging": "22 kHz 이상의 콘텐츠가 가청 대역을 그대로 반영함",
-  "@hiResCheckReasonImaging": {
-    "description": "Reason: spectral imaging from upsampling detected"
-  },
-  "hiResCheckMusicContent": "음악 콘텐츠",
-  "@hiResCheckMusicContent": {
-    "description": "Label for the highest frequency that still moves with the music"
-  },
-  "hiResCheckUltrasonicNoise": "{cutoff} 이상에서는 일정한 노이즈만 존재함 (일반적으로 DSD 또는 아날로그 테이프 전송에서 나타나는 특성): {rate} 파일이면 모든 음악 정보를 담을 수 있음",
-  "@hiResCheckUltrasonicNoise": {
-    "description": "Shown when the ultrasonic content of a Hi-Res file is noise rather than music",
-    "placeholders": {
-      "cutoff": {
-        "type": "String"
-      },
-      "rate": {
-        "type": "String"
-      }
-    }
   },
   "hiResCheckTitle": "Hi-Res 진위 여부",
   "@hiResCheckTitle": {
@@ -5128,10 +5174,6 @@
       }
     }
   },
-  "hiResCheckDescription": "업샘플링되었거나 비트 패딩된 가짜 Hi-Res 파일을 감지합니다",
-  "@hiResCheckDescription": {
-    "description": "Explains what the Hi-Res authenticity check does"
-  },
   "hiResCheckRun": "검사",
   "@hiResCheckRun": {
     "description": "Button that starts the Hi-Res authenticity check"
@@ -5143,10 +5185,6 @@
   "hiResCheckVerdictFake": "가짜 Hi-Res일 가능성이 높음",
   "@hiResCheckVerdictFake": {
     "description": "Verdict: the file claims Hi-Res but does not measure as it"
-  },
-  "hiResCheckVerdictGenuine": "실제 Hi-Res로 측정됨",
-  "@hiResCheckVerdictGenuine": {
-    "description": "Verdict: no upsampling or padded bit depth found"
   },
   "hiResCheckVerdictStandard": "일반 음질이며, 특별히 의심되는 사항이 없음",
   "@hiResCheckVerdictStandard": {
@@ -5160,35 +5198,11 @@
   "@hiResCheckUnsupported": {
     "description": "Shown when the file format cannot be decoded by the Hi-Res check"
   },
-  "hiResCheckCutoff": "콘텐츠 주파수 한계",
-  "@hiResCheckCutoff": {
-    "description": "Label for the highest frequency with real content"
-  },
-  "hiResCheckBitsInUse": "사용 중인 비트",
-  "@hiResCheckBitsInUse": {
-    "description": "Label for effective vs declared bit depth"
-  },
-  "hiResCheckDisclaimer": "스펙트럼이 일찍 끊기지만, 그것만으로 업샘플링되었다는 증거는 없습니다. 마스터링 과정에서 의도적으로 낮은 주파수 대역을 제한한 정상적인 원본 마스터일 수도 있습니다. 따라서 자동으로 교체하지 않습니다",
-  "@hiResCheckDisclaimer": {
-    "description": "Caveat shown under a fake Hi-Res verdict"
-  },
   "hiResCheckFailed": "Hi-Res 검사 실패: {error}",
   "@hiResCheckFailed": {
     "description": "Error shown when the Hi-Res check fails",
     "placeholders": {
       "error": {
-        "type": "String"
-      }
-    }
-  },
-  "hiResCheckReasonRate": "{sampleRate}를 선언했지만 콘텐츠가 약 {cutoff}에서 멈춥니다",
-  "@hiResCheckReasonRate": {
-    "description": "Reason for a fake verdict caused by upsampling",
-    "placeholders": {
-      "sampleRate": {
-        "type": "String"
-      },
-      "cutoff": {
         "type": "String"
       }
     }
@@ -5212,6 +5226,14 @@
   "extensionsHomeFeedProvider": "홈 피드 제공자",
   "@extensionsHomeFeedProvider": {
     "description": "Extensions page - label for home feed provider selector"
+  },
+  "extensionsHomeFeedCountry": "Home feed country",
+  "@extensionsHomeFeedCountry": {
+    "description": "Country picker for the active Home feed extension"
+  },
+  "extensionsHomeFeedCountryDescription": "Choose a country's Home recommendations without a VPN.",
+  "@extensionsHomeFeedCountryDescription": {
+    "description": "Help for choosing regional Home recommendations"
   },
   "extensionsHomeFeedDescription": "메인 화면에 홈 피드를 제공하는 확장 기능을 선택하세요",
   "@extensionsHomeFeedDescription": {
@@ -5462,6 +5484,10 @@
   "notifLibraryScanFailed": "라이브러리 스캔 실패",
   "@notifLibraryScanFailed": {
     "description": "Notification title when library scan fails"
+  },
+  "notifLibraryScanInterruptedBody": "The previous library scan was interrupted. Scan the folder again to continue. Your indexed tracks are still available.",
+  "@notifLibraryScanInterruptedBody": {
+    "description": "Recovery notice after the app stops during a library scan"
   },
   "notifLibraryScanCancelled": "라이브러리 스캔이 취소됨",
   "@notifLibraryScanCancelled": {
@@ -6191,10 +6217,6 @@
       }
     }
   },
-  "actionGo": "이동",
-  "@actionGo": {
-    "description": "Generic action button label"
-  },
   "logIssueSummary": "문제 요약",
   "@logIssueSummary": {
     "description": "Header for log issue analysis summary"
@@ -6486,21 +6508,17 @@
   "@libraryExternalPlayer": {
     "description": "Setting option to use an external music player"
   },
-  "libraryExternalPlayerSubtitle": "감상용으로 권장됩니다. 최고 음질, 갭리스 재생, EQ 및 다양한 오디오 형식을 지원합니다",
+  "libraryExternalPlayerSubtitle": "Open tracks in another music app on your device",
   "@libraryExternalPlayerSubtitle": {
     "description": "Subtitle for external player option"
   },
-  "libraryBuiltInPreviewPlayer": "내부 미리듣기 플레이어",
+  "libraryBuiltInPreviewPlayer": "Built-in player",
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "SpotiFLAC Mobile에서 빠르게 미리 들을 수 있습니다 ",
+  "libraryBuiltInPreviewPlayerSubtitle": "Play your music right inside SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
-  },
-  "libraryBuiltInPlayerInfo": "내부 플레이어는 로컬 트랙을 빠르게 미리듣기 위한 도구입니다. 실제 음악 감상은 외부 음악 플레이어를 이용하는 것을 권장합니다",
-  "@libraryBuiltInPlayerInfo": {
-    "description": "Info note explaining the built-in player is for previews only"
   },
   "nowPlayingTitle": "현재 재생 중",
   "@nowPlayingTitle": {
@@ -6621,6 +6639,14 @@
   "nowPlayingShowTranslation": "번역 보기",
   "@nowPlayingNoLyrics": {
     "description": "Empty state when the playing file has no embedded lyrics"
+  },
+  "nowPlayingSearchLyricsOnline": "Search online",
+  "@nowPlayingSearchLyricsOnline": {
+    "description": "Button in the player's empty lyrics state that looks up lyrics from the enabled lyrics providers"
+  },
+  "nowPlayingNoLyricsOnline": "No lyrics found online",
+  "@nowPlayingNoLyricsOnline": {
+    "description": "Empty state after an online lyrics search for the playing track found nothing"
   },
   "nowPlayingLibraryEmpty": "라이브러리가 비어 있음",
   "@nowPlayingLibraryEmpty": {
@@ -6880,6 +6906,14 @@
   "@regionCountryUS": {
     "description": "Country name for SongLink region picker"
   },
+  "regionCountryIT": "Italy",
+  "@regionCountryIT": {
+    "description": "Country name for Italy"
+  },
+  "regionCountryES": "Spain",
+  "@regionCountryES": {
+    "description": "Country name for Spain"
+  },
   "regionCountryGB": "영국",
   "@regionCountryGB": {
     "description": "Country name for SongLink region picker"
@@ -7002,26 +7036,6 @@
       }
     }
   },
-  "settingsGroupInterface": "확장 기능 및 디자인",
-  "@settingsGroupInterface": {
-    "description": "Settings group covering look and feel"
-  },
-  "settingsGroupContent": "콘텐츠 및 메타데이터",
-  "@settingsGroupContent": {
-    "description": "Settings group covering the library, metadata and lyrics"
-  },
-  "settingsGroupDownloads": "다운로드 및 파일",
-  "@settingsGroupDownloads": {
-    "description": "Settings group covering download behaviour and storage"
-  },
-  "settingsGroupSystem": "시스템",
-  "@settingsGroupSystem": {
-    "description": "Settings group covering app-level data, cache and logs"
-  },
-  "settingsGroupHelp": "정보 및 후원",
-  "@settingsGroupHelp": {
-    "description": "Settings group covering the about page and donations"
-  },
   "libraryFilterMetadataMissingLyrics": "가사 누락",
   "@libraryFilterMetadataMissingLyrics": {
     "description": "Filter option for tracks without embedded or sidecar lyrics"
@@ -7077,7 +7091,6 @@
   "@metadataCopyField": {
     "description": "Metadata menu action that copies the selected key and value"
   },
-  "mornyeShowTabs": "탭 표시",
   "mornyeSearch": "검색",
   "mornyeContinuePlaying": "계속 재생",
   "metadataCopyAll": "모든 메타데이터 복사",
@@ -7102,6 +7115,34 @@
     "description": "Selected state of the compact favorite action"
   },
   "autoMixDescription": "곡을 비트에 맞춰 믹싱하고, 음정은 유지한 채 템포를 조절합니다. 비트를 맞출 수 없는 경우에는 크로스페이드를 사용합니다",
+  "playerCoverStyle": "Cover art",
+  "@playerCoverStyle": {
+    "description": "Settings section choosing how the player shows cover art"
+  },
+  "playerCoverStyleDefault": "Default",
+  "@playerCoverStyleDefault": {
+    "description": "Cover art style: artwork card above the controls"
+  },
+  "playerCoverStyleDefaultDescription": "Artwork as a card above the controls",
+  "@playerCoverStyleDefaultDescription": {
+    "description": "Subtitle of the default cover art style"
+  },
+  "playerCoverStyleFullScreen": "Full screen",
+  "@playerCoverStyleFullScreen": {
+    "description": "Cover art style: artwork fills the top of the player"
+  },
+  "playerCoverStyleFullScreenDescription": "Artwork fills the top of the player and fades into a blur. Motion artwork is always full screen in Mornye",
+  "@playerCoverStyleFullScreenDescription": {
+    "description": "Subtitle of the full screen cover art style"
+  },
+  "musicHaptics": "Music haptics",
+  "@musicHaptics": {
+    "description": "Setting that vibrates the phone along with the music"
+  },
+  "musicHapticsDescription": "Vibrate along with the beat of downloaded and local songs",
+  "@musicHapticsDescription": {
+    "description": "Subtitle of the music haptics setting"
+  },
   "autoMixOn": "AutoMix 켜기",
   "autoMixOff": "AutoMix 끄기",
   "autoplayOn": "자동재생 켜기",
@@ -7111,6 +7152,9 @@
   "autoplayPersonalization": "개인 맞춤 자동 재생",
   "autoplayPersonalizationDescription": "이 기기에서 듣거나 건너뛴 노래를 바탕으로 취향을 학습합니다. 이 기능을 비활성화하면 취향 학습이 중단되고 일반 자동 재생으로 돌아갑니다. 학습 데이터는 이 기기에서만 비공개로 처리됩니다",
   "autoplayResetLearning": "추천 학습 초기화",
+  "autoplayResetLearningConfirmTitle": "Reset recommendation learning?",
+  "autoplayResetLearningConfirmMessage": "Autoplay forgets what it learned from your listening and skips. This can't be undone.",
+  "autoplayResetLearningConfirm": "Reset",
   "profileTitle": "프로필",
   "profileSetUp": "프로필 설정",
   "profileEdit": "이름 및 사진 편집",
@@ -7121,6 +7165,58 @@
   "profileRemovePhoto": "사진 삭제",
   "profilePhotoError": "20MB보다 작은 유효한 이미지를 선택하세요",
   "profileSaveError": "프로필을 저장할 수 없습니다. 다시 시도하세요",
+  "homeGreetingMorning1": "Good morning",
+  "homeGreetingMorning2": "Rise and shine",
+  "homeGreetingMorning3": "Fresh start",
+  "homeGreetingAfternoon1": "Good afternoon",
+  "homeGreetingAfternoon2": "Afternoon groove",
+  "homeGreetingAfternoon3": "Keep the vibe going",
+  "homeGreetingEvening1": "Good evening",
+  "homeGreetingEvening2": "Time to unwind",
+  "homeGreetingEvening3": "Golden hour",
+  "homeGreetingNight1": "Good night",
+  "homeGreetingNight2": "Late-night session",
+  "homeGreetingNight3": "Quiet hours",
+  "homeGreetingNamed": "{greeting}, {name}",
+  "@homeGreetingNamed": {
+    "description": "Home greeting followed by the first name from the user's profile",
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTaglineListening": "What are we listening to?",
+  "@homeTaglineListening": {
+    "description": "Rotating Home prompt under the greeting"
+  },
+  "homeTaglineLink": "Got a link? Drop it in the search",
+  "@homeTaglineLink": {
+    "description": "Rotating Home prompt explaining that links can be pasted into search"
+  },
+  "homeTaglineDiscover": "Find your next favorite album",
+  "@homeTaglineDiscover": {
+    "description": "Rotating Home prompt under the greeting"
+  },
+  "homeContinueListening": "Continue listening",
+  "@homeContinueListening": {
+    "description": "Home section header for the track currently loaded in the player"
+  },
+  "homeRecentlyAdded": "Recently added",
+  "@homeRecentlyAdded": {
+    "description": "Home section header for the newest downloaded and scanned tracks"
+  },
+  "homeOnRepeat": "On repeat",
+  "@homeOnRepeat": {
+    "description": "Home section header for the most played tracks of the last four weeks"
+  },
+  "homeShortcuts": "Shortcuts",
+  "@homeShortcuts": {
+    "description": "Home section header for quick links to player tools"
+  },
   "artistUpcomingConcerts": "예정된 콘서트",
   "artistAllUpcomingConcerts": "모든 예정된 콘서트",
   "artistNoUpcomingConcerts": "예정된 콘서트가 없습니다",
@@ -7168,6 +7264,216 @@
   "listeningStatsClear": "청취 통계 지우기",
   "listeningStatsClearError": "청취 통계 지울 수 없습니다. 다시 시도하세요",
   "listeningStatsClearDescription": "이 기기에서 모든 청취 통계를 삭제하시겠습니까? 음악과 재생목록은 유지됩니다",
+  "libraryArtistsEmpty": "Artists appear here once you download music or scan a local library.",
+  "listeningRewind": "Rewind",
+  "listeningRewindDescription": "Relive the highlights of your recent weeks and months",
+  "listeningRewindChoosePeriod": "Choose a period",
+  "listeningRewindLastWeeks": "Last {weeks} weeks",
+  "@listeningRewindLastWeeks": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindLastMonths": "Last {months} months",
+  "@listeningRewindLastMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindThisYear": "{year} so far",
+  "@listeningRewindThisYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindIntroTitle": "Your Rewind",
+  "listeningRewindIntroBody": "A look back at what you played from {start} to {end}.",
+  "@listeningRewindIntroBody": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindMinutesTitle": "You listened for",
+  "listeningRewindMinutesUnit": "{minutes, plural, =1{minute} other{minutes}}",
+  "@listeningRewindMinutesUnit": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindHours": "{hours, plural, =1{That's about 1 hour of music} other{That's about {hours} hours of music}}",
+  "@listeningRewindHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindMore": "{percent}% more than the period before",
+  "@listeningRewindMore": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindLess": "{percent}% less than the period before",
+  "@listeningRewindLess": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindSame": "About the same as the period before",
+  "listeningRewindTopArtistTitle": "Your top artist",
+  "listeningRewindArtistShare": "{percent}% of your listening time",
+  "@listeningRewindArtistShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindArtistsTitle": "Artists on rotation",
+  "listeningRewindTopTrackTitle": "Your top song",
+  "listeningRewindPlays": "{plays, plural, =1{1 play} other{{plays} plays}}",
+  "@listeningRewindPlays": {
+    "placeholders": {
+      "plays": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindTracksTitle": "Songs on repeat",
+  "listeningRewindTopAlbumTitle": "The album you kept coming back to",
+  "listeningRewindNewArtistsTitle": "New discoveries",
+  "listeningRewindNewArtistsBody": "{count, plural, =1{You found 1 new artist} other{You found {count} new artists}}",
+  "@listeningRewindNewArtistsBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindRhythmTitle": "Your listening rhythm",
+  "listeningRewindPeakDay": "Biggest day",
+  "listeningRewindFavoriteDay": "Favorite day",
+  "listeningRewindStreak": "Longest streak",
+  "listeningRewindStreakDays": "{days, plural, =1{1 day} other{{days} days in a row}}",
+  "@listeningRewindStreakDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindReplayTitle": "Couldn't stop playing",
+  "listeningRewindReplayBody": "You played it {plays} times on {date}",
+  "@listeningRewindReplayBody": {
+    "placeholders": {
+      "plays": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindOutroTitle": "That's your Rewind",
+  "listeningRewindOutroBody": "Keep listening. Your next Rewind is already taking shape.",
+  "listeningRewindEmpty": "Not enough listening in this period yet. Play some music with the built-in player and come back later.",
+  "listeningRewindLoadError": "Could not load your Rewind",
+  "listeningRewindSlide": "Slide {index} of {count}",
+  "@listeningRewindSlide": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindShare": "Share",
+  "listeningRewindShareError": "Could not share your Rewind",
+  "listeningRewindNext": "Next",
+  "listeningRewindPrevious": "Previous",
+  "listeningRewindMonthlyReady": "Your last 4 weeks are ready to replay",
+  "listeningRewindYearTitle": "Your {year} in Music",
+  "@listeningRewindYearTitle": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindYearEyebrow": "Year-end Rewind",
+  "listeningRewindYearBanner": "Your top artists, songs and moments of the year",
+  "listeningRewindYearIntroBody": "Everything you played this year, from your first song to your biggest month.",
+  "listeningRewindNumbersTitle": "Your year in numbers",
+  "listeningRewindSongsLabel": "Songs",
+  "listeningRewindArtistsLabel": "Artists",
+  "listeningRewindAlbumsLabel": "Albums",
+  "listeningRewindDaysLabel": "Days with music",
+  "listeningRewindDaysShare": "Music on {percent}% of your days",
+  "@listeningRewindDaysShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindMonthsTitle": "Month by month",
+  "listeningRewindBiggestMonthLabel": "Biggest month",
+  "listeningRewindBiggestMonth": "Your biggest month was {month}",
+  "@listeningRewindBiggestMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindMonthlyArtistsTitle": "Artist of the month",
+  "listeningRewindLoyalTitle": "Always by your side",
+  "listeningRewindLoyalBody": "{days, plural, =1{With you on 1 day} other{With you on {days} different days}}",
+  "@listeningRewindLoyalBody": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindFirstSongTitle": "Where your year began",
+  "listeningRewindFirstSongBody": "Your most-played song on your first listening day, {date}",
+  "@listeningRewindFirstSongBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindYearOutroTitle": "That was your {year}",
+  "@listeningRewindYearOutroTitle": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindYearOutroBody": "Here's to another year of great music.",
   "weeklyReleases": "새 릴리스",
   "weeklyReleasesDescription": "설치된 메타데이터 확장 기능에서 제공하는, 좋아하는 아티스트의 최신 앨범과 싱글입니다",
   "weeklyReleasesEmpty": "이 기간에는 발매일자가 확인된 음원이 없습니다. 좋아하는 아티스트를 추가하거나 더 긴 기간을 선택해 보세요",
@@ -7217,8 +7523,196 @@
   "appearanceCustomFontSubtitle": "TTF 또는 OTF 파일을 가져옵니다 (최대 10MB). 테마 및 시스템 글꼴을 덮어씁니다",
   "appearanceCustomFontInvalid": "이 글꼴을 불러올 수 없습니다. 10MB 이하의 유효한 TTF 또는 OTF 파일을 선택하세요",
   "appearanceCustomFontReset": "테마 글꼴 사용",
+  "equalizerTitle": "Equalizer",
+  "equalizerDescription": "5–31 bands, tone controls, preamp and dynamics",
+  "equalizerEnable": "Enable equalizer",
+  "equalizerBands": "Bands",
+  "equalizerTone": "Tone & stereo",
+  "equalizerPreamp": "Preamp",
+  "equalizerBass": "Bass",
+  "equalizerTreble": "Treble",
+  "equalizerBalance": "Balance",
+  "equalizerDynamics": "Dynamics",
+  "equalizerHeadroom": "Automatic headroom",
+  "equalizerHeadroomDescription": "Reduce input gain to make room for boosted frequencies.",
+  "equalizerLimiter": "Peak limiter",
+  "equalizerLimiterDescription": "Keep peaks below −0.5 dBFS to reduce clipping.",
+  "equalizerCompressor": "Compressor",
+  "equalizerCompressorDescription": "Reduce the difference between quiet and loud passages.",
+  "equalizerThreshold": "Threshold",
+  "equalizerRatio": "Ratio",
+  "equalizerAttack": "Attack",
+  "equalizerRelease": "Release",
+  "equalizerPresets": "Presets",
+  "equalizerSavePreset": "Save preset",
+  "equalizerPresetName": "Preset name",
+  "equalizerImport": "Import preset",
+  "equalizerExport": "Share preset",
+  "equalizerImportInvalid": "Choose a valid SpotiFLAC equalizer preset (JSON, up to 64 KB).",
+  "equalizerSaved": "Preset saved",
+  "equalizerResetTitle": "Reset equalizer?",
+  "equalizerResetDescription": "Restore a flat curve, default tone and dynamics settings. Saved presets are kept.",
+  "equalizerBypass": "Bit-perfect, Direct USB and exclusive Hi-Res outputs bypass EQ. Disable bit-perfect output to use EQ. External players manage their own effects.",
+  "equalizerCurve": "EQ curve (estimated)",
+  "equalizerCurveDescription": "The curve shows band gains; the exact response depends on the output engine.",
+  "equalizerEffectivePreamp": "Input gain after headroom",
+  "equalizerDeletePreset": "Delete preset",
+  "equalizerCustom": "Custom",
+  "equalizerManagePresets": "Manage presets",
+  "lyricsShareTitle": "Share lyrics",
+  "@lyricsShareTitle": {
+    "description": "Screen that turns selected lyric lines into an image for stories"
+  },
+  "lyricsShareSelectHint": "Select up to {count} lines",
+  "@lyricsShareSelectHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsShareLimit": "You can share up to {count} lines",
+  "@lyricsShareLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsShareAction": "Share",
+  "lyricsShareError": "Couldn't create the lyrics image",
+  "lyricsShareBackgroundArtwork": "Artwork",
+  "lyricsShareBackgroundColor": "Cover color",
+  "lyricsShareBackgroundDark": "Dark",
+  "lyricsShareBackgroundLight": "Light",
+  "audioInfoTitle": "Audio info",
+  "@audioInfoTitle": {
+    "description": "Sheet with technical details of the playing track, opened from the quality badge"
+  },
+  "audioInfoSource": "Source file",
+  "audioInfoSignal": "Signal",
+  "audioInfoLoudness": "Loudness",
+  "audioInfoProcessing": "Processing",
+  "audioInfoOutput": "Output",
+  "audioInfoAnalysis": "Spectrum and level analysis",
+  "audioInfoQuality": "Quality",
+  "audioInfoHiResLossless": "Hi-Res Lossless",
+  "audioInfoLossless": "Lossless",
+  "audioInfoLossy": "Lossy",
+  "audioInfoFormat": "Format",
+  "audioInfoCodec": "Codec",
+  "audioInfoSampleRate": "Sample rate",
+  "audioInfoBitDepth": "Bit depth",
+  "audioInfoChannels": "Channels",
+  "audioInfoChannelCount": "{count, plural, =1{Mono} =2{Stereo} other{{count} channels}}",
+  "@audioInfoChannelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioInfoBitrate": "Bitrate",
+  "audioInfoDuration": "Duration",
+  "audioInfoFileSize": "File size",
+  "audioInfoCompression": "Compression",
+  "audioInfoCompressionValue": "{percent}% of uncompressed size",
+  "@audioInfoCompressionValue": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoLocation": "Location",
+  "audioInfoLocationLocal": "Device storage",
+  "audioInfoLocationShared": "Shared folder",
+  "audioInfoLocationNetwork": "Network storage",
+  "audioInfoPcmRate": "Uncompressed data rate",
+  "audioInfoFrequencyRange": "Frequency range",
+  "audioInfoFrequencyRangeValue": "Up to {frequency} (Nyquist)",
+  "@audioInfoFrequencyRangeValue": {
+    "placeholders": {
+      "frequency": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoDynamicRange": "Theoretical dynamic range",
+  "audioInfoTrackGain": "Track gain",
+  "audioInfoTrackPeak": "Track peak",
+  "audioInfoAlbumGain": "Album gain",
+  "audioInfoAlbumPeak": "Album peak",
+  "audioInfoNoGainTags": "No ReplayGain tags",
+  "audioInfoApplied": "Applied {gain}",
+  "@audioInfoApplied": {
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoOn": "On",
+  "audioInfoOff": "Off",
+  "audioInfoBypassed": "Bypassed by direct output",
+  "audioInfoPlayer": "Player",
+  "audioInfoPlayerValue": "SpotiFLAC built-in player",
+  "audioInfoSignalPath": "Signal path",
+  "audioInfoPathSystem": "System mixer",
+  "audioInfoPathDirect": "Direct USB, bypasses the system mixer",
+  "audioInfoPathExclusive": "Exclusive output, bypasses the system mixer",
+  "audioInfoDecoder": "Decoder",
+  "audioInfoHardware": "Hardware",
+  "audioInfoSoftware": "Software",
+  "audioInfoBands": "{count} bands",
+  "@audioInfoBands": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioInfoTempo": "Tempo",
+  "audioInfoResampling": "Resampling",
+  "audioInfoResamplingNone": "None, rates match",
+  "audioInfoBitPerfect": "Bit-perfect",
+  "audioInfoBitPerfectActive": "Yes, unaltered samples",
+  "audioInfoBitPerfectNo": "No, mixed by the system",
+  "audioInfoDevice": "Device",
+  "audioInfoDeviceType": "{type, select, speaker{Phone speaker} earpiece{Earpiece} wired_headphones{Wired headphones} wired_headset{Wired headset} line{Line out} bluetooth{Bluetooth} bluetooth_le{Bluetooth LE Audio} usb{USB audio} usb_headset{USB headset} hdmi{HDMI} dock{Dock} cast{Cast} hearing_aid{Hearing aid} airplay{AirPlay} car{Car audio} other{Other}}",
+  "@audioInfoDeviceType": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoOutputRate": "Output sample rate",
+  "audioInfoOutputFormat": "Output format",
+  "audioInfoDeviceRates": "Device sample rates",
+  "audioInfoDeviceFormats": "Device formats",
+  "audioInfoAnyRate": "Any",
+  "audioInfoBuffer": "Mixer buffer",
+  "audioInfoLatency": "Output latency",
+  "audioInfoLowLatency": "Low-latency audio",
+  "audioInfoProAudio": "Pro audio",
+  "audioInfoSupported": "Supported",
+  "audioInfoNotSupported": "Not supported",
+  "audioInfoSpatial": "Spatial audio",
+  "audioInfoHeadTracking": "Head tracking",
+  "audioInfoUnavailable": "Unavailable",
+  "audioInfoFixedVolume": "Controlled by the device",
+  "audioInfoCopy": "Copy report",
+  "audioInfoCopied": "Audio info copied",
   "lyricsTextSize": "가사 텍스트 사이즈",
   "lyricsTextPreview": "좋아하는 노래의 모든 가사를 따라가 보세요",
+  "appCrashTitle": "The app previously crashed",
+  "appCrashMessage": "A crash report was saved. Copy it and send it to the developer to help investigate.",
+  "appCrashDetails": "View error and log",
+  "appCrashCopy": "Copy report for developer",
+  "appCrashDismiss": "Dismiss",
+  "appCrashCopyFailed": "Could not copy the crash report. Please try again.",
+  "appCrashDismissFailed": "Could not dismiss the crash report. Please try again.",
   "optionsEmbeddedCoverSizeOriginal": "원본 해상도",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
