@@ -43,27 +43,60 @@ final _homeRecentlyAddedProvider =
       return (items: items, trackCount: counts.allTrackCount);
     });
 
-/// The most played files of the last four weeks.
-final _homeOnRepeatProvider = FutureProvider.autoDispose<List<ListeningTrack>>((
-  ref,
-) async {
-  // A new track means the previous one may have just earned a play.
-  ref.watch(currentMediaItemProvider.select((s) => s.value?.id));
-  await listeningRecorder.flush();
-  final now = DateTime.now();
-  final summary = await ListeningStatisticsStore.instance.load(
-    DateTime(now.year, now.month, now.day - 27),
-    DateTime(now.year, now.month, now.day + 1),
-  );
-  return [
-    for (final total in summary.tracks)
-      // Remote sources cannot be replayed from their recorded key.
-      if (total.plays > 0 &&
-          !total.track.key.startsWith('http://') &&
-          !total.track.key.startsWith('https://'))
-        total.track,
-  ].take(_homeShelfLimit).toList(growable: false);
-});
+typedef _HomeRepeatTrack = ({ListeningTrack track, UnifiedLibraryItem? item});
+
+/// The most played files of the last four weeks, matched to their current
+/// Library entry. Statistics keep the artwork seen at play time, which may
+/// since have been evicted from a cache or rescanned away.
+final _homeOnRepeatProvider =
+    FutureProvider.autoDispose<List<_HomeRepeatTrack>>((ref) async {
+      // A new track means the previous one may have just earned a play.
+      ref.watch(currentMediaItemProvider.select((s) => s.value?.id));
+      // A deleted download or a rescan can remove a track from the shelf.
+      ref.watch(downloadHistoryProvider.select((s) => s.items.length));
+      ref.watch(localLibraryProvider.select((s) => s.loadedIndexVersion));
+      await listeningRecorder.flush();
+      final now = DateTime.now();
+      final summary = await ListeningStatisticsStore.instance.load(
+        DateTime(now.year, now.month, now.day - 27),
+        DateTime(now.year, now.month, now.day + 1),
+      );
+      final history = ref.read(downloadHistoryProvider.notifier);
+      final database = LibraryDatabase.instance;
+      final tracks = <_HomeRepeatTrack>[];
+      for (final total in summary.tracks) {
+        if (tracks.length == _homeShelfLimit) break;
+        final key = total.track.key;
+        // Remote sources cannot be replayed from their recorded key.
+        if (total.plays <= 0 ||
+            key.startsWith('http://') ||
+            key.startsWith('https://')) {
+          continue;
+        }
+        final downloaded = await history.getByFilePathAsync(key);
+        if (downloaded != null) {
+          tracks.add((
+            track: total.track,
+            item: UnifiedLibraryItem.fromDownloadHistory(downloaded),
+          ));
+          continue;
+        }
+        final ids = await database.getPhysicalFileIds([key]);
+        final row = ids.isEmpty ? null : await database.getById(ids.first);
+        if (row != null) {
+          tracks.add((
+            track: total.track,
+            item: UnifiedLibraryItem.fromLocalLibrary(
+              LocalLibraryItem.fromJson(row),
+            ),
+          ));
+          continue;
+        }
+        // Files played from outside the Library stay while they still exist.
+        if (await fileExists(key)) tracks.add((track: total.track, item: null));
+      }
+      return tracks;
+    });
 
 /// The prompt under the Home greeting, picked again on each launch.
 class _HomeTagline extends StatelessWidget {
@@ -457,7 +490,6 @@ class _HomeRecentlyAddedShelf extends ConsumerWidget {
           return _HomeLibraryTile(trackCount: trackCount);
         }
         final item = items[index];
-        final history = item.historyItem;
         return _HomeShelfTile(
           title: item.trackName,
           subtitle: item.artistName,
@@ -465,23 +497,7 @@ class _HomeRecentlyAddedShelf extends ConsumerWidget {
             item.trackName,
             item.artistName,
           ),
-          cover: history != null
-              ? _DownloadedOrRemoteCover(
-                  downloadedFilePath: history.filePath,
-                  imageUrl: history.coverUrl,
-                  width: _homeShelfCoverSize,
-                  height: _homeShelfCoverSize,
-                  borderRadius: BorderRadius.zero,
-                  fallbackIcon: Icons.music_note,
-                  fallbackIconSize: 32,
-                  colorScheme: colorScheme,
-                )
-              : PlayerArtwork(
-                  artUri: item.localCoverPath,
-                  colorScheme: colorScheme,
-                  cacheWidth: cacheWidth,
-                  iconSize: 32,
-                ),
+          cover: _homeLibraryCover(item, colorScheme, cacheWidth),
           onTap: () => _play(ref, index),
         );
       },
@@ -492,13 +508,7 @@ class _HomeRecentlyAddedShelf extends ConsumerWidget {
     final media = <PlayableMedia>[];
     var initialIndex = 0;
     for (final (i, item) in items.indexed) {
-      final playable = switch (item) {
-        UnifiedLibraryItem(:final historyItem?) => playableFromHistory(
-          historyItem,
-        ),
-        UnifiedLibraryItem(:final localItem?) => playableFromLocal(localItem),
-        _ => null,
-      };
+      final playable = _homePlayableFromLibrary(item);
       if (playable == null || playable.source.trim().isEmpty) continue;
       if (i == index) initialIndex = media.length;
       media.add(playable);
@@ -509,6 +519,43 @@ class _HomeRecentlyAddedShelf extends ConsumerWidget {
         .playAll(media, initialIndex: initialIndex);
   }
 }
+
+/// A Library track's own artwork: a download's embedded cover with its
+/// online cover as fallback, or a scanned file's extracted thumbnail.
+Widget _homeLibraryCover(
+  UnifiedLibraryItem item,
+  ColorScheme colorScheme,
+  int cacheWidth,
+) {
+  final history = item.historyItem;
+  if (history != null) {
+    return _DownloadedOrRemoteCover(
+      downloadedFilePath: history.filePath,
+      imageUrl: history.coverUrl,
+      width: _homeShelfCoverSize,
+      height: _homeShelfCoverSize,
+      borderRadius: BorderRadius.zero,
+      fallbackIcon: Icons.music_note,
+      fallbackIconSize: 32,
+      colorScheme: colorScheme,
+    );
+  }
+  return PlayerArtwork(
+    artUri: item.localCoverPath,
+    colorScheme: colorScheme,
+    cacheWidth: cacheWidth,
+    iconSize: 32,
+  );
+}
+
+PlayableMedia? _homePlayableFromLibrary(UnifiedLibraryItem item) =>
+    switch (item) {
+      UnifiedLibraryItem(:final historyItem?) => playableFromHistory(
+        historyItem,
+      ),
+      UnifiedLibraryItem(:final localItem?) => playableFromLocal(localItem),
+      _ => null,
+    };
 
 /// Ends the Recently added shelf with a way into the whole Library.
 class _HomeLibraryTile extends StatelessWidget {
@@ -577,7 +624,7 @@ class _HomeLibraryTile extends StatelessWidget {
 class _HomeOnRepeatShelf extends ConsumerWidget {
   const _HomeOnRepeatShelf({required this.tracks, required this.inset});
 
-  final List<ListeningTrack> tracks;
+  final List<_HomeRepeatTrack> tracks;
   final double inset;
 
   @override
@@ -589,7 +636,7 @@ class _HomeOnRepeatShelf extends ConsumerWidget {
       inset: inset,
       itemCount: tracks.length,
       itemBuilder: (context, index) {
-        final track = tracks[index];
+        final (:track, :item) = tracks[index];
         return _HomeShelfTile(
           title: track.title,
           subtitle: track.artist,
@@ -597,22 +644,25 @@ class _HomeOnRepeatShelf extends ConsumerWidget {
             track.title,
             track.artist,
           ),
-          cover: PlayerArtwork(
-            artUri: track.artwork,
-            colorScheme: colorScheme,
-            cacheWidth: cacheWidth,
-            iconSize: 32,
-          ),
+          cover: item != null
+              ? _homeLibraryCover(item, colorScheme, cacheWidth)
+              : PlayerArtwork(
+                  artUri: track.artwork,
+                  colorScheme: colorScheme,
+                  cacheWidth: cacheWidth,
+                  iconSize: 32,
+                ),
           onTap: () => ref.read(musicPlayerControllerProvider).playAll([
-            for (final track in tracks)
-              PlayableMedia(
-                id: track.key,
-                source: track.key,
-                title: track.title,
-                artist: track.artist,
-                album: track.album,
-                artUri: track.artwork,
-              ),
+            for (final (:track, :item) in tracks)
+              (item == null ? null : _homePlayableFromLibrary(item)) ??
+                  PlayableMedia(
+                    id: track.key,
+                    source: track.key,
+                    title: track.title,
+                    artist: track.artist,
+                    album: track.album,
+                    artUri: track.artwork,
+                  ),
           ], initialIndex: index),
         );
       },
