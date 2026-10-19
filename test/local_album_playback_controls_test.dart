@@ -99,7 +99,9 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             overrides: [
-              currentMediaItemProvider.overrideWith((ref) => media.stream),
+              currentMediaItemProvider.overrideWithBuild(
+                (ref, notifier) => media.stream,
+              ),
               playbackPlayingProvider.overrideWith(
                 (ref) => ref.watch(_playingProvider),
               ),

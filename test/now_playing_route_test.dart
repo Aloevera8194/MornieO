@@ -153,8 +153,8 @@ void main() {
             key: capture,
             child: ProviderScope(
               overrides: [
-                currentMediaItemProvider.overrideWith(
-                  (ref) => Stream.value(null),
+                currentMediaItemProvider.overrideWithBuild(
+                  (ref, notifier) => Stream.value(null),
                 ),
               ],
               child: MaterialApp(

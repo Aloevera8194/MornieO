@@ -263,8 +263,8 @@ void main() {
               downloadQueueLookupProvider.overrideWith(
                 (ref) => DownloadQueueState().lookup,
               ),
-              currentMediaItemProvider.overrideWith(
-                (ref) => Stream.value(null),
+              currentMediaItemProvider.overrideWithBuild(
+                (ref, notifier) => Stream.value(null),
               ),
               recentAccessProvider.overrideWith(_Recent.new),
               trackProvider.overrideWith(() => search),

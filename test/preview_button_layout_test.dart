@@ -37,8 +37,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          currentMediaItemProvider.overrideWith(
-            (ref) => Stream.value(currentItem),
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => Stream.value(currentItem),
           ),
           playbackPlayingProvider.overrideWith((ref) => false),
         ],
@@ -93,7 +93,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          currentMediaItemProvider.overrideWith((ref) => Stream.value(null)),
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => Stream.value(null),
+          ),
           previewPlayerProvider.overrideWith(() => player),
         ],
         child: MaterialApp(

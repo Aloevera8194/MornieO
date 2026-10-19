@@ -11,9 +11,29 @@ final musicPlayerRuntimeProvider = Provider<MusicPlayerRuntime>(
   (ref) => musicPlayerRuntime,
 );
 
-final currentMediaItemProvider = StreamProvider<MediaItem?>((ref) {
-  return ref.watch(musicPlayerRuntimeProvider).mediaItemEvents();
-});
+final currentMediaItemProvider =
+    StreamNotifierProvider<CurrentMediaItemNotifier, MediaItem?>(
+      CurrentMediaItemNotifier.new,
+    );
+
+class CurrentMediaItemNotifier extends StreamNotifier<MediaItem?> {
+  @override
+  Stream<MediaItem?> build() =>
+      ref.watch(musicPlayerRuntimeProvider).mediaItemEvents();
+
+  @override
+  bool updateShouldNotify(
+    AsyncValue<MediaItem?> previous,
+    AsyncValue<MediaItem?> next,
+  ) {
+    // MediaItem equality compares IDs only. A new snapshot of the same track
+    // can carry its late duration, artwork or metadata and must reach the UI.
+    if (previous is AsyncData<MediaItem?> && next is AsyncData<MediaItem?>) {
+      return !identical(previous.value, next.value);
+    }
+    return super.updateShouldNotify(previous, next);
+  }
+}
 
 /// Use the Library's identity for favorites, including restored queues and
 /// playback started from a file path rather than a Library row ID.

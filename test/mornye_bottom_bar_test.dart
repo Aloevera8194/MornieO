@@ -54,8 +54,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          currentMediaItemProvider.overrideWith(
-            (ref) => Stream.value(
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => Stream.value(
               withPlayer
                   ? const MediaItem(
                       id: 'track',

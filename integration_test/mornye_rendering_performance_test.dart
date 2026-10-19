@@ -227,7 +227,7 @@ class _Fixture {
   Widget app(double clarity) => ProviderScope(
     overrides: [
       settingsProvider.overrideWith(_BenchmarkSettings.new),
-      currentMediaItemProvider.overrideWith((ref) async* {
+      currentMediaItemProvider.overrideWithBuild((ref, notifier) async* {
         yield _item(false);
         yield* media.stream;
       }),

@@ -101,7 +101,9 @@ void main() {
         overrides: [
           settingsProvider.overrideWith(_Settings.new),
           libraryCollectionsProvider.overrideWith(_Collections.new),
-          currentMediaItemProvider.overrideWith((ref) => Stream.value(item)),
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => Stream.value(item),
+          ),
           playQueueProvider.overrideWith((ref) => Stream.value([item])),
           playbackStateProvider.overrideWith(
             (ref) => Stream.value(PlaybackState(queueIndex: 0)),

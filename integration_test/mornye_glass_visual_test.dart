@@ -158,7 +158,9 @@ void main() {
         ProviderScope(
           overrides: [
             settingsProvider.overrideWith(_Settings.new),
-            currentMediaItemProvider.overrideWith((ref) => Stream.value(item)),
+            currentMediaItemProvider.overrideWithBuild(
+              (ref, notifier) => Stream.value(item),
+            ),
             playbackStateProvider.overrideWith(
               (ref) => Stream.value(PlaybackState()),
             ),

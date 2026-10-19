@@ -54,8 +54,8 @@ void main() {
           overrides: [
             settingsProvider.overrideWith(_Settings.new),
             musicPlayerControllerProvider.overrideWithValue(player),
-            currentMediaItemProvider.overrideWith(
-              (ref) => Stream.value(queue[1]),
+            currentMediaItemProvider.overrideWithBuild(
+              (ref, notifier) => Stream.value(queue[1]),
             ),
             playQueueProvider.overrideWith((ref) => Stream.value(queue)),
             playbackStateProvider.overrideWith(

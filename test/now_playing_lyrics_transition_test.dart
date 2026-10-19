@@ -12,7 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_3_expressive/material_3_expressive.dart'
-    show M3EIconButton;
+    show M3EIconButton, M3EProgressIndicator;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
 import 'package:spotiflac_android/l10n/l10n.dart';
@@ -181,7 +181,9 @@ void main() {
         overrides: [
           if (controller != null)
             musicPlayerControllerProvider.overrideWithValue(controller),
-          currentMediaItemProvider.overrideWith((ref) => mediaItems.stream),
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => mediaItems.stream,
+          ),
           playerMotionArtworkProvider.overrideWith(
             (ref, album) async => motionArtwork,
           ),
@@ -263,6 +265,64 @@ void main() {
       frames++;
     } while (tester.binding.hasScheduledFrame || lyricsRequests.isNotEmpty);
     return frames;
+  }
+
+  for (final mornye in [false, true]) {
+    testWidgets(
+      'late duration refreshes the open player without reopening ($mornye)',
+      (tester) async {
+        await pumpNowPlaying(
+          tester,
+          theme: mornye ? MornyeTheme.build(Brightness.dark) : null,
+          playback: PlaybackState(
+            processingState: AudioProcessingState.ready,
+            updatePosition: const Duration(seconds: 30),
+          ),
+          wrapPlayer: (player) => Column(
+            children: [
+              Expanded(child: player),
+              const HeroMode(enabled: false, child: MiniPlayer()),
+            ],
+          ),
+        );
+        final initial = item('first').copyWith(duration: Duration.zero);
+        mediaItems.add(initial);
+        await settlePlayer(tester);
+        final originalState = tester.state(find.byType(NowPlayingScreen));
+        expect(
+          tester
+              .widget<PlaybackSeekSlider>(find.byType(PlaybackSeekSlider))
+              .duration,
+          Duration.zero,
+        );
+        double miniProgress() => tester
+            .widget<M3EProgressIndicator>(
+              find.descendant(
+                of: find.byType(MiniPlayer),
+                matching: find.byType(M3EProgressIndicator),
+              ),
+            )
+            .value!;
+        if (!mornye) expect(miniProgress(), 0);
+        final readsBefore = metadataReads.length;
+
+        mediaItems.add(initial.copyWith(duration: const Duration(minutes: 3)));
+        await settlePlayer(tester);
+        expect(
+          tester.state(find.byType(NowPlayingScreen)),
+          same(originalState),
+        );
+        expect(
+          tester
+              .widget<PlaybackSeekSlider>(find.byType(PlaybackSeekSlider))
+              .duration,
+          const Duration(minutes: 3),
+        );
+        if (!mornye) expect(miniProgress(), closeTo(1 / 6, 0.001));
+        expect(metadataReads.length, readsBefore);
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 
   testWidgets('Material track titles never overlap during rapid skips', (

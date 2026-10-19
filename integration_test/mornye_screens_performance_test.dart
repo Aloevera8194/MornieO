@@ -101,7 +101,9 @@ void main() {
           recentAccessProvider.overrideWith(_Recent.new),
           trackProvider.overrideWith(() => search),
           userProfileProvider.overrideWith(_Profile.new),
-          currentMediaItemProvider.overrideWith((ref) => Stream.value(null)),
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => Stream.value(null),
+          ),
           libraryBrowsePageLoaderProvider.overrideWithValue((page) async {
             final request = page.browse;
             requests.add(request);

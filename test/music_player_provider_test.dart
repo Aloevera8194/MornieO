@@ -6,11 +6,62 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 
 void main() {
+  test(
+    'late duration updates notify mounted player consumers for the same track',
+    () async {
+      final mediaItems = StreamController<MediaItem?>();
+      addTearDown(mediaItems.close);
+      final container = ProviderContainer(
+        overrides: [
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => mediaItems.stream,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final durations = <Duration?>[];
+      final ids = <String?>[];
+      container.listen(currentMediaItemProvider, (_, next) {
+        if (next.hasValue) durations.add(next.value?.duration);
+      });
+      container.listen(
+        currentMediaItemProvider.select((state) => state.value?.id),
+        (_, next) => ids.add(next),
+      );
+      const initial = MediaItem(
+        id: 'track',
+        title: 'Track',
+        duration: Duration.zero,
+      );
+      mediaItems.add(initial);
+      await container.read(currentMediaItemProvider.future);
+      await container.pump();
+      final ready = initial.copyWith(duration: const Duration(minutes: 3));
+      expect(ready, initial); // audio_service equality compares only the ID.
+      mediaItems.add(ready);
+      await container.pump();
+      expect(durations, [Duration.zero, const Duration(minutes: 3)]);
+      expect(ids, ['track']);
+
+      mediaItems.add(ready);
+      await container.pump();
+      expect(durations, hasLength(2));
+      mediaItems.add(const MediaItem(id: 'next', title: 'Next'));
+      await container.pump();
+      expect(durations.last, isNull);
+      expect(ids, ['track', 'next']);
+      mediaItems.add(null);
+      await container.pump();
+      expect(container.read(currentMediaItemProvider).value, isNull);
+      expect(ids, ['track', 'next', null]);
+    },
+  );
+
   test('Library playback state follows only the current media item', () async {
     final container = ProviderContainer(
       overrides: [
-        currentMediaItemProvider.overrideWith(
-          (ref) =>
+        currentMediaItemProvider.overrideWithBuild(
+          (ref, notifier) =>
               Stream.value(const MediaItem(id: 'track-1', title: 'Track 1')),
         ),
         playbackPlayingProvider.overrideWith((ref) => true),
@@ -45,7 +96,9 @@ void main() {
       addTearDown(mediaItems.close);
       final container = ProviderContainer(
         overrides: [
-          currentMediaItemProvider.overrideWith((ref) => mediaItems.stream),
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => mediaItems.stream,
+          ),
           playbackPlayingProvider.overrideWith((ref) => true),
           playbackLoadingProvider.overrideWith((ref) => false),
         ],

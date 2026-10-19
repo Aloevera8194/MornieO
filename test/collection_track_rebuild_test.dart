@@ -87,7 +87,9 @@ void main() {
         overrides: [
           settingsProvider.overrideWith(FixedSettingsNotifier.new),
           libraryCollectionsProvider.overrideWith(_Collections.new),
-          currentMediaItemProvider.overrideWith((ref) => Stream.value(null)),
+          currentMediaItemProvider.overrideWithBuild(
+            (ref, notifier) => Stream.value(null),
+          ),
           downloadQueueLookupProvider.overrideWith(
             (ref) => ref.watch(snapshot),
           ),
@@ -203,7 +205,9 @@ void main() {
             settingsProvider.overrideWith(FixedSettingsNotifier.new),
             libraryCollectionsProvider.overrideWith(() => collections),
             recentAccessProvider.overrideWith(_Recent.new),
-            currentMediaItemProvider.overrideWith((ref) => Stream.value(null)),
+            currentMediaItemProvider.overrideWithBuild(
+              (ref, notifier) => Stream.value(null),
+            ),
             downloadQueueLookupProvider.overrideWithValue(
               const DownloadQueueLookup.empty(),
             ),
