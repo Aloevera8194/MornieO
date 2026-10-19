@@ -12,9 +12,7 @@ import 'package:spotiflac_android/widgets/app_content_card.dart';
 import 'package:spotiflac_android/widgets/app_choice_chip.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
-import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
 import 'package:spotiflac_android/widgets/app_shape.dart';
 import 'package:spotiflac_android/widgets/expressive_button.dart';
@@ -149,18 +147,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
   HomeSearchSortOption? _sortedTracksMode;
   List<Track>? _sortedTracksCache;
   List<int>? _sortedTrackIndexesCache;
-
-  double _recentDownloadCoverSize(BuildContext context) {
-    final scale = responsiveScale(context: context, min: 0.82, max: 1.25);
-    final textScale = effectiveTextScale(context);
-    return 100 * scale * (1 + (textScale - 1) * 0.15);
-  }
-
-  double _recentDownloadsRowHeight(BuildContext context) {
-    final coverSize = _recentDownloadCoverSize(context);
-    final textScale = effectiveTextScale(context);
-    return coverSize + 28 + ((textScale - 1) * 8);
-  }
 
   double _exploreCardSize(BuildContext context) {
     // Six phone-sized cards across an iPad made the feed look like a desktop
@@ -742,9 +728,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
     final searchError = _showsSearch
         ? ref.watch(trackProvider.select((s) => s.error))
         : null;
-    final hasSearchedBefore = ref.watch(
-      settingsProvider.select((s) => s.hasSearchedBefore),
-    );
     final explicitSearchProvider = ref.watch(
       settingsProvider.select((s) => s.searchProvider),
     );
@@ -800,11 +783,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
         _showsSearch &&
         ref.watch(trackProvider.select((s) => s.isShowingRecentAccess));
     final screenHeight = MediaQuery.sizeOf(context).height;
-    final hasHistoryItems =
-        _showsHome &&
-        ref.watch(
-          _homeHistoryPreviewProvider.select((items) => items.isNotEmpty),
-        );
 
     final recentModeRequested =
         widget.mode == HomeTabMode.search ||
@@ -845,7 +823,10 @@ class _HomeTabState extends ConsumerState<HomeTab>
         !homeFeedDisabled &&
         (hasHomeFeedExtension || hasExploreContent) &&
         hasExploreContent;
+    // Only a surface with a search field asks for a search provider. The
+    // Mornye Home browses without one, so it never stops at this prompt.
     final showEmptyHomeState =
+        _showsSearch &&
         !isSearchProviderLoading &&
         !hasSearchProvider &&
         !hasHomeFeedExtension &&
@@ -855,15 +836,11 @@ class _HomeTabState extends ConsumerState<HomeTab>
       context,
       const AppMotionSpec(Duration(milliseconds: 250), Curves.easeOut),
     );
-    // Without a feed, the Material Home greets in its header and gathers
-    // the player and shortcuts under the search bar. A feed brings its own
+    // Without a feed, Home gathers the player, shortcuts and Library shelves.
+    final showHomeSections = _showsHome && !showExplore && !showEmptyHomeState;
+    // The Material Home also greets in its header. A feed brings its own
     // greeting, and the Mornye style keeps its navigation title.
-    final greetsInHeader =
-        _showsHome &&
-        widget.mode != HomeTabMode.search &&
-        !context.isMornye &&
-        !showExplore &&
-        !showEmptyHomeState;
+    final greetsInHeader = showHomeSections && !context.isMornye;
     final greeting = greetsInHeader
         ? homeGreeting(
             context.l10n,
@@ -953,10 +930,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 showRecentAccess: showRecentAccess,
                 showExplore: showExplore,
                 showEmptyHomeState: showEmptyHomeState,
-                greetsInHeader: greetsInHeader,
-                hasSearchedBefore: hasSearchedBefore,
-                hasHistoryItems: hasHistoryItems,
-                colorScheme: colorScheme,
               ),
               if (showExplore) _buildExploreSliver(colorScheme: colorScheme),
               if (_showsHome &&
@@ -1092,10 +1065,6 @@ class _HomeTabState extends ConsumerState<HomeTab>
     required bool showRecentAccess,
     required bool showExplore,
     required bool showEmptyHomeState,
-    required bool greetsInHeader,
-    required bool hasSearchedBefore,
-    required bool hasHistoryItems,
-    required ColorScheme colorScheme,
   }) {
     return SliverToBoxAdapter(
       child: AnimatedSize(
@@ -1108,38 +1077,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 showExplore ||
                 showEmptyHomeState)
             ? const SizedBox.shrink()
-            : Column(
-                children: [
-                  if (greetsInHeader)
-                    _HomeSections(inset: 16 + wideListInset(context)),
-                  if (_showsSearch && !hasSearchedBefore && !greetsInHeader)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        context.l10n.homeSupports,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  if (hasHistoryItems && !greetsInHeader)
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final historyItems = ref.watch(
-                          _homeHistoryPreviewProvider,
-                        );
-                        return Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                          child: _buildRecentDownloads(
-                            historyItems,
-                            colorScheme,
-                          ),
-                        );
-                      },
-                    ),
-                ],
-              ),
+            : _HomeSections(inset: 16 + wideListInset(context)),
       ),
     );
   }
@@ -1300,157 +1238,5 @@ class _HomeTabState extends ConsumerState<HomeTab>
         setState(() {});
       }
     });
-  }
-
-  Widget _buildRecentDownloads(
-    List<DownloadHistoryItem> items,
-    ColorScheme colorScheme,
-  ) {
-    final itemCount = items.length < 10 ? items.length : 10;
-    final coverSize = _recentDownloadCoverSize(context);
-    final rowHeight = _recentDownloadsRowHeight(context);
-    final header = Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Semantics(
-        header: true,
-        child: Text(
-          context.l10n.homeRecent,
-          style: Theme.of(
-            context,
-          ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
-      ),
-    );
-
-    if (materialExpressiveEnabled(context)) {
-      final recent = items.take(itemCount).toList(growable: false);
-      final carouselHeight = coverSize * 1.6;
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          header,
-          MaterialExpressiveScope(
-            child: M3ECarousel(
-              type: M3ECarouselType.contained,
-              height: carouselHeight,
-              freeScroll: true,
-              children: [
-                for (final (index, item) in recent.indexed)
-                  M3ECarouselItem(
-                    semanticLabel: context.l10n.a11yOpenTrackByArtist(
-                      item.trackName,
-                      item.artistName,
-                    ),
-                    // Each slot changes width while scrolling; cover-fit a
-                    // square decode so every slot stays filled.
-                    image: DownloadableCover(
-                      coverUrl: item.coverUrl,
-                      baseName: '${item.artistName} - ${item.trackName}',
-                      child: SizedBox.expand(
-                        child: FittedBox(
-                          fit: BoxFit.cover,
-                          clipBehavior: Clip.hardEdge,
-                          child: _DownloadedOrRemoteCover(
-                            downloadedFilePath: item.filePath,
-                            imageUrl: item.coverUrl,
-                            width: carouselHeight,
-                            height: carouselHeight,
-                            borderRadius: BorderRadius.zero,
-                            fallbackIcon: Icons.music_note,
-                            fallbackIconSize: 32,
-                            colorScheme: colorScheme,
-                          ),
-                        ),
-                      ),
-                    ),
-                    subtitle: Text(
-                      item.trackName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    showScrim: const M3ECarouselScrim.gradient(),
-                    onTap: () => _navigateToMetadataScreen(
-                      item,
-                      navigationItems: recent,
-                      navigationIndex: index,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        header,
-        SizedBox(
-          height: rowHeight,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: itemCount,
-            itemBuilder: (context, index) {
-              final item = items[index];
-              return KeyedSubtree(
-                key: ValueKey(item.id),
-                child: Semantics(
-                  button: true,
-                  label: context.l10n.a11yOpenTrackByArtist(
-                    item.trackName,
-                    item.artistName,
-                  ),
-                  child: GestureDetector(
-                    onTap: () => _navigateToMetadataScreen(
-                      item,
-                      navigationItems: items
-                          .take(itemCount)
-                          .toList(growable: false),
-                      navigationIndex: index,
-                    ),
-                    child: Container(
-                      width: coverSize,
-                      margin: const EdgeInsets.only(right: 12),
-                      child: Column(
-                        children: [
-                          DownloadableCover(
-                            coverUrl: item.coverUrl,
-                            baseName: '${item.artistName} - ${item.trackName}',
-                            child: _DownloadedOrRemoteCover(
-                              downloadedFilePath: item.filePath,
-                              imageUrl: item.coverUrl,
-                              width: coverSize,
-                              height: coverSize,
-                              borderRadius: BorderRadius.circular(12),
-                              fallbackIcon: Icons.music_note,
-                              fallbackIconSize: 32,
-                              colorScheme: colorScheme,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            item.trackName,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: colorScheme.onSurfaceVariant),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
   }
 }

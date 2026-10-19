@@ -360,6 +360,40 @@ void main() {
     expect(find.text('Recent artist 9').hitTestable(), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  for (final withSearchExtension in [false, true]) {
+    testWidgets('Mornye Home without a feed shows its sections '
+        '(search extension: $withSearchExtension)', (tester) async {
+      tester.view.physicalSize = const Size(430, 932);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(_Settings.new),
+            extensionProvider.overrideWith(
+              withSearchExtension ? _Extensions.new : _NoExtensions.new,
+            ),
+            exploreProvider.overrideWith(() => _Explore(sections: const [])),
+            downloadHistoryProvider.overrideWith(_History.new),
+            recentAccessProvider.overrideWith(_Recent.new),
+            trackProvider.overrideWith(_Search.new),
+          ],
+          child: MaterialApp(
+            theme: MornyeTheme.build(Brightness.dark),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const HomeTab(mode: HomeTabMode.browse),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Shortcuts'), findsOneWidget);
+      expect(find.text('No search providers yet'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
 }
 
 class _Tabs extends StatefulWidget {
@@ -428,6 +462,11 @@ class _Extensions extends ExtensionNotifier {
       ),
     ],
   );
+}
+
+class _NoExtensions extends ExtensionNotifier {
+  @override
+  ExtensionState build() => const ExtensionState(isInitialized: true);
 }
 
 class _Explore extends ExploreNotifier {
