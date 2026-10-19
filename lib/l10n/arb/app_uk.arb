@@ -188,7 +188,7 @@
   "usbBitPerfectFallback": "Цей пристрій або аудіоформат не підтримує високо - бітовий вихід. Використовується звичайне відтворення.",
   "usbBitPerfectRouteChanged": "Шлях аудіо USB змінився. Відтворення призупинено; виберіть доріжку для повторного підключення.",
   "upgradeIntroThemeTitle": "Зробіть це по-своєму.",
-  "upgradeIntroThemeBody": "Виберіть вигляд. Ваш вибір застосовується негайно, і ви можете змінити його пізніше у розділі \"Зовнішній вигляд\".",
+  "upgradeIntroThemeBody": "Виберіть вигляд. Ваш вибір застосовується відразу, і ви можете змінити його пізніше у розділі \"Зовнішній вигляд\".",
   "upgradeIntroThemeMornyeBody": "Навігація Glass, перероблена Бібліотека та імерсивний програвач.",
   "upgradeIntroSkip": "Пропустити",
   "upgradeIntroContinue": "Продовжити",
@@ -703,7 +703,7 @@
   "@storeInstalled": {
     "description": "Already installed badge"
   },
-  "storeUpdate": "Оновлені",
+  "storeUpdate": "Оновити",
   "@storeUpdate": {
     "description": "Update available button"
   },
