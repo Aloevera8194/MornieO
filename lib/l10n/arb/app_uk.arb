@@ -59,7 +59,7 @@
   "@networkErrorPermission": {
     "description": "Network access error when the server denies account permissions for a shared folder; distinct from the device's local network permission"
   },
-  "networkErrorLocalPermission": "Local network access is not allowed. Allow Nearby devices for SpotiFLAC Mobile in Android app settings, then try again.",
+  "networkErrorLocalPermission": "Немає доступу до локальної мережі. Дозвольте пошук пристроїв поблизу для SpotiFLAC Mobile у налаштуваннях Android та спробуйте знову.",
   "@networkErrorLocalPermission": {
     "description": "Network access error when Android denies local network permission; Nearby devices is the Android app permission setting"
   },
@@ -193,7 +193,7 @@
   "upgradeIntroSkip": "Пропустити",
   "upgradeIntroContinue": "Продовжити",
   "upgradeIntroDone": "Початок прослуховування",
-  "whatsNewReplay": "What’s new in {version}",
+  "whatsNewReplay": "Що нового у {version}",
   "@whatsNewReplay": {
     "description": "About page entry that replays the release tour",
     "placeholders": {
@@ -202,7 +202,7 @@
       }
     }
   },
-  "whatsNewWelcomeTitle": "Welcome to\nSpotiFLAC-Mobile {version}",
+  "whatsNewWelcomeTitle": "Ласкаво просимо до\nSpotiFLAC-Mobile {version}",
   "@whatsNewWelcomeTitle": {
     "description": "First page title of the release tour",
     "placeholders": {
@@ -211,29 +211,29 @@
       }
     }
   },
-  "whatsNewWelcomeBody": "A more expressive look, a more capable player and lyrics worth sharing.",
-  "whatsNewSummaryExpressiveBody": "New shapes, Material Symbols and spring motion across the app.",
-  "whatsNewSummaryPlayerTitle": "Built-in player",
-  "whatsNewSummaryPlayerBody": "Equalizer, full-screen covers and detailed audio information.",
-  "whatsNewSummaryLyricsBody": "Turn your favorite lines into a card for stories.",
-  "whatsNewThemeMaterialBody": "Material 3 Expressive, with your accent color, rounded shapes and lively motion.",
-  "whatsNewExpressiveTitle": "Material,\nmade expressive.",
-  "whatsNewExpressiveBody": "Material 3 Expressive now shapes the whole app, from icons to motion.",
-  "whatsNewSymbolsTitle": "Shapes and symbols",
-  "whatsNewSymbolsBody": "Rounded Material Symbols, expressive shapes and connected settings rows.",
-  "whatsNewMotionTitle": "Spring motion",
-  "whatsNewMotionBody": "Buttons, headers and progress move with natural, springy physics.",
-  "whatsNewLargeScreenTitle": "Room on bigger screens",
-  "whatsNewLargeScreenBody": "Tablet navigation and centered layouts make wide screens feel at home.",
-  "whatsNewPlayerTitle": "A player that\ndoes more.",
-  "whatsNewPlayerBody": "New ways to hear and see your music in the built-in player.",
-  "whatsNewEqualizerBody": "Shape your sound with a multiband EQ and presets. Find it in Settings → Playback.",
-  "whatsNewCoverTitle": "Full-screen cover",
-  "whatsNewCoverBody": "Let the artwork fill the top of the player. Choose it under Settings → Playback → Cover art.",
-  "whatsNewAudioInfoTitle": "Audio details",
-  "whatsNewAudioInfoBody": "Tap the quality label in the player to see the source, processing and output.",
-  "whatsNewHapticsBody": "Feel the beat through gentle vibration on downloaded and local songs. Off by default.",
-  "whatsNewLyricsTitle": "Lyrics worth\nsharing.",
+  "whatsNewWelcomeBody": "Яскравіший дизайн, функціональніший плеєр та тексти пісень, якими хочеться ділитися.",
+  "whatsNewSummaryExpressiveBody": "Нові форми, значки Material та плавна анімація в усьому додатку.",
+  "whatsNewSummaryPlayerTitle": "Вбудований програвач",
+  "whatsNewSummaryPlayerBody": "Еквалайзер, повноекранні обкладинки та детальна інформація про аудіо.",
+  "whatsNewSummaryLyricsBody": "Перетворіть свої улюблені рядки в карту для розповідей.",
+  "whatsNewThemeMaterialBody": "Material 3 Expressive: із вашим акцентним кольором, округлими формами та живою анімацією.",
+  "whatsNewExpressiveTitle": "Material,\nзроблено виразним.",
+  "whatsNewExpressiveBody": "Material 3 Expressive формує весь інтерфейс програми. від іконок до анімації.",
+  "whatsNewSymbolsTitle": "Форми та символи",
+  "whatsNewSymbolsBody": "Закруглені Material Symbols, виразні форми та пов'язані рядки налаштувань.",
+  "whatsNewMotionTitle": "Плавність анімації",
+  "whatsNewMotionBody": "Плавна та природна анімація інтерфейсу.",
+  "whatsNewLargeScreenTitle": "Простір на великих екранах",
+  "whatsNewLargeScreenBody": "Планшетна навігація та центрований інтерфейс адаптують додаток до широких екранів.",
+  "whatsNewPlayerTitle": "Програвач із розширеними можливостями.",
+  "whatsNewPlayerBody": "Нові можливості аудіо та візуалізації у вбудованому плеєрі.",
+  "whatsNewEqualizerBody": "Керуйте звуком за допомогою багатосмугового еквалайзера та пре сетів. Знайти можна тут: Налаштування → Відтворення.",
+  "whatsNewCoverTitle": "Повноекранна обкладинка",
+  "whatsNewCoverBody": "Дозвольте обкладинці заповнити верхню частину програвача. Виберіть її в меню: Налаштування → Відтворення → Обкладинка.",
+  "whatsNewAudioInfoTitle": "Деталі аудіо",
+  "whatsNewAudioInfoBody": "Натисніть на позначку якості у програвачі, щоб переглянути джерело, обробку та вихідний сигнал.",
+  "whatsNewHapticsBody": "М’яка вібрація в такт завантажених та локальних пісень. За замовчуванням вимкнено.",
+  "whatsNewLyricsTitle": "Тексти пісень, якими варто поділитися.",
   "whatsNewLyricsBody": "Quote the lines you love and share them as a card.",
   "whatsNewLyricCardsTitle": "Lyric cards",
   "whatsNewLyricCardsBody": "Long-press a line, or open the player menu, then pick up to five lines and a background.",
