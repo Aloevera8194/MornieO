@@ -1132,21 +1132,19 @@ class DownloadHistoryNotifier extends Notifier<DownloadHistoryState> {
   Future<void> restoreFromBackup(List<Map<String, dynamic>> items) =>
       restoreFromBackupStream(Stream.fromIterable(items));
 
-  /// Serializes a native backup replacement with existing history writes, then
-  /// publishes the same bounded initial state as a streamed restore.
+  /// Serializes backup replacement with existing history writes. Repair iOS
+  /// paths before publishing the restored history to Library and maintenance.
   Future<void> restoreFromBackupOperation(Future<void> Function() restore) =>
       _enqueueHistoryWrite(() async {
         await restore();
+        await _db.migrateIosContainerPaths(force: true);
         await _loadFromDatabase();
       });
 
   /// Restores a large v2 backup without retaining the complete history in
   /// Dart memory. SQLite writes are grouped to keep JNI/channel overhead low.
   Future<void> restoreFromBackupStream(Stream<Map<String, dynamic>> items) =>
-      _enqueueHistoryWrite(() async {
-        await _db.replaceAll(items);
-        await _loadFromDatabase();
-      });
+      restoreFromBackupOperation(() => _db.replaceAll(items));
 }
 
 final downloadHistoryProvider =

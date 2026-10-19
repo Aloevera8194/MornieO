@@ -188,58 +188,28 @@ class HistoryDatabase {
     return rebaseIosSandboxPath(filePath, '$_currentContainerPath/Documents');
   }
 
-  Future<bool> migrateIosContainerPaths() async {
+  Future<bool> migrateIosContainerPaths({bool force = false}) async {
     if (!Platform.isIOS) return false;
 
     await _initContainerPath();
     if (_currentContainerPath == null) return false;
 
-    final prefs = await _prefs;
-    final lastContainer = prefs.getString('ios_last_container_path');
-
-    if (lastContainer == _currentContainerPath) {
-      _log.d('iOS container path unchanged, skipping migration');
-      return false;
-    }
-
-    _log.i('iOS container changed: $lastContainer -> $_currentContainerPath');
-
     try {
-      final db = await database;
-
-      final rows = await db.query('history', columns: ['id', 'file_path']);
-      int updatedCount = 0;
-      final batch = db.batch();
-
-      for (final row in rows) {
-        final id = row['id'] as String;
-        final oldPath = row['file_path'] as String?;
-
-        if (oldPath != null) {
-          final newPath = _normalizeIosPath(oldPath);
-          if (newPath != oldPath) {
-            batch.update(
-              'history',
-              {'file_path': newPath},
-              where: 'id = ?',
-              whereArgs: [id],
-            );
-            _putPathKeysInBatch(batch, id, newPath);
-            updatedCount++;
-          }
-        }
+      final updatedCount = await migrateIosHistoryPaths(
+        await database,
+        await _prefs,
+        containerPath: _currentContainerPath!,
+        force: force,
+      );
+      if (updatedCount == null) {
+        _log.d('iOS container path unchanged, skipping migration');
+        return false;
       }
-
-      if (updatedCount > 0) {
-        await batch.commit(noResult: true);
-      }
-
-      await prefs.setString('ios_last_container_path', _currentContainerPath!);
-
       _log.i('iOS path migration complete: $updatedCount paths updated');
       return updatedCount > 0;
     } catch (e, stack) {
       _log.e('iOS path migration failed: $e', e, stack);
+      if (force) rethrow;
       return false;
     }
   }
