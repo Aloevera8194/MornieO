@@ -1,9 +1,9 @@
 {
-  "networkDownloadDestination": "Network download destination",
+  "networkDownloadDestination": "Destino de download na rede",
   "@networkDownloadDestination": {
     "description": "Files settings item that opens network storage to choose a folder for downloaded music"
   },
-  "networkUseForDownloads": "Download to this folder",
+  "networkUseForDownloads": "Baixar para esta pasta",
   "@networkUseForDownloads": {
     "description": "Action to select the current network folder as the download destination; also the settings subtitle when no network destination is selected"
   },
