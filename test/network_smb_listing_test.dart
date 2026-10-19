@@ -64,6 +64,12 @@ void main() {
       expect(result.where((entry) => entry.directory), hasLength(1));
       expect(result.singleWhere((entry) => entry.size == 3).directory, isFalse);
       expect(result.any((entry) => entry.size == 9007199254740991), isTrue);
+      expect(
+        result.every(
+          (entry) => entry.modifiedTime == date.millisecondsSinceEpoch,
+        ),
+        isTrue,
+      );
     },
   );
 }

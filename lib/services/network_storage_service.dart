@@ -22,7 +22,7 @@ part 'network_storage_upload.dart';
 part 'network_storage_delete.dart';
 
 typedef _SmbListingInput = ({
-  List<({String name, bool directory, int size})> files,
+  List<({String name, bool directory, int size, int modifiedTime})> files,
   String path,
 });
 
@@ -35,6 +35,7 @@ List<NetworkEntry> _prepareSmbListingInBackground(_SmbListingInput input) =>
             file.name,
             directory: file.directory,
             size: file.size,
+            modifiedTime: file.modifiedTime,
           ),
     ]);
 
@@ -62,6 +63,8 @@ List<NetworkEntry> _hydrateNetworkEntriesInBackground(List<dynamic> entries) =>
           raw['name'] as String,
           directory: raw['directory'] as bool,
           size: (raw['size'] as num?)?.toInt(),
+          modifiedTime: (raw['modifiedTime'] as num?)?.toInt(),
+          etag: raw['etag'] as String?,
         ),
     ];
 
@@ -123,10 +126,19 @@ class NetworkConnection {
 }
 
 class NetworkEntry {
-  const NetworkEntry(this.path, this.name, {this.directory = false, this.size});
+  const NetworkEntry(
+    this.path,
+    this.name, {
+    this.directory = false,
+    this.size,
+    this.modifiedTime,
+    this.etag,
+  });
   final String path, name;
   final bool directory;
   final int? size;
+  final int? modifiedTime;
+  final String? etag;
   String get extension => name.split('.').last.toLowerCase();
   bool get audio =>
       !directory &&
@@ -466,7 +478,8 @@ class NetworkStorageService {
       );
       request.write(
         '<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop>'
-        '<d:resourcetype/><d:getcontentlength/></d:prop></d:propfind>',
+        '<d:resourcetype/><d:getcontentlength/>'
+        '<d:getlastmodified/><d:getetag/></d:prop></d:propfind>',
       );
     }
     final HttpClientResponse response;
@@ -597,7 +610,7 @@ class NetworkStorageService {
   }
 
   /// Large SMB listings arrive from native I/O as plain stat objects. Transfer
-  /// only fields used by the browser, avoiding copies of unused timestamps.
+  /// only fields used by browsing and incremental Library scans.
   static Future<List<NetworkEntry>> prepareSmbEntries(
     List<Smb2DirEntry> files,
     String path,
@@ -610,6 +623,7 @@ class NetworkStorageService {
             name: file.name,
             directory: file.stat.isDirectory,
             size: file.stat.size,
+            modifiedTime: file.stat.modified.millisecondsSinceEpoch,
           ),
       ],
     );
@@ -649,7 +663,13 @@ class NetworkStorageService {
       baseSegments.removeLast();
     }
     final found = <String, NetworkEntry>{};
-    void add(String href, bool directory, int? size) {
+    void add(
+      String href,
+      bool directory,
+      int? size, {
+      int? modifiedTime,
+      String? etag,
+    }) {
       final uri = base.resolve(href);
       if (uri.origin != base.origin ||
           uri.hasQuery ||
@@ -684,6 +704,8 @@ class NetworkStorageService {
         name,
         directory: directory,
         size: size,
+        modifiedTime: modifiedTime,
+        etag: etag,
       );
     }
 
@@ -713,16 +735,26 @@ class NetworkStorageService {
           continue;
         }
         if (href != null && props.isNotEmpty) {
+          String? property(String name) => values
+              .where((element) => element.name.local == name)
+              .firstOrNull
+              ?.innerText
+              .trim();
+          int? modifiedTime;
+          try {
+            final date = property('getlastmodified');
+            if (date != null) {
+              modifiedTime = HttpDate.parse(date).millisecondsSinceEpoch;
+            }
+          } on HttpException {
+            // Missing or malformed validators require a fresh metadata read.
+          }
           add(
             href,
             values.any((e) => e.name.local == 'collection'),
-            int.tryParse(
-              values
-                      .where((e) => e.name.local == 'getcontentlength')
-                      .firstOrNull
-                      ?.innerText ??
-                  '',
-            ),
+            int.tryParse(property('getcontentlength') ?? ''),
+            modifiedTime: modifiedTime,
+            etag: property('getetag'),
           );
         }
       }

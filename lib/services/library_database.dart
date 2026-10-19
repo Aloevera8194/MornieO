@@ -76,6 +76,11 @@ class LibraryDatabase {
 
   bool get searchFtsAvailable => _searchFtsAvailable ?? false;
 
+  Future<Map<String, Map<String, dynamic>>> readNetworkScanRows(
+    String sourceId,
+    List<String> paths,
+  ) => _ingestion.readNetworkScanRows(sourceId, paths);
+
   /// Keeps native scan output native through parsing, indexing and the atomic
   /// source swap. The stream implementation remains the desktop/test adapter.
   Future<({int inserted, int skipped})> replaceSourceScanFile(

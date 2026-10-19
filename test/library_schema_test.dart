@@ -164,8 +164,31 @@ void main() {
     },
   );
 
+  test(
+    'v17 upgrade retains existing rows and adds network file versions',
+    () async {
+      await LibrarySchema.create(db, 17);
+      await db.execute('ALTER TABLE library DROP COLUMN network_file_version');
+      await db.insert('library', {
+        'id': 'old',
+        'track_name': 'Song',
+        'artist_name': 'Artist',
+        'album_name': 'Album',
+        'file_path': 'network://nas/song.flac',
+        'scanned_at': '2026-10-19',
+      });
+      await LibrarySchema.upgrade(db, 17, LibrarySchema.version);
+      expect(
+        (await db.query('library')).single['network_file_version'],
+        isNull,
+      );
+      expect((await db.query('library')).single['id'], 'old');
+    },
+  );
+
   test('row mapping round-trips metadata and preserves unknown scan flags', () {
     final track = _track('full');
+    track['networkFileVersion'] = 'network-fingerprint';
     expect(LibraryRowMapper.decode(LibraryRowMapper.encode(track)), track);
     final filename = LibraryRowMapper.encode({
       ...track,

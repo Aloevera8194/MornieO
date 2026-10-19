@@ -30,7 +30,7 @@ Future<void> createNativeLibraryFixture(
   String historyPath = ':memory:',
 }) async {
   await LibrarySchema.create(db, LibrarySchema.version);
-  await db.execute('PRAGMA user_version = 17');
+  await db.execute('PRAGMA user_version = ${LibrarySchema.version}');
   await db.execute('PRAGMA recursive_triggers = ON');
   await db.execute('ATTACH DATABASE ? AS history_db', [historyPath]);
   await db.execute(

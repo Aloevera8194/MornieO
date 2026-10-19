@@ -29,6 +29,7 @@ class LocalLibraryItem {
   final String? coverPath;
   final DateTime scannedAt;
   final int? fileModTime;
+  final String? networkFileVersion;
   final String? isrc;
   final int? trackNumber;
   final int? totalTracks;
@@ -59,6 +60,7 @@ class LocalLibraryItem {
     this.coverPath,
     required this.scannedAt,
     this.fileModTime,
+    this.networkFileVersion,
     this.isrc,
     this.trackNumber,
     this.totalTracks,
@@ -90,6 +92,7 @@ class LocalLibraryItem {
     'coverPath': coverPath,
     'scannedAt': scannedAt.toIso8601String(),
     'fileModTime': fileModTime,
+    'networkFileVersion': networkFileVersion,
     'isrc': isrc,
     'trackNumber': trackNumber,
     'totalTracks': totalTracks,
@@ -122,6 +125,7 @@ class LocalLibraryItem {
         coverPath: json['coverPath'] as String?,
         scannedAt: DateTime.parse(json['scannedAt'] as String),
         fileModTime: (json['fileModTime'] as num?)?.toInt(),
+        networkFileVersion: json['networkFileVersion'] as String?,
         isrc: json['isrc'] as String?,
         trackNumber: (json['trackNumber'] as num?)?.toInt(),
         totalTracks: (json['totalTracks'] as num?)?.toInt(),
@@ -164,6 +168,7 @@ class LocalLibraryItem {
       coverPath: coverPath,
       scannedAt: scannedAt,
       fileModTime: fileModTime,
+      networkFileVersion: networkFileVersion,
       isrc: isrc,
       trackNumber: trackNumber,
       totalTracks: totalTracks,

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:spotiflac_android/services/library_native_adapter.dart';
 import 'package:spotiflac_android/services/library_row_mapper.dart';
+import 'package:spotiflac_android/services/library_schema.dart';
 import 'package:spotiflac_android/services/platform_bridge.dart';
 import 'package:spotiflac_android/services/sqlite_native_snapshot.dart';
 
@@ -31,6 +32,10 @@ class _NativeHarness {
     );
     stagedPaths.add(path);
     final private = await SqliteProcessDatabase.open(path: path);
+    expect(
+      (await private.rawQuery('PRAGMA user_version')).single['user_version'],
+      LibrarySchema.version,
+    );
     final snapshot = request['operation'] == 'library_snapshot';
     var count = 0;
     try {

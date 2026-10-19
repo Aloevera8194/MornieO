@@ -32,6 +32,26 @@ class LibraryIngestionStore {
 
   Future<void> _ensureHistoryAttached(Database db) => _attachHistory(db);
 
+  /// The scanner requests at most one small listing batch at a time.
+  Future<Map<String, Map<String, dynamic>>> readNetworkScanRows(
+    String sourceId,
+    List<String> paths,
+  ) async {
+    if (paths.isEmpty) return {};
+    if (paths.length > 64) throw ArgumentError('Too many network scan paths');
+    final db = await database;
+    final rows = await db.query(
+      'library',
+      where:
+          'source_id = ? AND file_path IN (${List.filled(paths.length, '?').join(',')})',
+      whereArgs: [sourceId, ...paths],
+    );
+    return {
+      for (final row in rows)
+        row['file_path'] as String: LibraryRowMapper.decode(row),
+    };
+  }
+
   /// Keeps native scan output native through parsing, indexing and the atomic
   /// source swap. The stream implementation remains the desktop/test adapter.
   Future<({int inserted, int skipped})> replaceSourceScanFile(

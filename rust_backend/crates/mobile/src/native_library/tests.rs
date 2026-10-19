@@ -35,7 +35,7 @@ impl Fixture {
             })
             .collect::<Vec<_>>()
             .join(",");
-        db.execute_batch(&format!("PRAGMA journal_mode=WAL; PRAGMA user_version=17;
+        db.execute_batch(&format!("PRAGMA journal_mode=WAL; PRAGMA user_version={SCHEMA_VERSION};
             CREATE TABLE library({definitions});
             CREATE TABLE library_sources(id TEXT PRIMARY KEY,path TEXT,enabled INTEGER);
             INSERT INTO library_sources VALUES('source','/music',1),('other','/other',1);
@@ -109,6 +109,26 @@ impl Fixture {
 
 fn track(id: &str, path: &str) -> Value {
     json!({"id":id,"trackName":format!("Track {id}"),"artistName":"Artist","albumName":"Album","albumArtist":null,"filePath":path,"scannedAt":"2026-10-06T12:00:00.000Z","fileModTime":1770000000000_i64,"isrc":"USAAA2600001","hasReplayGain":false,"replaygain_track_gain":"-4.5 dB"})
+}
+
+#[test]
+fn full_import_persists_network_file_versions_and_cached_flags() {
+    let fixture = Fixture::new();
+    let mut row = track("network", "network://nas/song.flac");
+    row["networkFileVersion"] = "fingerprint".into();
+    row["hasLyrics"] = true.into();
+    row["hasReplayGain"] = true.into();
+    row.as_object_mut().unwrap().remove("replaygain_track_gain");
+    fixture.scan(&[row], 1, 0, &|| Ok(())).unwrap();
+    let stored: (String, i64, i64) = fixture
+        .db
+        .query_row(
+            "SELECT network_file_version,has_lyrics,has_replaygain FROM library",
+            [],
+            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        )
+        .unwrap();
+    assert_eq!(stored, ("fingerprint".into(), 1, 1));
 }
 
 #[test]
@@ -528,7 +548,7 @@ fn mapper_preserves_null_artist_flags_and_replaygain_contract() {
     row["albumArtist"] = json!("");
     row["metadataFromFilename"] = json!(true);
     let mapped = encode(&row, "nas").unwrap();
-    assert_eq!(mapped.len(), 39);
+    assert_eq!(mapped.len(), 40);
     assert_eq!(mapped["explicit"], 1);
     assert_eq!(mapped["has_replaygain"], 1);
     assert_eq!(mapped["audio_metadata_scan_version"], 0);

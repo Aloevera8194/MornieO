@@ -14,7 +14,7 @@ use std::{
     time::Duration,
 };
 
-const SCHEMA_VERSION: i64 = 17;
+const SCHEMA_VERSION: i64 = 18;
 const SCAN_VERSION: i64 = 4;
 const BATCH_SIZE: usize = 300;
 const MAX_ROW_BYTES: usize = 16 * 1024 * 1024;
@@ -28,6 +28,7 @@ const COLUMNS: &[(&str, &str)] = &[
     ("coverPath", "cover_path"),
     ("scannedAt", "scanned_at"),
     ("fileModTime", "file_mod_time"),
+    ("networkFileVersion", "network_file_version"),
     ("isrc", "isrc"),
     ("trackNumber", "track_number"),
     ("totalTracks", "total_tracks"),

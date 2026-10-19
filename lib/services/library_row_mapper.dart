@@ -14,6 +14,7 @@ abstract final class LibraryRowMapper {
     'coverPath': 'cover_path',
     'scannedAt': 'scanned_at',
     'fileModTime': 'file_mod_time',
+    'networkFileVersion': 'network_file_version',
     'isrc': 'isrc',
     'trackNumber': 'track_number',
     'totalTracks': 'total_tracks',
