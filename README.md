@@ -61,13 +61,13 @@
 <table>
   <tr>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-player-dark.svg">
           <img src="assets/readme/features/feature-player-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Built-in player
-      </h3>
+        <br><b>Built-in player</b>
+      </p>
       <p>
         Full-screen cover art, a detailed audio quality label, queue
         controls and a sleep timer. AutoMix blends tracks with its own beat
@@ -77,13 +77,13 @@
       <p></p>
     </td>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-hires-dark.svg">
           <img src="assets/readme/features/feature-hires-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Hi-res output
-      </h3>
+        <br><b>Hi-res output</b>
+      </p>
       <p>
         USB bit-perfect playback on Android 14 and later, AAudio exclusive
         mode for DAPs at each track's original rate, and a direct USB driver
@@ -94,13 +94,13 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-equalizer-dark.svg">
           <img src="assets/readme/features/feature-equalizer-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Equalizer and loudness
-      </h3>
+        <br><b>Equalizer and loudness</b>
+      </p>
       <p>
         A multiband equalizer with presets (beta), volume normalization, and
         ReplayGain scanning based on EBU R128 for single tracks or whole
@@ -109,17 +109,17 @@
       <p></p>
     </td>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-lyrics-dark.svg">
           <img src="assets/readme/features/feature-lyrics-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Lyrics
-      </h3>
+        <br><b>Lyrics</b>
+      </p>
       <p>
         Synced lyrics with word-by-word timing, optional translation and
         romanization lines, and a reorderable chain of lyrics providers,
-        including SpotiFLAC-Mobile Lyrics. Files without lyrics can search
+        including Zarz-LRC. Files without lyrics can search
         online from the player. Pick up to five lines and share them as a card.
       </p>
       <p></p>
@@ -127,13 +127,13 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-library-dark.svg">
           <img src="assets/readme/features/feature-library-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Local library
-      </h3>
+        <br><b>Local library</b>
+      </p>
       <p>
         Scan your music folders and browse songs, albums, artists and
         playlists. Review duplicates, edit metadata and export collections
@@ -142,13 +142,13 @@
       <p></p>
     </td>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-network-dark.svg">
           <img src="assets/readme/features/feature-network-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Network storage
-      </h3>
+        <br><b>Network storage</b>
+      </p>
       <p>
         Play music from SMB, WebDAV and HTTP / HTTPS servers. HTTPS
         connections can trust a single approved certificate fingerprint.
@@ -158,13 +158,13 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-foryou-dark.svg">
           <img src="assets/readme/features/feature-foryou-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Made for you
-      </h3>
+        <br><b>Made for you</b>
+      </p>
       <p>
         Rewind recaps your listening, personalized autoplay learns on your
         device, music haptics let you feel the beat, and artist pages show
@@ -173,13 +173,13 @@
       <p></p>
     </td>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-look-dark.svg">
           <img src="assets/readme/features/feature-look-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Your look
-      </h3>
+        <br><b>Your look</b>
+      </p>
       <p>
         Material 3 Expressive or the Mornye theme, Dynamic Color, an AMOLED
         mode, Material Symbols and layouts for tablets and large screens.
@@ -189,13 +189,13 @@
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-extensions-dark.svg">
           <img src="assets/readme/features/feature-extensions-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Extensions
-      </h3>
+        <br><b>Extensions</b>
+      </p>
       <p>
         Add metadata and lyrics sources from community extension
         repositories, then choose their priority. Building one? See the
@@ -204,13 +204,13 @@
       <p></p>
     </td>
     <td width="50%" valign="top">
-      <h3>
+      <p>
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="assets/readme/features/feature-keep-dark.svg">
           <img src="assets/readme/features/feature-keep-light.svg" width="56" height="56" alt="">
         </picture>
-        <br>Yours to keep
-      </h3>
+        <br><b>Yours to keep</b>
+      </p>
       <p>
         Back up and restore settings, history and playlists. The app is open
         source, available in 20 languages, and offers an AltStore / SideStore
@@ -341,7 +341,7 @@ your DAC or amplifier volume before you press play.
 
 From the providers in **Settings > Lyrics > Lyrics Provider Priority**, tried
 top to bottom until one has the song. By default that is Apple Music (through
-Paxsenix), lrc.red, SpotiFLAC-Mobile Lyrics, LyricsPlus and LRCLIB; you can
+Paxsenix), lrc.red, Zarz-LRC, LyricsPlus and LRCLIB; you can
 reorder them or turn on others. Lyrics already in a file always come first.
 If a file has none, tap **Search online** on the player's lyrics page.
 
