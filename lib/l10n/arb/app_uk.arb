@@ -7172,11 +7172,11 @@
   "homeGreetingAfternoon2": "Денний ритм",
   "homeGreetingAfternoon3": "Не збавляй обертів",
   "homeGreetingEvening1": "Доброго вечора",
-  "homeGreetingEvening2": "Time to unwind",
-  "homeGreetingEvening3": "Golden hour",
-  "homeGreetingNight1": "Good night",
-  "homeGreetingNight2": "Late-night session",
-  "homeGreetingNight3": "Quiet hours",
+  "homeGreetingEvening2": "Час відпочити",
+  "homeGreetingEvening3": "Золотий час",
+  "homeGreetingNight1": "Доброї ночі",
+  "homeGreetingNight2": "Нічний сеанс",
+  "homeGreetingNight3": "Режим тиші",
   "homeGreetingNamed": "{greeting}, {name}",
   "@homeGreetingNamed": {
     "description": "Home greeting followed by the first name from the user's profile",
@@ -7189,31 +7189,31 @@
       }
     }
   },
-  "homeTaglineListening": "What are we listening to?",
+  "homeTaglineListening": "Що слухаємо?",
   "@homeTaglineListening": {
     "description": "Rotating Home prompt under the greeting"
   },
-  "homeTaglineLink": "Got a link? Drop it in the search",
+  "homeTaglineLink": "Маєте посилання? Вставте його в пошук",
   "@homeTaglineLink": {
     "description": "Rotating Home prompt explaining that links can be pasted into search"
   },
-  "homeTaglineDiscover": "Find your next favorite album",
+  "homeTaglineDiscover": "Шукайте наступний улюблений альбом",
   "@homeTaglineDiscover": {
     "description": "Rotating Home prompt under the greeting"
   },
-  "homeContinueListening": "Continue listening",
+  "homeContinueListening": "Продовжити відтворення",
   "@homeContinueListening": {
     "description": "Home section header for the track currently loaded in the player"
   },
-  "homeRecentlyAdded": "Recently added",
+  "homeRecentlyAdded": "Нещодавно додані",
   "@homeRecentlyAdded": {
     "description": "Home section header for the newest downloaded and scanned tracks"
   },
-  "homeOnRepeat": "On repeat",
+  "homeOnRepeat": "На повторі",
   "@homeOnRepeat": {
     "description": "Home section header for the most played tracks of the last four weeks"
   },
-  "homeShortcuts": "Shortcuts",
+  "homeShortcuts": "Швидкі команди",
   "@homeShortcuts": {
     "description": "Home section header for quick links to player tools"
   },
@@ -7264,11 +7264,11 @@
   "listeningStatsClear": "Очистити статистику прослуховувань",
   "listeningStatsClearError": "Не вдалося очистити статистику прослуховування. Будь ласка, спробуйте ще раз.",
   "listeningStatsClearDescription": "Видалити всю статистику прослуховувань на цьому пристрої? Ваша музика та списки треків збережуться.",
-  "libraryArtistsEmpty": "Artists appear here once you download music or scan a local library.",
-  "listeningRewind": "Rewind",
-  "listeningRewindDescription": "Relive the highlights of your recent weeks and months",
-  "listeningRewindChoosePeriod": "Choose a period",
-  "listeningRewindLastWeeks": "Last {weeks} weeks",
+  "libraryArtistsEmpty": "Виконавці з’являться тут, щойно ви завантажите музику або проскануєте локальну бібліотеку.",
+  "listeningRewind": "Перемотати назад",
+  "listeningRewindDescription": "Найцікавіше за останні місяці",
+  "listeningRewindChoosePeriod": "Оберіть період",
+  "listeningRewindLastWeeks": "Останні {weeks} тижні",
   "@listeningRewindLastWeeks": {
     "placeholders": {
       "weeks": {
@@ -7276,7 +7276,7 @@
       }
     }
   },
-  "listeningRewindLastMonths": "Last {months} months",
+  "listeningRewindLastMonths": "За останній {months} місяці",
   "@listeningRewindLastMonths": {
     "placeholders": {
       "months": {
@@ -7284,7 +7284,7 @@
       }
     }
   },
-  "listeningRewindThisYear": "{year} so far",
+  "listeningRewindThisYear": "За весь {year} рік",
   "@listeningRewindThisYear": {
     "placeholders": {
       "year": {
@@ -7292,8 +7292,8 @@
       }
     }
   },
-  "listeningRewindIntroTitle": "Your Rewind",
-  "listeningRewindIntroBody": "A look back at what you played from {start} to {end}.",
+  "listeningRewindIntroTitle": "Ваш підсумок",
+  "listeningRewindIntroBody": "Огляд того, що ви відтворювали з {start} по {end}.",
   "@listeningRewindIntroBody": {
     "placeholders": {
       "start": {
@@ -7305,7 +7305,7 @@
     }
   },
   "listeningRewindMinutesTitle": "You listened for",
-  "listeningRewindMinutesUnit": "{minutes, plural, =1{minute} other{minutes}}",
+  "listeningRewindMinutesUnit": "{minutes, plural, =1 {хвилина} one {# хвилина} few {# хвилини} many {# хвилин} other {# хвилини}}",
   "@listeningRewindMinutesUnit": {
     "placeholders": {
       "minutes": {
@@ -7313,7 +7313,7 @@
       }
     }
   },
-  "listeningRewindHours": "{hours, plural, =1{That's about 1 hour of music} other{That's about {hours} hours of music}}",
+  "listeningRewindHours": "{hours, plural, =1{Це приблизно 1 година музики} other{Це приблизно {hours} годин музики}}",
   "@listeningRewindHours": {
     "placeholders": {
       "hours": {
