@@ -39,8 +39,43 @@ class NetworkLibraryScanner {
   final int? _metadataConcurrency;
   final Future<Directory> Function() _supportDirectory, _temporaryDirectory;
   final Future<RandomAccessFile> Function(File) _openOutput;
+  NetworkMetadataService? _activeMetadata;
+  bool _running = false;
+  bool _cancelled = false;
+
+  /// Stop scan-owned native reads even while scan() is awaiting their result.
+  Future<void> cancelPending() async {
+    _cancelled = true;
+    await _activeMetadata?.cancelPending();
+  }
 
   Future<LibraryScanNDJSONFile> scan(
+    String source, {
+    required Future<void> Function() checkpoint,
+    required void Function(int processed, int errors, String name) onProgress,
+  }) async {
+    if (_running) {
+      throw StateError('Network library scanner is already running');
+    }
+    _running = true;
+    _cancelled = false;
+    try {
+      return await _scan(
+        source,
+        checkpoint: () async {
+          if (_cancelled) throw StateError('Network library scan cancelled');
+          await checkpoint();
+          if (_cancelled) throw StateError('Network library scan cancelled');
+        },
+        onProgress: onProgress,
+      );
+    } finally {
+      _activeMetadata = null;
+      _running = false;
+    }
+  }
+
+  Future<LibraryScanNDJSONFile> _scan(
     String source, {
     required Future<void> Function() checkpoint,
     required void Function(int processed, int errors, String name) onProgress,
@@ -62,7 +97,8 @@ class NetworkLibraryScanner {
     }
     await checkpoint();
     // Fail before creating scan output if the root cannot be listed.
-    final first = await _storage.list(connection, root);
+    List<NetworkEntry>? first = await _storage.list(connection, root);
+    await checkpoint();
     final temp = await Directory(
       '${(await _temporaryDirectory()).path}/network_scans',
     ).create(recursive: true);
@@ -76,7 +112,6 @@ class NetworkLibraryScanner {
     var errors = 0;
     final pending = <String>[root];
     final visited = <String>{};
-    final seenFiles = <String>{};
     // Leave room for playback and avoid saturating a small NAS/router.
     final concurrency =
         _metadataConcurrency ??
@@ -88,6 +123,7 @@ class NetworkLibraryScanner {
             cacheDirectory: _temporaryDirectory,
           )
         : null;
+    _activeMetadata = metadata;
     final read =
         _readMetadata ??
         ((String source) => metadata!.read(source, forceRefresh: true));
@@ -115,11 +151,14 @@ class NetworkLibraryScanner {
         if (visited.length > 100000) {
           throw StateError('Too many network folders');
         }
-        final List<NetworkEntry> entries;
+        List<NetworkEntry>? entries;
         try {
           entries = folder == root
-              ? first
+              ? first!
               : await _storage.list(connection, folder);
+          // The first listing can be very large. Release it before descending
+          // into children instead of retaining it for the entire scan.
+          first = null;
         } catch (error) {
           errors++;
           _log.e('Network folder listing failed [$folder]', error);
@@ -131,14 +170,23 @@ class NetworkLibraryScanner {
           '${entries.where((entry) => entry.directory).length} folders, '
           '${entries.where((entry) => entry.audio).length} audio files',
         );
-        final iterator = entries.iterator;
+        // Each directory is visited once and only its direct children are
+        // accepted, so file deduplication need not retain every scanned path.
+        final seenFiles = <String>{};
+        Iterator<NetworkEntry>? iterator = entries.iterator;
+        entries = null;
         Future<void> fill() async {
-          while (prefetched.length < concurrency && iterator.moveNext()) {
+          while (prefetched.length < concurrency && iterator!.moveNext()) {
             await checkpoint();
-            final entry = iterator.current;
+            final entry = iterator!.current;
             final path = networkPath(entry.path);
             // Reject provider parent links and paths outside this folder.
             if (!path.startsWith(folder) || path == folder) continue;
+            final child = path.substring(folder.length);
+            final name = entry.directory && child.endsWith('/')
+                ? child.substring(0, child.length - 1)
+                : child;
+            if (name.isEmpty || name.contains('/')) continue;
             if (entry.directory) {
               if (!path.endsWith('/')) {
                 throw const FormatException('Invalid folder entry');
@@ -242,6 +290,10 @@ class NetworkLibraryScanner {
           onProgress(processed, errors, entry.name);
           await fill();
         }
+        // Async closures may otherwise keep the completed iterator's backing
+        // list alive while awaiting the next directory listing.
+        iterator = null;
+        seenFiles.clear();
       }
       await checkpoint();
       await flush();

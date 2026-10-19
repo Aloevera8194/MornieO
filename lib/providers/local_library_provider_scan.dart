@@ -48,6 +48,24 @@ extension _LocalLibraryScan on LocalLibraryNotifier {
     }
   }
 
+  Future<LibraryScanNDJSONFile> _scanNetworkFolder(
+    String source, {
+    required Future<void> Function() checkpoint,
+    required void Function(int processed, int errors, String name) onProgress,
+  }) async {
+    final scanner = NetworkLibraryScanner();
+    _networkScanner = scanner;
+    try {
+      return await scanner.scan(
+        source,
+        checkpoint: checkpoint,
+        onProgress: onProgress,
+      );
+    } finally {
+      if (identical(_networkScanner, scanner)) _networkScanner = null;
+    }
+  }
+
   Future<({int inserted, int skipped})?> _replaceFromFullScanStream({
     required String sourceId,
     required String folderPath,
@@ -56,7 +74,7 @@ extension _LocalLibraryScan on LocalLibraryNotifier {
   }) async {
     if (_scanCancelRequested) return null;
     final scanFile = folderPath.startsWith('network://')
-        ? await NetworkLibraryScanner().scan(
+        ? await _scanNetworkFolder(
             folderPath,
             checkpoint: () async {
               while (_scanPauseRequested &&

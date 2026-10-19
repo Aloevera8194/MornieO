@@ -176,6 +176,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
   bool _scanPauseRequested = false;
   bool _scanInProgress = false;
   Future<void>? _scanCompletion;
+  NetworkLibraryScanner? _networkScanner;
   String? _nativeLibraryRequestId;
   final Set<String> _pendingReconnectScans = {};
   bool _drainingReconnectScans = false;
@@ -200,6 +201,11 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
       _scanCancelRequested = true;
       _scanPauseRequested = false;
       _pendingReconnectScans.clear();
+      unawaited(
+        _networkScanner?.cancelPending().catchError((Object error) {
+          _log.w('Failed to cancel disposed network scan reads: $error');
+        }),
+      );
       if (_scanInProgress) {
         final requestId = _nativeLibraryRequestId;
         if (requestId != null) {
@@ -508,6 +514,11 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
 
     _log.i('Cancelling library scan');
     _scanCancelRequested = true;
+    try {
+      await _networkScanner?.cancelPending();
+    } catch (error) {
+      _log.w('Failed to cancel network scan reads: $error');
+    }
     final requestId = _nativeLibraryRequestId;
     if (requestId != null) {
       try {
