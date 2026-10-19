@@ -1,42 +1,160 @@
 {
   "networkDownloadDestination": "Ağ indirme hedefi",
+  "@networkDownloadDestination": {
+    "description": "Files settings item that opens network storage to choose a folder for downloaded music"
+  },
   "networkUseForDownloads": "Bu klasöre indir",
+  "@networkUseForDownloads": {
+    "description": "Action to select the current network folder as the download destination; also the settings subtitle when no network destination is selected"
+  },
   "networkDownloadSelected": "Seçili indirme hedefi",
+  "@networkDownloadSelected": {
+    "description": "Status label replacing the download destination action when the current network folder is already selected"
+  },
   "networkUseLocalDownloads": "Yerel indirme klasörünü kullan",
+  "@networkUseLocalDownloads": {
+    "description": "Files settings action that clears the network download destination and returns downloads to the local folder"
+  },
   "networkDownloadAccessFailed": "Bu klasöre yazılamadı.",
+  "@networkDownloadAccessFailed": {
+    "description": "Snackbar prefix when the write-access check fails while selecting a network download folder; followed by a specific network error message"
+  },
   "networkUploading": "Ağ depolamasına yükleniyor",
+  "@networkUploading": {
+    "description": "Download queue status during upload of prepared audio to the network destination; a progress percentage may follow"
+  },
   "networkDownloadDescription": "Şarkıları bu cihazda hazırlayın, ardından NAS'ınıza yükleyin. Yükleme bitene kadar uygulamayı açık tutun. Yeniden deneme, hazırlanan sesi yeniden kullanır. Mevcut dosyalar korunur; aynı ada sahip yeni indirmeler numaralı bir son ek alır.",
+  "@networkDownloadDescription": {
+    "description": "Help below the network download destination action explaining local preparation, upload, retry behavior, and preservation of existing files; NAS means network-attached storage"
+  },
   "networkAddToLibrary": "Klasörü Kitaplığa ekle",
+  "@networkAddToLibrary": {
+    "description": "Action that adds the current network folder as a Library source and starts scanning it"
+  },
   "networkLibraryAdded": "Klasör Kitaplığa eklendi",
+  "@networkLibraryAdded": {
+    "description": "Status label replacing the add-to-Library action after the network folder has been added as a source; does not mean scanning has finished"
+  },
   "networkLibraryDescription": "Bu klasörü ve alt klasörlerini tarayın. Müzik sunucunuzda kalır; meta veriler ve kapak resimleri bu cihaza kaydedilir. Yerel Kitaplık ayarlarından yönetebilir veya yeniden tarayabilirsiniz.",
+  "@networkLibraryDescription": {
+    "description": "Help below the add-to-Library action explaining recursive scanning, local metadata and artwork storage, and management in Local Library settings"
+  },
   "networkStorage": "Ağ depolaması",
+  "@networkStorage": {
+    "description": "Title and navigation label for the screen used to manage network connections and browse remote music folders"
+  },
   "networkErrorUnreachable": "Sunucuya ulaşılamadı. Bu telefonun ağa erişebildiğinden ve dosya paylaşım hizmetinin çalıştığından emin olun. SMB için 445 numaralı bağlantı noktası erişilebilir olmalıdır.",
+  "@networkErrorUnreachable": {
+    "description": "Network access error for an unreachable server, with connection troubleshooting and the SMB port requirement"
+  },
   "networkErrorTimeout": "Sunucu zamanında yanıt vermedi. Bağlantıyı kontrol edip tekrar deneyin.",
+  "@networkErrorTimeout": {
+    "description": "Network access error when a server operation exceeds its time limit"
+  },
   "networkErrorAuthentication": "Sunucu oturum açmayı reddetti. Kullanıcı adını, parolayı ve etki alanını kontrol edin. Sunucunuz gerektirmedikçe etki alanını boş bırakın.",
+  "@networkErrorAuthentication": {
+    "description": "Network access error when the server rejects credentials; domain refers to the optional SMB authentication domain"
+  },
   "networkErrorPermission": "Bu hesabın bu paylaşımı veya klasörü açma izni yok. Sunucudaki okuma izinlerini kontrol edin.",
+  "@networkErrorPermission": {
+    "description": "Network access error when the server denies account permissions for a shared folder; distinct from the device's local network permission"
+  },
+  "networkErrorLocalPermission": "Local network access is not allowed. Allow Nearby devices for SpotiFLAC Mobile in Android app settings, then try again.",
+  "@networkErrorLocalPermission": {
+    "description": "Network access error when Android denies local network permission; Nearby devices is the Android app permission setting"
+  },
   "networkErrorShare": "Paylaşım veya klasör bulunamadı. SMB için adresin ardından sunucunun paylaşılan klasör adını kullanın: örneğin smb://sunucu/Music/.",
+  "@networkErrorShare": {
+    "description": "Network access error for a missing share or folder; share means an SMB shared folder and the example illustrates its URL path"
+  },
   "networkErrorProtocol": "Sunucu ile bu SMB istemcisi desteklenen bir protokol üzerinde anlaşamadı. Sunucuda SMB2 veya SMB3'ü etkinleştirin. SMB1 desteklenmez.",
+  "@networkErrorProtocol": {
+    "description": "Network access error for incompatible SMB protocol versions; preserve the version names SMB1, SMB2, and SMB3"
+  },
   "networkErrorAddress": "Sunucu adresini kontrol edin. SMB için smb://sunucu/paylasim/ veya WebDAV ve HTTP için http:// ya da https:// adresi kullanın.",
+  "@networkErrorAddress": {
+    "description": "Network access error for an invalid address, with URL scheme examples for SMB, WebDAV, and HTTP connections"
+  },
   "networkConnections": "Kayıtlı bağlantılar",
+  "@networkConnections": {
+    "description": "Section heading above the list of saved network storage connections"
+  },
   "networkServer": "Sunucu",
+  "@networkServer": {
+    "description": "Connection form section heading above the display name and server or audio URL fields"
+  },
   "networkCredentials": "Oturum aç (isteğe bağlı)",
+  "@networkCredentials": {
+    "description": "Connection form section heading for optional server credentials"
+  },
   "networkRefresh": "Yenile",
+  "@networkRefresh": {
+    "description": "Toolbar tooltip for reloading saved connections or the current network folder listing"
+  },
   "networkStorageDescription": "NAS'ınıza veya müzik sunucunuza bağlanın ve klasörlerine göz atın. Oturum açma bilgileriniz bu cihazda güvenle saklanır.",
+  "@networkStorageDescription": {
+    "description": "Introduction shown in the empty connections screen and connection form, explaining remote folder browsing and secure local credential storage; NAS means network-attached storage"
+  },
   "networkAddConnection": "Bağlantı ekle",
+  "@networkAddConnection": {
+    "description": "Action label, toolbar tooltip, and form title for adding a network storage connection"
+  },
   "networkEditConnection": "Bağlantıyı düzenle",
+  "@networkEditConnection": {
+    "description": "Edit button tooltip and form title for changing an existing network storage connection"
+  },
   "networkConnectionName": "Ad",
+  "@networkConnectionName": {
+    "description": "Required connection form field for a user-chosen display name identifying the saved connection"
+  },
   "networkAddress": "Sunucu veya ses URL'si",
+  "@networkAddress": {
+    "description": "Required connection form field for the server or direct audio URL, using the scheme appropriate to the selected protocol"
+  },
   "networkProtocol": "Protokol",
+  "@networkProtocol": {
+    "description": "Connection form section heading for choosing SMB, WebDAV, or HTTP / HTTPS"
+  },
   "networkUsername": "Kullanıcı adı (isteğe bağlı)",
+  "@networkUsername": {
+    "description": "Optional connection form field for the server account username"
+  },
   "networkPassword": "Parola (isteğe bağlı)",
+  "@networkPassword": {
+    "description": "Optional connection form field for the server account password, with input characters hidden"
+  },
   "networkDomain": "Etki alanı (isteğe bağlı)",
+  "@networkDomain": {
+    "description": "Optional connection form field shown only for SMB; refers to the authentication domain, not the server's internet domain name"
+  },
   "networkConnectSave": "Bağlan ve kaydet",
+  "@networkConnectSave": {
+    "description": "Connection form action that checks access to the network source before saving the connection"
+  },
   "networkErrorCertificate": "Sunucunun HTTPS sertifikası doğrulanamadı. Sertifikayı incelemek ve güvenmek için bu bağlantıyı düzenleyin ya da sunucunun HTTPS yapılandırmasını kontrol edin.",
+  "@networkErrorCertificate": {
+    "description": "Network access error for HTTPS certificate verification failure, directing the user to review the certificate in the connection form; unrelated to SMB authentication"
+  },
   "networkCertificatePrompt": "Bu sunucu güvenilmeyen bir HTTPS sertifikası kullanıyor. Yönlendiriciler ve NAS cihazları genellikle kendinden imzalı sertifikalar kullanır. Güvenmeden önce sunucu adresini ve SHA-256 parmak izini doğrulayın. Güven yalnızca bu sunucudaki bu sertifika için geçerlidir; sertifika değişirse yeniden onay gerekir.",
+  "@networkCertificatePrompt": {
+    "description": "Connection form warning shown above the HTTPS origin and certificate SHA-256 fingerprint; approval trusts only that fingerprint for this connection's HTTPS origin, not a global certificate authority or an SMB server"
+  },
   "networkTrustCertificate": "Sertifikaya güven ve yeniden dene",
+  "@networkTrustCertificate": {
+    "description": "Action approving the displayed certificate SHA-256 fingerprint for this connection's HTTPS origin and retrying connect-and-save; does not grant global certificate trust"
+  },
   "networkRemoveConnection": "Bağlantıyı kaldır",
+  "@networkRemoveConnection": {
+    "description": "Connection form action that removes the saved connection and its credentials, without deleting files on the server"
+  },
   "networkNoFiles": "Desteklenen müzik dosyası veya klasörü bulunamadı.",
+  "@networkNoFiles": {
+    "description": "Empty folder message when the network listing contains no directories or supported audio files"
+  },
   "networkConnectionError": "Ağ kaynağına erişilemedi. Sunucu adresini, kimlik bilgilerini ve bağlantıyı kontrol edip yeniden deneyin.",
+  "@networkConnectionError": {
+    "description": "Fallback network access error when the failure has no more specific classification"
+  },
   "extensionAccountTitle": "Eklenti hesabı",
   "extensionAccountInvalidForm": "Eklenti geçersiz bir hesap formu döndürdü.",
   "extensionAccountRestartLogin": "Devam etmek için hesap oturumunu yeniden başlatın.",
@@ -69,36 +187,69 @@
   "usbBitPerfectNoDevice": "Bağlı USB DAC yok. Normal ses çıkışı kullanılıyor.",
   "usbBitPerfectFallback": "Bu cihaz veya ses formatı bit-perfect çıkışı desteklemiyor. Normal oynatma kullanılıyor.",
   "usbBitPerfectRouteChanged": "USB ses yolu değişti. Oynatma duraklatıldı; yeniden bağlanmak için bir parça seçin.",
-  "upgradeIntroWelcome": "SpotiFLAC-Mobile 5.0'a\nhoş geldiniz",
   "upgradeIntroThemeTitle": "Kendinize\ngöre yapın.",
   "upgradeIntroThemeBody": "Bir görünüm seçin. Seçiminiz hemen uygulanır ve daha sonra Görünüm'den değiştirebilirsiniz.",
-  "upgradeIntroThemeMaterialBody": "Bildiğiniz düzen; Material kontrolleri ve vurgu renginizle.",
   "upgradeIntroThemeMornyeBody": "Cam efektli gezinme, yeniden tasarlanmış Kitaplık ve sürükleyici bir oynatıcı.",
-  "upgradeIntroRustTitle": "Yeni bir motor.\nRust ile geliştirildi.",
-  "upgradeIntroRustBody": "5.0'da uygulamanın arka ucu Go'dan Rust'a taşındı. Her gün kullandığınız ekranların arkasında çalışan motor artık bu.",
-  "upgradeIntroRustEngineTitle": "Perde arkasında çalışıyor",
-  "upgradeIntroRustEngineBody": "Rust; Android ve iOS'ta indirmeleri, ses meta verilerini, kitaplık taramasını ve eklenti çalışma ortamını yönetir.",
-  "upgradeIntroRustMemoryTitle": "Bellek konusunda daha dikkatli",
-  "upgradeIntroRustMemoryBody": "Yeniden kullanılan arabellekler ve daha az kopyalama, kapak resmi ve eklenti verileri işlenirken geçici bellek ayırmalarını azaltır.",
-  "upgradeIntroRustKeepTitle": "Müziğiniz sizinle kalsın",
-  "upgradeIntroRustKeepBody": "Koleksiyonunuzu yeniden indirmenize gerek yok. Kayıtlı müzikleriniz ve ayarlarınız yerinde kalır; yeni bir kurulum gerekmez.",
-  "upgradeIntroWelcomeBody": "Nelerin değiştiğine ve nerede bulacağınıza hızlı bir bakış.",
-  "upgradeIntroMornyeBody": "Oynatıcınız, şarkı sözleriniz ve gezinme için yeni bir görünüm.",
-  "upgradeIntroLibrarySummary": "Müziklerinize çalma listesine, sanatçıya veya albüme göre göz atın.",
-  "upgradeIntroRepoSummary": "Müzik kaynaklarınızı ve sağlayıcılarınızı eklentiler aracılığıyla seçin.",
-  "upgradeIntroLibraryTitle": "Kitaplığınızı\ntanıyın.",
-  "upgradeIntroLibraryBody": "Mornye'de kategoriye göre göz atın veya albümlerinizi Son Eklenenler'de bulun.",
-  "upgradeIntroDownloadsBody": "Sağ üstteki İndirmeler'den duraklatın ve yeniden deneyin. Tamamlanan müzikler Son Eklenenler'e taşınır.",
-  "upgradeIntroSearchBody": "Kayıtlı müziklerinizi burada arayın. Ayrı Ara sekmesi eklentilerinizde arama yapar.",
-  "upgradeIntroPlayerTitle": "Oynatıcınızı\nayarlayın.",
-  "upgradeIntroPlayerBody": "Temanızı ve oynatma seçeneklerinizi istediğiniz zaman değiştirebilirsiniz. İşte burada bulacaksınız.",
-  "upgradeIntroAppearanceBody": "Temaları Ayarlar → Görünüm'den değiştirin. Mornye'de kompakt gezinme için aşağı kaydırın; genişletmek için yukarı kaydırın.",
-  "upgradeIntroAutoMixBody": "Parçalar arasında tempo ve vuruşları eşleştirin. Ayarlar → Yerel Kitaplık → Oynatma'dan etkinleştirin. Varsayılan olarak kapalıdır.",
-  "upgradeIntroSettingsBody": "Mornye'de Ayarlar'ı açmak ve adınızı, fotoğrafınızı düzenlemek için ana sayfadaki profilinize dokunun.",
   "upgradeIntroSkip": "Atla",
   "upgradeIntroContinue": "Devam et",
   "upgradeIntroDone": "Dinlemeye başla",
-  "upgradeIntroReplay": "5.0'daki yenilikler",
+  "whatsNewReplay": "What’s new in {version}",
+  "@whatsNewReplay": {
+    "description": "About page entry that replays the release tour",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewWelcomeTitle": "Welcome to\nSpotiFLAC-Mobile {version}",
+  "@whatsNewWelcomeTitle": {
+    "description": "First page title of the release tour",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewWelcomeBody": "A more expressive look, a more capable player and lyrics worth sharing.",
+  "whatsNewSummaryExpressiveBody": "New shapes, Material Symbols and spring motion across the app.",
+  "whatsNewSummaryPlayerTitle": "Built-in player",
+  "whatsNewSummaryPlayerBody": "Equalizer, full-screen covers and detailed audio information.",
+  "whatsNewSummaryLyricsBody": "Turn your favorite lines into a card for stories.",
+  "whatsNewThemeMaterialBody": "Material 3 Expressive, with your accent color, rounded shapes and lively motion.",
+  "whatsNewExpressiveTitle": "Material,\nmade expressive.",
+  "whatsNewExpressiveBody": "Material 3 Expressive now shapes the whole app, from icons to motion.",
+  "whatsNewSymbolsTitle": "Shapes and symbols",
+  "whatsNewSymbolsBody": "Rounded Material Symbols, expressive shapes and connected settings rows.",
+  "whatsNewMotionTitle": "Spring motion",
+  "whatsNewMotionBody": "Buttons, headers and progress move with natural, springy physics.",
+  "whatsNewLargeScreenTitle": "Room on bigger screens",
+  "whatsNewLargeScreenBody": "Tablet navigation and centered layouts make wide screens feel at home.",
+  "whatsNewPlayerTitle": "A player that\ndoes more.",
+  "whatsNewPlayerBody": "New ways to hear and see your music in the built-in player.",
+  "whatsNewEqualizerBody": "Shape your sound with a multiband EQ and presets. Find it in Settings → Playback.",
+  "whatsNewCoverTitle": "Full-screen cover",
+  "whatsNewCoverBody": "Let the artwork fill the top of the player. Choose it under Settings → Playback → Cover art.",
+  "whatsNewAudioInfoTitle": "Audio details",
+  "whatsNewAudioInfoBody": "Tap the quality label in the player to see the source, processing and output.",
+  "whatsNewHapticsBody": "Feel the beat through gentle vibration on downloaded and local songs. Off by default.",
+  "whatsNewLyricsTitle": "Lyrics worth\nsharing.",
+  "whatsNewLyricsBody": "Quote the lines you love and share them as a card.",
+  "whatsNewLyricCardsTitle": "Lyric cards",
+  "whatsNewLyricCardsBody": "Long-press a line, or open the player menu, then pick up to five lines and a background.",
+  "whatsNewLyricSyncTitle": "Smoother timing",
+  "whatsNewLyricSyncBody": "Timed vocals and background lines now transition more naturally.",
+  "whatsNewLyricFallbackTitle": "Lyrics stay available",
+  "whatsNewLyricFallbackBody": "When a lyrics provider is down, a SpotiFLAC fallback keeps lyrics coming.",
+  "whatsNewLibraryTitle": "Your library,\nrevisited.",
+  "whatsNewLibraryBody": "Easier to browse, with a look back at what you played.",
+  "whatsNewBrowseTitle": "Sectioned browsing",
+  "whatsNewBrowseBody": "Songs, albums, artists and playlists, with sections and fast scrolling.",
+  "whatsNewRewindBody": "Relive the highlights of recent weeks and months from your listening statistics.",
+  "whatsNewGreetingTitle": "A personal Home",
+  "whatsNewGreetingBody": "Home greets you by name, with a little variety each time.",
+  "whatsNewWidgetsTitle": "New widgets",
+  "whatsNewWidgetsBody": "Redesigned player and download widgets that follow your wallpaper colors.",
   "cacheMotionArtwork": "Çevrimdışı hareketli kapaklar",
   "cacheMotionArtworkDesc": "İndirmelerle birlikte kaydedilen albüm videoları. Kaldırıldığında müzik dosyalarınız ve sabit kapaklar korunur.",
   "nowPlayingVolume": "Ses",
@@ -169,10 +320,6 @@
   "@homeTitle": {
     "description": "Home screen title"
   },
-  "homeSubtitle": "Desteklenen bir URL yapıştırın veya isme göre arayın",
-  "@homeSubtitle": {
-    "description": "Subtitle shown below search box"
-  },
   "homeEmptyTitle": "Henüz arama sağlayıcısı yok",
   "@homeEmptyTitle": {
     "description": "Title shown on home when no providers are available yet"
@@ -206,10 +353,6 @@
   "libraryNoActiveDownloads": "Etkin indirme yok",
   "librarySearchHint": "Kitaplığınızda ara",
   "libraryEmptyCollection": "Müzikleriniz burada görünecek",
-  "historySearchHint": "Arama geçmişi...",
-  "@historySearchHint": {
-    "description": "Search bar placeholder in history"
-  },
   "settingsTitle": "Ayarlar",
   "@settingsTitle": {
     "description": "Settings screen title"
@@ -431,6 +574,15 @@
     }
   },
   "optionsArtistTagMode": "Sanatçı Etiketi Modu",
+  "metadataSeparators": "Metadata separators",
+  "metadataSeparatorsDescription": "Choose how comma- or semicolon-separated values are joined in future downloads. Custom artist separators use a joined tag; Primary artist only still applies. Names containing & or / are preserved.",
+  "metadataSeparatorSource": "Keep source formatting",
+  "metadataSeparatorComma": "Comma (,)",
+  "metadataSeparatorSemicolon": "Semicolon (;)",
+  "metadataSeparatorSlash": "Slash (/)",
+  "metadataSeparatorCustom": "Custom separator",
+  "metadataSeparatorPreview": "Preview",
+  "metadataSeparatorInvalid": "Use 1–16 characters without line breaks or control characters.",
   "@optionsArtistTagMode": {
     "description": "Setting title for how artist metadata is written into files"
   },
@@ -595,9 +747,13 @@
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
   },
-  "aboutKeepAndroidOpen": "Android'i Açık Tutun",
-  "@aboutKeepAndroidOpen": {
-    "description": "Link to Keep Android Open campaign website"
+  "aboutLyricsWebsite": "Lyrics website",
+  "@aboutLyricsWebsite": {
+    "description": "Link to the Zarz-LRC website for searching and saving word-timed lyrics"
+  },
+  "aboutServiceStatus": "Service status",
+  "@aboutServiceStatus": {
+    "description": "Link to the status page of the SpotiFLAC-Mobile online services"
   },
   "aboutReportIssue": "Sorun bildir",
   "@aboutReportIssue": {
@@ -2224,10 +2380,6 @@
   "@qualityHiResFlacMaxSubtitle": {
     "description": "Technical spec for hi-res max"
   },
-  "downloadLossy320": "Kayıplı 320kbps",
-  "@downloadLossy320": {
-    "description": "Quality option label for lossy 320kbps"
-  },
   "downloadLossyFormat": "Kayıplı Format",
   "@downloadLossyFormat": {
     "description": "Setting title to pick output format for lossy downloads"
@@ -2267,46 +2419,6 @@
   "downloadAutoConvertOpusSubtitle": "Modern oynatıcılar için en iyi verimlilik",
   "@downloadAutoConvertOpusSubtitle": {
     "description": "Opus automatic conversion option description"
-  },
-  "downloadLossy320Format": "Kayıplı 320kbps Formatı",
-  "@downloadLossy320Format": {
-    "description": "Title of the lossy format picker bottom sheet"
-  },
-  "downloadLossy320FormatDesc": "320kbps kayıplı indirmeler için çıktı formatını seçin. Gerektiğinde orijinal akış seçtiğiniz formata dönüştürülür.",
-  "@downloadLossy320FormatDesc": {
-    "description": "Description in the lossy format picker"
-  },
-  "downloadLossyMp3": "MP3 320kbps",
-  "@downloadLossyMp3": {
-    "description": "Lossy format option - MP3 320kbps"
-  },
-  "downloadLossyMp3Subtitle": "En iyi uyumluluk, parça başına ~10 Mb",
-  "@downloadLossyMp3Subtitle": {
-    "description": "Subtitle for MP3 320kbps lossy option"
-  },
-  "downloadLossyAac": "AAC/M4A 320kbps",
-  "@downloadLossyAac": {
-    "description": "Lossy format option - AAC in M4A container at 320kbps"
-  },
-  "downloadLossyAacSubtitle": "En iyi mobil uyumluluk, M4A konteyner",
-  "@downloadLossyAacSubtitle": {
-    "description": "Subtitle for AAC/M4A 320kbps lossy option"
-  },
-  "downloadLossyOpus256": "Opus 256kbps",
-  "@downloadLossyOpus256": {
-    "description": "Lossy format option - Opus 256kbps"
-  },
-  "downloadLossyOpus256Subtitle": "En iyi Opus kalitesi, parça başına ~8 Mb",
-  "@downloadLossyOpus256Subtitle": {
-    "description": "Subtitle for Opus 256kbps lossy option"
-  },
-  "downloadLossyOpus128": "Opus 128kbps",
-  "@downloadLossyOpus128": {
-    "description": "Lossy format option - Opus 128kbps"
-  },
-  "downloadLossyOpus128Subtitle": "En küçük boyut, parça başına ~4 Mb",
-  "@downloadLossyOpus128Subtitle": {
-    "description": "Subtitle for Opus 128kbps lossy option"
   },
   "downloadAskBeforeDownload": "İndirmeden Önce Sor",
   "@downloadAskBeforeDownload": {
@@ -2640,15 +2752,6 @@
       }
     }
   },
-  "discographySelectedCount": "{count} seçildi",
-  "@discographySelectedCount": {
-    "description": "Selection count badge",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "discographyDownloadSelected": "Seçilenleri İndir",
   "@discographyDownloadSelected": {
     "description": "Button - download selected albums"
@@ -2956,10 +3059,6 @@
   "libraryStorageAccessMessage": "SpotiFLAC, müzik kitaplığınızı tarayabilmek için depolama alanına erişime ihtiyaç duyar. Lütfen ayarlar bölümünden izin verin.",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
-  },
-  "libraryFolderNotExist": "Seçilen klasör mevcut değil",
-  "@libraryFolderNotExist": {
-    "description": "Error when folder doesn't exist"
   },
   "librarySourceDownloaded": "İndirildi",
   "@librarySourceDownloaded": {
@@ -3424,10 +3523,6 @@
   "trackReEnrich": "Yeniden zenginleştir",
   "@trackReEnrich": {
     "description": "Menu action - re-embed metadata into audio file"
-  },
-  "trackReEnrichOnlineSubtitle": "Meta verileri çevrimiçi arayıp dosyaya gömün",
-  "@trackReEnrichOnlineSubtitle": {
-    "description": "Subtitle for re-enrich metadata action for local items"
   },
   "trackReEnrichBatchSubtitle": "Çevrimiçi veya elle güncelleme seçin, ardından yazmadan önce her değişikliği gözden geçirin",
   "@trackReEnrichBatchSubtitle": {
@@ -4020,10 +4115,6 @@
       }
     }
   },
-  "selectionShareNoFiles": "Paylaşılabilir dosya bulunamadı",
-  "@selectionShareNoFiles": {
-    "description": "Snackbar when no selected files exist on disk"
-  },
   "selectionConvertCount": "{count} {count, plural, =1{parçayı} other{parçayı}} dönüştür",
   "@selectionConvertCount": {
     "description": "Convert button text with count in selection mode",
@@ -4178,6 +4269,18 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
+  "lyricsProviderSpotiflacLyricsDesc": "Word-by-word Apple Music lyrics from Zarz-LRC",
+  "@lyricsProviderSpotiflacLyricsDesc": {
+    "description": "Description for the first-party Zarz-LRC provider"
+  },
+  "lyricsProviderLrcRedDesc": "Word-by-word Apple Music lyrics, matched by recording",
+  "@lyricsProviderLrcRedDesc": {
+    "description": "Description for lrc.red provider"
+  },
+  "lyricsProviderBetterLyricsDesc": "Word-by-word Apple Music lyrics for popular songs",
+  "@lyricsProviderBetterLyricsDesc": {
+    "description": "Description for BetterLyrics provider, which only answers songs it has already cached"
+  },
   "lyricsProviderExtensionDesc": "Eklenti sağlayıcısı",
   "@lyricsProviderExtensionDesc": {
     "description": "Generic description for extension-based lyrics providers"
@@ -4253,10 +4356,6 @@
   "backupRestoreConfirmTitle": "Bu yedek geri yüklensin mi?",
   "@backupRestoreConfirmTitle": {
     "description": "Confirmation dialog title before restoring a backup"
-  },
-  "backupRestoreConfirmMessage": "Bu işlem mevcut ayarlarınızın, indirme geçmişinizin, beğendiğiniz parçaların, istek listenizin ve çalma listelerinizin yerini yedeğin içeriğiyle değiştirir. Bu işlem geri alınamaz.",
-  "@backupRestoreConfirmMessage": {
-    "description": "Confirmation dialog message before restoring a backup"
   },
   "backupRestoreConfirmButton": "Geri yükle",
   "@backupRestoreConfirmButton": {
@@ -4457,22 +4556,6 @@
   "storageAutomaticDownloadFolder": "Yazılabilirse Download/SpotiFLAC kullanılır, aksi halde uygulama depolaması",
   "storageSafRecommended": "Klasör seç (Önerilen)",
   "storageDownloadFolderHint": "Android klasör seçicide Download klasörünü açıp SpotiFLAC'i seçin. Yoksa Yeni klasör ile oluşturun, ardından erişim vermek için Bu klasörü kullan'a dokunun.",
-  "storageModeAppFolder": "Uygulama Klasörü (Önerilir)",
-  "@storageModeAppFolder": {
-    "description": "Storage mode option - app-managed folder"
-  },
-  "storageModeAppFolderSubtitle": "Varsayılan olarak Müzik/SpotiFLAC klasörüne kaydeder",
-  "@storageModeAppFolderSubtitle": {
-    "description": "Subtitle for app folder storage mode"
-  },
-  "storageModeSaf": "Özel Klasör (SAF)",
-  "@storageModeSaf": {
-    "description": "Storage mode option - Storage Access Framework"
-  },
-  "storageModeSafSubtitle": "SD kart dahil herhangi bir klasörü seçin",
-  "@storageModeSafSubtitle": {
-    "description": "Subtitle for SAF storage mode"
-  },
   "downloadFolderAccessLostTitle": "İndirme klasörü erişimi kaybedildi",
   "@downloadFolderAccessLostTitle": {
     "description": "Title of the warning banner shown in Files settings when the saved SAF folder grant is no longer valid"
@@ -4760,10 +4843,6 @@
       }
     }
   },
-  "editMetadataAutoFillFetch": "Getir ve doldur",
-  "@editMetadataAutoFillFetch": {
-    "description": "Button label to fetch online metadata and fill selected fields"
-  },
   "editMetadataAutoFillSearching": "Çevrimiçi aranıyor...",
   "@editMetadataAutoFillSearching": {
     "description": "Snackbar shown while searching for online metadata"
@@ -4771,15 +4850,6 @@
   "editMetadataAutoFillNoResults": "Çevrimiçinde eşleşen meta veri bulunamadı",
   "@editMetadataAutoFillNoResults": {
     "description": "Snackbar when online metadata search returns no results"
-  },
-  "editMetadataAutoFillDone": "Çevrimiçi meta verilerden {count} {count, plural, =1{alan} other{alan}} dolduruldu",
-  "@editMetadataAutoFillDone": {
-    "description": "Snackbar confirming how many fields were auto-filled",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
   },
   "editMetadataAutoFillNoneSelected": "Otomatik doldurmak için en az bir alan seçin",
   "@editMetadataAutoFillNoneSelected": {
@@ -5037,10 +5107,6 @@
   "@hiResCheckVerdictFakeCertain": {
     "description": "Verdict: an exact fingerprint (padded bits or upsampling pattern) proves the file is not real Hi-Res"
   },
-  "hiResCheckVerdictFakeSuspect": "Muhtemelen filtrelenmiş bir master",
-  "@hiResCheckVerdictFakeSuspect": {
-    "description": "Verdict: fails the cutoff test but may be a genuine master low-pass filtered in mastering"
-  },
   "hiResCheckReasonSampleHold": "Her örnek tekrarlanıyor: kopyalama yoluyla yukarı örneklenmiş",
   "@hiResCheckReasonSampleHold": {
     "description": "Reason: sample-and-hold upsampling detected"
@@ -5048,26 +5114,6 @@
   "hiResCheckReasonInterpolation": "Ara örnekler doğrusal olarak interpolasyonlanmış",
   "@hiResCheckReasonInterpolation": {
     "description": "Reason: linear-interpolation upsampling detected"
-  },
-  "hiResCheckReasonImaging": "22 kHz üzerindeki içerik, duyulabilir bandın yansıması",
-  "@hiResCheckReasonImaging": {
-    "description": "Reason: spectral imaging from upsampling detected"
-  },
-  "hiResCheckMusicContent": "Müzikal içerik",
-  "@hiResCheckMusicContent": {
-    "description": "Label for the highest frequency that still moves with the music"
-  },
-  "hiResCheckUltrasonicNoise": "{cutoff} üzerinde yalnızca sabit gürültü var (DSD veya analog bant aktarımlarında tipik): bir {rate} dosyası tüm müziği barındırırdı",
-  "@hiResCheckUltrasonicNoise": {
-    "description": "Shown when the ultrasonic content of a Hi-Res file is noise rather than music",
-    "placeholders": {
-      "cutoff": {
-        "type": "String"
-      },
-      "rate": {
-        "type": "String"
-      }
-    }
   },
   "hiResCheckTitle": "Hi-Res özgünlüğü",
   "@hiResCheckTitle": {
@@ -5128,10 +5174,6 @@
       }
     }
   },
-  "hiResCheckDescription": "Yukarı örneklenmiş veya bit ile doldurulmuş sahte Hi-Res dosyalarını algılayın",
-  "@hiResCheckDescription": {
-    "description": "Explains what the Hi-Res authenticity check does"
-  },
   "hiResCheckRun": "Kontrol et",
   "@hiResCheckRun": {
     "description": "Button that starts the Hi-Res authenticity check"
@@ -5143,10 +5185,6 @@
   "hiResCheckVerdictFake": "Muhtemelen sahte Hi-Res",
   "@hiResCheckVerdictFake": {
     "description": "Verdict: the file claims Hi-Res but does not measure as it"
-  },
-  "hiResCheckVerdictGenuine": "Ölçümler gerçek Hi-Res olduğunu gösteriyor",
-  "@hiResCheckVerdictGenuine": {
-    "description": "Verdict: no upsampling or padded bit depth found"
   },
   "hiResCheckVerdictStandard": "Standart çözünürlük, işaretlenecek bir şey yok",
   "@hiResCheckVerdictStandard": {
@@ -5160,35 +5198,11 @@
   "@hiResCheckUnsupported": {
     "description": "Shown when the file format cannot be decoded by the Hi-Res check"
   },
-  "hiResCheckCutoff": "İçerik kesim noktası",
-  "@hiResCheckCutoff": {
-    "description": "Label for the highest frequency with real content"
-  },
-  "hiResCheckBitsInUse": "Kullanımdaki bitler",
-  "@hiResCheckBitsInUse": {
-    "description": "Label for effective vs declared bit depth"
-  },
-  "hiResCheckDisclaimer": "Spektrum erken bitiyor ancak yukarı örnekleme yapıldığını kanıtlayan bir şey yok: mastering sırasında alçak geçiren filtre uygulanmış gerçek bir master olabilir. Otomatik olarak değiştirilmez.",
-  "@hiResCheckDisclaimer": {
-    "description": "Caveat shown under a fake Hi-Res verdict"
-  },
   "hiResCheckFailed": "Hi-Res kontrolü başarısız oldu: {error}",
   "@hiResCheckFailed": {
     "description": "Error shown when the Hi-Res check fails",
     "placeholders": {
       "error": {
-        "type": "String"
-      }
-    }
-  },
-  "hiResCheckReasonRate": "{sampleRate} bildiriyor ancak içerik ~{cutoff} civarında bitiyor",
-  "@hiResCheckReasonRate": {
-    "description": "Reason for a fake verdict caused by upsampling",
-    "placeholders": {
-      "sampleRate": {
-        "type": "String"
-      },
-      "cutoff": {
         "type": "String"
       }
     }
@@ -5212,6 +5226,14 @@
   "extensionsHomeFeedProvider": "Ana sayfa akışı sağlayıcısı",
   "@extensionsHomeFeedProvider": {
     "description": "Extensions page - label for home feed provider selector"
+  },
+  "extensionsHomeFeedCountry": "Home feed country",
+  "@extensionsHomeFeedCountry": {
+    "description": "Country picker for the active Home feed extension"
+  },
+  "extensionsHomeFeedCountryDescription": "Choose a country's Home recommendations without a VPN.",
+  "@extensionsHomeFeedCountryDescription": {
+    "description": "Help for choosing regional Home recommendations"
   },
   "extensionsHomeFeedDescription": "Ana ekrandaki ana sayfa akışını hangi eklentinin sağlayacağını seçin",
   "@extensionsHomeFeedDescription": {
@@ -5462,6 +5484,10 @@
   "notifLibraryScanFailed": "Kitaplık taraması başarısız oldu",
   "@notifLibraryScanFailed": {
     "description": "Notification title when library scan fails"
+  },
+  "notifLibraryScanInterruptedBody": "The previous library scan was interrupted. Scan the folder again to continue. Your indexed tracks are still available.",
+  "@notifLibraryScanInterruptedBody": {
+    "description": "Recovery notice after the app stops during a library scan"
   },
   "notifLibraryScanCancelled": "Kitaplık taraması iptal edildi",
   "@notifLibraryScanCancelled": {
@@ -6191,10 +6217,6 @@
       }
     }
   },
-  "actionGo": "Git",
-  "@actionGo": {
-    "description": "Generic action button label"
-  },
   "logIssueSummary": "Sorun özeti",
   "@logIssueSummary": {
     "description": "Header for log issue analysis summary"
@@ -6486,21 +6508,17 @@
   "@libraryExternalPlayer": {
     "description": "Setting option to use an external music player"
   },
-  "libraryExternalPlayerSubtitle": "Dinleme için önerilir; en iyi kalite, kesintisiz oynatma, ekolayzer ve daha geniş format desteği",
+  "libraryExternalPlayerSubtitle": "Open tracks in another music app on your device",
   "@libraryExternalPlayerSubtitle": {
     "description": "Subtitle for external player option"
   },
-  "libraryBuiltInPreviewPlayer": "Yerleşik önizleme oynatıcısı",
+  "libraryBuiltInPreviewPlayer": "Built-in player",
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "SpotiFLAC Mobile içinde hızlı yerel önizlemeler",
+  "libraryBuiltInPreviewPlayerSubtitle": "Play your music right inside SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
-  },
-  "libraryBuiltInPlayerInfo": "Yerleşik oynatıcı, yerel parçaları hızlıca kontrol etmek için bir önizleme aracıdır. Asıl dinleme için harici bir müzik oynatıcı kullanın.",
-  "@libraryBuiltInPlayerInfo": {
-    "description": "Info note explaining the built-in player is for previews only"
   },
   "nowPlayingTitle": "Şimdi çalıyor",
   "@nowPlayingTitle": {
@@ -6621,6 +6639,14 @@
   "nowPlayingShowTranslation": "Çeviriyi göster",
   "@nowPlayingNoLyrics": {
     "description": "Empty state when the playing file has no embedded lyrics"
+  },
+  "nowPlayingSearchLyricsOnline": "Search online",
+  "@nowPlayingSearchLyricsOnline": {
+    "description": "Button in the player's empty lyrics state that looks up lyrics from the enabled lyrics providers"
+  },
+  "nowPlayingNoLyricsOnline": "No lyrics found online",
+  "@nowPlayingNoLyricsOnline": {
+    "description": "Empty state after an online lyrics search for the playing track found nothing"
   },
   "nowPlayingLibraryEmpty": "Kitaplığınız boş",
   "@nowPlayingLibraryEmpty": {
@@ -6880,6 +6906,14 @@
   "@regionCountryUS": {
     "description": "Country name for SongLink region picker"
   },
+  "regionCountryIT": "Italy",
+  "@regionCountryIT": {
+    "description": "Country name for Italy"
+  },
+  "regionCountryES": "Spain",
+  "@regionCountryES": {
+    "description": "Country name for Spain"
+  },
   "regionCountryGB": "Birleşik Krallık",
   "@regionCountryGB": {
     "description": "Country name for SongLink region picker"
@@ -7002,26 +7036,6 @@
       }
     }
   },
-  "settingsGroupInterface": "Eklentiler ve görünüm",
-  "@settingsGroupInterface": {
-    "description": "Settings group covering look and feel"
-  },
-  "settingsGroupContent": "İçerik ve meta veriler",
-  "@settingsGroupContent": {
-    "description": "Settings group covering the library, metadata and lyrics"
-  },
-  "settingsGroupDownloads": "İndirmeler ve dosyalar",
-  "@settingsGroupDownloads": {
-    "description": "Settings group covering download behaviour and storage"
-  },
-  "settingsGroupSystem": "Sistem",
-  "@settingsGroupSystem": {
-    "description": "Settings group covering app-level data, cache and logs"
-  },
-  "settingsGroupHelp": "Hakkında ve destek",
-  "@settingsGroupHelp": {
-    "description": "Settings group covering the about page and donations"
-  },
   "libraryFilterMetadataMissingLyrics": "Şarkı sözü eksik",
   "@libraryFilterMetadataMissingLyrics": {
     "description": "Filter option for tracks without embedded or sidecar lyrics"
@@ -7077,7 +7091,6 @@
   "@metadataCopyField": {
     "description": "Metadata menu action that copies the selected key and value"
   },
-  "mornyeShowTabs": "Sekmeleri göster",
   "mornyeSearch": "Ara",
   "mornyeContinuePlaying": "Çalmaya devam et",
   "metadataCopyAll": "Tüm meta verileri kopyala",
@@ -7102,6 +7115,34 @@
     "description": "Selected state of the compact favorite action"
   },
   "autoMixDescription": "Şarkıları vuruş eşleştirme ve perdeyi koruyan tempo ayarıyla birbirine karıştırır. Vuruşlar eşleştirilemediğinde çapraz geçiş kullanır.",
+  "playerCoverStyle": "Cover art",
+  "@playerCoverStyle": {
+    "description": "Settings section choosing how the player shows cover art"
+  },
+  "playerCoverStyleDefault": "Default",
+  "@playerCoverStyleDefault": {
+    "description": "Cover art style: artwork card above the controls"
+  },
+  "playerCoverStyleDefaultDescription": "Artwork as a card above the controls",
+  "@playerCoverStyleDefaultDescription": {
+    "description": "Subtitle of the default cover art style"
+  },
+  "playerCoverStyleFullScreen": "Full screen",
+  "@playerCoverStyleFullScreen": {
+    "description": "Cover art style: artwork fills the top of the player"
+  },
+  "playerCoverStyleFullScreenDescription": "Artwork fills the top of the player and fades into a blur. Motion artwork is always full screen in Mornye",
+  "@playerCoverStyleFullScreenDescription": {
+    "description": "Subtitle of the full screen cover art style"
+  },
+  "musicHaptics": "Music haptics",
+  "@musicHaptics": {
+    "description": "Setting that vibrates the phone along with the music"
+  },
+  "musicHapticsDescription": "Vibrate along with the beat of downloaded and local songs",
+  "@musicHapticsDescription": {
+    "description": "Subtitle of the music haptics setting"
+  },
   "autoMixOn": "AutoMix açık",
   "autoMixOff": "AutoMix kapalı",
   "autoplayOn": "Otomatik çalma açık",
@@ -7111,6 +7152,9 @@
   "autoplayPersonalization": "Kişiselleştirilmiş otomatik çalma",
   "autoplayPersonalizationDescription": "Dinlediğiniz ve atladığınız şarkılardan bu cihazda gizlice öğrenir. Kapatıldığında öğrenme durur ve normal otomatik çalmaya dönülür.",
   "autoplayResetLearning": "Öneri öğrenmesini sıfırla",
+  "autoplayResetLearningConfirmTitle": "Reset recommendation learning?",
+  "autoplayResetLearningConfirmMessage": "Autoplay forgets what it learned from your listening and skips. This can't be undone.",
+  "autoplayResetLearningConfirm": "Reset",
   "profileTitle": "Profil",
   "profileSetUp": "Profilinizi oluşturun",
   "profileEdit": "Adı ve fotoğrafı düzenle",
@@ -7121,6 +7165,58 @@
   "profileRemovePhoto": "Fotoğrafı kaldır",
   "profilePhotoError": "20 MB'tan küçük geçerli bir görsel seçin.",
   "profileSaveError": "Profiliniz kaydedilemedi. Lütfen tekrar deneyin.",
+  "homeGreetingMorning1": "Good morning",
+  "homeGreetingMorning2": "Rise and shine",
+  "homeGreetingMorning3": "Fresh start",
+  "homeGreetingAfternoon1": "Good afternoon",
+  "homeGreetingAfternoon2": "Afternoon groove",
+  "homeGreetingAfternoon3": "Keep the vibe going",
+  "homeGreetingEvening1": "Good evening",
+  "homeGreetingEvening2": "Time to unwind",
+  "homeGreetingEvening3": "Golden hour",
+  "homeGreetingNight1": "Good night",
+  "homeGreetingNight2": "Late-night session",
+  "homeGreetingNight3": "Quiet hours",
+  "homeGreetingNamed": "{greeting}, {name}",
+  "@homeGreetingNamed": {
+    "description": "Home greeting followed by the first name from the user's profile",
+    "placeholders": {
+      "greeting": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeTaglineListening": "What are we listening to?",
+  "@homeTaglineListening": {
+    "description": "Rotating Home prompt under the greeting"
+  },
+  "homeTaglineLink": "Got a link? Drop it in the search",
+  "@homeTaglineLink": {
+    "description": "Rotating Home prompt explaining that links can be pasted into search"
+  },
+  "homeTaglineDiscover": "Find your next favorite album",
+  "@homeTaglineDiscover": {
+    "description": "Rotating Home prompt under the greeting"
+  },
+  "homeContinueListening": "Continue listening",
+  "@homeContinueListening": {
+    "description": "Home section header for the track currently loaded in the player"
+  },
+  "homeRecentlyAdded": "Recently added",
+  "@homeRecentlyAdded": {
+    "description": "Home section header for the newest downloaded and scanned tracks"
+  },
+  "homeOnRepeat": "On repeat",
+  "@homeOnRepeat": {
+    "description": "Home section header for the most played tracks of the last four weeks"
+  },
+  "homeShortcuts": "Shortcuts",
+  "@homeShortcuts": {
+    "description": "Home section header for quick links to player tools"
+  },
   "artistUpcomingConcerts": "Yaklaşan konserler",
   "artistAllUpcomingConcerts": "Tüm yaklaşan konserler",
   "artistNoUpcomingConcerts": "Yaklaşan konser yok.",
@@ -7168,6 +7264,216 @@
   "listeningStatsClear": "Dinleme istatistiklerini temizle",
   "listeningStatsClearError": "Dinleme istatistikleri temizlenemedi. Lütfen tekrar deneyin.",
   "listeningStatsClearDescription": "Bu cihazdaki tüm dinleme istatistikleri silinsin mi? Müzikleriniz ve çalma listeleriniz korunur.",
+  "libraryArtistsEmpty": "Artists appear here once you download music or scan a local library.",
+  "listeningRewind": "Rewind",
+  "listeningRewindDescription": "Relive the highlights of your recent weeks and months",
+  "listeningRewindChoosePeriod": "Choose a period",
+  "listeningRewindLastWeeks": "Last {weeks} weeks",
+  "@listeningRewindLastWeeks": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindLastMonths": "Last {months} months",
+  "@listeningRewindLastMonths": {
+    "placeholders": {
+      "months": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindThisYear": "{year} so far",
+  "@listeningRewindThisYear": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindIntroTitle": "Your Rewind",
+  "listeningRewindIntroBody": "A look back at what you played from {start} to {end}.",
+  "@listeningRewindIntroBody": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindMinutesTitle": "You listened for",
+  "listeningRewindMinutesUnit": "{minutes, plural, =1{minute} other{minutes}}",
+  "@listeningRewindMinutesUnit": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindHours": "{hours, plural, =1{That's about 1 hour of music} other{That's about {hours} hours of music}}",
+  "@listeningRewindHours": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindMore": "{percent}% more than the period before",
+  "@listeningRewindMore": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindLess": "{percent}% less than the period before",
+  "@listeningRewindLess": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindSame": "About the same as the period before",
+  "listeningRewindTopArtistTitle": "Your top artist",
+  "listeningRewindArtistShare": "{percent}% of your listening time",
+  "@listeningRewindArtistShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindArtistsTitle": "Artists on rotation",
+  "listeningRewindTopTrackTitle": "Your top song",
+  "listeningRewindPlays": "{plays, plural, =1{1 play} other{{plays} plays}}",
+  "@listeningRewindPlays": {
+    "placeholders": {
+      "plays": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindTracksTitle": "Songs on repeat",
+  "listeningRewindTopAlbumTitle": "The album you kept coming back to",
+  "listeningRewindNewArtistsTitle": "New discoveries",
+  "listeningRewindNewArtistsBody": "{count, plural, =1{You found 1 new artist} other{You found {count} new artists}}",
+  "@listeningRewindNewArtistsBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindRhythmTitle": "Your listening rhythm",
+  "listeningRewindPeakDay": "Biggest day",
+  "listeningRewindFavoriteDay": "Favorite day",
+  "listeningRewindStreak": "Longest streak",
+  "listeningRewindStreakDays": "{days, plural, =1{1 day} other{{days} days in a row}}",
+  "@listeningRewindStreakDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindReplayTitle": "Couldn't stop playing",
+  "listeningRewindReplayBody": "You played it {plays} times on {date}",
+  "@listeningRewindReplayBody": {
+    "placeholders": {
+      "plays": {
+        "type": "int"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindOutroTitle": "That's your Rewind",
+  "listeningRewindOutroBody": "Keep listening. Your next Rewind is already taking shape.",
+  "listeningRewindEmpty": "Not enough listening in this period yet. Play some music with the built-in player and come back later.",
+  "listeningRewindLoadError": "Could not load your Rewind",
+  "listeningRewindSlide": "Slide {index} of {count}",
+  "@listeningRewindSlide": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindShare": "Share",
+  "listeningRewindShareError": "Could not share your Rewind",
+  "listeningRewindNext": "Next",
+  "listeningRewindPrevious": "Previous",
+  "listeningRewindMonthlyReady": "Your last 4 weeks are ready to replay",
+  "listeningRewindYearTitle": "Your {year} in Music",
+  "@listeningRewindYearTitle": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindYearEyebrow": "Year-end Rewind",
+  "listeningRewindYearBanner": "Your top artists, songs and moments of the year",
+  "listeningRewindYearIntroBody": "Everything you played this year, from your first song to your biggest month.",
+  "listeningRewindNumbersTitle": "Your year in numbers",
+  "listeningRewindSongsLabel": "Songs",
+  "listeningRewindArtistsLabel": "Artists",
+  "listeningRewindAlbumsLabel": "Albums",
+  "listeningRewindDaysLabel": "Days with music",
+  "listeningRewindDaysShare": "Music on {percent}% of your days",
+  "@listeningRewindDaysShare": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindMonthsTitle": "Month by month",
+  "listeningRewindBiggestMonthLabel": "Biggest month",
+  "listeningRewindBiggestMonth": "Your biggest month was {month}",
+  "@listeningRewindBiggestMonth": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindMonthlyArtistsTitle": "Artist of the month",
+  "listeningRewindLoyalTitle": "Always by your side",
+  "listeningRewindLoyalBody": "{days, plural, =1{With you on 1 day} other{With you on {days} different days}}",
+  "@listeningRewindLoyalBody": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "listeningRewindFirstSongTitle": "Where your year began",
+  "listeningRewindFirstSongBody": "Your most-played song on your first listening day, {date}",
+  "@listeningRewindFirstSongBody": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindYearOutroTitle": "That was your {year}",
+  "@listeningRewindYearOutroTitle": {
+    "placeholders": {
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "listeningRewindYearOutroBody": "Here's to another year of great music.",
   "weeklyReleases": "Yeni çıkanlar",
   "weeklyReleasesDescription": "Favori sanatçılarınızdan yeni albümler ve single'lar; yüklü meta veri eklentileri tarafından sağlanır.",
   "weeklyReleasesEmpty": "Bu dönemde tarihli sürüm bulunamadı. Favori sanatçı ekleyin veya daha uzun bir dönem deneyin.",
@@ -7217,8 +7523,196 @@
   "appearanceCustomFontSubtitle": "Bir TTF veya OTF dosyası içe aktarın (en fazla 10 MB). Tema ve sistem yazı tipini geçersiz kılar.",
   "appearanceCustomFontInvalid": "Bu yazı tipi yüklenemedi. En fazla 10 MB boyutunda geçerli bir TTF veya OTF dosyası seçin.",
   "appearanceCustomFontReset": "Tema yazı tipini kullan",
+  "equalizerTitle": "Equalizer",
+  "equalizerDescription": "5–31 bands, tone controls, preamp and dynamics",
+  "equalizerEnable": "Enable equalizer",
+  "equalizerBands": "Bands",
+  "equalizerTone": "Tone & stereo",
+  "equalizerPreamp": "Preamp",
+  "equalizerBass": "Bass",
+  "equalizerTreble": "Treble",
+  "equalizerBalance": "Balance",
+  "equalizerDynamics": "Dynamics",
+  "equalizerHeadroom": "Automatic headroom",
+  "equalizerHeadroomDescription": "Reduce input gain to make room for boosted frequencies.",
+  "equalizerLimiter": "Peak limiter",
+  "equalizerLimiterDescription": "Keep peaks below −0.5 dBFS to reduce clipping.",
+  "equalizerCompressor": "Compressor",
+  "equalizerCompressorDescription": "Reduce the difference between quiet and loud passages.",
+  "equalizerThreshold": "Threshold",
+  "equalizerRatio": "Ratio",
+  "equalizerAttack": "Attack",
+  "equalizerRelease": "Release",
+  "equalizerPresets": "Presets",
+  "equalizerSavePreset": "Save preset",
+  "equalizerPresetName": "Preset name",
+  "equalizerImport": "Import preset",
+  "equalizerExport": "Share preset",
+  "equalizerImportInvalid": "Choose a valid SpotiFLAC equalizer preset (JSON, up to 64 KB).",
+  "equalizerSaved": "Preset saved",
+  "equalizerResetTitle": "Reset equalizer?",
+  "equalizerResetDescription": "Restore a flat curve, default tone and dynamics settings. Saved presets are kept.",
+  "equalizerBypass": "Bit-perfect, Direct USB and exclusive Hi-Res outputs bypass EQ. Disable bit-perfect output to use EQ. External players manage their own effects.",
+  "equalizerCurve": "EQ curve (estimated)",
+  "equalizerCurveDescription": "The curve shows band gains; the exact response depends on the output engine.",
+  "equalizerEffectivePreamp": "Input gain after headroom",
+  "equalizerDeletePreset": "Delete preset",
+  "equalizerCustom": "Custom",
+  "equalizerManagePresets": "Manage presets",
+  "lyricsShareTitle": "Share lyrics",
+  "@lyricsShareTitle": {
+    "description": "Screen that turns selected lyric lines into an image for stories"
+  },
+  "lyricsShareSelectHint": "Select up to {count} lines",
+  "@lyricsShareSelectHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsShareLimit": "You can share up to {count} lines",
+  "@lyricsShareLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lyricsShareAction": "Share",
+  "lyricsShareError": "Couldn't create the lyrics image",
+  "lyricsShareBackgroundArtwork": "Artwork",
+  "lyricsShareBackgroundColor": "Cover color",
+  "lyricsShareBackgroundDark": "Dark",
+  "lyricsShareBackgroundLight": "Light",
+  "audioInfoTitle": "Audio info",
+  "@audioInfoTitle": {
+    "description": "Sheet with technical details of the playing track, opened from the quality badge"
+  },
+  "audioInfoSource": "Source file",
+  "audioInfoSignal": "Signal",
+  "audioInfoLoudness": "Loudness",
+  "audioInfoProcessing": "Processing",
+  "audioInfoOutput": "Output",
+  "audioInfoAnalysis": "Spectrum and level analysis",
+  "audioInfoQuality": "Quality",
+  "audioInfoHiResLossless": "Hi-Res Lossless",
+  "audioInfoLossless": "Lossless",
+  "audioInfoLossy": "Lossy",
+  "audioInfoFormat": "Format",
+  "audioInfoCodec": "Codec",
+  "audioInfoSampleRate": "Sample rate",
+  "audioInfoBitDepth": "Bit depth",
+  "audioInfoChannels": "Channels",
+  "audioInfoChannelCount": "{count, plural, =1{Mono} =2{Stereo} other{{count} channels}}",
+  "@audioInfoChannelCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioInfoBitrate": "Bitrate",
+  "audioInfoDuration": "Duration",
+  "audioInfoFileSize": "File size",
+  "audioInfoCompression": "Compression",
+  "audioInfoCompressionValue": "{percent}% of uncompressed size",
+  "@audioInfoCompressionValue": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoLocation": "Location",
+  "audioInfoLocationLocal": "Device storage",
+  "audioInfoLocationShared": "Shared folder",
+  "audioInfoLocationNetwork": "Network storage",
+  "audioInfoPcmRate": "Uncompressed data rate",
+  "audioInfoFrequencyRange": "Frequency range",
+  "audioInfoFrequencyRangeValue": "Up to {frequency} (Nyquist)",
+  "@audioInfoFrequencyRangeValue": {
+    "placeholders": {
+      "frequency": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoDynamicRange": "Theoretical dynamic range",
+  "audioInfoTrackGain": "Track gain",
+  "audioInfoTrackPeak": "Track peak",
+  "audioInfoAlbumGain": "Album gain",
+  "audioInfoAlbumPeak": "Album peak",
+  "audioInfoNoGainTags": "No ReplayGain tags",
+  "audioInfoApplied": "Applied {gain}",
+  "@audioInfoApplied": {
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoOn": "On",
+  "audioInfoOff": "Off",
+  "audioInfoBypassed": "Bypassed by direct output",
+  "audioInfoPlayer": "Player",
+  "audioInfoPlayerValue": "SpotiFLAC built-in player",
+  "audioInfoSignalPath": "Signal path",
+  "audioInfoPathSystem": "System mixer",
+  "audioInfoPathDirect": "Direct USB, bypasses the system mixer",
+  "audioInfoPathExclusive": "Exclusive output, bypasses the system mixer",
+  "audioInfoDecoder": "Decoder",
+  "audioInfoHardware": "Hardware",
+  "audioInfoSoftware": "Software",
+  "audioInfoBands": "{count} bands",
+  "@audioInfoBands": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "audioInfoTempo": "Tempo",
+  "audioInfoResampling": "Resampling",
+  "audioInfoResamplingNone": "None, rates match",
+  "audioInfoBitPerfect": "Bit-perfect",
+  "audioInfoBitPerfectActive": "Yes, unaltered samples",
+  "audioInfoBitPerfectNo": "No, mixed by the system",
+  "audioInfoDevice": "Device",
+  "audioInfoDeviceType": "{type, select, speaker{Phone speaker} earpiece{Earpiece} wired_headphones{Wired headphones} wired_headset{Wired headset} line{Line out} bluetooth{Bluetooth} bluetooth_le{Bluetooth LE Audio} usb{USB audio} usb_headset{USB headset} hdmi{HDMI} dock{Dock} cast{Cast} hearing_aid{Hearing aid} airplay{AirPlay} car{Car audio} other{Other}}",
+  "@audioInfoDeviceType": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "audioInfoOutputRate": "Output sample rate",
+  "audioInfoOutputFormat": "Output format",
+  "audioInfoDeviceRates": "Device sample rates",
+  "audioInfoDeviceFormats": "Device formats",
+  "audioInfoAnyRate": "Any",
+  "audioInfoBuffer": "Mixer buffer",
+  "audioInfoLatency": "Output latency",
+  "audioInfoLowLatency": "Low-latency audio",
+  "audioInfoProAudio": "Pro audio",
+  "audioInfoSupported": "Supported",
+  "audioInfoNotSupported": "Not supported",
+  "audioInfoSpatial": "Spatial audio",
+  "audioInfoHeadTracking": "Head tracking",
+  "audioInfoUnavailable": "Unavailable",
+  "audioInfoFixedVolume": "Controlled by the device",
+  "audioInfoCopy": "Copy report",
+  "audioInfoCopied": "Audio info copied",
   "lyricsTextSize": "Şarkı sözü metin boyutu",
   "lyricsTextPreview": "Favori şarkınızın her satırını takip edin",
+  "appCrashTitle": "The app previously crashed",
+  "appCrashMessage": "A crash report was saved. Copy it and send it to the developer to help investigate.",
+  "appCrashDetails": "View error and log",
+  "appCrashCopy": "Copy report for developer",
+  "appCrashDismiss": "Dismiss",
+  "appCrashCopyFailed": "Could not copy the crash report. Please try again.",
+  "appCrashDismissFailed": "Could not dismiss the crash report. Please try again.",
   "optionsEmbeddedCoverSizeOriginal": "Orijinal çözünürlük",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
