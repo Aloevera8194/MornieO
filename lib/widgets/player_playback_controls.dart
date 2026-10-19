@@ -75,9 +75,11 @@ class PlayerPlaybackControls extends ConsumerWidget {
                         activeTrackColor: mornye
                             ? colorScheme.onSurface
                             : colorScheme.primary,
-                        inactiveTrackColor: colorScheme.onSurface.withValues(
-                          alpha: 0.18,
-                        ),
+                        // Material matches the volume slider's M3 inactive
+                        // track below it.
+                        inactiveTrackColor: mornye
+                            ? colorScheme.onSurface.withValues(alpha: 0.18)
+                            : colorScheme.secondaryContainer,
                         thumbColor: mornye
                             ? colorScheme.onSurface
                             : colorScheme.primary,

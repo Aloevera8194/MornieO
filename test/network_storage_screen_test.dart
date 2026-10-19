@@ -163,7 +163,9 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('Add connection'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('WebDAV'));
+        // The connected button group also lays out an offstage copy of each
+        // label to measure it; tap the visible one.
+        await tester.tap(find.text('WebDAV').hitTestable());
         await tester.pumpAndSettle();
         await tester.enterText(find.byKey(const ValueKey('Name')), 'NAS');
         final address = find.byKey(const ValueKey('Server or audio URL'));

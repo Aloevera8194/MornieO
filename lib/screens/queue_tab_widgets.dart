@@ -64,14 +64,11 @@ class _FilterChip extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
-    final mornye = context.isMornye;
     final glyph = AppIcon.adaptive(
       icon,
       size: 18,
       fill: isSelected ? 1 : 0,
-      color: mornye
-          ? (isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant)
-          : null,
+      color: isSelected ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
     );
 
     final content = Row(
@@ -81,14 +78,12 @@ class _FilterChip extends ConsumerWidget {
         const SizedBox(width: 8),
         Text(
           label,
-          style: mornye
-              ? Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isSelected
-                      ? colorScheme.onSurface
-                      : colorScheme.onSurfaceVariant,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                )
-              : null,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isSelected
+                ? colorScheme.onSurface
+                : colorScheme.onSurfaceVariant,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          ),
         ),
         if (count != null) ...[
           const SizedBox(width: 6),
@@ -115,51 +110,106 @@ class _FilterChip extends ConsumerWidget {
       ],
     );
 
-    if (mornye) {
-      return Semantics(
-        button: true,
-        selected: isSelected,
-        label: count == null ? label : '$label, $count',
-        excludeSemantics: true,
-        onTap: onTap,
-        child: MornyeGlass(
-          radius: 22,
-          blurEnabled: ref.watch(mornyeBlurEnabledProvider),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(22),
-              child: AnimatedContainer(
-                duration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : context.tokens.motionFast,
-                constraints: const BoxConstraints(minHeight: 44),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primary.withValues(alpha: 0.10)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: content,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: count == null ? label : '$label, $count',
+      excludeSemantics: true,
+      onTap: onTap,
+      child: MornyeGlass(
+        radius: 22,
+        blurEnabled: ref.watch(mornyeBlurEnabledProvider),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(22),
+            child: AnimatedContainer(
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : context.tokens.motionFast,
+              constraints: const BoxConstraints(minHeight: 44),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? colorScheme.primary.withValues(alpha: 0.10)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(22),
               ),
+              child: content,
             ),
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
+}
 
-    return AppChoiceChip(
-      label: Text(label),
-      icon: glyph,
-      count: count,
-      singleChoice: true,
-      selected: isSelected,
-      onSelected: (_) => onTap(),
+/// Library page switcher on Material: primary tabs, since the pages are
+/// views of one collection rather than filters. Counts trail each label.
+class _LibraryPageTabs extends StatefulWidget {
+  const _LibraryPageTabs({
+    required this.tabs,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  /// Label and item count per page; a null count is hidden.
+  final List<(String, int?)> tabs;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  State<_LibraryPageTabs> createState() => _LibraryPageTabsState();
+}
+
+class _LibraryPageTabsState extends State<_LibraryPageTabs>
+    with SingleTickerProviderStateMixin {
+  late final TabController _controller = TabController(
+    length: widget.tabs.length,
+    initialIndex: widget.selectedIndex,
+    vsync: this,
+  );
+
+  @override
+  void didUpdateWidget(covariant _LibraryPageTabs oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Swiping the pages moves the indicator along with them.
+    if (widget.selectedIndex != _controller.index) {
+      _controller.animateTo(widget.selectedIndex);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Inherits the tab's label color, so the count follows the selection.
+    const countStyle = TextStyle(fontWeight: FontWeight.w400);
+    return TabBar(
+      controller: _controller,
+      isScrollable: true,
+      tabAlignment: TabAlignment.start,
+      onTap: widget.onSelected,
+      tabs: [
+        for (final (label, count) in widget.tabs)
+          Tab(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(label),
+                if (count != null) ...[
+                  const SizedBox(width: 6),
+                  Text('$count', style: countStyle),
+                ],
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

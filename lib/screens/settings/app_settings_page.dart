@@ -315,20 +315,18 @@ class _UpdateChannelSelector extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              SettingsChoiceChip(
-                expand: true,
+          SettingsSegmentedChoice<String>(
+            selected: currentChannel,
+            onChanged: onChanged,
+            semanticLabel: context.l10n.optionsUpdateChannel,
+            options: [
+              SettingsSegmentOption(
+                value: 'stable',
                 label: context.l10n.channelStable,
-                isSelected: currentChannel == 'stable',
-                onTap: () => onChanged('stable'),
               ),
-              const SizedBox(width: 8),
-              SettingsChoiceChip(
-                expand: true,
+              SettingsSegmentOption(
+                value: 'preview',
                 label: context.l10n.channelPreview,
-                isSelected: currentChannel == 'preview',
-                onTap: () => onChanged('preview'),
               ),
             ],
           ),
@@ -423,20 +421,18 @@ class _VerificationBrowserModeSelector extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  SettingsChoiceChip(
-                    expand: true,
+              SettingsSegmentedChoice<String>(
+                selected: normalizedMode,
+                onChanged: onChanged,
+                semanticLabel: context.l10n.extensionVerificationBrowserTitle,
+                options: [
+                  SettingsSegmentOption(
+                    value: 'external_first',
                     label: context.l10n.extensionVerificationBrowserExternal,
-                    isSelected: normalizedMode == 'external_first',
-                    onTap: () => onChanged('external_first'),
                   ),
-                  const SizedBox(width: 8),
-                  SettingsChoiceChip(
-                    expand: true,
+                  SettingsSegmentOption(
+                    value: 'in_app_first',
                     label: context.l10n.extensionVerificationBrowserInApp,
-                    isSelected: normalizedMode == 'in_app_first',
-                    onTap: () => onChanged('in_app_first'),
                   ),
                 ],
               ),

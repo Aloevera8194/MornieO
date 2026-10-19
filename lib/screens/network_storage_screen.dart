@@ -732,26 +732,18 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
                                 () => _protocol = NetworkProtocol.values[index],
                               ),
                             )
-                          : Row(
-                              children: [
+                          : SettingsSegmentedChoice<NetworkProtocol>(
+                              selected: _protocol,
+                              onChanged: (protocol) =>
+                                  setState(() => _protocol = protocol),
+                              semanticLabel: context.l10n.networkProtocol,
+                              options: [
                                 for (final protocol in NetworkProtocol.values)
-                                  Expanded(
-                                    child: Padding(
-                                      padding: EdgeInsets.only(
-                                        right: protocol == NetworkProtocol.http
-                                            ? 0
-                                            : 8,
-                                      ),
-                                      child: SettingsChoiceChip(
-                                        label: protocol == NetworkProtocol.http
-                                            ? 'HTTP(S)'
-                                            : _protocolLabel(protocol),
-                                        isSelected: _protocol == protocol,
-                                        onTap: () => setState(
-                                          () => _protocol = protocol,
-                                        ),
-                                      ),
-                                    ),
+                                  SettingsSegmentOption(
+                                    value: protocol,
+                                    label: protocol == NetworkProtocol.http
+                                        ? 'HTTP(S)'
+                                        : _protocolLabel(protocol),
                                   ),
                               ],
                             ),

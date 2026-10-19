@@ -842,27 +842,17 @@ class _MainShellState extends ConsumerState<MainShell>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const MiniPlayer(),
+                  // The bar's container fill separates it; no divider, so
+                  // the mini player and the bar read as one surface.
                   if (!useNavigationRail)
-                    DecoratedBox(
-                      position: DecorationPosition.foreground,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          top: BorderSide(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.outlineVariant.withValues(alpha: 0.5),
-                          ),
-                        ),
-                      ),
-                      child: ExpressiveNavigationBar(
-                        selectedIndex: _currentIndex.clamp(0, maxIndex),
-                        onDestinationSelected: _onNavTap,
-                        isTablet: isTablet,
-                        backgroundColor: settingsGroupColor(
-                          context,
-                        ).withValues(alpha: 0.72),
-                        destinations: destinations,
-                      ),
+                    ExpressiveNavigationBar(
+                      selectedIndex: _currentIndex.clamp(0, maxIndex),
+                      onDestinationSelected: _onNavTap,
+                      isTablet: isTablet,
+                      backgroundColor: settingsGroupColor(
+                        context,
+                      ).withValues(alpha: 0.72),
+                      destinations: destinations,
                     ),
                 ],
               );

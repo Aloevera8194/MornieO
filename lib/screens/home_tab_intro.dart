@@ -281,20 +281,27 @@ class _HomeContinueListeningCard extends ConsumerWidget {
                       onTap: isLoading
                           ? null
                           : () => controller.togglePlayPause(isPlaying),
-                      child: AppShapeBadge(
-                        kind: M3EShapeKind.sunny,
-                        size: 56,
-                        color: colorScheme.primary,
-                        child: isLoading
-                            ? AppLoadingIndicator(
-                                size: 24,
-                                color: colorScheme.onPrimary,
-                              )
-                            : Icon(
-                                isPlaying ? Icons.pause : Icons.play_arrow,
-                                size: 28,
-                                color: colorScheme.onPrimary,
-                              ),
+                      // Round like the mini player's play button, so the
+                      // same action keeps the same shape across screens.
+                      child: Ink(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: isLoading
+                              ? AppLoadingIndicator(
+                                  size: 24,
+                                  color: colorScheme.onPrimary,
+                                )
+                              : Icon(
+                                  isPlaying ? Icons.pause : Icons.play_arrow,
+                                  size: 28,
+                                  color: colorScheme.onPrimary,
+                                ),
+                        ),
                       ),
                     ),
                   ),
@@ -518,7 +525,7 @@ class _HomeLibraryTile extends StatelessWidget {
       child: SizedBox.square(
         dimension: _homeShelfCoverSize,
         child: Material(
-          color: colorScheme.tertiaryContainer,
+          color: colorScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -531,15 +538,10 @@ class _HomeLibraryTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  AppShapeBadge(
-                    kind: M3EShapeKind.clover4Leaf,
-                    size: 40,
-                    color: colorScheme.tertiary,
-                    child: Icon(
-                      Icons.library_music,
-                      size: 20,
-                      color: colorScheme.onTertiary,
-                    ),
+                  _HomeIconBadge(
+                    icon: Icons.library_music,
+                    color: colorScheme.secondaryContainer,
+                    onColor: colorScheme.onSecondaryContainer,
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -549,7 +551,7 @@ class _HomeLibraryTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.labelLarge?.copyWith(
-                          color: colorScheme.onTertiaryContainer,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                       Text(
@@ -557,7 +559,7 @@ class _HomeLibraryTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onTertiaryContainer,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -630,45 +632,43 @@ class _HomeShortcuts extends ConsumerWidget {
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => screen));
 
+    // Shuffle is the one emphasized action; the other tools share a neutral
+    // tile so color marks importance rather than varying per tile.
     final tiles = [
       _HomeShortcutTile(
         label: l10n.nowPlayingShuffleLibrary,
         icon: Icons.shuffle,
-        shape: M3EShapeKind.cookie9Sided,
-        container: colorScheme.primary,
-        onContainer: colorScheme.onPrimary,
-        badge: colorScheme.onPrimary,
-        onBadge: colorScheme.primary,
+        container: colorScheme.primaryContainer,
+        onContainer: colorScheme.onPrimaryContainer,
+        badge: colorScheme.primary,
+        onBadge: colorScheme.onPrimary,
         onTap: () => _shuffle(context, ref),
       ),
       _HomeShortcutTile(
         label: l10n.equalizerTitle,
         icon: Icons.graphic_eq,
-        shape: M3EShapeKind.cookie4Sided,
-        container: colorScheme.tertiaryContainer,
-        onContainer: colorScheme.onTertiaryContainer,
-        badge: colorScheme.tertiary,
-        onBadge: colorScheme.onTertiary,
+        container: colorScheme.surfaceContainerHigh,
+        onContainer: colorScheme.onSurface,
+        badge: colorScheme.secondaryContainer,
+        onBadge: colorScheme.onSecondaryContainer,
         onTap: () => open(const EqualizerScreen()),
       ),
       _HomeShortcutTile(
         label: l10n.listeningStats,
         icon: Icons.insights,
-        shape: M3EShapeKind.sunny,
-        container: colorScheme.secondaryContainer,
-        onContainer: colorScheme.onSecondaryContainer,
-        badge: colorScheme.secondary,
-        onBadge: colorScheme.onSecondary,
+        container: colorScheme.surfaceContainerHigh,
+        onContainer: colorScheme.onSurface,
+        badge: colorScheme.secondaryContainer,
+        onBadge: colorScheme.onSecondaryContainer,
         onTap: () => open(const ListeningStatisticsScreen()),
       ),
       _HomeShortcutTile(
         label: l10n.networkStorage,
         icon: Icons.lan_outlined,
-        shape: M3EShapeKind.pentagon,
         container: colorScheme.surfaceContainerHigh,
         onContainer: colorScheme.onSurface,
-        badge: colorScheme.primaryContainer,
-        onBadge: colorScheme.onPrimaryContainer,
+        badge: colorScheme.secondaryContainer,
+        onBadge: colorScheme.onSecondaryContainer,
         onTap: () => open(const NetworkStorageScreen()),
       ),
     ];
@@ -708,7 +708,6 @@ class _HomeShortcutTile extends StatelessWidget {
   const _HomeShortcutTile({
     required this.label,
     required this.icon,
-    required this.shape,
     required this.container,
     required this.onContainer,
     required this.badge,
@@ -718,7 +717,6 @@ class _HomeShortcutTile extends StatelessWidget {
 
   final String label;
   final IconData icon;
-  final M3EShapeKind shape;
   final Color container;
   final Color onContainer;
   final Color badge;
@@ -738,12 +736,7 @@ class _HomeShortcutTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppShapeBadge(
-                kind: shape,
-                size: 40,
-                color: badge,
-                child: Icon(icon, size: 20, color: onBadge),
-              ),
+              _HomeIconBadge(icon: icon, color: badge, onColor: onBadge),
               const SizedBox(height: 16),
               Text(
                 label,
@@ -759,4 +752,27 @@ class _HomeShortcutTile extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Circular icon container shared by the Home tiles. Interactive tiles keep
+/// one plain shape; abstract shapes stay on artwork and decorative moments.
+class _HomeIconBadge extends StatelessWidget {
+  const _HomeIconBadge({
+    required this.icon,
+    required this.color,
+    required this.onColor,
+  });
+
+  final IconData icon;
+  final Color color;
+  final Color onColor;
+
+  @override
+  Widget build(BuildContext context) => DecoratedBox(
+    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    child: SizedBox.square(
+      dimension: 40,
+      child: Icon(icon, size: 20, color: onColor),
+    ),
+  );
 }

@@ -559,33 +559,24 @@ class _ThemeModeSelector extends StatelessWidget {
     }
     return Padding(
       padding: const EdgeInsets.all(12),
-      child: Row(
-        children: [
-          SettingsChoiceChip(
-            expand: true,
-            layout: SettingsChipLayout.column,
+      child: SettingsSegmentedChoice<ThemeMode>(
+        selected: currentMode,
+        onChanged: onChanged,
+        options: [
+          SettingsSegmentOption(
+            value: ThemeMode.system,
             icon: Icons.brightness_auto,
             label: context.l10n.appearanceThemeSystem,
-            isSelected: currentMode == ThemeMode.system,
-            onTap: () => onChanged(ThemeMode.system),
           ),
-          const SizedBox(width: 8),
-          SettingsChoiceChip(
-            expand: true,
-            layout: SettingsChipLayout.column,
+          SettingsSegmentOption(
+            value: ThemeMode.light,
             icon: Icons.light_mode,
             label: context.l10n.appearanceThemeLight,
-            isSelected: currentMode == ThemeMode.light,
-            onTap: () => onChanged(ThemeMode.light),
           ),
-          const SizedBox(width: 8),
-          SettingsChoiceChip(
-            expand: true,
-            layout: SettingsChipLayout.column,
+          SettingsSegmentOption(
+            value: ThemeMode.dark,
             icon: Icons.dark_mode,
             label: context.l10n.appearanceThemeDark,
-            isSelected: currentMode == ThemeMode.dark,
-            onTap: () => onChanged(ThemeMode.dark),
           ),
         ],
       ),
@@ -618,24 +609,20 @@ class _HistoryViewSelector extends StatelessWidget {
               ),
             ),
           ),
-          Row(
-            children: [
-              SettingsChoiceChip(
-                expand: true,
-                layout: SettingsChipLayout.column,
+          SettingsSegmentedChoice<String>(
+            selected: currentMode,
+            onChanged: onChanged,
+            semanticLabel: context.l10n.appearanceHistoryView,
+            options: [
+              SettingsSegmentOption(
+                value: 'list',
                 icon: Icons.view_list,
                 label: context.l10n.appearanceHistoryViewList,
-                isSelected: currentMode == 'list',
-                onTap: () => onChanged('list'),
               ),
-              const SizedBox(width: 8),
-              SettingsChoiceChip(
-                expand: true,
-                layout: SettingsChipLayout.column,
+              SettingsSegmentOption(
+                value: 'grid',
                 icon: Icons.grid_view,
                 label: context.l10n.appearanceHistoryViewGrid,
-                isSelected: currentMode == 'grid',
-                onTap: () => onChanged('grid'),
               ),
             ],
           ),

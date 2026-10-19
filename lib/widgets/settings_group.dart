@@ -821,6 +821,104 @@ class SettingsChoiceChip extends StatelessWidget {
   }
 }
 
+/// One option of a [SettingsSegmentedChoice].
+class SettingsSegmentOption<T> {
+  const SettingsSegmentOption({
+    required this.value,
+    required this.label,
+    this.icon,
+  });
+
+  final T value;
+  final String label;
+  final IconData? icon;
+}
+
+/// Single-select row of two to four related options that fits on one line.
+///
+/// Material 3 Expressive replaces the segmented button with a connected
+/// button group spanning the row; reduced motion keeps the static
+/// [SegmentedButton]. Mornye keeps its equal-width chips. Option sets that
+/// wrap belong in a [SettingsChoiceGrid] instead.
+class SettingsSegmentedChoice<T> extends StatelessWidget {
+  const SettingsSegmentedChoice({
+    super.key,
+    required this.options,
+    required this.selected,
+    required this.onChanged,
+    this.semanticLabel,
+  });
+
+  final List<SettingsSegmentOption<T>> options;
+  final T selected;
+  final ValueChanged<T> onChanged;
+  final String? semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    if (materialExpressiveEnabled(context)) {
+      final index = options.indexWhere((option) => option.value == selected);
+      return MaterialExpressiveScope(
+        child: M3EButtonGroup(
+          type: M3EButtonGroupType.connected,
+          style: M3EButtonStyle.filled,
+          // Connected segments get no inflated target; keep 48 dp.
+          size: M3EButtonSize.sm.copyWith(height: 48),
+          selectedIndex: index < 0 ? null : index,
+          selectionRequired: true,
+          onSelectedIndexChanged: (index) {
+            if (index != null) onChanged(options[index].value);
+          },
+          semanticLabel: semanticLabel,
+          actions: [
+            for (final option in options)
+              M3EButtonGroupAction(
+                icon: option.icon == null
+                    ? null
+                    : AppIcon.adaptive(option.icon!, size: 18, fill: 0),
+                selectedIcon: option.icon == null
+                    ? null
+                    : AppIcon.adaptive(option.icon!, size: 18, fill: 1),
+                label: Text(option.label),
+              ),
+          ],
+        ),
+      );
+    }
+    if (!context.isMornye) {
+      return SegmentedButton<T>(
+        showSelectedIcon: false,
+        expandedInsets: EdgeInsets.zero,
+        segments: [
+          for (final option in options)
+            ButtonSegment(
+              value: option.value,
+              label: Text(option.label),
+              icon: option.icon == null ? null : AppIcon(option.icon!),
+            ),
+        ],
+        selected: {selected},
+        onSelectionChanged: (value) => onChanged(value.first),
+      );
+    }
+    return Row(
+      children: [
+        for (final (index, option) in options.indexed) ...[
+          if (index > 0) SizedBox(width: context.tokens.gapSm),
+          SettingsChoiceChip(
+            expand: true,
+            layout: SettingsChipLayout.column,
+            icon: option.icon,
+            label: option.label,
+            isSelected: option.value == selected,
+            onTap: () => onChanged(option.value),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 /// Lays out [SettingsChoiceChip]s in an even grid that reflows by width.
 class SettingsChoiceGrid extends StatelessWidget {
   const SettingsChoiceGrid({super.key, required this.children});

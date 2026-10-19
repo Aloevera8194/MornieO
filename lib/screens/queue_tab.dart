@@ -842,6 +842,29 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                       child: LayoutBuilder(
                         builder: (context, constraints) {
                           final activePage = _pageIndexFor(historyFilterMode);
+                          final playlistCount = _getVisibleCollectionEntries(
+                            collectionState,
+                          ).length;
+                          if (!context.isMornye) {
+                            return _LibraryPageTabs(
+                              selectedIndex: activePage,
+                              onSelected: _animateToFilterPage,
+                              tabs: [
+                                (
+                                  context.l10n.searchSongs,
+                                  queueCounts.allTrackCount,
+                                ),
+                                (
+                                  context.l10n.historyFilterAlbums,
+                                  queueCounts.albumCount,
+                                ),
+                                // Artist totals need a full scan; the tab
+                                // shows none rather than a guess.
+                                (context.l10n.searchArtists, null),
+                                (context.l10n.searchPlaylists, playlistCount),
+                              ],
+                            );
+                          }
                           Widget tab(
                             int index,
                             IconData icon,
@@ -859,20 +882,16 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                             size: 48,
                             child: SingleChildScrollView(
                               scrollDirection: Axis.horizontal,
-                              padding: context.isMornye
-                                  ? const EdgeInsets.symmetric(vertical: 4)
-                                  : EdgeInsets.zero,
+                              padding: const EdgeInsets.symmetric(vertical: 4),
                               child: ConstrainedBox(
                                 constraints: BoxConstraints(
                                   minWidth: constraints.maxWidth,
                                 ),
                                 // Mornye spreads its glass pills across the
-                                // search field; Material chips sit 8dp apart
-                                // from the start like other filter rows.
+                                // search field.
                                 child: Row(
-                                  mainAxisAlignment: context.isMornye
-                                      ? MainAxisAlignment.spaceBetween
-                                      : MainAxisAlignment.start,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     tab(
                                       0,
@@ -901,9 +920,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                                       3,
                                       Icons.queue_music_outlined,
                                       context.l10n.searchPlaylists,
-                                      _getVisibleCollectionEntries(
-                                        collectionState,
-                                      ).length,
+                                      playlistCount,
                                     ),
                                   ],
                                 ),
