@@ -584,6 +584,30 @@ void main() {
     },
   );
 
+  test('legacy NUL-prefixed JPEG previews are re-extracted', () async {
+    final sourcePath = await createAudioFixture('legacy-padded-cover');
+    var extractions = 0;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(backendChannel, (call) async {
+          expect(call.method, 'extractCoverToFile');
+          extractions++;
+          await File(
+            (call.arguments as Map)['output_path'] as String,
+          ).writeAsBytes([0xff, 0xd8, 0xff, 0xe0]);
+          return jsonEncode({'success': true});
+        });
+    final preview = (await DownloadedEmbeddedCoverResolver.resolveOrExtract(
+      sourcePath,
+    ))!;
+    await File(preview).writeAsBytes([0, 0xff, 0xd8, 0xff, 0xe0]);
+    await DownloadedEmbeddedCoverResolver.resetMemoryStateForTesting();
+    final refreshed = await DownloadedEmbeddedCoverResolver.resolveOrExtract(
+      sourcePath,
+    );
+    expect(extractions, 2);
+    expect(await File(refreshed!).readAsBytes(), [0xff, 0xd8, 0xff, 0xe0]);
+  });
+
   test('legacy SAF thumbnails are replaced without changing the audio', () async {
     const source = 'content://covers/document/original-artwork.flac';
     sourcePaths.add(source);

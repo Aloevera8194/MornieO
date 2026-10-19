@@ -174,20 +174,9 @@ fn edit_header(
 pub(in crate::tags) fn cover(tag: &[u8]) -> Option<(Vec<u8>, String)> {
     let (frames, _) = read_frames(&mut Cursor::new(tag), &|| Ok(())).ok()?;
     let data = &frames.iter().find(|frame| frame.id == b"APIC")?.data;
-    let encoding = *data.first()?;
-    let mime_end = data[1..].iter().position(|byte| *byte == 0)? + 1;
-    let mime = String::from_utf8_lossy(&data[1..mime_end]).into_owned();
-    let mut start = mime_end + 2;
-    if matches!(encoding, 0 | 3) {
-        start += data.get(start..)?.iter().position(|byte| *byte == 0)? + 1;
-    } else {
-        start += data
-            .get(start..)?
-            .windows(2)
-            .position(|pair| pair == [0, 0])?
-            + 2;
-    }
-    (start < data.len()).then(|| (data[start..].to_vec(), mime))
+    // read_frames also normalizes ID3v2.2 PIC frames to APIC.
+    let picture = super::super::id3::picture_frame(data, 4)?;
+    Some((picture.data, picture.mime))
 }
 
 fn frame(id: &str, data: Vec<u8>) -> Frame {

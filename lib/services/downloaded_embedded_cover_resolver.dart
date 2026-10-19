@@ -821,7 +821,19 @@ class DownloadedEmbeddedCoverResolver {
     try {
       if (!await preview.exists() || await preview.length() <= 0) return false;
       if (!await sidecar.exists()) return false;
-      return await sidecar.readAsString() == cleanPath;
+      if (await sidecar.readAsString() != cleanPath) return false;
+      final input = await preview.open();
+      try {
+        final header = await input.read(4);
+        // Older ID3 extraction could cache an extra NUL before JPEG data.
+        return !(header.length == 4 &&
+            header[0] == 0 &&
+            header[1] == 0xff &&
+            header[2] == 0xd8 &&
+            header[3] == 0xff);
+      } finally {
+        await input.close();
+      }
     } catch (_) {
       return false;
     }
