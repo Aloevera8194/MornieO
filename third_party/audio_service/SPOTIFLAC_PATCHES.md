@@ -12,6 +12,11 @@ from the upstream package are not vendored.
 
 ## Patches
 
+- Android: accept renderer shell arguments via
+  `AudioServicePlugin.setFlutterEngineArguments` before shared engine creation.
+  The app supplies its device compatibility flags in `Application.onCreate`;
+  fragment shell arguments arrive too late when attaching this cached engine.
+  This also covers engine creation by a background media service.
 - Android: include custom media actions in MediaStyle notifications on Android
   12 and older. Upstream exposes them only through PlaybackState, which hides
   them on those versions. Keep custom action order and compact indices aligned.

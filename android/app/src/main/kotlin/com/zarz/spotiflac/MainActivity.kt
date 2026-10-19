@@ -182,11 +182,8 @@ class MainActivity: FlutterFragmentActivity() {
     class ImpellerAwareFlutterFragment : FlutterFragment() {
         override fun getFlutterShellArgs(): FlutterShellArgs {
             val args = super.getFlutterShellArgs()
-            if (shouldDisableImpeller()) {
-                android.util.Log.w("SpotiFLAC", "Legacy/problematic GPU detected for ${Build.MODEL}")
-                android.util.Log.w("SpotiFLAC", "Device: ${Build.MANUFACTURER} ${Build.MODEL}, SDK: ${Build.VERSION.SDK_INT}")
-                android.util.Log.w("SpotiFLAC", "Hardware: ${Build.HARDWARE}, Board: ${Build.BOARD}")
-                args.add("--enable-impeller=false")
+            for (argument in flutterRendererShellArgs()) {
+                args.add(argument)
             }
             return args
         }

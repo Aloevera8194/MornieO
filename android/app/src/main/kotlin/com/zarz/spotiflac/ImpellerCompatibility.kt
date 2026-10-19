@@ -53,12 +53,27 @@ private val PROBLEMATIC_MODELS = listOf(
     "sm-t225",
     "hammerhead",
 )
+
+internal fun hasKnownImpellerRasterCrash(sdk: Int, manufacturer: String, model: String): Boolean =
+    sdk == 35 && manufacturer.equals("xiaomi", ignoreCase = true) &&
+        model.equals("25053PC47I", ignoreCase = true)
+
+internal fun flutterRendererShellArgs(): Array<String> =
+    if (shouldDisableImpeller()) arrayOf("--enable-impeller=false") else emptyArray()
+
 internal fun shouldDisableImpeller(): Boolean {
     val hardware = Build.HARDWARE.lowercase(Locale.ROOT)
     val board = Build.BOARD.lowercase(Locale.ROOT)
     val model = Build.MODEL.lowercase(Locale.ROOT)
     val device = Build.DEVICE.lowercase(Locale.ROOT)
     val manufacturer = Build.MANUFACTURER.lowercase(Locale.ROOT)
+
+    // Confirmed Android 15 raster crash in Impeller/Vulkan SaveLayer when its
+    // render pass is null. Keep this workaround scoped to the reported device.
+    if (hasKnownImpellerRasterCrash(Build.VERSION.SDK_INT, manufacturer, model)) {
+        android.util.Log.i("SpotiFLAC", "Using Skia for a known Impeller raster crash on $model")
+        return true
+    }
 
     for (problematicManufacturer in PROBLEMATIC_MANUFACTURERS) {
         if (manufacturer.contains(problematicManufacturer)) {
