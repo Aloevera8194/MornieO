@@ -28,7 +28,7 @@ class _WordHighlightedLyricLine extends ConsumerStatefulWidget {
 
 class _WordHighlightedLyricLineState
     extends ConsumerState<_WordHighlightedLyricLine>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final AnimationController _animationClock;
   final Stopwatch _elapsedClock = Stopwatch();
   ProviderSubscription<Duration>? _positionSubscription;
@@ -39,12 +39,20 @@ class _WordHighlightedLyricLineState
   Duration _anchorElapsed = Duration.zero;
   bool _playing = false;
   bool _loading = false;
+  bool _tickerEnabled = true;
+  bool _hasSubscribed = false;
+  Duration _visualEnd = Duration.zero;
 
-  bool get _shouldAnimate =>
+  bool get _visible =>
       widget.animate &&
-      _playing &&
-      !_loading &&
-      widget.seekPreview.value == null;
+      _tickerEnabled &&
+      (WidgetsBinding.instance.lifecycleState == null ||
+          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed);
+
+  bool get _advancing =>
+      _visible && _playing && !_loading && widget.seekPreview.value == null;
+
+  bool get _shouldAnimate => _advancing && _currentPosition() < _visualEnd;
 
   Duration _positionAt({required bool advance}) {
     return interpolatedSyncedLyricsPosition(
@@ -57,6 +65,7 @@ class _WordHighlightedLyricLineState
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _elapsedClock.start();
     _anchorElapsed = _elapsedClock.elapsed;
     _anchorPosition = widget.initialPosition;
@@ -65,8 +74,39 @@ class _WordHighlightedLyricLineState
     _animationClock = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    );
+    )..addListener(_animationTick);
     widget.seekPreview.addListener(_previewChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tickerEnabled = TickerMode.valuesOf(context).enabled;
+    _updateVisualEnd();
+    _syncSubscriptions();
+  }
+
+  void _syncSubscriptions() {
+    if (!_visible) {
+      _positionSubscription?.close();
+      _playingSubscription?.close();
+      _loadingSubscription?.close();
+      _positionSubscription = null;
+      _playingSubscription = null;
+      _loadingSubscription = null;
+      _animationClock.stop();
+      return;
+    }
+    if (_positionSubscription != null) {
+      _syncAnimationClock();
+      return;
+    }
+    _playing = ref.read(playbackPlayingProvider);
+    _loading = ref.read(playbackLoadingProvider);
+    if (_hasSubscribed) {
+      _anchorAt(widget.seekPreview.value ?? ref.read(playbackPositionProvider));
+    }
+    _hasSubscribed = true;
     _positionSubscription = ref.listenManual<Duration>(
       playbackPositionProvider,
       (previous, next) => _updateReportedPosition(next),
@@ -83,6 +123,12 @@ class _WordHighlightedLyricLineState
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    _syncSubscriptions();
+    if (mounted) setState(() {});
+  }
+
+  @override
   void didUpdateWidget(covariant _WordHighlightedLyricLine oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.seekPreview != widget.seekPreview) {
@@ -93,20 +139,19 @@ class _WordHighlightedLyricLineState
     if (oldWidget.line != widget.line ||
         oldWidget.initialPosition != widget.initialPosition) {
       _anchorAt(widget.initialPosition);
+      _updateVisualEnd();
+      _syncAnimationClock();
     }
     if (oldWidget.animate != widget.animate) {
-      _anchorAt(
-        _positionAt(advance: oldWidget.animate && _playing && !_loading),
-      );
-      _syncAnimationClock();
+      _syncSubscriptions();
     }
   }
 
   Duration _currentPosition() =>
-      widget.seekPreview.value ?? _positionAt(advance: _shouldAnimate);
+      widget.seekPreview.value ?? _positionAt(advance: _advancing);
 
   void _previewChanged() {
-    if (!mounted) return;
+    if (!mounted || !_visible) return;
     _anchorAt(widget.seekPreview.value ?? ref.read(playbackPositionProvider));
     _syncAnimationClock();
     setState(() {});
@@ -121,14 +166,20 @@ class _WordHighlightedLyricLineState
     if (!mounted || widget.seekPreview.value != null) return;
     final predicted = _currentPosition();
     _anchorAt(
-      _shouldAnimate
+      _advancing
           ? reconcileSyncedLyricsPosition(
               predictedPosition: predicted,
               reportedPosition: position,
             )
           : position,
     );
-    if (!_shouldAnimate) setState(() {});
+    _syncAnimationClock();
+    // A held line stays visible through an instrumental/outro. Once every
+    // envelope has settled, later position reports cannot change its pixels.
+    if (!_animationClock.isAnimating &&
+        (predicted < _visualEnd || _currentPosition() < _visualEnd)) {
+      setState(() {});
+    }
   }
 
   void _updateTransportState({bool? playing, bool? loading}) {
@@ -138,7 +189,7 @@ class _WordHighlightedLyricLineState
     if (loading != null) _loading = loading;
     _anchorAt(
       widget.seekPreview.value ??
-          (_shouldAnimate ? position : ref.read(playbackPositionProvider)),
+          (_advancing ? position : ref.read(playbackPositionProvider)),
     );
     _syncAnimationClock();
     setState(() {});
@@ -152,6 +203,30 @@ class _WordHighlightedLyricLineState
     } else {
       _animationClock.stop();
     }
+  }
+
+  void _animationTick() {
+    if (_currentPosition() >= _visualEnd) _animationClock.stop();
+  }
+
+  void _updateVisualEnd() {
+    final decorativeMotion =
+        context.isMornye && !MediaQuery.disableAnimationsOf(context);
+    var end = Duration.zero;
+    for (final words in [widget.line.words, widget.line.romanizationWords]) {
+      for (var index = 0; index < words.length; index++) {
+        var wordEnd = _segmentEnd(words, index);
+        if (decorativeMotion) {
+          // Glow fades for 500ms after a held word; short-word lift may finish
+          // later than the color sweep (start + 540ms).
+          wordEnd += const Duration(milliseconds: 500);
+          final liftEnd = words[index].time + const Duration(milliseconds: 540);
+          if (liftEnd > wordEnd) wordEnd = liftEnd;
+        }
+        if (wordEnd > end) end = wordEnd;
+      }
+    }
+    _visualEnd = end;
   }
 
   Duration _segmentEnd(List<LyricWord> words, int index) {
@@ -169,6 +244,7 @@ class _WordHighlightedLyricLineState
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     widget.seekPreview.removeListener(_previewChanged);
     _positionSubscription?.close();
     _playingSubscription?.close();

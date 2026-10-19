@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
@@ -8,6 +7,7 @@ import 'package:spotiflac_android/theme/cover_palette.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/services/shell_navigation_service.dart';
 import 'package:spotiflac_android/widgets/album_detail_header.dart';
+import 'package:spotiflac_android/widgets/cached_cover_image.dart';
 
 /// Share the same artwork-derived dark surface while loading and after the
 /// artist metadata arrives, including when the app itself uses light mode.
@@ -262,7 +262,7 @@ class MornyeArtistHeader extends StatelessWidget {
                             constraints: BoxConstraints(
                               maxHeight: identityHeight,
                             ),
-                            child: _buildIdentity(),
+                            child: _buildIdentity(context),
                           ),
                           if (listeners != null) ...[
                             const SizedBox(height: 7),
@@ -299,7 +299,7 @@ class MornyeArtistHeader extends StatelessWidget {
     ];
   }
 
-  Widget _buildIdentity() {
+  Widget _buildIdentity(BuildContext context) {
     final fallback = Text(
       name,
       textAlign: TextAlign.center,
@@ -311,20 +311,26 @@ class MornyeArtistHeader extends StatelessWidget {
     );
     final logo = logoUrl?.trim();
     if (logo == null || logo.isEmpty) return fallback;
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
     return Semantics(
       label: name,
       image: true,
       excludeSemantics: true,
-      child: CachedNetworkImage(
-        imageUrl: logo,
-        fadeInDuration: Duration.zero,
-        fadeOutDuration: Duration.zero,
-        imageBuilder: (_, provider) => ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 320, maxHeight: 96),
-          child: Image(image: provider, fit: BoxFit.contain),
+      child: Image(
+        image: ResizeImage(
+          cachedCoverImageProvider(logo),
+          width: (320 * pixelRatio).ceil(),
+          height: (96 * pixelRatio).ceil(),
+          policy: ResizeImagePolicy.fit,
         ),
-        placeholder: (_, _) => fallback,
-        errorWidget: (_, _, _) => fallback,
+        fit: BoxFit.contain,
+        frameBuilder: (_, child, frame, _) => frame == null
+            ? fallback
+            : ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 320, maxHeight: 96),
+                child: child,
+              ),
+        errorBuilder: (_, _, _) => fallback,
       ),
     );
   }

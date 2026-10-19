@@ -13,10 +13,12 @@ import 'package:spotiflac_android/models/track.dart';
 import 'package:spotiflac_android/providers/library_collections_provider.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/playback_seek_preview.dart';
 import 'package:spotiflac_android/widgets/mornye_player_artwork.dart';
 import 'package:spotiflac_android/widgets/mornye_player_layout.dart';
+import 'package:spotiflac_android/widgets/material_player_layout.dart';
 import 'package:spotiflac_android/widgets/player_volume_control.dart';
 
 import 'performance_probe.dart';
@@ -31,14 +33,18 @@ class _Collections extends LibraryCollectionsNotifier {
   LibraryCollectionsState build() => LibraryCollectionsState(isLoaded: true);
 }
 
-void main() {
+void main() => runArtworkPerformanceTests(mornye: true);
+
+/// The same source image and panel gestures exercise both player layouts.
+void runArtworkPerformanceTests({required bool mornye}) {
   final binding = PerformanceTestBinding.ensureInitialized();
-  testWidgets('Mornye player panel transitions and artwork cache', (
+  final style = mornye ? 'mornye' : 'material';
+  testWidgets('$style player panel transitions and artwork cache', (
     tester,
   ) async {
-    final probe = PerformanceProbe(binding, tester, suite: 'mornye-artwork');
+    final probe = PerformanceProbe(binding, tester, suite: '$style-artwork');
     final directory = await tester.runAsync(getTemporaryDirectory);
-    final cover = File('${directory!.path}/mornye-performance-cover.png');
+    final cover = File('${directory!.path}/$style-performance-cover.png');
     await tester.runAsync(() async {
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(recorder);
@@ -70,7 +76,7 @@ void main() {
       duration: const Duration(minutes: 4),
       artUri: cover.uri,
     );
-    final theme = MornyeTheme.build(Brightness.dark);
+    final theme = mornye ? MornyeTheme.build(Brightness.dark) : AppTheme.dark();
     final page = ValueNotifier(0);
     final metadata = PlayerMetadataController();
     final seek = PlaybackSeekPreview();
@@ -127,31 +133,47 @@ void main() {
             body: SafeArea(
               child: ValueListenableBuilder<int>(
                 valueListenable: page,
-                builder: (context, value, _) => MornyePlayerLayout(
-                  mediaItem: item,
-                  metadata: metadata,
-                  seekPreview: seek,
-                  colorScheme: theme.colorScheme,
-                  page: value,
-                  motionArtwork: MornyePlayerArtwork(mediaItem: item),
-                  insetArtwork: true,
-                  artworkTopInset: 0,
-                  artworkKeys: keys,
-                  artworkForeground: foreground,
-                  lyricsControlsHidden: false,
-                  lyricsOptionsOpen: false,
-                  lyricsBuilder: (_) => ListView.builder(
-                    itemCount: 200,
-                    itemBuilder: (_, index) => Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text('Lyric line $index'),
-                    ),
-                  ),
-                  lyricsOptions: null,
-                  onPageChanged: (value) => page.value = value,
-                  onTrackNavigation: (_, _) async {},
-                  onMoreActions: (_, _, _) async {},
-                ),
+                builder: (context, value, _) => !mornye
+                    ? MaterialPlayerLayout(
+                        mediaItem: item,
+                        metadata: metadata,
+                        seekPreview: seek,
+                        colorScheme: theme.colorScheme,
+                        showLyrics: value == 1,
+                        lyricsBuilder: (_) => ListView.builder(
+                          itemCount: 200,
+                          itemBuilder: (_, index) => Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text('Lyric line $index'),
+                          ),
+                        ),
+                        onOpenQueue: () {},
+                      )
+                    : MornyePlayerLayout(
+                        mediaItem: item,
+                        metadata: metadata,
+                        seekPreview: seek,
+                        colorScheme: theme.colorScheme,
+                        page: value,
+                        motionArtwork: MornyePlayerArtwork(mediaItem: item),
+                        insetArtwork: true,
+                        artworkTopInset: 0,
+                        artworkKeys: keys,
+                        artworkForeground: foreground,
+                        lyricsControlsHidden: false,
+                        lyricsOptionsOpen: false,
+                        lyricsBuilder: (_) => ListView.builder(
+                          itemCount: 200,
+                          itemBuilder: (_, index) => Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Text('Lyric line $index'),
+                          ),
+                        ),
+                        lyricsOptions: null,
+                        onPageChanged: (value) => page.value = value,
+                        onTrackNavigation: (_, _) async {},
+                        onMoreActions: (_, _, _) async {},
+                      ),
               ),
             ),
           ),
@@ -161,12 +183,20 @@ void main() {
     await tester.runAsync(() => probe.wait(const Duration(seconds: 1)));
     await tester.pump();
     snapshots['expanded'] = snapshot();
-    await probe.measure('player_lyrics_queue_transitions', () async {
-      for (final value in [1, 0, 2, 0]) {
+    await probe.measure('player_lyrics_transitions', () async {
+      for (final value in [1, 0, 1, 0]) {
         page.value = value;
         await probe.wait(const Duration(milliseconds: 500));
       }
     });
+    if (mornye) {
+      await probe.measure('player_lyrics_queue_transitions', () async {
+        for (final value in [1, 0, 2, 0]) {
+          page.value = value;
+          await probe.wait(const Duration(milliseconds: 500));
+        }
+      });
+    }
     snapshots['after_panels'] = snapshot();
     // Allow the queue's small thumbnail, but not a second full-size decode.
     expect(
@@ -179,8 +209,9 @@ void main() {
     await probe.finish(
       metadata: {
         'fixture':
-            'Production MornyePlayerLayout, local 2400px static cover; '
+            'Production ${mornye ? 'MornyePlayerLayout' : 'MaterialPlayerLayout'}, local 2400px static cover; '
             'synthetic lyrics/queue and no playback or persistent data',
+        'style': style,
         'cache_snapshots': snapshots,
       },
     );

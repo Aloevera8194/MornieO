@@ -1,8 +1,41 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/utils/lyrics_parser.dart';
 import 'package:spotiflac_android/utils/lyrics_timeline.dart';
 
 void main() {
+  test('indexed active voices match the timeline contract across seeks', () {
+    final random = Random(412);
+    final lines = List.generate(600, (index) {
+      final start = Duration(milliseconds: index ~/ 3 * 400);
+      return LyricLine(
+        time: start,
+        end: index % 4 == 0
+            ? null
+            : start + Duration(milliseconds: random.nextInt(10000)),
+        text: index % 11 == 0 ? '' : 'Line $index',
+        isBackground: index % 5 == 0,
+        voice: index % 7 == 0 ? const LyricVoice(id: 'v2', index: 1) : null,
+      );
+    });
+    final timeline = LyricTimelineIndex(lines);
+    expect(timeline.starts, lines.map((line) => line.time));
+    for (var sample = 0; sample < 2000; sample++) {
+      final position = Duration(milliseconds: random.nextInt(100000) - 1000);
+      final current = LyricsParser.activeIndex(lines, position);
+      expect(
+        timeline.activeIndices(position, current),
+        activeLyricIndices(lines, position, current),
+        reason: 'Position $position, current line $current',
+      );
+    }
+    expect(
+      LyricTimelineIndex(const []).activeIndices(Duration.zero, -1),
+      isEmpty,
+    );
+  });
+
   group('display ends for an unanchored final word', () {
     List<LyricLine> display(String lrc) => lyricsWithDisplayEnds(
       lyricsTimelineWithGaps(LyricsParser.parse(lrc).lines),

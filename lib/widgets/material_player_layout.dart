@@ -89,7 +89,9 @@ class MaterialPlayerLayout extends StatelessWidget {
                         width: artSize,
                         height: artSize,
                         child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 450),
+                          duration: MediaQuery.disableAnimationsOf(context)
+                              ? Duration.zero
+                              : const Duration(milliseconds: 450),
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.easeInCubic,
                           transitionBuilder: (child, animation) =>

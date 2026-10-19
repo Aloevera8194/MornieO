@@ -142,6 +142,34 @@ void main() {
     );
   });
 
+  for (final mornye in [false, true]) {
+    testWidgets('broad search builds only visible grouped results ($mornye)', (
+      tester,
+    ) async {
+      await pumpSettings(
+        tester,
+        theme: mornye ? MornyeTheme.build(Brightness.dark) : AppTheme.light(),
+      );
+      await tester.enterText(find.byType(TextField), 'a');
+      await tester.pump();
+      final group = tester.widget<SliverSettingsGroup>(
+        find.byType(SliverSettingsGroup),
+      );
+      expect(group.itemCount, greaterThan(30));
+      final rows = find.descendant(
+        of: find.byType(SliverSettingsGroup),
+        matching: find.byType(SettingsItem),
+      );
+      expect(rows.evaluate().length, lessThan(group.itemCount ~/ 2));
+      await tester.drag(
+        find.byType(CustomScrollView).first,
+        const Offset(0, -600),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   testWidgets('network protocols are discoverable from Settings', (
     tester,
   ) async {

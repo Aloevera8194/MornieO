@@ -2178,6 +2178,34 @@ void main() {
     });
   }
 
+  testWidgets('Material cover replacement honors reduced motion immediately', (
+    tester,
+  ) async {
+    await pumpNowPlaying(
+      tester,
+      theme: AppTheme.dark(),
+      wrapPlayer: (player) => MediaQuery(
+        data: const MediaQueryData(
+          size: Size(1080, 1920),
+          disableAnimations: true,
+        ),
+        child: player,
+      ),
+    );
+    mediaItems.add(item('first'));
+    await settlePlayer(tester);
+    mediaItems.add(item('second'));
+    await completeLyrics(tester);
+    await tester.pump();
+    final covers = find.descendant(
+      of: find.byType(MaterialPlayerLayout),
+      matching: find.byType(PlayerArtwork),
+    );
+    expect(covers, findsOneWidget);
+    expect(tester.widget<PlayerArtwork>(covers).key, const ValueKey('second'));
+    expect(tester.takeException(), isNull);
+  });
+
   for (final size in [
     const Size(320, 568),
     const Size(430, 932),

@@ -115,6 +115,12 @@ extension _QueueTabSections on _QueueTabState {
     BuildContext context,
     List<UnifiedLibraryItem> items,
   ) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    if (identical(items, _sectionItems) &&
+        _sortMode == _sectionSort &&
+        locale == _sectionLocale) {
+      return _cachedTrackSections;
+    }
     final sections = <_LibrarySection>[];
     String? label;
     var start = 0;
@@ -131,7 +137,10 @@ extension _QueueTabSections on _QueueTabState {
     if (items.isNotEmpty) {
       sections.add(_LibrarySection(label!, start, items.length));
     }
-    return sections;
+    _sectionItems = items;
+    _sectionSort = _sortMode;
+    _sectionLocale = locale;
+    return _cachedTrackSections = sections;
   }
 
   /// Track rows grouped under pinned section headers. Each section is its own
@@ -144,39 +153,18 @@ extension _QueueTabSections on _QueueTabState {
     required Widget Function(int index) leadBuilder,
   }) {
     final sections = _trackSections(context, items);
-    final headed = sections.length > 1 || sections.firstOrNull?.label != '';
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
-      sliver: SliverMainAxisGroup(
-        slivers: [
-          if (leadCount > 0)
-            SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => leadBuilder(index),
-                childCount: leadCount,
-              ),
-            ),
-          for (final section in sections)
-            SliverMainAxisGroup(
-              slivers: [
-                if (headed && section.label.isNotEmpty)
-                  PinnedHeaderSliver(
-                    child: _LibrarySectionHeader(label: section.label),
-                  ),
-                SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final itemIndex = section.start + index;
-                    return TrackCardSegment.at(
-                      key: ValueKey(items[itemIndex].id),
-                      index: index,
-                      count: section.length,
-                      child: rowBuilder(itemIndex),
-                    );
-                  }, childCount: section.length),
-                ),
-              ],
-            ),
-        ],
+      sliver: _LibrarySectionList(
+        sections: sections,
+        leadCount: leadCount,
+        leadBuilder: leadBuilder,
+        rowBuilder: (index, section) => TrackCardSegment.at(
+          key: ValueKey(items[index].id),
+          index: index - section.start,
+          count: section.length,
+          child: rowBuilder(index),
+        ),
       ),
     );
   }
@@ -379,29 +367,19 @@ extension _QueueTabSections on _QueueTabState {
                 ),
                 sliver: SliverMainAxisGroup(
                   slivers: [
-                    for (final section in sections)
-                      SliverMainAxisGroup(
-                        slivers: [
-                          PinnedHeaderSliver(
-                            child: _LibrarySectionHeader(label: section.label),
-                          ),
-                          SliverList(
-                            delegate: SliverChildBuilderDelegate((
-                              context,
-                              index,
-                            ) {
-                              final entry = entries[section.start + index];
-                              return _ArtistRow(
-                                key: ValueKey('artist_${entry.key}'),
-                                entry: entry,
-                                first: index == 0,
-                                last: index == section.length - 1,
-                                onTap: () => openArtist(entry.artist),
-                              );
-                            }, childCount: section.length),
-                          ),
-                        ],
-                      ),
+                    _LibrarySectionList(
+                      sections: sections,
+                      rowBuilder: (index, section) {
+                        final entry = entries[index];
+                        return _ArtistRow(
+                          key: ValueKey('artist_${entry.key}'),
+                          entry: entry,
+                          first: index == section.start,
+                          last: index == section.end - 1,
+                          onTap: () => openArtist(entry.artist),
+                        );
+                      },
+                    ),
                     if (state.value?.isLoadingMore ?? false)
                       const SliverToBoxAdapter(
                         child: Padding(
@@ -437,6 +415,56 @@ extension _QueueTabSections on _QueueTabState {
           ),
         );
       },
+    );
+  }
+}
+
+class _LibrarySectionList extends StatelessWidget {
+  const _LibrarySectionList({
+    required this.sections,
+    required this.rowBuilder,
+    this.leadCount = 0,
+    this.leadBuilder,
+  });
+
+  final List<_LibrarySection> sections;
+  final Widget Function(int index, _LibrarySection section) rowBuilder;
+  final int leadCount;
+  final Widget Function(int index)? leadBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    final starts = <int>[];
+    final headers = <int>[];
+    var count = leadCount;
+    for (final section in sections) {
+      starts.add(count);
+      if (section.label.isNotEmpty) headers.add(count++);
+      count += section.length;
+    }
+    return PinnedSectionSliverList(
+      headerIndexes: headers,
+      delegate: SliverChildBuilderDelegate((context, index) {
+        if (index < leadCount) return leadBuilder!(index);
+        var low = 0;
+        var high = starts.length;
+        while (low < high) {
+          final middle = (low + high) ~/ 2;
+          if (starts[middle] <= index) {
+            low = middle + 1;
+          } else {
+            high = middle;
+          }
+        }
+        final section = sections[low - 1];
+        final hasHeader = section.label.isNotEmpty;
+        final offset = index - starts[low - 1];
+        if (hasHeader && offset == 0) {
+          return _LibrarySectionHeader(label: section.label);
+        }
+        final row = offset - (hasHeader ? 1 : 0);
+        return rowBuilder(section.start + row, section);
+      }, childCount: count),
     );
   }
 }

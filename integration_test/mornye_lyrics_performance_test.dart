@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:spotiflac_android/models/settings.dart';
 import 'package:spotiflac_android/providers/music_player_provider.dart';
 import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:spotiflac_android/theme/app_theme.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/utils/lyrics_parser.dart';
 import 'package:spotiflac_android/widgets/player_lyrics.dart';
@@ -40,12 +41,16 @@ class _Settings extends SettingsNotifier {
   AppSettings build() => const AppSettings();
 }
 
-void main() {
+void main() => runLyricsPerformanceTests(mornye: true);
+
+/// Identical playback, lyrics and gestures for both visual styles.
+void runLyricsPerformanceTests({required bool mornye}) {
   final binding = PerformanceTestBinding.ensureInitialized();
-  testWidgets('Mornye production word-synced lyrics and manual scrolling', (
+  final style = mornye ? 'mornye' : 'material';
+  testWidgets('$style production word-synced lyrics and manual scrolling', (
     tester,
   ) async {
-    final probe = PerformanceProbe(binding, tester, suite: 'mornye_lyrics');
+    final probe = PerformanceProbe(binding, tester, suite: '${style}_lyrics');
     final playback = StreamController<PlaybackState>.broadcast();
     final seek = ValueNotifier<Duration?>(null);
     final active = ValueNotifier(true);
@@ -80,7 +85,7 @@ void main() {
       seek.dispose();
       active.dispose();
     });
-    final theme = MornyeTheme.build(Brightness.dark);
+    final theme = mornye ? MornyeTheme.build(Brightness.dark) : AppTheme.dark();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -112,6 +117,24 @@ void main() {
     );
     ScrollPosition position() =>
         tester.state<ScrollableState>(find.byType(Scrollable)).position;
+    String progressionFailure(double before) {
+      final context = tester.element(find.byType(SyncedLyricsView));
+      final container = ProviderScope.containerOf(context);
+      final highlighted = tester
+          .widgetList<Semantics>(find.byType(Semantics))
+          .map((widget) => widget.properties.label)
+          .whereType<String>()
+          .where((label) => label.startsWith('Fixture line '))
+          .join(', ');
+      return 'lifecycle=${binding.lifecycleState}, '
+          'tickers=${TickerMode.valuesOf(context).enabled}, '
+          'positionMs=${container.read(playbackPositionProvider).inMilliseconds}, '
+          'playing=${container.read(playbackPlayingProvider)}, '
+          'scroll=${position().pixels}, before=$before, '
+          'scrolling=${position().isScrollingNotifier.value}, '
+          'highlighted=[$highlighted]';
+    }
+
     Future<void> reset() async {
       stop();
       elapsed.reset();
@@ -131,7 +154,13 @@ void main() {
       await probe.wait(const Duration(milliseconds: 2300));
       stop();
       expect(elapsed.elapsed, greaterThan(const Duration(seconds: 2)));
-      expect(position().pixels, greaterThan(before + 20));
+      expect(
+        position().pixels,
+        greaterThan(before + 20),
+        reason: position().pixels > before + 20
+            ? null
+            : progressionFailure(before),
+      );
     });
     await probe.measure('lyrics_manual_scroll_during_playback', () async {
       await reset();
@@ -175,6 +204,7 @@ void main() {
             'preferences or network. Active samples include a 650ms paused '
             'seek reset to 40s. Idle is inactive and paused.',
         'lineCount': _lyrics.lines.length,
+        'style': style,
         'wordsPerLine': 5,
         'manualScrollTolerancePixels': 1,
       },

@@ -17,6 +17,7 @@ import 'package:spotiflac_android/theme/material_expressive.dart';
 import 'package:spotiflac_android/theme/mornye_theme.dart';
 import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
 import 'package:spotiflac_android/widgets/app_icon.dart';
+import 'package:spotiflac_android/widgets/pinned_section_sliver_list.dart';
 import 'package:spotiflac_android/widgets/app_icon_button.dart';
 import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
 import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
@@ -189,8 +190,12 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   String? _filterMetadata;
   String _sortMode = 'latest';
   String _libraryQualityLabelMode = AppSettings.libraryQualityLabelBitDepthOnly;
-  double _libraryGridExtent = _libraryGridDefaultExtent;
+  final _libraryGridExtent = ValueNotifier(_libraryGridDefaultExtent);
   double? _libraryGridPinchStartExtent;
+  List<UnifiedLibraryItem>? _sectionItems;
+  String? _sectionSort;
+  String? _sectionLocale;
+  List<_LibrarySection> _cachedTrackSections = const [];
 
   final QueueLibraryPager<
     _QueueLibraryCountsRequest,
@@ -209,15 +214,12 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     return (56 * scale * (1 + ((textScale - 1) * 0.12))).clamp(46.0, 56.0);
   }
 
-  double get _libraryAlbumGridExtent =>
-      (_libraryGridExtent * 1.45).clamp(150.0, 300.0);
-
   /// setState is @protected, so the extension part files route rebuilds
   /// through this forwarder.
   void _setState(VoidCallback fn) => setState(fn);
 
   void _handleLibraryGridPinchStart() {
-    _libraryGridPinchStartExtent = _libraryGridExtent;
+    _libraryGridPinchStartExtent = _libraryGridExtent.value;
   }
 
   void _handleLibraryGridPinchUpdate(double scale) {
@@ -228,8 +230,8 @@ class _QueueTabState extends ConsumerState<QueueTab> {
       _libraryGridMinExtent,
       _libraryGridMaxExtent,
     );
-    if ((nextExtent - _libraryGridExtent).abs() < 0.5) return;
-    setState(() => _libraryGridExtent = nextExtent);
+    if ((nextExtent - _libraryGridExtent.value).abs() < 0.5) return;
+    _libraryGridExtent.value = nextExtent;
   }
 
   void _handleLibraryGridPinchEnd() {
@@ -306,6 +308,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     _fileExistsCache.dispose();
     _completionBridgePlayableProbe.dispose();
     _embeddedCoverVersion.dispose();
+    _libraryGridExtent.dispose();
     _filterPageController?.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();

@@ -478,16 +478,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
               ),
             ]
           : [
-              SliverToBoxAdapter(
-                child: SettingsGroup(
-                  margin: margin,
-                  children: [
-                    for (var i = 0; i < matches.length; i++)
-                      _searchItemFor(
-                        matches[i],
-                        showDivider: i != matches.length - 1,
-                      ),
-                  ],
+              SliverSettingsGroup(
+                margin: margin,
+                itemCount: matches.length,
+                itemBuilder: (context, index) => _searchItemFor(
+                  matches[index],
+                  showDivider: index != matches.length - 1,
                 ),
               ),
             ];

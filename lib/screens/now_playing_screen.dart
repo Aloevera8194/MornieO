@@ -559,6 +559,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           children: [
             MornyeArtworkContrast(
               enabled: fullBleed && !_landscape && _currentPage == 0,
+              continuous: motionArtwork != null,
               targets: {
                 'header': _artworkHeaderKey,
                 'controls': _artworkControlsKey,

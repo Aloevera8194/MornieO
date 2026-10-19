@@ -467,7 +467,11 @@ extension _QueueTabFilterWidgets on _QueueTabState {
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: edge),
             sliver: AnimatedLibrarySliverGrid(
-              maxCrossAxisExtent: _libraryAlbumGridExtent,
+              maxCrossAxisExtent: _QueueTabState._libraryGridDefaultExtent,
+              extentListenable: _libraryGridExtent,
+              extentScale: 1.45,
+              minExtent: 150,
+              maxExtent: 300,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
               childAspectRatio: 0.72,
@@ -522,7 +526,11 @@ extension _QueueTabFilterWidgets on _QueueTabState {
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: edge),
             sliver: AnimatedLibrarySliverGrid(
-              maxCrossAxisExtent: _libraryAlbumGridExtent,
+              maxCrossAxisExtent: _QueueTabState._libraryGridDefaultExtent,
+              extentListenable: _libraryGridExtent,
+              extentScale: 1.45,
+              minExtent: 150,
+              maxExtent: 300,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
               childAspectRatio: 0.72,
@@ -563,7 +571,8 @@ extension _QueueTabFilterWidgets on _QueueTabState {
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: edge),
               sliver: AnimatedLibrarySliverGrid(
-                maxCrossAxisExtent: _libraryGridExtent,
+                maxCrossAxisExtent: _QueueTabState._libraryGridDefaultExtent,
+                extentListenable: _libraryGridExtent,
                 mainAxisSpacing: 8,
                 crossAxisSpacing: 8,
                 childAspectRatio: 0.66,
@@ -747,7 +756,9 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               ? SliverPadding(
                   padding: EdgeInsets.symmetric(horizontal: edge),
                   sliver: AnimatedLibrarySliverGrid(
-                    maxCrossAxisExtent: _libraryGridExtent,
+                    maxCrossAxisExtent:
+                        _QueueTabState._libraryGridDefaultExtent,
+                    extentListenable: _libraryGridExtent,
                     mainAxisSpacing: 8,
                     crossAxisSpacing: 8,
                     childAspectRatio: 0.66,

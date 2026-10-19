@@ -395,6 +395,51 @@ class SettingsGroup extends StatelessWidget {
   }
 }
 
+/// The grouped list appearance with rows built only near the viewport.
+class SliverSettingsGroup extends StatelessWidget {
+  const SliverSettingsGroup({
+    super.key,
+    required this.itemCount,
+    required this.itemBuilder,
+    required this.margin,
+  });
+
+  final int itemCount;
+  final IndexedWidgetBuilder itemBuilder;
+  final EdgeInsetsGeometry margin;
+
+  @override
+  Widget build(BuildContext context) => SliverPadding(
+    padding: margin,
+    sliver: SliverList.builder(
+      itemCount: itemCount,
+      itemBuilder: (context, index) {
+        final first = index == 0;
+        final last = index == itemCount - 1;
+        final mornye = context.isMornye;
+        final radius = mornye
+            ? BorderRadius.vertical(
+                top: first ? const Radius.circular(28) : Radius.zero,
+                bottom: last ? const Radius.circular(28) : Radius.zero,
+              )
+            : connectedRowRadius(context, first: first, last: last);
+        final row = Material(
+          color: settingsGroupColor(context),
+          clipBehavior: Clip.antiAlias,
+          borderRadius: radius,
+          child: itemBuilder(context, index),
+        );
+        return mornye
+            ? row
+            : Padding(
+                padding: EdgeInsets.only(top: first ? 0 : 2),
+                child: _ConnectedRowsScope(child: row),
+              );
+      },
+    ),
+  );
+}
+
 class SettingsItem extends StatelessWidget {
   final IconData? icon;
   final Color? iconColor;
