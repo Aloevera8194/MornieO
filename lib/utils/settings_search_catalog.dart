@@ -292,7 +292,14 @@ class SettingsSearchCatalog {
           icon: Icons.graphic_eq,
           title: l10n.libraryPlaybackNormalization,
           subtitle: l10n.libraryPlaybackNormalizationSubtitle,
-          keywords: const ['replaygain', 'volume'],
+          keywords: const [
+            'replaygain',
+            'volume',
+            'loudness',
+            'lufs',
+            'preamp',
+            'album gain',
+          ],
         ),
         SettingsSearchEntry(
           icon: Icons.fullscreen,

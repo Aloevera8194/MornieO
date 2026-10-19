@@ -619,6 +619,20 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _saveSettings();
   }
 
+  void setPlaybackNormalizationPreamp(double db) {
+    state = state.copyWith(
+      playbackNormalizationPreamp: playbackNormalizationPreampFromJson(db),
+    );
+    _saveSettings();
+  }
+
+  void setPlaybackNormalizationMode(String mode) {
+    state = state.copyWith(
+      playbackNormalizationMode: playbackNormalizationModeFromJson(mode),
+    );
+    _saveSettings();
+  }
+
   void setPauseOnMute(bool enabled) {
     state = state.copyWith(pauseOnMute: enabled);
     _saveSettings();

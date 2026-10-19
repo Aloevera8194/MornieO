@@ -19,6 +19,7 @@ import 'package:spotiflac_android/widgets/settings_group.dart';
 import 'package:spotiflac_android/widgets/discord_presence_settings.dart';
 import 'package:spotiflac_android/widgets/automix_settings.dart';
 import 'package:spotiflac_android/widgets/music_haptics_settings.dart';
+import 'package:spotiflac_android/widgets/playback_normalization_settings.dart';
 
 class PlaybackSettingsPage extends ConsumerStatefulWidget {
   const PlaybackSettingsPage({super.key});
@@ -144,6 +145,10 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                       .read(settingsProvider.notifier)
                       .setPlaybackNormalization(value),
                 ),
+                if (settings.playbackNormalization)
+                  PlaybackNormalizationSettings(
+                    enabled: !settings.usbBitPerfect,
+                  ),
                 SettingsSwitchItem(
                   icon: Icons.vibration,
                   title: context.l10n.musicHaptics,

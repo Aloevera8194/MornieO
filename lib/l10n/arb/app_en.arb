@@ -3382,6 +3382,40 @@
   "@libraryPlaybackNormalizationSubtitle": {
     "description": "Subtitle explaining playback volume normalization"
   },
+  "playbackNormalizationMode": "Gain mode",
+  "@playbackNormalizationMode": {
+    "description": "Label for choosing between track and album ReplayGain during playback"
+  },
+  "playbackNormalizationModeTrack": "Track",
+  "@playbackNormalizationModeTrack": {
+    "description": "Gain mode that levels every track on its own"
+  },
+  "playbackNormalizationModeAlbum": "Album",
+  "@playbackNormalizationModeAlbum": {
+    "description": "Gain mode that keeps the loudness differences inside an album"
+  },
+  "playbackNormalizationPreamp": "Pre-amp",
+  "@playbackNormalizationPreamp": {
+    "description": "Label for the dB offset applied on top of ReplayGain during playback"
+  },
+  "playbackNormalizationPreampValue": "{gain} dB (target {target} LUFS)",
+  "@playbackNormalizationPreampValue": {
+    "description": "Pre-amp value with the resulting target loudness",
+    "placeholders": {
+      "gain": {
+        "type": "String",
+        "example": "-7"
+      },
+      "target": {
+        "type": "String",
+        "example": "-25"
+      }
+    }
+  },
+  "playbackNormalizationPreampHint": "Lower values play quieter. Normalization only turns tracks down, so it never clips.",
+  "@playbackNormalizationPreampHint": {
+    "description": "Hint under the normalization pre-amp slider"
+  },
   "cacheAudioAnalysis": "Audio analysis cache",
   "@cacheAudioAnalysis": {
     "description": "Cache item title for saved audio analysis results"

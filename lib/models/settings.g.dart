@@ -29,6 +29,14 @@ AppSettings _$AppSettingsFromJson(Map<String, dynamic> json) => AppSettings(
   embedLyrics: json['embedLyrics'] as bool? ?? true,
   embedReplayGain: json['embedReplayGain'] as bool? ?? false,
   playbackNormalization: json['playbackNormalization'] as bool? ?? false,
+  playbackNormalizationPreamp: json['playbackNormalizationPreamp'] == null
+      ? 0
+      : playbackNormalizationPreampFromJson(
+          json['playbackNormalizationPreamp'],
+        ),
+  playbackNormalizationMode: json['playbackNormalizationMode'] == null
+      ? 'track'
+      : playbackNormalizationModeFromJson(json['playbackNormalizationMode']),
   pauseOnMute: json['pauseOnMute'] as bool? ?? true,
   playOnHeadphonesConnected:
       json['playOnHeadphonesConnected'] as bool? ?? false,
@@ -181,6 +189,8 @@ Map<String, dynamic> _$AppSettingsToJson(
   'embedLyrics': instance.embedLyrics,
   'embedReplayGain': instance.embedReplayGain,
   'playbackNormalization': instance.playbackNormalization,
+  'playbackNormalizationPreamp': instance.playbackNormalizationPreamp,
+  'playbackNormalizationMode': instance.playbackNormalizationMode,
   'pauseOnMute': instance.pauseOnMute,
   'playOnHeadphonesConnected': instance.playOnHeadphonesConnected,
   'autoMix': instance.autoMix,

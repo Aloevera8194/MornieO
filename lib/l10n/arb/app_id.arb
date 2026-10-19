@@ -3384,6 +3384,40 @@
   "@libraryPlaybackNormalizationSubtitle": {
     "description": "Subtitle explaining playback volume normalization"
   },
+  "playbackNormalizationMode": "Mode gain",
+  "@playbackNormalizationMode": {
+    "description": "Label for choosing between track and album ReplayGain during playback"
+  },
+  "playbackNormalizationModeTrack": "Lagu",
+  "@playbackNormalizationModeTrack": {
+    "description": "Gain mode that levels every track on its own"
+  },
+  "playbackNormalizationModeAlbum": "Album",
+  "@playbackNormalizationModeAlbum": {
+    "description": "Gain mode that keeps the loudness differences inside an album"
+  },
+  "playbackNormalizationPreamp": "Pre-amp",
+  "@playbackNormalizationPreamp": {
+    "description": "Label for the dB offset applied on top of ReplayGain during playback"
+  },
+  "playbackNormalizationPreampValue": "{gain} dB (target {target} LUFS)",
+  "@playbackNormalizationPreampValue": {
+    "description": "Pre-amp value with the resulting target loudness",
+    "placeholders": {
+      "gain": {
+        "type": "String",
+        "example": "-7"
+      },
+      "target": {
+        "type": "String",
+        "example": "-25"
+      }
+    }
+  },
+  "playbackNormalizationPreampHint": "Nilai lebih rendah terdengar lebih pelan. Normalisasi hanya menurunkan volume, jadi tidak pernah clipping.",
+  "@playbackNormalizationPreampHint": {
+    "description": "Hint under the normalization pre-amp slider"
+  },
   "cacheAudioAnalysis": "Cache analisis audio",
   "@cacheAudioAnalysis": {
     "description": "Cache item title for saved audio analysis results"

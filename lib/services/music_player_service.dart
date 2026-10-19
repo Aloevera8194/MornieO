@@ -187,7 +187,11 @@ class MusicPlayerHandler extends BaseAudioHandler
         previous.playerMode != settings.playerMode) {
       _configurePersonalization();
     }
-    if (previous.playbackNormalization != settings.playbackNormalization) {
+    if (previous.playbackNormalization != settings.playbackNormalization ||
+        previous.playbackNormalizationPreamp !=
+            settings.playbackNormalizationPreamp ||
+        previous.playbackNormalizationMode !=
+            settings.playbackNormalizationMode) {
       reapplyNormalization();
     }
     if (previous.autoMix != settings.autoMix ||
@@ -912,6 +916,8 @@ class MusicPlayerHandler extends BaseAudioHandler
       path,
       cacheKey: cacheKey,
       displayName: displayName,
+      preampDb: _settings.playbackNormalizationPreamp,
+      preferAlbumGain: _settings.playbackNormalizationMode == 'album',
     );
   }
 
