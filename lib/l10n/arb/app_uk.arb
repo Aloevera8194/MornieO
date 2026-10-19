@@ -580,9 +580,9 @@
   "metadataSeparatorComma": "Кома()",
   "metadataSeparatorSemicolon": "Крапка з комою (;)",
   "metadataSeparatorSlash": "Слеш (/)",
-  "metadataSeparatorCustom": "Custom separator",
-  "metadataSeparatorPreview": "Preview",
-  "metadataSeparatorInvalid": "Use 1–16 characters without line breaks or control characters.",
+  "metadataSeparatorCustom": "Користувацький розділювач",
+  "metadataSeparatorPreview": "Перед перегляд",
+  "metadataSeparatorInvalid": "Використовуйте від 1 до 16 символів без розділів і керівних символів.",
   "@optionsArtistTagMode": {
     "description": "Setting title for how artist metadata is written into files"
   },
@@ -747,11 +747,11 @@
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
   },
-  "aboutLyricsWebsite": "Lyrics website",
+  "aboutLyricsWebsite": "Сайт текстів",
   "@aboutLyricsWebsite": {
     "description": "Link to the Zarz-LRC website for searching and saving word-timed lyrics"
   },
-  "aboutServiceStatus": "Service status",
+  "aboutServiceStatus": "Стан послуг",
   "@aboutServiceStatus": {
     "description": "Link to the status page of the SpotiFLAC-Mobile online services"
   },
@@ -4269,15 +4269,15 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
-  "lyricsProviderSpotiflacLyricsDesc": "Word-by-word Apple Music lyrics from Zarz-LRC",
+  "lyricsProviderSpotiflacLyricsDesc": "Синхронізація послівного тексту Apple Music через Zarz-LRC",
   "@lyricsProviderSpotiflacLyricsDesc": {
     "description": "Description for the first-party Zarz-LRC provider"
   },
-  "lyricsProviderLrcRedDesc": "Word-by-word Apple Music lyrics, matched by recording",
+  "lyricsProviderLrcRedDesc": "Порядкові тексти Apple Music, синхронізовані із записом",
   "@lyricsProviderLrcRedDesc": {
     "description": "Description for lrc.red provider"
   },
-  "lyricsProviderBetterLyricsDesc": "Word-by-word Apple Music lyrics for popular songs",
+  "lyricsProviderBetterLyricsDesc": "Синхронний текст популярних пісень в Apple Music",
   "@lyricsProviderBetterLyricsDesc": {
     "description": "Description for BetterLyrics provider, which only answers songs it has already cached"
   },
@@ -5227,11 +5227,11 @@
   "@extensionsHomeFeedProvider": {
     "description": "Extensions page - label for home feed provider selector"
   },
-  "extensionsHomeFeedCountry": "Home feed country",
+  "extensionsHomeFeedCountry": "Країна домашньої сторінки",
   "@extensionsHomeFeedCountry": {
     "description": "Country picker for the active Home feed extension"
   },
-  "extensionsHomeFeedCountryDescription": "Choose a country's Home recommendations without a VPN.",
+  "extensionsHomeFeedCountryDescription": "Головні рекомендації без VPN.",
   "@extensionsHomeFeedCountryDescription": {
     "description": "Help for choosing regional Home recommendations"
   },
@@ -5485,7 +5485,7 @@
   "@notifLibraryScanFailed": {
     "description": "Notification title when library scan fails"
   },
-  "notifLibraryScanInterruptedBody": "The previous library scan was interrupted. Scan the folder again to continue. Your indexed tracks are still available.",
+  "notifLibraryScanInterruptedBody": "Попереднє сканування бібліотеки було перервано. Скануйте теку знову, щоб продовжити. Індексовані треки все ще доступні.",
   "@notifLibraryScanInterruptedBody": {
     "description": "Recovery notice after the app stops during a library scan"
   },
@@ -6508,15 +6508,15 @@
   "@libraryExternalPlayer": {
     "description": "Setting option to use an external music player"
   },
-  "libraryExternalPlayerSubtitle": "Open tracks in another music app on your device",
+  "libraryExternalPlayerSubtitle": "Відкрити треки в іншому музичному додатку на вашому пристрої",
   "@libraryExternalPlayerSubtitle": {
     "description": "Subtitle for external player option"
   },
-  "libraryBuiltInPreviewPlayer": "Built-in player",
+  "libraryBuiltInPreviewPlayer": "Вбудований програвач",
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "Play your music right inside SpotiFLAC Mobile",
+  "libraryBuiltInPreviewPlayerSubtitle": "Відтворюйте музику прямо всередині SpotiFLAC Mobile",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
   },
@@ -6640,11 +6640,11 @@
   "@nowPlayingNoLyrics": {
     "description": "Empty state when the playing file has no embedded lyrics"
   },
-  "nowPlayingSearchLyricsOnline": "Search online",
+  "nowPlayingSearchLyricsOnline": "Пошук онлайн",
   "@nowPlayingSearchLyricsOnline": {
     "description": "Button in the player's empty lyrics state that looks up lyrics from the enabled lyrics providers"
   },
-  "nowPlayingNoLyricsOnline": "No lyrics found online",
+  "nowPlayingNoLyricsOnline": "Текст пісні не знайдено в мережі",
   "@nowPlayingNoLyricsOnline": {
     "description": "Empty state after an online lyrics search for the playing track found nothing"
   },
@@ -6906,11 +6906,11 @@
   "@regionCountryUS": {
     "description": "Country name for SongLink region picker"
   },
-  "regionCountryIT": "Italy",
+  "regionCountryIT": "Італія",
   "@regionCountryIT": {
     "description": "Country name for Italy"
   },
-  "regionCountryES": "Spain",
+  "regionCountryES": "Іспанія",
   "@regionCountryES": {
     "description": "Country name for Spain"
   },
@@ -7115,31 +7115,31 @@
     "description": "Selected state of the compact favorite action"
   },
   "autoMixDescription": "Поєднуйте композиції за допомогою синхронізації ритму та зміни темпу зі збереженням висоти тону. Використовує плавний перехід, якщо синхронізація ритму неможлива.",
-  "playerCoverStyle": "Cover art",
+  "playerCoverStyle": "Обкладинка",
   "@playerCoverStyle": {
     "description": "Settings section choosing how the player shows cover art"
   },
-  "playerCoverStyleDefault": "Default",
+  "playerCoverStyleDefault": "За замовчуванням",
   "@playerCoverStyleDefault": {
     "description": "Cover art style: artwork card above the controls"
   },
-  "playerCoverStyleDefaultDescription": "Artwork as a card above the controls",
+  "playerCoverStyleDefaultDescription": "Обкладинка над кнопками керування",
   "@playerCoverStyleDefaultDescription": {
     "description": "Subtitle of the default cover art style"
   },
-  "playerCoverStyleFullScreen": "Full screen",
+  "playerCoverStyleFullScreen": "На весь екран",
   "@playerCoverStyleFullScreen": {
     "description": "Cover art style: artwork fills the top of the player"
   },
-  "playerCoverStyleFullScreenDescription": "Artwork fills the top of the player and fades into a blur. Motion artwork is always full screen in Mornye",
+  "playerCoverStyleFullScreenDescription": "Обкладинка заповнює верх програвача та розмивається. Анімована обкладинка у Mornye завжди на весь екран",
   "@playerCoverStyleFullScreenDescription": {
     "description": "Subtitle of the full screen cover art style"
   },
-  "musicHaptics": "Music haptics",
+  "musicHaptics": "Музичний відгук",
   "@musicHaptics": {
     "description": "Setting that vibrates the phone along with the music"
   },
-  "musicHapticsDescription": "Vibrate along with the beat of downloaded and local songs",
+  "musicHapticsDescription": "Вібрація в такт завантажених та локальних пісень",
   "@musicHapticsDescription": {
     "description": "Subtitle of the music haptics setting"
   },
@@ -7152,9 +7152,9 @@
   "autoplayPersonalization": "Персоналізований автозапуск",
   "autoplayPersonalizationDescription": "Навчайтеся на основі пісень, які ви слухаєте та пропускаєте, приватно на цьому пристрої. Вимкнення цієї функції зупинить навчання та відновить звичайне автовідтворення.",
   "autoplayResetLearning": "Скинути налаштування рекомендацій",
-  "autoplayResetLearningConfirmTitle": "Reset recommendation learning?",
-  "autoplayResetLearningConfirmMessage": "Autoplay forgets what it learned from your listening and skips. This can't be undone.",
-  "autoplayResetLearningConfirm": "Reset",
+  "autoplayResetLearningConfirmTitle": "Скинути налаштування рекомендацій?",
+  "autoplayResetLearningConfirmMessage": "Автовідтворення скидає історію ваших прослуховувань і пропускає треки. Цю дію не можна скасувати.",
+  "autoplayResetLearningConfirm": "Скинути",
   "profileTitle": "Профіль",
   "profileSetUp": "Налаштуйте свій профіль",
   "profileEdit": "Редагувати ім'я та фотографію",
@@ -7165,13 +7165,13 @@
   "profileRemovePhoto": "Видалити фото",
   "profilePhotoError": "Виберіть коректне зображення менш як 20 Mb.",
   "profileSaveError": "Не вдалося зберегти ваш профіль. Будь ласка, спробуйте ще раз.",
-  "homeGreetingMorning1": "Good morning",
-  "homeGreetingMorning2": "Rise and shine",
-  "homeGreetingMorning3": "Fresh start",
-  "homeGreetingAfternoon1": "Good afternoon",
-  "homeGreetingAfternoon2": "Afternoon groove",
-  "homeGreetingAfternoon3": "Keep the vibe going",
-  "homeGreetingEvening1": "Good evening",
+  "homeGreetingMorning1": "Доброго ранку",
+  "homeGreetingMorning2": "Прокидайся і співай",
+  "homeGreetingMorning3": "Почати спочатку",
+  "homeGreetingAfternoon1": "Доброго дня",
+  "homeGreetingAfternoon2": "Денний ритм",
+  "homeGreetingAfternoon3": "Не збавляй обертів",
+  "homeGreetingEvening1": "Доброго вечора",
   "homeGreetingEvening2": "Time to unwind",
   "homeGreetingEvening3": "Golden hour",
   "homeGreetingNight1": "Good night",
