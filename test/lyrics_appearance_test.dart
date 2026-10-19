@@ -103,7 +103,7 @@ void main() {
         expect(scales.map((widget) => widget.scale), containsAll([1.0, 0.96]));
         expect(
           scales.first.duration,
-          reduced ? Duration.zero : const Duration(milliseconds: 280),
+          reduced ? Duration.zero : const Duration(milliseconds: 420),
         );
         final sizes = find
             .byType(AnimatedScale)

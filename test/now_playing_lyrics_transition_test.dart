@@ -1926,7 +1926,7 @@ void main() {
       ),
     );
     await tester.pump();
-    for (var frame = 0; frame < 3; frame++) {
+    for (var frame = 0; frame < 4; frame++) {
       await tester.pump(const Duration(milliseconds: 160));
     }
     expectLine('First line', active: false);
