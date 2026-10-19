@@ -753,6 +753,8 @@
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
   },
+  "aboutLyricsWebsite": "Situs lirik",
+  "aboutServiceStatus": "Status layanan",
   "aboutReportIssue": "Laporkan masalah",
   "@aboutReportIssue": {
     "description": "Link to report bugs"
@@ -785,8 +787,6 @@
   "@aboutTelegramChatSubtitle": {
     "description": "Subtitle for Telegram chat"
   },
-  "aboutTelegramBeta": "SpotiFLAC Mobile Beta",
-  "aboutTelegramBetaSubtitle": "Gabung untuk build beta internal terbaru",
   "aboutSocial": "Media Sosial",
   "@aboutSocial": {
     "description": "Section for social links"

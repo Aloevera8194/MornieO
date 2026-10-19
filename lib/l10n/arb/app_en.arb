@@ -747,6 +747,14 @@
   "@aboutPCSource": {
     "description": "Link to PC GitHub repo"
   },
+  "aboutLyricsWebsite": "Lyrics website",
+  "@aboutLyricsWebsite": {
+    "description": "Link to the SpotiFLAC-Mobile Lyrics website for searching and saving word-timed lyrics"
+  },
+  "aboutServiceStatus": "Service status",
+  "@aboutServiceStatus": {
+    "description": "Link to the status page of the SpotiFLAC-Mobile online services"
+  },
   "aboutReportIssue": "Report an issue",
   "@aboutReportIssue": {
     "description": "Link to report bugs"
@@ -778,14 +786,6 @@
   "aboutTelegramChatSubtitle": "Chat with other users",
   "@aboutTelegramChatSubtitle": {
     "description": "Subtitle for Telegram chat"
-  },
-  "aboutTelegramBeta": "SpotiFLAC Mobile Beta",
-  "@aboutTelegramBeta": {
-    "description": "Link to the Telegram group that shares internal beta builds"
-  },
-  "aboutTelegramBetaSubtitle": "Join for the latest internal beta builds",
-  "@aboutTelegramBetaSubtitle": {
-    "description": "Subtitle for the Telegram beta group link"
   },
   "aboutSocial": "Social",
   "@aboutSocial": {
