@@ -7561,5 +7561,36 @@
   "optionsEmbeddedCoverSizeOriginal": "Original resolution",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
+  },
+  "desktopShortcutTooltip": "{action} ({shortcut})",
+  "@desktopShortcutTooltip": {
+    "description": "Desktop tooltip that names an action and its keyboard shortcut, for example 'Next track (Ctrl+Right)'",
+    "placeholders": {
+      "action": {"type": "String"},
+      "shortcut": {"type": "String"}
+    }
+  },
+  "desktopPlayerIdle": "Not playing",
+  "@desktopPlayerIdle": {
+    "description": "Desktop player bar text when no track is loaded"
+  },
+  "desktopVolumeUp": "Increase volume",
+  "desktopVolumeDown": "Decrease volume",
+  "desktopShowSidebar": "Show sidebar",
+  "desktopHideSidebar": "Hide sidebar",
+  "desktopMenuSettings": "Settings…",
+  "@desktopMenuSettings": {
+    "description": "macOS app menu item that opens Settings"
+  },
+  "desktopMenuFile": "File",
+  "desktopMenuEdit": "Edit",
+  "desktopMenuView": "View",
+  "desktopMenuControls": "Controls",
+  "desktopMenuWindow": "Window",
+  "desktopMenuHelp": "Help",
+  "desktopMenuPlayPause": "Play/Pause",
+  "desktopMenuProjectPage": "Project page",
+  "@desktopMenuProjectPage": {
+    "description": "Help menu item that opens the app's source repository"
   }
 }

@@ -7308,5 +7308,20 @@
   "optionsEmbeddedCoverSizeOriginal": "Resolusi asli",
   "@optionsEmbeddedCoverSizeOriginal": {
     "description": "Option that preserves the provider artwork at its original resolution"
-  }
+  },
+  "desktopShortcutTooltip": "{action} ({shortcut})",
+  "desktopPlayerIdle": "Tidak ada yang diputar",
+  "desktopVolumeUp": "Naikkan volume",
+  "desktopVolumeDown": "Turunkan volume",
+  "desktopShowSidebar": "Tampilkan bilah samping",
+  "desktopHideSidebar": "Sembunyikan bilah samping",
+  "desktopMenuSettings": "Pengaturan…",
+  "desktopMenuFile": "Berkas",
+  "desktopMenuEdit": "Edit",
+  "desktopMenuView": "Tampilan",
+  "desktopMenuControls": "Kontrol",
+  "desktopMenuWindow": "Jendela",
+  "desktopMenuHelp": "Bantuan",
+  "desktopMenuPlayPause": "Putar/Jeda",
+  "desktopMenuProjectPage": "Halaman proyek"
 }
