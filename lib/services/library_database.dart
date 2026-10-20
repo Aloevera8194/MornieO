@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/utils/audio_format_utils.dart';
 import 'package:mornye/utils/file_access.dart';
@@ -152,7 +151,7 @@ class LibraryDatabase {
   Future<void> _ensureHistoryAttached(Database db) async {
     if (_historyAttached) return;
     await HistoryDatabase.instance.database;
-    final dbPath = await getApplicationDocumentsDirectory();
+    final dbPath = await sqlite.appDatabaseDirectory();
     final historyPath = join(dbPath.path, 'history.db');
     try {
       await db.execute('ATTACH DATABASE ? AS history_db', [historyPath]);

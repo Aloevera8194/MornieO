@@ -79,6 +79,7 @@ class DiscordPresenceService {
   static const _tokenKey = 'discord_presence_refresh_token';
   static const _storage = FlutterSecureStorage(
     aOptions: secureStorageAndroidOptions,
+    mOptions: secureStorageMacOsOptions,
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
     ),

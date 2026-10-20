@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mornye/theme/material_expressive.dart';
@@ -18,6 +19,8 @@ import 'package:mornye/screens/network_storage_screen.dart';
 import 'package:mornye/models/settings.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/desktop_folders.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/utils/saf_download_tree.dart';
 import 'package:mornye/widgets/settings_group.dart';
@@ -145,6 +148,8 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                     subtitle: settings.downloadDirectory.isEmpty
                         ? (Platform.isIOS
                               ? context.l10n.setupAppDocumentsFolder
+                              : isDesktopPlatform
+                              ? 'Music/$desktopOutputFolderName'
                               : 'Download/Mornye')
                         : settings.downloadDirectory,
                     onTap: () => _pickDirectory(context, ref),
@@ -476,11 +481,44 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
   }
 
   Future<void> _pickDirectory(BuildContext context, WidgetRef ref) async {
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (isDesktopPlatform) {
+      await _pickDesktopDirectory(context, ref);
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       _showIOSDirectoryOptions(context, ref);
     } else if (defaultTargetPlatform == TargetPlatform.android) {
       _showAndroidDirectoryOptions(context, ref);
     }
+  }
+
+  /// Desktop folders are plain paths: no SAF tree and no iOS bookmark.
+  Future<void> _pickDesktopDirectory(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final title = context.l10n.setupDownloadLocationTitle;
+    final current = ref.read(settingsProvider).downloadDirectory;
+    String? picked;
+    try {
+      picked = await FilePicker.getDirectoryPath(
+        dialogTitle: title,
+        initialDirectory: current.isEmpty
+            ? await resolveDesktopMusicDirectory()
+            : current,
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              context.l10n.snackbarFolderPickerFailed(context.friendlyError(e)),
+            ),
+          ),
+        );
+      }
+      return;
+    }
+    if (picked == null || picked.isEmpty) return;
+    await ref.read(settingsProvider.notifier).useAppFolderStorage(picked);
   }
 
   Future<String> _getDefaultAndroidDirectory() async {

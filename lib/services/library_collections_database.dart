@@ -994,6 +994,7 @@ class LibraryCollectionsDatabase {
         // after sqflite closes that file; only the database owner publishes
         // into the live database, preserving its WAL and connection caches.
         final stagedPath = '${temporary.path}/$_dbFileName';
+        sqlite.ensureAppDatabaseFactory();
         final stagedDatabase = await openDatabase(
           stagedPath,
           version: _dbVersion,

@@ -8,6 +8,7 @@ import 'package:mornye/services/library_schema.dart';
 import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
 import 'package:mornye/services/sqlite_native_snapshot.dart';
 import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/native_platform_name.dart';
 
 typedef NativeLibraryJobRunner =
     Future<Map<String, dynamic>> Function(
@@ -27,7 +28,7 @@ class LibraryNativeAdapter {
     this.temporaryDirectory,
     String? platform,
   }) : _run = nativeJobRunner ?? PlatformBridge.runNativeDataJob,
-       _platform = platform ?? (Platform.isAndroid ? 'android' : 'ios');
+       _platform = platform ?? nativePlatformName();
 
   final Database database;
   final Directory? temporaryDirectory;

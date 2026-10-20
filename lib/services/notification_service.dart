@@ -8,6 +8,7 @@ import 'package:mornye/constants/app_info.dart';
 import 'package:mornye/l10n/app_localizations.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/verification_notification.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/string_utils.dart';
 
 class NotificationService {
@@ -118,6 +119,17 @@ class NotificationService {
   static const String libraryChannelDescription =
       'Shows local library scan progress';
 
+  /// Windows toast identity. Keep both values stable: Windows ties the
+  /// notification settings and activation callback to them.
+  static const String windowsAppUserModelId = 'com.zarz.mornye';
+  static const String windowsNotificationGuid =
+      '1a458cb1-f396-4430-8ee3-23d66b56e12f';
+
+  /// Desktop windows already show live progress, and desktop notification
+  /// servers pop a new banner for each update, so only results are posted.
+  bool get _showsProgressNotifications => !isDesktopPlatform;
+  bool? _macOSPermissionGranted;
+
   Future<void> initialize() {
     if (_isInitialized) return Future.value();
     return _initialization ??= _initialize().whenComplete(() {
@@ -136,10 +148,21 @@ class NotificationService {
       requestBadgePermission: false,
       requestSoundPermission: false,
     );
+    const linuxSettings = LinuxInitializationSettings(
+      defaultActionName: 'Open',
+    );
+    const windowsSettings = WindowsInitializationSettings(
+      appName: AppInfo.appName,
+      appUserModelId: windowsAppUserModelId,
+      guid: windowsNotificationGuid,
+    );
 
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
+      macOS: iosSettings,
+      linux: linuxSettings,
+      windows: windowsSettings,
     );
 
     await _notifications.initialize(
@@ -196,6 +219,15 @@ class NotificationService {
   }
 
   Future<bool> _ensureNotificationPermission() async {
+    if (isDesktopPlatform && Platform.isMacOS) {
+      return _macOSPermissionGranted ??=
+          await _notifications
+              .resolvePlatformSpecificImplementation<
+                MacOSFlutterLocalNotificationsPlugin
+              >()
+              ?.requestPermissions(alert: true, badge: true, sound: true) ??
+          false;
+    }
     if (!Platform.isIOS) return true;
 
     final status = await Permission.notification.status;
@@ -298,6 +330,11 @@ class NotificationService {
         presentBadge: presentBadge,
         presentSound: presentSound,
       ),
+      macOS: DarwinNotificationDetails(
+        presentAlert: !inProgress,
+        presentBadge: presentBadge,
+        presentSound: presentSound,
+      ),
     );
   }
 
@@ -307,6 +344,7 @@ class NotificationService {
     required int progress,
     required int total,
   }) async {
+    if (!_showsProgressNotifications) return;
     if (!_isInitialized) await initialize();
 
     final percentage = total > 0 ? (progress * 100 ~/ total) : 0;
@@ -324,6 +362,7 @@ class NotificationService {
     required String trackName,
     required String artistName,
   }) async {
+    if (!_showsProgressNotifications) return;
     if (!_isInitialized) await initialize();
 
     await _showSafely(
@@ -462,6 +501,7 @@ class NotificationService {
     required int totalFiles,
     String? currentFile,
   }) async {
+    if (!_showsProgressNotifications) return;
     if (!_isInitialized) await initialize();
 
     // Network scans read tags while discovering folders, so their total is
@@ -575,6 +615,7 @@ class NotificationService {
     required int received,
     required int total,
   }) async {
+    if (!_showsProgressNotifications) return;
     if (!_isInitialized) await initialize();
 
     final percentage = total > 0 ? (received * 100 ~/ total) : 0;

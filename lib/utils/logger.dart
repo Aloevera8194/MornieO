@@ -349,6 +349,28 @@ class LogBuffer extends ChangeNotifier {
         buffer.writeln('System Version: ${ios.systemVersion}');
         buffer.writeln('Device Name: ${ios.name}');
         buffer.writeln('Is Physical Device: ${ios.isPhysicalDevice}');
+      } else if (Platform.isMacOS) {
+        final macos = await deviceInfo.macOsInfo;
+        buffer.writeln('Platform: macOS');
+        buffer.writeln('Model: ${macos.model}');
+        buffer.writeln(
+          'OS Version: ${macos.osRelease} (Kernel ${macos.kernelVersion})',
+        );
+        buffer.writeln('Architecture: ${macos.arch}');
+        buffer.writeln('Memory: ${macos.memorySize ~/ (1024 * 1024)} MB');
+      } else if (Platform.isWindows) {
+        final windows = await deviceInfo.windowsInfo;
+        buffer.writeln('Platform: Windows');
+        buffer.writeln('Product: ${windows.productName}');
+        buffer.writeln(
+          'Version: ${windows.displayVersion} (Build ${windows.buildNumber})',
+        );
+        buffer.writeln('Memory: ${windows.systemMemoryInMegabytes} MB');
+      } else if (Platform.isLinux) {
+        final linux = await deviceInfo.linuxInfo;
+        buffer.writeln('Platform: Linux');
+        buffer.writeln('Distribution: ${linux.prettyName}');
+        buffer.writeln('Kernel: ${Platform.operatingSystemVersion}');
       }
     } catch (e) {
       buffer.writeln('Failed to get device info: $e');
