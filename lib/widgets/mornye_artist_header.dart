@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -41,8 +42,9 @@ class _MornyeArtistSurfaceState extends State<MornyeArtistSurface> {
 
   @override
   Widget build(BuildContext context) {
-    // Desktop detail pages keep the plain pane background and app accent.
-    if (isDesktopPlatform) return widget.child;
+    // Desktop album and playlist pages keep the plain pane background and
+    // app accent; artist pages keep their artwork tint, as in Apple Music.
+    if (isDesktopPlatform && widget.neutralActions) return widget.child;
     final darkTheme = MornyeTheme.fromContext(
       context,
       brightness: Brightness.dark,
@@ -198,22 +200,32 @@ class MornyeArtistHeader extends StatelessWidget {
 
           final nameHeight = textHeight(
             name,
-            const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            TextStyle(fontSize: _nameSize, fontWeight: FontWeight.bold),
           );
           final hasLogo = logoUrl?.trim().isNotEmpty == true;
           final identityHeight = hasLogo
-              ? nameHeight.clamp(96.0, double.infinity)
+              ? nameHeight.clamp(_logoSize.height, double.infinity)
               : nameHeight;
           final listenersHeight = listeners == null
               ? 0.0
               : 7 + textHeight(listeners!, const TextStyle(fontSize: 13));
           final photoHeight = (width * 0.76).clamp(240.0, 340.0);
-          final expandedHeight =
-              photoHeight +
+          final contentHeight =
               identityHeight +
               listenersHeight +
               (actions.isEmpty ? 0 : 94) +
               32;
+          // Desktop: the portrait fills most of the pane, as in Apple Music
+          // on the Mac.
+          final expandedHeight = isDesktopPlatform
+              ? math.max(
+                  contentHeight + 160,
+                  (constraints.viewportMainAxisExtent * 0.82).clamp(
+                    420.0,
+                    820.0,
+                  ),
+                )
+              : photoHeight + contentHeight;
           return SliverAppBar(
             pinned: true,
             stretch: !MediaQuery.disableAnimationsOf(context),
@@ -222,11 +234,15 @@ class MornyeArtistHeader extends StatelessWidget {
             surfaceTintColor: Colors.transparent,
             leadingWidth: 64,
             leading: Padding(
-              padding: const EdgeInsets.only(left: 12),
-              child: HeaderCircleButton(
-                icon: Icons.arrow_back,
-                tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: () => Navigator.pop(context),
+              padding: EdgeInsets.only(left: isDesktopPlatform ? 16 : 12),
+              child: Align(
+                alignment: AlignmentDirectional.centerStart,
+                widthFactor: 1,
+                child: HeaderCircleButton(
+                  icon: Icons.arrow_back,
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  onPressed: () => Navigator.pop(context),
+                ),
               ),
             ),
             title: AnimatedOpacity(
@@ -302,16 +318,22 @@ class MornyeArtistHeader extends StatelessWidget {
     ];
   }
 
+  /// The name and logo are larger over the wide desktop portrait.
+  static double get _nameSize => isDesktopPlatform ? 44 : 30;
+  static Size get _logoSize =>
+      isDesktopPlatform ? const Size(440, 128) : const Size(320, 96);
+
   Widget _buildIdentity(BuildContext context) {
     final fallback = Text(
       name,
       textAlign: TextAlign.center,
-      style: const TextStyle(
-        fontSize: 30,
+      style: TextStyle(
+        fontSize: _nameSize,
         fontWeight: FontWeight.bold,
         color: Colors.white,
       ),
     );
+    final logoSize = _logoSize;
     final logo = logoUrl?.trim();
     if (logo == null || logo.isEmpty) return fallback;
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
@@ -322,15 +344,15 @@ class MornyeArtistHeader extends StatelessWidget {
       child: Image(
         image: ResizeImage(
           cachedCoverImageProvider(logo),
-          width: (320 * pixelRatio).ceil(),
-          height: (96 * pixelRatio).ceil(),
+          width: (logoSize.width * pixelRatio).ceil(),
+          height: (logoSize.height * pixelRatio).ceil(),
           policy: ResizeImagePolicy.fit,
         ),
         fit: BoxFit.contain,
         frameBuilder: (_, child, frame, _) => frame == null
             ? fallback
             : ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 320, maxHeight: 96),
+                constraints: BoxConstraints.loose(logoSize),
                 child: child,
               ),
         errorBuilder: (_, _, _) => fallback,

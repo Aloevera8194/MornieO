@@ -231,7 +231,8 @@ class _ArtistLoadingScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (isDesktopPlatform) {
+    // Mornye keeps the Apple Music hero on desktop too.
+    if (isDesktopPlatform && !context.isMornye) {
       final url = coverUrl;
       return Scaffold(
         body: CustomScrollView(
@@ -276,7 +277,7 @@ class _ArtistLoadingScaffold extends StatelessWidget {
                           imageUrl: coverUrl!,
                           fit: BoxFit.cover,
                           alignment: Alignment.topCenter,
-                          memCacheWidth: 800,
+                          memCacheWidth: isDesktopPlatform ? 1600 : 800,
                         )
                       : const ShimmerLoading(
                           child: SkeletonBox(

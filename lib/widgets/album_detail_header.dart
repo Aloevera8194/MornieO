@@ -882,6 +882,8 @@ class HeaderCircleButton extends ConsumerWidget {
         icon: AppIcon(mornyeIconFor(icon), size: iconSize),
         style: IconButton.styleFrom(
           minimumSize: Size.square(buttonSize ?? 44),
+          // Keep the glass circle at the button's size for the pointer.
+          tapTargetSize: desktop ? MaterialTapTargetSize.shrinkWrap : null,
           foregroundColor: iconColor ?? scheme.onSurface,
         ),
       );

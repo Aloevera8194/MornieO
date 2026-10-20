@@ -57,7 +57,8 @@ extension _ArtistScreenSections on _ArtistScreenState {
       ),
     );
 
-    if (isDesktopPlatform) {
+    // Mornye keeps its Apple Music hero on desktop, filling the pane.
+    if (isDesktopPlatform && !context.isMornye) {
       return _buildDesktopHeader(
         context,
         colorScheme,
@@ -78,7 +79,8 @@ extension _ArtistScreenSections on _ArtistScreenState {
                 imageUrl: imageUrl,
                 fit: BoxFit.cover,
                 alignment: Alignment.topCenter,
-                memCacheWidth: 800,
+                // The desktop hero spans the content pane.
+                memCacheWidth: isDesktopPlatform ? 1600 : 800,
                 errorWidget: (_, _, _) =>
                     const Center(child: Icon(CupertinoIcons.person, size: 80)),
               ),
