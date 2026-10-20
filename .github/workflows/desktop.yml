@@ -12,6 +12,8 @@ on:
       - "scripts/build_rust_backend.sh"
       - "scripts/build_rust_backend_windows.ps1"
       - "scripts/embed_rust_backend_macos.sh"
+      - "scripts/fetch_desktop_ffmpeg.sh"
+      - "scripts/embed_ffmpeg_macos.sh"
       - "pubspec.yaml"
       - "pubspec.lock"
       - ".fvmrc"
@@ -56,6 +58,19 @@ jobs:
       - name: Build Rust desktop library
         run: bash scripts/build_rust_backend.sh desktop
 
+      # The from-source LGPL build takes a while; it only changes with the
+      # script, which pins every source archive.
+      - name: Cache LGPL FFmpeg build
+        id: ffmpeg-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/ffmpeg/macos-universal
+          key: ffmpeg-macos-universal-${{ hashFiles('scripts/fetch_desktop_ffmpeg.sh') }}
+
+      - name: Build LGPL FFmpeg
+        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        run: bash scripts/fetch_desktop_ffmpeg.sh macos-universal
+
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
@@ -73,10 +88,12 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # The Xcode "Embed Rust Backend" phase embeds the library built above.
+      # The Xcode "Embed Rust Backend" and "Embed FFmpeg" phases embed the
+      # library and the FFmpeg tools built above.
       - name: Build macOS app
         env:
           MORNYE_SKIP_RUST_BUILD: "1"
+          MORNYE_REQUIRE_FFMPEG: "1"
         run: |
           flutter build macos --release --target lib/main.dart \
             --dart-define="GIT_COMMIT=$(git rev-parse --short=8 HEAD)"
@@ -86,7 +103,23 @@ jobs:
           app="build/macos/Build/Products/Release/Mornye.app"
           library="$app/Contents/Frameworks/libmornye_desktop.dylib"
           test -s "$library"
-          lipo -verify_arch arm64 x86_64 "$library"
+          ffmpeg_dir="$app/Contents/Resources/ffmpeg"
+          test -x "$ffmpeg_dir/ffmpeg"
+          test -x "$ffmpeg_dir/ffprobe"
+          # Some lipo releases accept only one architecture per -verify_arch.
+          for binary in "$library" "$ffmpeg_dir/ffmpeg" "$ffmpeg_dir/ffprobe"; do
+            for arch in arm64 x86_64; do
+              lipo "$binary" -verify_arch "$arch"
+            done
+          done
+          "$ffmpeg_dir/ffmpeg" -hide_banner -version > /dev/null
+          "$ffmpeg_dir/ffprobe" -hide_banner -version > /dev/null
+          test -s "$ffmpeg_dir/LICENSE.txt"
+          test -s "$ffmpeg_dir/SOURCE.txt"
+          if "$ffmpeg_dir/ffmpeg" -hide_banner -buildconf | grep -E -- '--enable-(gpl|nonfree)'; then
+            echo "The bundled FFmpeg is GPL or nonfree." >&2
+            exit 1
+          fi
           codesign --verify --deep --strict "$app"
           mkdir -p build/desktop
           ditto -c -k --sequesterRsrc --keepParent "$app" build/desktop/Mornye-macos-universal.zip
@@ -136,6 +169,9 @@ jobs:
       - name: Build Rust desktop library
         run: bash scripts/build_rust_backend.sh desktop
 
+      - name: Fetch LGPL FFmpeg
+        run: bash scripts/fetch_desktop_ffmpeg.sh linux-x64
+
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
@@ -153,7 +189,8 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # linux/CMakeLists.txt installs the library built above into lib/.
+      # linux/CMakeLists.txt installs the library and the FFmpeg tools staged
+      # above into lib/ and lib/ffmpeg/.
       - name: Build Linux bundle
         run: |
           flutter build linux --release --target lib/main.dart \
@@ -164,6 +201,17 @@ jobs:
           bundle="build/linux/x64/release/bundle"
           test -x "$bundle/mornye"
           test -s "$bundle/lib/libmornye_desktop.so"
+          ffmpeg_dir="$bundle/lib/ffmpeg"
+          for tool in ffmpeg ffprobe; do
+            test -x "$ffmpeg_dir/$tool"
+            "$ffmpeg_dir/$tool" -hide_banner -version > /dev/null
+          done
+          test -s "$ffmpeg_dir/LICENSE.txt"
+          test -s "$ffmpeg_dir/SOURCE.txt"
+          if "$ffmpeg_dir/ffmpeg" -hide_banner -buildconf | grep -E -- '--enable-(gpl|nonfree)'; then
+            echo "The bundled FFmpeg is GPL or nonfree." >&2
+            exit 1
+          fi
           mkdir -p build/desktop
           (cd "$bundle" && zip -r -y "$GITHUB_WORKSPACE/build/desktop/Mornye-linux-x64.zip" .)
 
@@ -213,6 +261,11 @@ jobs:
       - name: Build Rust desktop library
         run: ./scripts/build_rust_backend_windows.ps1
 
+      # Git Bash provides curl, unzip and sha256sum for the fetch script.
+      - name: Fetch LGPL FFmpeg
+        shell: bash
+        run: bash scripts/fetch_desktop_ffmpeg.sh windows-x64
+
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
@@ -230,7 +283,8 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # windows/CMakeLists.txt installs the library built above next to mornye.exe.
+      # windows/CMakeLists.txt installs the library built above next to
+      # mornye.exe and the FFmpeg tools staged above into ffmpeg\.
       - name: Build Windows app
         run: |
           $commit = git rev-parse --short=8 HEAD
@@ -240,10 +294,17 @@ jobs:
       - name: Verify and package Windows app
         run: |
           $bundle = 'build\windows\x64\runner\Release'
-          foreach ($required in 'mornye.exe', 'mornye_desktop.dll') {
-            if (-not (Test-Path (Join-Path $bundle $required))) {
-              throw "Missing $required in $bundle"
+          $required = 'mornye.exe', 'mornye_desktop.dll', 'ffmpeg\ffmpeg.exe',
+            'ffmpeg\ffprobe.exe', 'ffmpeg\LICENSE.txt', 'ffmpeg\SOURCE.txt'
+          foreach ($file in $required) {
+            if (-not (Test-Path (Join-Path $bundle $file))) {
+              throw "Missing $file in $bundle"
             }
+          }
+          $buildconf = & (Join-Path $bundle 'ffmpeg\ffmpeg.exe') -hide_banner -buildconf
+          if ($LASTEXITCODE -ne 0) { throw 'The bundled ffmpeg.exe does not run' }
+          if ($buildconf -match '--enable-(gpl|nonfree)') {
+            throw 'The bundled FFmpeg is GPL or nonfree.'
           }
           New-Item -ItemType Directory -Force build\desktop | Out-Null
           Compress-Archive -Path "$bundle\*" -DestinationPath build\desktop\Mornye-windows-x64.zip -Force
