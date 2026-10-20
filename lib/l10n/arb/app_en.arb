@@ -7601,8 +7601,6 @@
   },
   "desktopVolumeUp": "Increase volume",
   "desktopVolumeDown": "Decrease volume",
-  "desktopShowSidebar": "Show sidebar",
-  "desktopHideSidebar": "Hide sidebar",
   "desktopTableSortedAscending": "{column}, sorted ascending",
   "@desktopTableSortedAscending": {
     "description": "Screen reader label of a song table column header that sorts the table A to Z",

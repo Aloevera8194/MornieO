@@ -7314,8 +7314,6 @@
   "desktopPlayerIdle": "Tidak ada yang diputar",
   "desktopVolumeUp": "Naikkan volume",
   "desktopVolumeDown": "Turunkan volume",
-  "desktopShowSidebar": "Tampilkan bilah samping",
-  "desktopHideSidebar": "Sembunyikan bilah samping",
   "desktopTableSortedAscending": "{column}, urut naik",
   "desktopTableSortedDescending": "{column}, urut turun",
   "desktopMenuOpen": "Buka",

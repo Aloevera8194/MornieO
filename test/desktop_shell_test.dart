@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -461,54 +462,26 @@ void main() {
       expect(selections, isEmpty);
     });
 
-    testWidgets('sidebar hides completely and comes back', (tester) async {
-      await pumpShell(tester, mornye: true, width: 1400);
-
-      await tester.tap(find.byKey(const ValueKey('desktop-sidebar-toggle')));
+    testWidgets('sidebar stays in narrow windows and ignores the shortcut', (
+      tester,
+    ) async {
+      await pumpShell(tester, mornye: true, width: 820);
+      desktopSidebarCollapsed.value = true;
       await tester.pumpAndSettle();
-      expect(tester.getSize(find.byType(DesktopSidebar)).width, 0);
-      expect(find.text('library').hitTestable(), findsNothing);
+
       expect(
-        tester.getRect(find.byKey(const ValueKey('desktop-content'))).left,
-        0,
+        find.byWidgetPredicate(
+          (w) => w is AppIcon && w.icon == CupertinoIcons.sidebar_left,
+        ),
+        findsNothing,
       );
-
-      await tester.tap(find.byKey(const ValueKey('desktop-sidebar-show')));
-      await tester.pumpAndSettle();
       expect(
         tester.getSize(find.byType(DesktopSidebar)).width,
         DesktopSidebar.footprint,
       );
-    });
-
-    testWidgets('sidebar hides below the auto-hide width', (tester) async {
-      await pumpShell(tester, mornye: true, width: 1400);
-      expect(desktopSidebarCollapsed.value, isFalse);
-
-      tester.view.physicalSize = const Size(860, 800);
-      await tester.pumpAndSettle();
-      expect(desktopSidebarCollapsed.value, isTrue);
-      expect(tester.getSize(find.byType(DesktopSidebar)).width, 0);
-
-      tester.view.physicalSize = const Size(1400, 800);
-      await tester.pumpAndSettle();
-      expect(desktopSidebarCollapsed.value, isFalse);
-    });
-
-    testWidgets('hidden sidebar leaves room for the macOS window controls', (
-      tester,
-    ) async {
-      debugDesktopTitleBarInContentOverride = true;
-      desktopSidebarCollapsed.value = true;
-      await pumpShell(tester, mornye: true, width: 1400);
-
-      final show = tester.getRect(
-        find.byKey(const ValueKey('desktop-sidebar-show')),
-      );
-      expect(show.left, greaterThanOrEqualTo(desktopWindowControlsWidth));
       expect(
-        tester.getRect(find.byKey(const ValueKey('desktop-content'))).top,
-        desktopTitleBarHeight,
+        tester.getRect(find.byKey(const ValueKey('desktop-content'))).left,
+        DesktopSidebar.footprint,
       );
     });
   });

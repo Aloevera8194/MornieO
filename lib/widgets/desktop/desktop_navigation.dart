@@ -10,7 +10,6 @@ import 'package:mornye/screens/now_playing_screen.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/services/user_profile_store.dart';
 import 'package:mornye/theme/app_motion.dart';
-import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/material_expressive.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/app_icon.dart';
@@ -29,10 +28,6 @@ const double desktopSidebarWidth = 220;
 
 /// Collapsed Material rail width.
 const double desktopCollapsedRailWidth = 96;
-
-/// Window width below which the Mornye sidebar hides itself, as Music does
-/// in narrow windows. The sidebar button shows it again.
-const double desktopSidebarAutoHideWidth = 900;
 
 /// Space between the expanded Material rail's destinations, so adjacent
 /// 56dp indicators and hover layers never touch.
@@ -144,49 +139,32 @@ class DesktopShellLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     if (context.isMornye) {
-      return _DesktopSidebarAutoHide(
-        windowWidth: width,
-        threshold: desktopSidebarAutoHideWidth,
-        child: ValueListenableBuilder<bool>(
-          valueListenable: desktopSidebarCollapsed,
-          // The page background shows around the inset sidebar panel.
-          builder: (context, hidden, _) => ColoredBox(
-            color: Theme.of(context).colorScheme.surface,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                DesktopSidebar(
-                  destinations: destinations,
-                  selected: selected,
-                  onSelected: onSelected,
-                  libraryLinks: libraryLinks,
-                  onOpenLibraryLink: onOpenLibraryLink,
-                  onOpenProfile: onOpenProfile,
-                  hidden: hidden,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Without the sidebar, the window controls and the
-                      // button that shows it again get a row of their own.
-                      if (hidden) const _DesktopContentTitleBar(),
-                      Expanded(
-                        key: const ValueKey('desktop-content'),
-                        child: _DesktopContentArea(
-                          overlayInspector: desktopInspectorOverlays(width),
-                          body: body,
-                          nowPlaying: nowPlaying,
-                          floatingPlayer: playerBar,
-                          titleBarDrag: !hidden,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+      // The sidebar always shows; the page background shows around the
+      // inset panel.
+      return ColoredBox(
+        color: Theme.of(context).colorScheme.surface,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            DesktopSidebar(
+              destinations: destinations,
+              selected: selected,
+              onSelected: onSelected,
+              libraryLinks: libraryLinks,
+              onOpenLibraryLink: onOpenLibraryLink,
+              onOpenProfile: onOpenProfile,
             ),
-          ),
+            Expanded(
+              key: const ValueKey('desktop-content'),
+              child: _DesktopContentArea(
+                overlayInspector: desktopInspectorOverlays(width),
+                body: body,
+                nowPlaying: nowPlaying,
+                floatingPlayer: playerBar,
+                titleBarDrag: true,
+              ),
+            ),
+          ],
         ),
       );
     }
@@ -210,11 +188,10 @@ class DesktopShellLayout extends StatelessWidget {
                       ),
                     // Collapsed below [desktopExpandedRailBreakpoint]; the
                     // rail's menu button and the sidebar shortcut toggle it
-                    // in between, as they hide the Mornye sidebar.
+                    // in between.
                     Expanded(
-                      child: _DesktopSidebarAutoHide(
+                      child: _DesktopRailAutoCollapse(
                         windowWidth: width,
-                        threshold: desktopExpandedRailBreakpoint,
                         child: ValueListenableBuilder<bool>(
                           valueListenable: desktopSidebarCollapsed,
                           builder: (context, collapsed, _) =>
@@ -249,31 +226,28 @@ class DesktopShellLayout extends StatelessWidget {
   }
 }
 
-/// Hides the Mornye sidebar, or collapses the Material rail, when the window
-/// narrows past [threshold] and restores it when it widens back. The sidebar
-/// button, the rail's menu button and the shortcut still toggle it in
-/// between.
-class _DesktopSidebarAutoHide extends StatefulWidget {
-  const _DesktopSidebarAutoHide({
+/// Collapses the Material rail when the window narrows past
+/// [desktopExpandedRailBreakpoint] and expands it when it widens back. The
+/// rail's menu button and the shortcut still toggle it in between.
+class _DesktopRailAutoCollapse extends StatefulWidget {
+  const _DesktopRailAutoCollapse({
     required this.windowWidth,
-    required this.threshold,
     required this.child,
   });
 
   final double windowWidth;
-  final double threshold;
   final Widget child;
 
   @override
-  State<_DesktopSidebarAutoHide> createState() =>
-      _DesktopSidebarAutoHideState();
+  State<_DesktopRailAutoCollapse> createState() =>
+      _DesktopRailAutoCollapseState();
 }
 
-class _DesktopSidebarAutoHideState extends State<_DesktopSidebarAutoHide> {
+class _DesktopRailAutoCollapseState extends State<_DesktopRailAutoCollapse> {
   bool? _narrow;
 
   void _update() {
-    final narrow = widget.windowWidth < widget.threshold;
+    final narrow = widget.windowWidth < desktopExpandedRailBreakpoint;
     final previous = _narrow;
     _narrow = narrow;
     // A wide first frame keeps the remembered choice; crossing the width
@@ -291,39 +265,13 @@ class _DesktopSidebarAutoHideState extends State<_DesktopSidebarAutoHide> {
   }
 
   @override
-  void didUpdateWidget(_DesktopSidebarAutoHide oldWidget) {
+  void didUpdateWidget(_DesktopRailAutoCollapse oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.windowWidth != widget.windowWidth) _update();
   }
 
   @override
   Widget build(BuildContext context) => widget.child;
-}
-
-/// The row above the content pane while the Mornye sidebar is hidden: room
-/// for the macOS window controls, then the button that shows the sidebar.
-class _DesktopContentTitleBar extends StatelessWidget {
-  const _DesktopContentTitleBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final titleBar = desktopTitleBarInContent;
-    return SizedBox(
-      height: titleBar ? desktopTitleBarHeight : _SidebarHeader.height,
-      child: Row(
-        children: [
-          SizedBox(width: titleBar ? desktopWindowControlsWidth : 8),
-          const _SidebarToggle(hidden: true),
-          const Expanded(
-            child: DesktopWindowDragArea(
-              zoomOnDoubleClick: true,
-              child: SizedBox.expand(),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 /// Gives [child] the size of the space it lays out in, so width-based layout
@@ -860,7 +808,6 @@ class DesktopSidebar extends ConsumerWidget {
     this.libraryLinks = const [],
     this.onOpenLibraryLink,
     this.onOpenProfile,
-    this.hidden = false,
   });
 
   /// Width of the panel.
@@ -869,7 +816,7 @@ class DesktopSidebar extends ConsumerWidget {
   /// Space between the panel and the window edges and content pane.
   static const double margin = 8;
 
-  /// Width the sidebar takes from the window while shown.
+  /// Width the sidebar takes from the window.
   static const double footprint = width + 2 * margin;
 
   /// Corner radius of the panel.
@@ -890,9 +837,6 @@ class DesktopSidebar extends ConsumerWidget {
   /// Settings.
   final VoidCallback? onOpenProfile;
 
-  /// Hides the sidebar: it slides to no width and leaves focus order.
-  final bool hidden;
-
   /// The panel fill: a step off the page background, tinted by the page's
   /// artwork color ([ShellNavigationService.chromeSurface]) when it has one.
   static Color panelColor(BuildContext context, Color? tint) {
@@ -906,9 +850,6 @@ class DesktopSidebar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final duration = MediaQuery.disableAnimationsOf(context)
-        ? Duration.zero
-        : context.tokens.motionMedium;
     final openLink = onOpenLibraryLink;
     final links = openLink == null
         ? const <DesktopSidebarLink>[]
@@ -1055,30 +996,9 @@ class DesktopSidebar extends ConsumerWidget {
         ),
       ),
     );
-    return AnimatedContainer(
-      duration: duration,
-      curve: Curves.easeInOutCubic,
-      width: hidden ? 0 : footprint,
-      child: ClipRect(
-        child: ExcludeFocus(
-          excluding: hidden,
-          child: ExcludeSemantics(
-            excluding: hidden,
-            child: IgnorePointer(
-              ignoring: hidden,
-              child: OverflowBox(
-                alignment: AlignmentDirectional.topStart,
-                minWidth: footprint,
-                maxWidth: footprint,
-                child: Padding(
-                  padding: const EdgeInsets.all(margin),
-                  child: panel,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+    return SizedBox(
+      width: footprint,
+      child: Padding(padding: const EdgeInsets.all(margin), child: panel),
     );
   }
 }
@@ -1192,8 +1112,7 @@ class _SidebarAccountRow extends ConsumerWidget {
 }
 
 /// The top of the sidebar panel: on macOS the rest of the title bar row,
-/// where the traffic lights sit and a drag moves the window, with the
-/// sidebar button at its end.
+/// where the traffic lights sit and a drag moves the window.
 class _SidebarHeader extends StatelessWidget {
   const _SidebarHeader();
 
@@ -1206,44 +1125,11 @@ class _SidebarHeader extends StatelessWidget {
     height: desktopTitleBarInContent
         ? desktopTitleBarHeight - DesktopSidebar.margin
         : height,
-    child: const Row(
-      children: [
-        Expanded(
-          child: DesktopWindowDragArea(
-            zoomOnDoubleClick: true,
-            child: SizedBox.expand(),
-          ),
-        ),
-        _SidebarToggle(hidden: false),
-        SizedBox(width: 4),
-      ],
+    child: const DesktopWindowDragArea(
+      zoomOnDoubleClick: true,
+      child: SizedBox.expand(),
     ),
   );
-}
-
-/// Hides the sidebar, or shows it from the content pane's title bar.
-class _SidebarToggle extends StatelessWidget {
-  const _SidebarToggle({required this.hidden});
-
-  final bool hidden;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    return AppIconButton(
-      key: ValueKey(hidden ? 'desktop-sidebar-show' : 'desktop-sidebar-toggle'),
-      tooltip: desktopTooltip(
-        context,
-        hidden ? l10n.desktopShowSidebar : l10n.desktopHideSidebar,
-        DesktopCommand.toggleSidebar,
-      ),
-      color: Theme.of(context).colorScheme.onSurfaceVariant,
-      iconSize: 18,
-      icon: const AppIcon(CupertinoIcons.sidebar_left),
-      onPressed: () =>
-          desktopSidebarCollapsed.value = !desktopSidebarCollapsed.value,
-    );
-  }
 }
 
 /// A sidebar section heading, in the small bold secondary style of macOS

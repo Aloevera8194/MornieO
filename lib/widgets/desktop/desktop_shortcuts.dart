@@ -279,173 +279,156 @@ class _DesktopMenuBar extends StatelessWidget {
           ShellTab.search => l10n.mornyeSearch,
           ShellTab.settings => l10n.navSettings,
         };
-        return ValueListenableBuilder<bool>(
-          valueListenable: desktopSidebarCollapsed,
-          builder: (context, sidebarCollapsed, child) => PlatformMenuBar(
-            menus: [
-              PlatformMenu(
-                label: AppInfo.appName,
-                menus: [
-                  PlatformMenuItemGroup(
-                    members: [
-                      ..._provided([PlatformProvidedMenuItemType.about]),
-                    ],
-                  ),
-                  PlatformMenuItemGroup(
-                    members: [
-                      _command(
-                        l10n.desktopMenuSettings,
-                        DesktopCommand.settings,
+        return PlatformMenuBar(
+          menus: [
+            PlatformMenu(
+              label: AppInfo.appName,
+              menus: [
+                PlatformMenuItemGroup(
+                  members: [
+                    ..._provided([PlatformProvidedMenuItemType.about]),
+                  ],
+                ),
+                PlatformMenuItemGroup(
+                  members: [
+                    _command(l10n.desktopMenuSettings, DesktopCommand.settings),
+                  ],
+                ),
+                PlatformMenuItemGroup(
+                  members: [
+                    ..._provided([
+                      PlatformProvidedMenuItemType.servicesSubmenu,
+                    ]),
+                  ],
+                ),
+                PlatformMenuItemGroup(
+                  members: [
+                    ..._provided([
+                      PlatformProvidedMenuItemType.hide,
+                      PlatformProvidedMenuItemType.hideOtherApplications,
+                      PlatformProvidedMenuItemType.showAllApplications,
+                    ]),
+                  ],
+                ),
+                ..._provided([PlatformProvidedMenuItemType.quit]),
+              ],
+            ),
+            PlatformMenu(
+              label: l10n.desktopMenuFile,
+              menus: [_command(l10n.mornyeSearch, DesktopCommand.search)],
+            ),
+            PlatformMenu(
+              label: l10n.desktopMenuEdit,
+              menus: [
+                _textCommand(
+                  material.cutButtonLabel,
+                  const SingleActivator(LogicalKeyboardKey.keyX, meta: true),
+                  CopySelectionTextIntent.cut(SelectionChangedCause.keyboard),
+                ),
+                _textCommand(
+                  material.copyButtonLabel,
+                  const SingleActivator(LogicalKeyboardKey.keyC, meta: true),
+                  CopySelectionTextIntent.copy,
+                ),
+                _textCommand(
+                  material.pasteButtonLabel,
+                  const SingleActivator(LogicalKeyboardKey.keyV, meta: true),
+                  const PasteTextIntent(SelectionChangedCause.keyboard),
+                ),
+                _textCommand(
+                  material.selectAllButtonLabel,
+                  const SingleActivator(LogicalKeyboardKey.keyA, meta: true),
+                  const SelectAllTextIntent(SelectionChangedCause.keyboard),
+                ),
+              ],
+            ),
+            PlatformMenu(
+              label: l10n.desktopMenuView,
+              menus: [
+                PlatformMenuItemGroup(
+                  members: [
+                    for (var i = 0; i < tabs.length; i++)
+                      PlatformMenuItem(
+                        label: tabLabel(tabs[i]),
+                        shortcut: i < 5
+                            ? desktopDestinationShortcut(i + 1)
+                            : null,
+                        onSelected: () => state._selectDestination(i + 1),
                       ),
-                    ],
-                  ),
-                  PlatformMenuItemGroup(
-                    members: [
-                      ..._provided([
-                        PlatformProvidedMenuItemType.servicesSubmenu,
-                      ]),
-                    ],
-                  ),
-                  PlatformMenuItemGroup(
-                    members: [
-                      ..._provided([
-                        PlatformProvidedMenuItemType.hide,
-                        PlatformProvidedMenuItemType.hideOtherApplications,
-                        PlatformProvidedMenuItemType.showAllApplications,
-                      ]),
-                    ],
-                  ),
-                  ..._provided([PlatformProvidedMenuItemType.quit]),
-                ],
-              ),
-              PlatformMenu(
-                label: l10n.desktopMenuFile,
-                menus: [_command(l10n.mornyeSearch, DesktopCommand.search)],
-              ),
-              PlatformMenu(
-                label: l10n.desktopMenuEdit,
-                menus: [
-                  _textCommand(
-                    material.cutButtonLabel,
-                    const SingleActivator(LogicalKeyboardKey.keyX, meta: true),
-                    CopySelectionTextIntent.cut(SelectionChangedCause.keyboard),
-                  ),
-                  _textCommand(
-                    material.copyButtonLabel,
-                    const SingleActivator(LogicalKeyboardKey.keyC, meta: true),
-                    CopySelectionTextIntent.copy,
-                  ),
-                  _textCommand(
-                    material.pasteButtonLabel,
-                    const SingleActivator(LogicalKeyboardKey.keyV, meta: true),
-                    const PasteTextIntent(SelectionChangedCause.keyboard),
-                  ),
-                  _textCommand(
-                    material.selectAllButtonLabel,
-                    const SingleActivator(LogicalKeyboardKey.keyA, meta: true),
-                    const SelectAllTextIntent(SelectionChangedCause.keyboard),
-                  ),
-                ],
-              ),
-              PlatformMenu(
-                label: l10n.desktopMenuView,
-                menus: [
-                  PlatformMenuItemGroup(
-                    members: [
-                      for (var i = 0; i < tabs.length; i++)
-                        PlatformMenuItem(
-                          label: tabLabel(tabs[i]),
-                          shortcut: i < 5
-                              ? desktopDestinationShortcut(i + 1)
-                              : null,
-                          onSelected: () => state._selectDestination(i + 1),
-                        ),
-                    ],
-                  ),
-                  PlatformMenuItemGroup(
-                    members: [
-                      _command(material.backButtonTooltip, DesktopCommand.back),
-                      _command(l10n.nowPlayingTabLyrics, DesktopCommand.lyrics),
-                      _command(l10n.nowPlayingUpNext, DesktopCommand.upNext),
-                    ],
-                  ),
-                  PlatformMenuItemGroup(
-                    members: [
-                      if (mornye)
-                        _command(
-                          sidebarCollapsed
-                              ? l10n.desktopShowSidebar
-                              : l10n.desktopHideSidebar,
-                          DesktopCommand.toggleSidebar,
-                        ),
-                      ..._provided([
-                        PlatformProvidedMenuItemType.toggleFullScreen,
-                      ]),
-                    ],
-                  ),
-                ],
-              ),
-              PlatformMenu(
-                label: l10n.desktopMenuControls,
-                menus: [
-                  PlatformMenuItemGroup(
-                    members: [
-                      _command(
-                        l10n.desktopMenuPlayPause,
-                        DesktopCommand.playPause,
-                      ),
-                      _command(l10n.nowPlayingNextTrack, DesktopCommand.next),
-                      _command(
-                        l10n.nowPlayingPreviousTrack,
-                        DesktopCommand.previous,
-                      ),
-                    ],
-                  ),
-                  PlatformMenuItemGroup(
-                    members: [
-                      _command(l10n.desktopVolumeUp, DesktopCommand.volumeUp),
-                      _command(
-                        l10n.desktopVolumeDown,
-                        DesktopCommand.volumeDown,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              PlatformMenu(
-                label: l10n.desktopMenuWindow,
-                menus: [
-                  ..._provided([
-                    PlatformProvidedMenuItemType.minimizeWindow,
-                    PlatformProvidedMenuItemType.zoomWindow,
-                  ]),
-                  PlatformMenuItemGroup(
-                    members: [
-                      ..._provided([
-                        PlatformProvidedMenuItemType.arrangeWindowsInFront,
-                      ]),
-                    ],
-                  ),
-                ],
-              ),
-              PlatformMenu(
-                label: l10n.desktopMenuHelp,
-                menus: [
-                  PlatformMenuItem(
-                    label: l10n.desktopMenuProjectPage,
-                    onSelected: () => unawaited(
-                      launchUrl(
-                        Uri.parse(AppInfo.githubUrl),
-                        mode: LaunchMode.externalApplication,
-                      ),
+                  ],
+                ),
+                PlatformMenuItemGroup(
+                  members: [
+                    _command(material.backButtonTooltip, DesktopCommand.back),
+                    _command(l10n.nowPlayingTabLyrics, DesktopCommand.lyrics),
+                    _command(l10n.nowPlayingUpNext, DesktopCommand.upNext),
+                  ],
+                ),
+                PlatformMenuItemGroup(
+                  members: [
+                    ..._provided([
+                      PlatformProvidedMenuItemType.toggleFullScreen,
+                    ]),
+                  ],
+                ),
+              ],
+            ),
+            PlatformMenu(
+              label: l10n.desktopMenuControls,
+              menus: [
+                PlatformMenuItemGroup(
+                  members: [
+                    _command(
+                      l10n.desktopMenuPlayPause,
+                      DesktopCommand.playPause,
+                    ),
+                    _command(l10n.nowPlayingNextTrack, DesktopCommand.next),
+                    _command(
+                      l10n.nowPlayingPreviousTrack,
+                      DesktopCommand.previous,
+                    ),
+                  ],
+                ),
+                PlatformMenuItemGroup(
+                  members: [
+                    _command(l10n.desktopVolumeUp, DesktopCommand.volumeUp),
+                    _command(l10n.desktopVolumeDown, DesktopCommand.volumeDown),
+                  ],
+                ),
+              ],
+            ),
+            PlatformMenu(
+              label: l10n.desktopMenuWindow,
+              menus: [
+                ..._provided([
+                  PlatformProvidedMenuItemType.minimizeWindow,
+                  PlatformProvidedMenuItemType.zoomWindow,
+                ]),
+                PlatformMenuItemGroup(
+                  members: [
+                    ..._provided([
+                      PlatformProvidedMenuItemType.arrangeWindowsInFront,
+                    ]),
+                  ],
+                ),
+              ],
+            ),
+            PlatformMenu(
+              label: l10n.desktopMenuHelp,
+              menus: [
+                PlatformMenuItem(
+                  label: l10n.desktopMenuProjectPage,
+                  onSelected: () => unawaited(
+                    launchUrl(
+                      Uri.parse(AppInfo.githubUrl),
+                      mode: LaunchMode.externalApplication,
                     ),
                   ),
-                ],
-              ),
-            ],
-            child: child!,
-          ),
-          child: child,
+                ),
+              ],
+            ),
+          ],
+          child: child!,
         );
       },
       child: child,

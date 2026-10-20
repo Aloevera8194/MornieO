@@ -192,8 +192,8 @@ List<ShellTab> desktopDestinationTabs({
   ShellTab.settings,
 ];
 
-/// Whether the Mornye desktop sidebar is hidden. Kept for the
-/// app session so the menu bar, shortcut and toolbar button share it.
+/// Whether the Material desktop rail is collapsed. Kept for the app session
+/// so the shortcut and the rail's menu button share it.
 final desktopSidebarCollapsed = ValueNotifier<bool>(false);
 
 /// Opens Now Playing in the content pane. Lyrics and Up Next live in the
