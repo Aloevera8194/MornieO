@@ -665,6 +665,7 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
               trailing: AlbumTrackPlayButton(
                 isPlaying: false,
                 onPlay: () => _openFile(track, queueItems: tracks),
+                dense: true,
               ),
             ),
         ],

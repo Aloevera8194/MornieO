@@ -57,6 +57,18 @@ extension _ArtistScreenSections on _ArtistScreenState {
       ),
     );
 
+    if (isDesktopPlatform) {
+      return _buildDesktopHeader(
+        context,
+        colorScheme,
+        albums: albums,
+        hasDiscography: hasDiscography,
+        imageUrl: hasValidImage ? imageUrl : null,
+        listenersText: listenersText,
+        isFavoriteArtist: isFavoriteArtist,
+      );
+    }
+
     if (context.isMornye) {
       final artwork = hasValidImage
           ? DownloadableCover(
@@ -152,6 +164,98 @@ extension _ArtistScreenSections on _ArtistScreenState {
         ),
       ),
     ];
+  }
+
+  /// Desktop: the round photo beside the name and actions, under a pinned
+  /// toolbar, in the same column as the discography.
+  List<Widget> _buildDesktopHeader(
+    BuildContext context,
+    ColorScheme colorScheme, {
+    required List<ArtistAlbum> albums,
+    required bool hasDiscography,
+    required String? imageUrl,
+    required String? listenersText,
+    required bool isFavoriteArtist,
+  }) {
+    final mornye = context.isMornye;
+    final placeholder = ColoredBox(
+      color: colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Icon(
+          mornye ? CupertinoIcons.person : Icons.person,
+          size: 64,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+    return desktopDetailHeaderSlivers(
+      context,
+      title: widget.artistName,
+      circularArtwork: true,
+      artwork: (context, size) => imageUrl == null
+          ? placeholder
+          : DownloadableCover(
+              coverUrl: imageUrl,
+              baseName: widget.artistName,
+              child: CachedCoverImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+                memCacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
+                    .round(),
+                errorWidget: (_, _, _) => placeholder,
+              ),
+            ),
+      subtitle: listenersText == null
+          ? null
+          : Text(
+              listenersText,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+      meta: _concerts.isEmpty || isSelectionMode ? null : _concertsButton(),
+      actions: isSelectionMode
+          ? null
+          : Row(
+              spacing: 12,
+              children: [
+                HeaderCircleButton(
+                  icon: isFavoriteArtist
+                      ? (mornye ? CupertinoIcons.star_fill : Icons.favorite)
+                      : (mornye ? CupertinoIcons.star : Icons.favorite_border),
+                  iconColor: isFavoriteArtist && !mornye
+                      ? colorScheme.error
+                      : colorScheme.primary,
+                  tooltip: isFavoriteArtist
+                      ? context.l10n.artistOptionRemoveFromFavorites
+                      : context.l10n.artistOptionAddToFavorites,
+                  onPressed: () => _toggleFavoriteArtist(context),
+                ),
+                if (hasDiscography && !_isLoadingDiscography)
+                  HeaderCircleButton(
+                    icon: mornye
+                        ? CupertinoIcons.arrow_down
+                        : Icons.download_rounded,
+                    iconColor: colorScheme.primary,
+                    tooltip: context.l10n.discographyDownload,
+                    onPressed: () =>
+                        _showDiscographyOptions(context, colorScheme, albums),
+                  ),
+              ],
+            ),
+      appBarActions: isSelectionMode
+          ? const []
+          : [
+              HeaderCircleButton(
+                icon: mornye
+                    ? CupertinoIcons.square_arrow_up
+                    : Icons.open_in_new_rounded,
+                tooltip: context.l10n.openInOtherServices,
+                onPressed: () => _showShareSheet(context),
+              ),
+            ],
+    );
   }
 
   Widget _buildArtistAppBar(

@@ -583,6 +583,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
                               .read(musicPlayerControllerProvider)
                               .togglePlayPause(isPlaying)
                         : () => _openFile(track),
+                    dense: true,
                   );
                 },
               ),

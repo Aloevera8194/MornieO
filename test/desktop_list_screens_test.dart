@@ -54,6 +54,7 @@ Future<_Playback> _pumpAlbum(WidgetTester tester, {bool mornye = false}) async {
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
   final playback = _Playback();
+  final navigator = GlobalKey<NavigatorState>();
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -68,11 +69,18 @@ Future<_Playback> _pumpAlbum(WidgetTester tester, {bool mornye = false}) async {
         theme: mornye ? MornyeTheme.build(Brightness.light) : AppTheme.light(),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: LocalAlbumScreen(
-          albumName: 'Album',
-          artistName: 'Artist',
-          tracks: _tracks,
-        ),
+        navigatorKey: navigator,
+        home: const SizedBox(),
+      ),
+    ),
+  );
+  // Opened from another page, as from the Library, so it has a way back.
+  navigator.currentState!.push(
+    MaterialPageRoute<void>(
+      builder: (_) => LocalAlbumScreen(
+        albumName: 'Album',
+        artistName: 'Artist',
+        tracks: _tracks,
       ),
     ),
   );
@@ -146,6 +154,62 @@ void main() {
       await _click(tester, find.text('Alpha'));
       await tester.pumpAndSettle();
       expect(playback.started, ['2']);
+    });
+
+    testWidgets('desktop album header and rows are compact (mornye: $mornye)', (
+      tester,
+    ) async {
+      debugDesktopPlatformOverride = true;
+      await _pumpAlbum(tester, mornye: mornye);
+
+      // No hero: the back control sits in the pinned toolbar and the details
+      // start at the table's left edge, beside the artwork.
+      expect(find.byType(FlexibleSpaceBar), findsNothing);
+      final back = find.byTooltip(
+        const DefaultMaterialLocalizations().backButtonTooltip,
+      );
+      expect(back, findsOneWidget);
+      expect(tester.getTopLeft(back).dy, lessThan(52));
+      final playAll = find.text('Play').first;
+      final tableHeader = find.text('#');
+      expect(
+        tester.getTopLeft(playAll).dx,
+        greaterThan(tester.getTopLeft(tableHeader).dx + 160),
+      );
+      expect(
+        tester.getTopLeft(playAll).dy,
+        lessThan(tester.getTopLeft(tableHeader).dy),
+      );
+
+      // Desktop row density, with the row's play button shown on hover.
+      final row = find
+          .ancestor(of: find.text('Alpha'), matching: find.byType(InkWell))
+          .first;
+      expect(tester.getSize(row).height, mornye ? 40 : 48);
+      final rowY = tester.getCenter(row).dy;
+      final playButton = find.ancestor(
+        of: find.byWidgetPredicate(
+          (widget) => widget is AlbumTrackPlayButton,
+          skipOffstage: true,
+        ),
+        matching: find.byType(AnimatedOpacity),
+      );
+      final alphaButton = playButton.evaluate().firstWhere(
+        (element) =>
+            ((element.renderObject! as RenderBox)
+                        .localToGlobal(Offset.zero)
+                        .dy -
+                    rowY)
+                .abs() <
+            30,
+      );
+      double opacity() => (alphaButton.widget as AnimatedOpacity).opacity;
+      expect(opacity(), 0);
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(location: tester.getCenter(find.text('Alpha')));
+      await tester.pumpAndSettle();
+      expect(opacity(), 1);
+      await mouse.removePointer();
     });
   }
 }

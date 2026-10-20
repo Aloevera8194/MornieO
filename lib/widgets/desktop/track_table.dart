@@ -45,7 +45,8 @@ class TrackTableRow {
   /// Badges after the title, such as Explicit or In Library.
   final Widget? titleTrailing;
 
-  /// Row actions at the end of the row, such as the options button.
+  /// Row actions at the end of the row, such as the options button. They show
+  /// on hover, selection or keyboard focus.
   final Widget? trailing;
 }
 
@@ -422,7 +423,7 @@ class _TrackTableHeader extends StatelessWidget {
   }
 }
 
-class _TrackTableRowView extends StatelessWidget {
+class _TrackTableRowView extends StatefulWidget {
   const _TrackTableRowView({
     super.key,
     required this.row,
@@ -440,11 +441,44 @@ class _TrackTableRowView extends StatelessWidget {
   final VoidCallback onTap;
   final ValueChanged<Offset>? onContextMenu;
 
+  /// Desktop density: compact rows for Mornye, the Material list height.
+  static double minHeightFor(BuildContext context) =>
+      context.isMornye ? 40 : 48;
+
+  @override
+  State<_TrackTableRowView> createState() => _TrackTableRowViewState();
+}
+
+class _TrackTableRowViewState extends State<_TrackTableRowView> {
+  bool _hovered = false;
+  bool _trailingFocused = false;
+
   @override
   Widget build(BuildContext context) {
+    final row = widget.row;
+    final columns = widget.columns;
+    final hasTrailing = widget.hasTrailing;
+    final selected = widget.selected;
+    final onTap = widget.onTap;
+    final onContextMenu = widget.onContextMenu;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final tokens = context.tokens;
+    // Row actions appear for the row under the pointer, the selection, or
+    // keyboard focus, so a long list does not repeat them on every row.
+    final trailing = row.trailing == null
+        ? null
+        : Focus(
+            canRequestFocus: false,
+            skipTraversal: true,
+            onFocusChange: (focused) =>
+                setState(() => _trailingFocused = focused),
+            child: AnimatedOpacity(
+              opacity: _hovered || selected || _trailingFocused ? 1 : 0,
+              duration: tokens.motionFast,
+              child: row.trailing,
+            ),
+          );
     final secondary = theme.textTheme.bodyMedium?.copyWith(
       color: colorScheme.onSurfaceVariant,
     );
@@ -504,8 +538,11 @@ class _TrackTableRowView extends StatelessWidget {
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onTap,
+              onHover: (hovered) => setState(() => _hovered = hovered),
               child: ConstrainedBox(
-                constraints: const BoxConstraints(minHeight: 48),
+                constraints: BoxConstraints(
+                  minHeight: _TrackTableRowView.minHeightFor(context),
+                ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: tokens.gapXs),
                   child: Row(
@@ -513,7 +550,7 @@ class _TrackTableRowView extends StatelessWidget {
                       columns: columns,
                       cell: cell,
                       hasTrailing: hasTrailing,
-                      trailing: row.trailing,
+                      trailing: trailing,
                     ),
                   ),
                 ),

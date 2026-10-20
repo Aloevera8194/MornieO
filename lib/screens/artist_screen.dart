@@ -57,6 +57,7 @@ import 'package:mornye/widgets/downloadable_cover.dart';
 import 'package:mornye/widgets/expressive_button_group.dart';
 import 'package:mornye/widgets/expressive_icon_button.dart';
 import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/material_expressive.dart';
 
@@ -673,98 +674,114 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                     albums: albums,
                     hasDiscography: hasDiscography,
                   ),
-                  if (_isLoadingDiscography)
-                    SliverToBoxAdapter(
-                      child: ArtistScreenSkeleton(
-                        showCoverHeader:
-                            !context.isMornye &&
-                            (_headerImageUrl ??
-                                    widget.headerImageUrl ??
-                                    widget.coverUrl) ==
-                                null,
-                        showPopularSection:
-                            !widget.artistId.startsWith('deezer:') &&
-                            !widget.artistId.startsWith('qobuz:') &&
-                            !widget.artistId.startsWith('tidal:'),
-                      ),
+                  // Desktop keeps the sections in the header's column.
+                  SliverPadding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isDesktopPlatform
+                          ? wideListInset(context)
+                          : 0,
                     ),
-                  if (_error != null)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: ErrorCard(
-                          error: _error!,
-                          colorScheme: colorScheme,
-                          onRetry: _fetchDiscography,
-                        ),
-                      ),
-                    ),
-                  if (!_isLoadingDiscography && _error == null) ...[
-                    if (context.isMornye &&
-                        albums.isNotEmpty &&
-                        !isSelectionMode)
-                      SliverToBoxAdapter(
-                        child: _buildMornyeFeaturedAlbum(context, albums.first),
-                      ),
-                    if (_topTracks != null && _topTracks!.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildPopularSection(context, colorScheme),
-                      ),
-                    if (releases.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildAlbumSection(
-                          context,
-                          context.l10n.artistReleases,
-                          releases,
-                          colorScheme,
-                        ),
-                      ),
-                    if (albumsOnly.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildAlbumSection(
-                          context,
-                          context.l10n.artistAlbums,
-                          albumsOnly,
-                          colorScheme,
-                        ),
-                      ),
-                    if (singles.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildAlbumSection(
-                          context,
-                          context.l10n.artistSingles,
-                          singles,
-                          colorScheme,
-                          showTypeBadge: true,
-                        ),
-                      ),
-                    if (compilations.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: _buildAlbumSection(
-                          context,
-                          context.l10n.artistCompilations,
-                          compilations,
-                          colorScheme,
-                        ),
-                      ),
-                  ],
-                  if (_isLoadingMoreAlbums || _albumsPageError != null)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            if (_albumsPageError != null)
-                              Text(
-                                _albumsPageError!,
-                                textAlign: TextAlign.center,
+                    sliver: SliverMainAxisGroup(
+                      slivers: [
+                        if (_isLoadingDiscography)
+                          SliverToBoxAdapter(
+                            child: ArtistScreenSkeleton(
+                              showCoverHeader:
+                                  !isDesktopPlatform &&
+                                  !context.isMornye &&
+                                  (_headerImageUrl ??
+                                          widget.headerImageUrl ??
+                                          widget.coverUrl) ==
+                                      null,
+                              showPopularSection:
+                                  !widget.artistId.startsWith('deezer:') &&
+                                  !widget.artistId.startsWith('qobuz:') &&
+                                  !widget.artistId.startsWith('tidal:'),
+                            ),
+                          ),
+                        if (_error != null)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: ErrorCard(
+                                error: _error!,
+                                colorScheme: colorScheme,
+                                onRetry: _fetchDiscography,
                               ),
-                            if (_isLoadingMoreAlbums)
-                              const AppLoadingIndicator(),
-                          ],
-                        ),
-                      ),
+                            ),
+                          ),
+                        if (!_isLoadingDiscography && _error == null) ...[
+                          if (context.isMornye &&
+                              albums.isNotEmpty &&
+                              !isSelectionMode)
+                            SliverToBoxAdapter(
+                              child: _buildMornyeFeaturedAlbum(
+                                context,
+                                albums.first,
+                              ),
+                            ),
+                          if (_topTracks != null && _topTracks!.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildPopularSection(context, colorScheme),
+                            ),
+                          if (releases.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildAlbumSection(
+                                context,
+                                context.l10n.artistReleases,
+                                releases,
+                                colorScheme,
+                              ),
+                            ),
+                          if (albumsOnly.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildAlbumSection(
+                                context,
+                                context.l10n.artistAlbums,
+                                albumsOnly,
+                                colorScheme,
+                              ),
+                            ),
+                          if (singles.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildAlbumSection(
+                                context,
+                                context.l10n.artistSingles,
+                                singles,
+                                colorScheme,
+                                showTypeBadge: true,
+                              ),
+                            ),
+                          if (compilations.isNotEmpty)
+                            SliverToBoxAdapter(
+                              child: _buildAlbumSection(
+                                context,
+                                context.l10n.artistCompilations,
+                                compilations,
+                                colorScheme,
+                              ),
+                            ),
+                        ],
+                        if (_isLoadingMoreAlbums || _albumsPageError != null)
+                          SliverToBoxAdapter(
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  if (_albumsPageError != null)
+                                    Text(
+                                      _albumsPageError!,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  if (_isLoadingMoreAlbums)
+                                    const AppLoadingIndicator(),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
+                  ),
                   SliverToBoxAdapter(
                     child: SizedBox(height: isSelectionMode ? 120 : 32),
                   ),

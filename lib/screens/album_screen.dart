@@ -627,7 +627,9 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
           ? null
           : context.isMornye
           ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: isDesktopPlatform
+                  ? MainAxisAlignment.start
+                  : MainAxisAlignment.center,
               children: [
                 _buildLoveAllButton(),
                 const SizedBox(width: 16),

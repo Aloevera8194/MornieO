@@ -73,6 +73,7 @@ class TrackListTable extends ConsumerWidget {
           trailing: TrackCollectionQuickActions(
             track: tracks[i],
             hasLocalPlaybackCandidate: isInHistory[i],
+            dense: true,
           ),
         ),
     ];
@@ -85,7 +86,9 @@ class TrackListTable extends ConsumerWidget {
           TrackTableColumn.title,
           TrackTableColumn.artist,
           if (showAlbum) TrackTableColumn.album,
-          TrackTableColumn.quality,
+          // Catalog pages often list no quality before a download.
+          if (rows.any((row) => row.quality?.isNotEmpty ?? false))
+            TrackTableColumn.quality,
           TrackTableColumn.duration,
         ],
         selectedIds: selectedIds,

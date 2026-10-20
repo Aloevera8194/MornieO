@@ -375,7 +375,9 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
       ),
       actions: context.isMornye
           ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: isDesktopPlatform
+                  ? MainAxisAlignment.start
+                  : MainAxisAlignment.center,
               children: [
                 _buildLoveAllButton(),
                 const SizedBox(width: 16),

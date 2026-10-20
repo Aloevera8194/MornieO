@@ -71,10 +71,14 @@ class AlbumTrackPlayButton extends StatelessWidget {
     super.key,
     required this.isPlaying,
     required this.onPlay,
+    this.dense = false,
   });
 
   final bool isPlaying;
   final VoidCallback? onPlay;
+
+  /// A 32dp pointer target for desktop table rows.
+  final bool dense;
 
   @override
   Widget build(BuildContext context) {
@@ -87,9 +91,12 @@ class AlbumTrackPlayButton extends StatelessWidget {
             ? (isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill)
             : (isPlaying ? Icons.pause : Icons.play_arrow),
         color: colorScheme.primary,
+        size: dense ? 18 : null,
       ),
       style: IconButton.styleFrom(
-        minimumSize: Size.square(context.tokens.minTouchTarget),
+        minimumSize: Size.square(dense ? 32 : context.tokens.minTouchTarget),
+        padding: dense ? EdgeInsets.zero : null,
+        tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
         backgroundColor: context.isMornye
             ? Colors.transparent
             : colorScheme.primaryContainer.withValues(alpha: 0.3),

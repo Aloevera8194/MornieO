@@ -19,6 +19,7 @@ import 'package:mornye/widgets/expressive_button.dart';
 import 'package:mornye/widgets/expressive_button_group.dart';
 import 'package:mornye/widgets/expressive_icon_button.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 
 /// Collapsing album-detail header shared by the album, local-album, and
 /// downloaded-album screens: full-bleed [background] (optionally blurred and
@@ -105,7 +106,8 @@ class AlbumDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (context.isMornye && (coverBuilder != null || immersive)) {
+    if (isDesktopPlatform ||
+        (context.isMornye && (coverBuilder != null || immersive))) {
       final scheme = Theme.of(context).colorScheme;
       return HeaderPalette(
         scheme: scheme,
@@ -124,6 +126,7 @@ class AlbumDetailHeader extends StatelessWidget {
   /// Keep the toolbar at the collection scroll-view level so it stays pinned
   /// after the dynamically sized artwork and metadata have scrolled away.
   List<Widget> buildSlivers(BuildContext context) {
+    if (isDesktopPlatform) return _buildDesktopSlivers(context);
     if (!context.isMornye || (coverBuilder == null && !immersive)) {
       return [this];
     }
@@ -238,6 +241,21 @@ class AlbumDetailHeader extends StatelessWidget {
       SliverToBoxAdapter(child: details),
     ];
   }
+
+  List<Widget> _buildDesktopSlivers(BuildContext context) =>
+      desktopDetailHeaderSlivers(
+        context,
+        title: title,
+        artwork: (context, size) =>
+            coverBuilder?.call(context, size) ?? background,
+        subtitle: subtitle,
+        meta: meta,
+        actions: actions,
+        appBarActions: appBarActions,
+        appBarTitle: appBarTitle,
+        leading: leading,
+        backgroundColor: backgroundColor,
+      );
 
   Widget _buildMornyeDetails(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(20, immersive ? 0 : 20, 20, 28),
@@ -514,6 +532,151 @@ class AlbumDetailHeader extends StatelessWidget {
       actions: appBarActions,
     );
   }
+}
+
+const double _desktopToolbarHeight = 52;
+const double _desktopArtworkSize = 224;
+
+/// The desktop detail header for albums, playlists, folders and artists: a
+/// pinned toolbar with the back control, then the [artwork] beside
+/// left-aligned details, in the same column as the list below. Phones and
+/// tablets keep their hero headers.
+///
+/// [actions] stay within 360dp. A [circularArtwork] suits artist photos.
+List<Widget> desktopDetailHeaderSlivers(
+  BuildContext context, {
+  required String title,
+  required Widget Function(BuildContext context, double size) artwork,
+  bool circularArtwork = false,
+  Widget? subtitle,
+  Widget? meta,
+  Widget? actions,
+  List<Widget>? appBarActions,
+  String? appBarTitle,
+  Widget? leading,
+  Color? backgroundColor,
+}) {
+  final theme = Theme.of(context);
+  final tokens = context.tokens;
+  final listInset = wideListInset(context);
+  final inset = listInset + tokens.gapSm;
+  final radius = circularArtwork
+      ? _desktopArtworkSize
+      : (context.isMornye ? tokens.radiusCover : 28.0);
+
+  Widget details(BuildContext context, BoxConstraints constraints) {
+    final size = constraints.maxWidth < 560 ? 160.0 : _desktopArtworkSize;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.16),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(radius),
+            child: artwork(context, size),
+          ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (subtitle != null) ...[const SizedBox(height: 4), subtitle],
+              if (meta != null) ...[const SizedBox(height: 6), meta],
+              if (actions != null) ...[
+                const SizedBox(height: 16),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 360),
+                  child: actions,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  return [
+    SliverLayoutBuilder(
+      builder: (context, constraints) {
+        // The details start below the toolbar, so the title moves up once
+        // they have scrolled under it.
+        final scrolledPastTitle =
+            constraints.scrollOffset > _desktopArtworkSize * 0.6;
+        return SliverAppBar(
+          pinned: true,
+          automaticallyImplyLeading: false,
+          toolbarHeight: _desktopToolbarHeight,
+          backgroundColor: backgroundColor ?? theme.colorScheme.surface,
+          surfaceTintColor: Colors.transparent,
+          scrolledUnderElevation: context.isMornye ? 0 : null,
+          titleSpacing: 0,
+          title: AnimatedOpacity(
+            opacity: scrolledPastTitle || appBarTitle != null ? 1 : 0,
+            duration: tokens.motionFast,
+            child: Text(
+              appBarTitle ?? title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          leadingWidth: _desktopToolbarHeight + listInset,
+          leading: Padding(
+            padding: EdgeInsetsDirectional.only(start: listInset),
+            child: Center(
+              child:
+                  leading ??
+                  (Navigator.canPop(context)
+                      ? AppIconButton(
+                          tooltip: MaterialLocalizations.of(
+                            context,
+                          ).backButtonTooltip,
+                          icon: AppIcon(
+                            context.isMornye
+                                ? CupertinoIcons.chevron_back
+                                : Icons.arrow_back,
+                          ),
+                          onPressed: () => Navigator.maybePop(context),
+                        )
+                      : const SizedBox.shrink()),
+            ),
+          ),
+          actionsPadding: EdgeInsetsDirectional.only(end: listInset),
+          actions: appBarActions,
+        );
+      },
+    ),
+    SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(inset, 8, inset, 24),
+        child: LayoutBuilder(builder: details),
+      ),
+    ),
+  ];
 }
 
 class _AlbumStretchArtwork extends StatelessWidget {
@@ -878,7 +1041,8 @@ class HeaderMetaRow extends StatelessWidget {
     }
 
     return Wrap(
-      alignment: WrapAlignment.center,
+      // The desktop header sets its details flush with the artwork.
+      alignment: isDesktopPlatform ? WrapAlignment.start : WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       runSpacing: 4,
       children: parts,
