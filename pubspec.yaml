@@ -31,6 +31,8 @@ dependencies:
     path: third_party/mornye_discord
   path_provider: ^2.1.6
   path: ^1.9.1
+  # Desktop backend library bindings (lib/services/backend).
+  ffi: ^2.2.0
   sqflite: ^2.4.4+1
 
 # HTTP & Network

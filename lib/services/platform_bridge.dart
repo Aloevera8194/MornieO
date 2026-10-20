@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mornye/services/backend/backend_channel.dart';
 import 'package:mornye/services/download_request_payload.dart';
 import 'package:mornye/utils/audio_format_utils.dart';
 import 'package:mornye/utils/file_access.dart';
@@ -68,7 +69,8 @@ class PlatformBridge {
   /// that contain a percentage but no byte counts.
   static const int notificationPercentTotal = 10000;
 
-  static const _channel = MethodChannel('com.zarz.mornye/backend');
+  /// MethodChannel on Android and iOS, the Rust library on desktop.
+  static BackendChannel get _channel => backendChannel;
 
   static int _nativeDataJobSerial = 0;
   static final _nativeDataJobs = <String, Set<_NativeDataJobState>>{};
@@ -149,12 +151,6 @@ class PlatformBridge {
   static Duration _lookupCachePersistDebounce =
       _defaultLookupCachePersistDebounce;
   static const _metadataPersistentCacheKey = 'bridge_metadata_lookup_cache_v1';
-  static const _downloadProgressEvents = EventChannel(
-    'com.zarz.mornye/download_progress_stream',
-  );
-  static const _libraryScanProgressEvents = EventChannel(
-    'com.zarz.mornye/library_scan_progress_stream',
-  );
   static final Map<String, _BridgeCacheEntry<Map<String, dynamic>>>
   _metadataCache = {};
   static final Map<String, _BridgeCacheEntry<Map<String, dynamic>>>
@@ -750,9 +746,7 @@ class PlatformBridge {
   }
 
   static Stream<Map<String, dynamic>> downloadProgressStream() {
-    return _downloadProgressEvents.receiveBroadcastStream().map(
-      _decodeMapResult,
-    );
+    return _channel.downloadProgressEvents().map(_decodeMapResult);
   }
 
   static Future<void> exitApp() async {
@@ -2439,9 +2433,7 @@ class PlatformBridge {
   }
 
   static Stream<Map<String, dynamic>> libraryScanProgressStream() {
-    return _libraryScanProgressEvents.receiveBroadcastStream().map(
-      _decodeMapResult,
-    );
+    return _channel.libraryScanProgressEvents().map(_decodeMapResult);
   }
 
   static Future<void> cancelLibraryScan() async {
