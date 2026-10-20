@@ -628,6 +628,50 @@ pub(crate) static METHODS: &[Entry] = &[
         }
         Ok(true.into())
     }),
+    // Desktop only: OS services (keep_awake.rs, discord.rs, watcher.rs).
+    pool("beginKeepAwake", |c, a| {
+        let reason = a.string("reason", "Downloading music");
+        match c.rt.keep_awake.begin(&reason) {
+            Ok(()) => Ok(true.into()),
+            Err(error) => {
+                runtime::log("warn", &format!("Keep awake unavailable: {error}"));
+                Ok(false.into())
+            }
+        }
+    }),
+    pool("endKeepAwake", |c, _| Ok(c.rt.keep_awake.end().into())),
+    pool("discordPresenceInitialize", |c, _| {
+        Ok(c.rt.discord.initialize().into())
+    }),
+    pool("discordPresenceUpdate", |c, a| {
+        c.rt.discord.update(a.value().clone());
+        Ok(Reply::null())
+    }),
+    pool("discordPresenceClear", |c, _| {
+        c.rt.discord.clear();
+        Ok(Reply::null())
+    }),
+    pool("discordPresenceShutdown", |c, _| {
+        c.rt.discord.shutdown();
+        Ok(Reply::null())
+    }),
+    pool("watchLibraryFolders", |c, a| {
+        let folders = match a.string_list("paths") {
+            Some(Ok(folders)) => folders,
+            Some(Err(())) => {
+                return Err(CallError::invalid_arguments(
+                    "paths must be a list of strings",
+                ));
+            }
+            None => Vec::new(),
+        };
+        let watched = c.rt.watcher.watch(&folders).map_err(CallError::failure)?;
+        Ok(json!(watched).into())
+    }),
+    pool("unwatchLibraryFolders", |c, _| {
+        c.rt.watcher.stop();
+        Ok(Reply::null())
+    }),
 ];
 
 fn table() -> &'static HashMap<&'static str, &'static Entry> {

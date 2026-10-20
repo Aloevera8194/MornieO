@@ -3,9 +3,12 @@
 
 use crate::backend::Backend;
 use crate::call::{Args, CallError, CallResult, CallState, Reply};
+use crate::discord::Discord;
 use crate::events::Events;
+use crate::keep_awake::KeepAwake;
 use crate::pool::Pool;
-use crate::{dispatch, kind};
+use crate::watcher::LibraryWatcher;
+use crate::{crash_log, dispatch, kind};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -63,6 +66,9 @@ pub(crate) struct Runtime {
     pub(crate) config: Config,
     pub(crate) backend: Backend,
     pub(crate) events: Events,
+    pub(crate) keep_awake: KeepAwake,
+    pub(crate) discord: Discord,
+    pub(crate) watcher: LibraryWatcher,
     pool: Pool,
     calls: Mutex<HashMap<u64, Arc<CallState>>>,
 }
@@ -81,10 +87,14 @@ pub(crate) fn init(callback: Option<MornyeCallback>, config: &[u8]) {
         log("error", &format!("Invalid desktop configuration: {error}"));
         Config::parse(b"{}").expect("default configuration")
     });
+    crash_log::install(&config.app_support_dir);
     let _ = RUNTIME.get_or_init(|| Runtime {
         backend: Backend::new(&config),
         config,
         events: Events::default(),
+        keep_awake: KeepAwake::default(),
+        discord: Discord::default(),
+        watcher: LibraryWatcher::default(),
         pool: Pool::default(),
         calls: Mutex::new(HashMap::new()),
     });
