@@ -7,8 +7,9 @@ import 'package:mornye/services/backend/backend_channel.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 
-/// Runs the desktop app against the real Rust library:
-/// `MORNYE_DESKTOP_LIB=<path> fvm flutter test integration_test/desktop_backend_smoke_test.dart -d macos`
+/// Runs the desktop app against the bundled Rust library (set
+/// `MORNYE_DESKTOP_LIB` to test another build):
+/// `fvm flutter test integration_test/desktop_backend_smoke_test.dart -d macos`
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
