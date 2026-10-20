@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:mornye/services/playback_deck.dart';
+import 'package:mornye/services/playback_output_volume.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:volume_controller/volume_controller.dart';
 
@@ -21,7 +22,11 @@ class SystemVolumeService {
     _listeners.add(listener);
     if (_latest case final value?) listener.add(value);
     if (_subscription == null) {
-      // Desktop never changes the system volume; it reports the in-app gain.
+      // Desktop never changes the system volume; it reports the in-app gain,
+      // restored from the previous launch.
+      if (_source == null && isDesktopPlatform) {
+        unawaited(PlaybackOutputVolumeStore.ensureRestored());
+      }
       final source =
           _source ?? (isDesktopPlatform ? playbackOutputVolumeChanges() : null);
       _subscription = source == null

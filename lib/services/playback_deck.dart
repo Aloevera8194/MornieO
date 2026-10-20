@@ -1,9 +1,34 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 
 /// Transport state reported by a [PlaybackDeck].
 enum PlaybackDeckState { stopped, playing, paused, completed, disposed }
+
+/// The engine behind `PlaybackDependencies.createDeck`.
+enum PlaybackEngine {
+  /// audioplayers: Android, iOS and macOS, where the forks carry the
+  /// equalizer tap and Android's USB output.
+  audioplayers,
+
+  /// libmpv through media_kit: Windows and Linux.
+  mediaKit,
+}
+
+/// Forces [playbackEngine], for tests that drive one engine on any host.
+@visibleForTesting
+PlaybackEngine? debugPlaybackEngineOverride;
+
+PlaybackEngine get playbackEngine {
+  final override = debugPlaybackEngineOverride;
+  if (override != null) return override;
+  if (!isDesktopPlatform) return PlaybackEngine.audioplayers;
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.windows || TargetPlatform.linux => PlaybackEngine.mediaKit,
+    _ => PlaybackEngine.audioplayers,
+  };
+}
 
 /// In-app output gain from 0 to 1 for platforms where the app must not change
 /// the system volume (desktop). Every deck multiplies the gain it is given

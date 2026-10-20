@@ -96,6 +96,16 @@ dependencies:
     path: third_party/audio_service
   audio_session: ^0.2.4
   app_links: ^7.2.2
+  # Windows and Linux playback (libmpv). Android, iOS and macOS keep
+  # audioplayers; the native library packages exist only for those two OSes.
+  media_kit: ^1.2.6
+  media_kit_libs_windows_audio: ^1.0.9
+  media_kit_libs_linux: ^1.2.1
+  # Desktop media sessions behind audio_service: MPRIS on Linux (D-Bus) and
+  # the System Media Transport Controls on Windows.
+  audio_service_platform_interface: ^0.1.3
+  dbus: ^0.7.15
+  smtc_windows: ^1.1.0
 
 dependency_overrides:
   # Retain the existing Apple keychain fixes while Android uses legacy migration.

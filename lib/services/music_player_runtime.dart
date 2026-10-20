@@ -10,6 +10,8 @@ import 'package:mornye/services/autoplay_personalization.dart';
 import 'package:mornye/services/discord_presence_service.dart';
 import 'package:mornye/services/library_database.dart';
 import 'package:mornye/services/listening_statistics.dart';
+import 'package:mornye/services/media_kit_playback_deck.dart';
+import 'package:mornye/services/media_session_desktop.dart';
 import 'package:mornye/services/music_playback_deck.dart';
 import 'package:mornye/services/music_player_service.dart';
 import 'package:mornye/services/network_metadata_service.dart';
@@ -17,9 +19,11 @@ import 'package:mornye/services/network_storage_service.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/playback_deck.dart';
 import 'package:mornye/services/playback_notification.dart';
+import 'package:mornye/services/playback_output_volume.dart';
 import 'package:mornye/services/player_widget_service.dart';
 import 'package:mornye/services/source_deletion_events.dart';
 import 'package:mornye/services/system_volume_service.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('MusicPlayerRuntime');
@@ -29,6 +33,7 @@ final _log = AppLogger('MusicPlayerRuntime');
 class PlaybackDependencies {
   const PlaybackDependencies({
     this.createDeck = _createDeck,
+    this.createPreviewDeck = _createPreviewDeck,
     this.audioSession = _getAudioSession,
     this.readMetadata = PlatformBridge.readFileMetadata,
     this.readNetworkMetadata = _readNetworkMetadata,
@@ -54,6 +59,9 @@ class PlaybackDependencies {
        _isAndroid = isAndroid;
 
   final PlaybackDeck Function(String playerId) createDeck;
+
+  /// The search and catalog preview player.
+  final PlaybackDeck Function(String playerId) createPreviewDeck;
   final Future<AudioSession> Function() audioSession;
   final Future<Map<String, dynamic>> Function(String, {String? displayName})
   readMetadata;
@@ -82,10 +90,19 @@ class PlaybackDependencies {
   bool get isIOS => _isIOS ?? Platform.isIOS;
   bool get isAndroid => _isAndroid ?? Platform.isAndroid;
 
-  // Windows and Linux move to a media_kit deck; audioplayers plays there
-  // meanwhile, without the equalizer.
+  // Windows and Linux play through libmpv. Without the library they fall
+  // back to audioplayers, which has no equalizer there.
   static PlaybackDeck _createDeck(String playerId) =>
-      AudioplayersPlaybackDeck(playerId: playerId);
+      playbackEngine == PlaybackEngine.mediaKit &&
+          MediaKitPlaybackDeck.isAvailable
+      ? MediaKitPlaybackDeck(playerId: playerId)
+      : AudioplayersPlaybackDeck(playerId: playerId);
+
+  // Previews follow the in-app volume on desktop. Mobile previews keep
+  // playing without the equalizer.
+  static PlaybackDeck _createPreviewDeck(String playerId) => isDesktopPlatform
+      ? _createDeck(playerId)
+      : AudioplayersPlaybackDeck(playerId: playerId, equalizerAvailable: false);
   static Future<AudioSession> _getAudioSession() => AudioSession.instance;
   static Future<Map<String, dynamic>> _readNetworkMetadata(String source) =>
       NetworkMetadataService.instance.read(source);
@@ -93,18 +110,22 @@ class PlaybackDependencies {
       NetworkStorageService.instance.resolve(source);
   static Future<MusicPlayerHandler> _initializeAudioHandler(
     MusicPlayerHandler Function() builder,
-  ) => AudioService.init(
-    builder: builder,
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.zarz.mornye.playback',
-      androidNotificationChannelName: 'Playback',
-      // System UI draws only the small icon's alpha. The opaque launcher
-      // default became a blank dot in the status bar and output switcher.
-      androidNotificationIcon: 'drawable/ic_launcher_monochrome',
-      androidNotificationOngoing: true,
-      androidStopForegroundOnPause: true,
-    ),
-  );
+  ) {
+    // MPRIS on Linux and SMTC on Windows; other OSes keep the plugin.
+    installDesktopMediaSession();
+    return AudioService.init(
+      builder: builder,
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.zarz.mornye.playback',
+        androidNotificationChannelName: 'Playback',
+        // System UI draws only the small icon's alpha. The opaque launcher
+        // default became a blank dot in the status bar and output switcher.
+        androidNotificationIcon: 'drawable/ic_launcher_monochrome',
+        androidNotificationOngoing: true,
+        androidStopForegroundOnPause: true,
+      ),
+    );
+  }
 }
 
 /// Owns a player lifetime and its latest immutable settings. Configuration is
@@ -242,6 +263,8 @@ class MusicPlayerRuntime {
     try {
       // Defer even a synchronous test initializer until _initFuture is stored.
       await Future<void>.value();
+      // Desktop decks start at the in-app volume the listener left.
+      if (isDesktopPlatform) await PlaybackOutputVolumeStore.ensureRestored();
       final handler = await dependencies.initializeHandler(() {
         if (_disposed) throw StateError('This playback runtime was disposed');
         return created = MusicPlayerHandler(runtime: this);
