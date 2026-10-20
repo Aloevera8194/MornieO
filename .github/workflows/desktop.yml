@@ -140,8 +140,8 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Flutter Linux toolchain, plugin libraries (libsecret, GStreamer for
-      # audioplayers, json-glib for ffmpeg_kit, ALSA for volume_controller)
-      # and libclang for the rquickjs bindings.
+      # audioplayers, json-glib for ffmpeg_kit, ALSA for volume_controller,
+      # libmpv for media_kit playback) and libclang for the rquickjs bindings.
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
@@ -149,7 +149,7 @@ jobs:
             clang cmake ninja-build pkg-config zip \
             libgtk-3-dev liblzma-dev libsecret-1-dev libstdc++-12-dev \
             libjson-glib-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-            libasound2-dev libclang-dev
+            libasound2-dev libclang-dev libmpv-dev
 
       - name: Activate pinned Rust toolchain
         working-directory: rust_backend
