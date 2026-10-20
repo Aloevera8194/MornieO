@@ -218,7 +218,7 @@ Architecture: $DEB_ARCH
 Maintainer: zarzet <42882290+zarzet@users.noreply.github.com>
 Installed-Size: $installed_size
 Depends: $depends
-Recommends: gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, xdg-utils
+Recommends: gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, xdg-utils, xdg-desktop-portal
 Section: sound
 Priority: optional
 Homepage: https://github.com/spotiflacapp/SpotiFLAC-Mobile

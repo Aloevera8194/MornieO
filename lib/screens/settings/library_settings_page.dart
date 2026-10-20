@@ -183,7 +183,25 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
         }
         return;
       }
-      final result = await FilePicker.getDirectoryPath();
+      String? result;
+      try {
+        result = await FilePicker.getDirectoryPath();
+      } catch (e) {
+        // Linux reaches the picker through the desktop portal, which a
+        // session may not run.
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                context.l10n.snackbarFolderPickerFailed(
+                  context.friendlyError(e),
+                ),
+              ),
+            ),
+          );
+        }
+        return;
+      }
       if (result != null) {
         final source = await ref
             .read(localLibraryProvider.notifier)
