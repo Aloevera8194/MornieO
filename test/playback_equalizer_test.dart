@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mornye/models/equalizer_settings.dart';
 import 'package:mornye/services/music_playback_deck.dart';
+import 'package:mornye/services/playback_deck.dart';
 import 'package:mornye/services/playback_equalizer.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -82,16 +83,16 @@ void main() {
   test(
     'all AutoMix decks receive live EQ and recreated sources restore it',
     () async {
-      final outgoing = MusicPlaybackDeck(
+      final outgoing = AudioplayersPlaybackDeck(
         playerId: 'eq-outgoing',
         equalizerAvailable: true,
       );
-      final incoming = MusicPlaybackDeck(
+      final incoming = AudioplayersPlaybackDeck(
         playerId: 'eq-incoming',
         equalizerAvailable: true,
       );
-      await outgoing.setSource(DeviceFileSource('/outgoing.flac'));
-      await incoming.setSource(DeviceFileSource('/incoming.flac'));
+      await outgoing.setFileSource('/outgoing.flac');
+      await incoming.setFileSource('/incoming.flac');
       expect(calls.where((c) => c.method == 'setEqualizer'), isEmpty);
       playbackEqualizer.value = const EqualizerSettings(enabled: true, bass: 3);
       await Future<void>.delayed(const Duration(milliseconds: 80));
@@ -115,7 +116,7 @@ void main() {
         calls.where((c) => c.method == 'setEqualizer').length,
         greaterThan(beforeDragging + 2),
       );
-      await outgoing.setSource(DeviceFileSource('/next.flac'));
+      await outgoing.setFileSource('/next.flac');
       expect(
         (calls.last.arguments as Map)['configuration'],
         containsPair('enabled', true),
@@ -141,14 +142,14 @@ void main() {
   test(
     'bit-perfect PCM bypasses EQ and returns to EQ on ordinary playback',
     () async {
-      final deck = MusicPlaybackDeck(
+      final deck = AudioplayersPlaybackDeck(
         playerId: 'eq-usb',
         nativeAvailable: true,
         equalizerAvailable: true,
       );
       playbackEqualizer.value = const EqualizerSettings(enabled: true);
-      await deck.setSource(
-        DeviceFileSource('/usb.flac'),
+      await deck.setFileSource(
+        '/usb.flac',
         preferBitPerfect: true,
         directUsb: true,
       );
@@ -159,7 +160,7 @@ void main() {
           containsPair('enabled', false),
         );
       }
-      await deck.setSource(DeviceFileSource('/ordinary.flac'));
+      await deck.setFileSource('/ordinary.flac');
       expect(
         (calls.last.arguments as Map)['configuration'],
         containsPair('enabled', true),
@@ -169,14 +170,14 @@ void main() {
   );
 
   test('a late native error cannot outlive a disposed deck', () async {
-    final deck = MusicPlaybackDeck(
+    final deck = AudioplayersPlaybackDeck(
       playerId: 'eq-disposed',
       equalizerAvailable: true,
     );
     effectGate = Completer<void>();
     reject = true;
     playbackEqualizer.value = const EqualizerSettings(enabled: true);
-    final preparing = deck.setSource(DeviceFileSource('/song.flac'));
+    final preparing = deck.setFileSource('/song.flac');
     await Future<void>.delayed(const Duration(milliseconds: 60));
     expect(calls.where((c) => c.method == 'setEqualizer'), isNotEmpty);
     await deck.dispose();
@@ -185,16 +186,49 @@ void main() {
     expect(playbackEqualizerError.value, isNull);
   });
 
+  test('a desktop deck without the tap reports EQ as unavailable', () async {
+    debugDesktopPlatformOverride = true;
+    addTearDown(() => debugDesktopPlatformOverride = null);
+    final deck = AudioplayersPlaybackDeck(
+      playerId: 'eq-desktop',
+      equalizerAvailable: false,
+    );
+    await deck.setFileSource('/song.flac');
+    playbackEqualizer.value = const EqualizerSettings(enabled: true);
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    expect(calls.where((c) => c.method == 'setEqualizer'), isEmpty);
+    expect(playbackEqualizerError.value, isNotNull);
+    playbackEqualizer.value = const EqualizerSettings();
+    await Future<void>.delayed(const Duration(milliseconds: 80));
+    expect(playbackEqualizerError.value, isNull);
+    await deck.dispose();
+  });
+
+  test('in-app output volume scales the gain of every deck', () async {
+    addTearDown(() => playbackOutputVolume.value = 1);
+    final deck = AudioplayersPlaybackDeck(playerId: 'output-gain');
+    await deck.setFileSource('/song.flac');
+    await deck.setVolume(0.8);
+    playbackOutputVolume.value = 0.5;
+    await Future<void>.delayed(const Duration(milliseconds: 20));
+    final volumes = [
+      for (final call in calls)
+        if (call.method == 'setVolume') (call.arguments as Map)['volume'],
+    ];
+    expect(volumes, [0.8, 0.4]);
+    await deck.dispose();
+  });
+
   test(
     'unsupported effects report an error without breaking playback',
     () async {
-      final deck = MusicPlaybackDeck(
+      final deck = AudioplayersPlaybackDeck(
         playerId: 'eq-error',
         equalizerAvailable: true,
       );
       reject = true;
       playbackEqualizer.value = const EqualizerSettings(enabled: true);
-      await deck.setSource(DeviceFileSource('/song.flac'));
+      await deck.setFileSource('/song.flac');
       expect(playbackEqualizerError.value, contains('Unsupported output'));
       await deck.resume();
       expect(calls.last.method, 'resume');

@@ -5,7 +5,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/services/playback_deck.dart';
+import 'package:mornye/services/system_volume_service.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_slider.dart';
 import 'package:mornye/widgets/player_volume_control.dart';
 
@@ -27,6 +30,34 @@ void main() {
     await container.read(systemVolumeWriterProvider)(0.7);
     expect(calls.single.method, 'setVolume');
     expect(calls.single.arguments, {'volume': 0.7, 'showSystemUI': false});
+  });
+
+  test('Desktop volume writes set the in-app gain, never the system', () async {
+    const channel = MethodChannel('com.kurenai7968.volume_controller.method');
+    final calls = <MethodCall>[];
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(
+      channel,
+      (call) async => calls.add(call),
+    );
+    debugDesktopPlatformOverride = true;
+    addTearDown(() {
+      messenger.setMockMethodCallHandler(channel, null);
+      debugDesktopPlatformOverride = null;
+      playbackOutputVolume.value = 1;
+    });
+    final volume = SystemVolumeService();
+    final values = <double>[];
+    final subscription = volume.changes.listen(values.add);
+    addTearDown(subscription.cancel);
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    await container.read(systemVolumeWriterProvider)(0.4);
+    await Future<void>.delayed(Duration.zero);
+    expect(playbackOutputVolume.value, 0.4);
+    expect(values, [1, 0.4]);
+    expect(calls, isEmpty);
   });
 
   testWidgets('Slow volume writes coalesce and cannot reset an active drag', (

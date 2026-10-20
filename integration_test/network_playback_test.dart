@@ -152,7 +152,7 @@ void main() {
       read: () async => null,
       write: (_) async {},
     );
-    final deck = MusicPlaybackDeck(playerId: 'network-integration');
+    final deck = AudioplayersPlaybackDeck(playerId: 'network-integration');
     try {
       await service.save(
         NetworkConnection(
