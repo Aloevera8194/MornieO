@@ -32,15 +32,13 @@ export CARGO_TARGET_DIR="$RUST_BACKEND_DIR/target"
 
 # Desktop: the C ABI library loaded by dart:ffi (crates/desktop). It needs no
 # UniFFI bindings. Output: target/desktop/<os>/libmornye_desktop.{dylib,so}.
+# The macOS app embeds it from an Xcode build phase
+# (scripts/embed_rust_backend_macos.sh); linux/CMakeLists.txt installs it.
 #
-# Windows is not built by this script (Rust portability work is unit D12).
-# The intended CI commands, from PowerShell in rust_backend/ with LLVM
-# (libclang, for rquickjs bindgen) on PATH, are:
-#   $env:CARGO_TARGET_DIR = "$PWD\target"
-#   cargo build --locked --release -p mornye-desktop --target x86_64-pc-windows-msvc
-#   New-Item -ItemType Directory -Force target\desktop\windows | Out-Null
-#   Copy-Item target\x86_64-pc-windows-msvc\release\mornye_desktop.dll target\desktop\windows\
-# and the same with aarch64-pc-windows-msvc for Windows on Arm.
+# Windows is built by the PowerShell companion script
+# scripts/build_rust_backend_windows.ps1 (cargo build of mornye-desktop for
+# x86_64-pc-windows-msvc, or aarch64-pc-windows-msvc with -Target, staged as
+# target\desktop\windows\mornye_desktop.dll for windows/CMakeLists.txt).
 if [[ "$PLATFORM" == "desktop" ]]; then
   case "$(uname -s)" in
     Darwin)
@@ -70,7 +68,7 @@ if [[ "$PLATFORM" == "desktop" ]]; then
       mkdir -p "$DESKTOP_DIR"
       cp "$CARGO_TARGET_DIR/release/libmornye_desktop.so" "$DESKTOP_DIR/"
       ;;
-    *) echo "Error: use macOS or Linux for desktop builds (Windows: see the comment above)." >&2; exit 1 ;;
+    *) echo "Error: use macOS or Linux for desktop builds (Windows: scripts/build_rust_backend_windows.ps1)." >&2; exit 1 ;;
   esac
   echo "Rust desktop library is staged in $DESKTOP_DIR."
   exit 0

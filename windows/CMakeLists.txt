@@ -87,6 +87,19 @@ if(PLUGIN_BUNDLED_LIBRARIES)
     COMPONENT Runtime)
 endif()
 
+# Rust desktop backend, loaded by dart:ffi from next to the executable.
+# It is prebuilt by scripts\build_rust_backend_windows.ps1.
+set(MORNYE_DESKTOP_LIBRARY
+  "${CMAKE_CURRENT_SOURCE_DIR}/../rust_backend/target/desktop/windows/mornye_desktop.dll")
+if(NOT EXISTS "${MORNYE_DESKTOP_LIBRARY}")
+  message(FATAL_ERROR
+    "The Rust desktop backend was not built: ${MORNYE_DESKTOP_LIBRARY} "
+    "is missing. Run `pwsh scripts\\build_rust_backend_windows.ps1` from the "
+    "repository root, then build again.")
+endif()
+install(FILES "${MORNYE_DESKTOP_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
+  COMPONENT Runtime)
+
 # Copy the native assets provided by the build.dart from all packages.
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/windows/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"
