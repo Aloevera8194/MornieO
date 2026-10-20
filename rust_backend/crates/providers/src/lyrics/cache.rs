@@ -15,7 +15,9 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 pub const MAX_ENTRIES: usize = 500;
 pub const TTL: Duration = Duration::from_secs(24 * 60 * 60);
 const MAX_PERSISTED_BYTES: u64 = 64 << 20;
-const SNAPSHOT_VERSION: u32 = 6;
+const APPLE_TIMING_VERSION: u32 = 6;
+const LRC_RED_RECORDING_VERSION: u32 = 7;
+const SNAPSHOT_VERSION: u32 = LRC_RED_RECORDING_VERSION;
 
 #[derive(Clone)]
 struct Entry {
@@ -147,9 +149,12 @@ impl LyricsCache {
                 let Some(response) = entry.response else {
                     continue;
                 };
-                // Refetch legacy Apple results once to apply current source
-                // priority and vocal timing, preserving other providers' caches.
-                if loaded.version < SNAPSHOT_VERSION && response.provider == "Apple Music" {
+                // Refetch results whose recording selection or timing changed,
+                // preserving the independent revisions of other providers.
+                if (loaded.version < APPLE_TIMING_VERSION && response.provider == "Apple Music")
+                    || (loaded.version < LRC_RED_RECORDING_VERSION
+                        && response.provider == "lrc.red")
+                {
                     continue;
                 }
                 let Some(expires_at) = u64::try_from(entry.expires_at)
@@ -321,7 +326,7 @@ mod tests {
         let now = UNIX_EPOCH + Duration::from_secs(100);
         let apple = LyricsResponse::from_text("[00:01.00]Original", "Apple Music", "Apple Music");
         let other = LyricsResponse::from_text("[00:01.00]Original", "LRCLIB", "LRCLIB");
-        for version in 1..SNAPSHOT_VERSION {
+        for version in 1..APPLE_TIMING_VERSION {
             let snapshot = serde_json::json!({"version": version, "entries": {
                 "apple": {"response": apple, "expires_at": 200},
                 "other": {"response": other, "expires_at": 200}
@@ -331,6 +336,33 @@ mod tests {
             cache.set_persistence_path(file.path(), now);
             assert!(cache.get("apple", now).is_none());
             assert_eq!(cache.get("other", now).unwrap().provider, "LRCLIB");
+        }
+    }
+
+    #[test]
+    fn legacy_recording_cache_refetches_lrc_red_without_discarding_current_apple() {
+        let file = tempfile::NamedTempFile::new().unwrap();
+        let now = UNIX_EPOCH + Duration::from_secs(100);
+        let red = LyricsResponse::from_text("[00:01.00]Solo", "lrc.red", "lrc.red");
+        let apple = LyricsResponse::from_text("[00:01.00]Original", "Apple Music", "Apple Music");
+        for version in 1..=SNAPSHOT_VERSION {
+            let snapshot = serde_json::json!({"version": version, "entries": {
+                "red": {"response": red, "expires_at": 200},
+                "apple": {"response": apple, "expires_at": 200}
+            }});
+            fs::write(file.path(), serde_json::to_vec(&snapshot).unwrap()).unwrap();
+            let cache = LyricsCache::default();
+            cache.set_persistence_path(file.path(), now);
+            assert_eq!(
+                cache.get("red", now).is_some(),
+                version >= LRC_RED_RECORDING_VERSION,
+                "lrc.red snapshot {version}"
+            );
+            assert_eq!(
+                cache.get("apple", now).is_some(),
+                version >= APPLE_TIMING_VERSION,
+                "Apple snapshot {version}"
+            );
         }
     }
 

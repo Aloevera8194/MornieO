@@ -131,7 +131,9 @@ impl LyricsFetcher for BuiltinLyricsClient {
         request: &SearchRequest,
         check: &Check<'_>,
     ) -> Result<LyricsResponse, LyricsError> {
-        if provider == "lrclib" {
+        if matches!(provider, "lrclib" | "lrcred") {
+            // Recording search needs every credited artist and version marker.
+            // A primary-artist or simplified-title retry can select a solo take.
             return self.fetch_once(provider, request, check);
         }
         let primary = matching::primary_artist(&request.artist);
@@ -147,7 +149,7 @@ impl LyricsFetcher for BuiltinLyricsClient {
             && simplified != request.track
             && matches!(
                 provider,
-                "netease" | "spotify" | "youtube" | "kugou" | "genius" | "lyricsplus" | "lrcred"
+                "netease" | "spotify" | "youtube" | "kugou" | "genius" | "lyricsplus"
             )
         {
             attempt.track = simplified;

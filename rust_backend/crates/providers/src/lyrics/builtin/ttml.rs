@@ -31,6 +31,41 @@ fn isrc_path(isrc: &str) -> Option<String> {
     (isrc.len() == 12 && isrc.bytes().all(|byte| byte.is_ascii_alphanumeric())).then_some(isrc)
 }
 
+fn lrc_red_hit<'a>(hits: &'a [LrcRedHit], request: &SearchRequest) -> Option<&'a LrcRedHit> {
+    fn artists(value: &str) -> Vec<String> {
+        let normalized = matching::normalize_loose_artist(value);
+        let mut words: Vec<_> = normalized
+            .split_whitespace()
+            .filter(|word| !matches!(*word, "feat" | "ft" | "featuring" | "with" | "and"))
+            .map(str::to_owned)
+            .collect();
+        words.sort();
+        words
+    }
+    let title = matching::normalize_title(&request.track);
+    let expected_artists = artists(&request.artist);
+    if title.is_empty() || expected_artists.is_empty() {
+        return None;
+    }
+    hits.iter()
+        .filter(|hit| {
+            isrc_path(&hit.isrc).is_some()
+                && matching::normalize_title(&hit.title) == title
+                && artists(&hit.artist) == expected_artists
+                && matching::duration_matches(hit.duration, request.duration)
+        })
+        .min_by(|left, right| {
+            let distance = |duration: f64| {
+                if duration > 0.0 && request.duration > 0.0 {
+                    (duration - request.duration).abs()
+                } else {
+                    f64::INFINITY
+                }
+            };
+            distance(left.duration).total_cmp(&distance(right.duration))
+        })
+}
+
 impl BuiltinLyricsClient {
     pub(super) fn lrc_red(
         &self,
@@ -46,16 +81,8 @@ impl BuiltinLyricsClient {
         search.unavailable_errors = true;
         let response: LrcRedSearch =
             http::decode(&self.http.get(search, check)?.body, true, check)?;
-        let hit = select(&response.hits, request, |hit| {
-            (
-                hit.title.clone(),
-                hit.artist.clone(),
-                hit.duration,
-                isrc_path(&hit.isrc).is_some()
-                    && matches(&hit.title, &hit.artist, hit.duration, request),
-            )
-        })
-        .ok_or_else(|| LyricsError::NotFound("no matching song found on lrc.red".into()))?;
+        let hit = lrc_red_hit(&response.hits, request)
+            .ok_or_else(|| LyricsError::NotFound("no matching song found on lrc.red".into()))?;
         let isrc = isrc_path(&hit.isrc).unwrap_or_default();
         let endpoint = format!("https://lrc.red/s/{isrc}.ttml");
         let mut document = Request::new(&endpoint);
@@ -151,6 +178,85 @@ mod tests {
         ] {
             assert_eq!(isrc_path(invalid), None, "{invalid}");
         }
+    }
+
+    #[test]
+    fn recording_selection_preserves_collaborators_and_versions() {
+        let request = SearchRequest {
+            track: "Example".into(),
+            artist: "First Artist & Guest Artist".into(),
+            duration: 223.94,
+            ..SearchRequest::default()
+        };
+        let hits = [
+            LrcRedHit {
+                isrc: "USAAA2600001".into(),
+                title: "Example".into(),
+                artist: "First Artist".into(),
+                duration: 221.958,
+            },
+            LrcRedHit {
+                isrc: "USAAA2600002".into(),
+                title: "Example".into(),
+                artist: "First Artist & Guest Artist".into(),
+                duration: 223.935,
+            },
+        ];
+        assert_eq!(lrc_red_hit(&hits, &request).unwrap().isrc, hits[1].isrc);
+        assert!(lrc_red_hit(&hits[..1], &request).is_none());
+        let live = SearchRequest {
+            track: "Example (Live)".into(),
+            ..request.clone()
+        };
+        assert!(lrc_red_hit(&hits, &live).is_none());
+        let solo = SearchRequest {
+            artist: "First Artist".into(),
+            ..request
+        };
+        assert!(lrc_red_hit(&hits[1..], &solo).is_none());
+    }
+
+    #[test]
+    fn recording_selection_accepts_artist_separators_and_prefers_the_closer_length() {
+        let request = SearchRequest {
+            track: "Example".into(),
+            artist: "First Artist feat. Guest Artist".into(),
+            duration: 223.94,
+            ..SearchRequest::default()
+        };
+        let hits = [
+            LrcRedHit {
+                isrc: "USAAA2600001".into(),
+                title: "Example".into(),
+                artist: "First Artist, Guest Artist".into(),
+                duration: 221.958,
+            },
+            LrcRedHit {
+                isrc: "USAAA2600002".into(),
+                title: "EXAMPLE".into(),
+                artist: "Guest Artist & First Artist".into(),
+                duration: 223.935,
+            },
+        ];
+        assert_eq!(lrc_red_hit(&hits, &request).unwrap().isrc, hits[1].isrc);
+    }
+
+    #[test]
+    #[ignore = "requires live lrc.red access"]
+    fn live_lrc_red_keeps_the_collaboration_recording() {
+        let network = NetworkService::new().unwrap();
+        let client = BuiltinLyricsClient::new(&network, "", Arc::new(Resolver));
+        let request = SearchRequest {
+            track: "expectations".into(),
+            artist: "Olivia Rodrigo & Chappell Roan".into(),
+            duration: 223.94,
+            ..SearchRequest::default()
+        };
+        let lyrics = client.fetch("lrcred", &request, &|| Ok(())).unwrap();
+        assert!(lyrics.is_synced());
+        assert_eq!(lyrics.source, "lrc.red");
+        assert_eq!(lyrics.lines()[0].start_time_ms, 324);
+        assert_eq!(lyrics.lines().len(), 61);
     }
 
     #[test]
