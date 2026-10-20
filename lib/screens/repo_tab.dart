@@ -16,6 +16,7 @@ import 'package:mornye/widgets/settings_group.dart';
 import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/screens/repo/extension_details_screen.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/providers/runtime_profile_provider.dart';
 import 'package:mornye/theme/mornye_theme.dart';
@@ -95,7 +96,12 @@ class _RepoTabState extends ConsumerState<RepoTab> {
     }
     final colorScheme = Theme.of(context).colorScheme;
     // Controls share the centered column of the extension list on tablets.
-    final edge = 16 + wideListInset(context);
+    // Desktop fills the pane with a grid instead; only the search field
+    // keeps a reading width.
+    final edge = 16 + (isDesktopPlatform ? 0.0 : wideListInset(context));
+    final desktopColumns = isDesktopPlatform
+        ? _desktopGridColumns(MediaQuery.sizeOf(context).width - edge * 2)
+        : 1;
 
     return Scaffold(
       body: AppRefreshIndicator(
@@ -104,7 +110,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
         child: CustomScrollView(
           slivers: [
             AppSliverHeader.tabRoot(
-              alignToContent: true,
+              alignToContent: !isDesktopPlatform,
               title: context.l10n.storeTitle,
               actions: [
                 if (hasRegistryUrl)
@@ -130,15 +136,24 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
-                  child: AppSearchField(
-                    controller: _searchController,
-                    hintText: context.l10n.storeSearch,
-                    clearTooltip: context.l10n.dialogClear,
-                    samplesBackdrop: false,
-                    onChanged: (value) =>
-                        ref.read(repoProvider.notifier).setSearchQuery(value),
-                    onClear: () =>
-                        ref.read(repoProvider.notifier).setSearchQuery(''),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: isDesktopPlatform ? 560 : double.infinity,
+                      ),
+                      child: AppSearchField(
+                        controller: _searchController,
+                        hintText: context.l10n.storeSearch,
+                        clearTooltip: context.l10n.dialogClear,
+                        samplesBackdrop: false,
+                        onChanged: (value) => ref
+                            .read(repoProvider.notifier)
+                            .setSearchQuery(value),
+                        onClear: () =>
+                            ref.read(repoProvider.notifier).setSearchQuery(''),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -234,7 +249,14 @@ class _RepoTabState extends ConsumerState<RepoTab> {
                   ),
                 ),
 
-                if (context.isMornye)
+                if (desktopColumns > 1)
+                  _desktopExtensionGrid(
+                    filteredExtensions,
+                    columns: desktopColumns,
+                    edge: edge,
+                    downloadingId: downloadingId,
+                  )
+                else if (context.isMornye)
                   SliverToBoxAdapter(
                     child: ExtensionRepoCard(
                       margin: EdgeInsets.symmetric(
@@ -284,6 +306,64 @@ class _RepoTabState extends ConsumerState<RepoTab> {
             ],
             const NavBarSliverSpacer(),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Columns of the desktop store grid for [width] of content: one per
+  /// 360dp, up to four.
+  static int _desktopGridColumns(double width) =>
+      ((width + _desktopGridGap) / (360 + _desktopGridGap)).floor().clamp(1, 4);
+
+  static const double _desktopGridGap = 12;
+
+  /// Desktop extensions as a grid of tiles that fills the pane.
+  Widget _desktopExtensionGrid(
+    List<RepoExtension> extensions, {
+    required int columns,
+    required double edge,
+    required String? downloadingId,
+  }) {
+    Widget tile(RepoExtension ext) {
+      final item = _ExtensionItem(
+        extension: ext,
+        showDivider: false,
+        isDownloading: downloadingId == ext.id,
+        onInstall: () => _installExtension(ext),
+        onUpdate: () => _updateExtension(ext),
+        onTap: () => _showExtensionDetails(ext),
+      );
+      return context.isMornye
+          ? ExtensionRepoCard(margin: EdgeInsets.zero, child: item)
+          : SettingsGroup(
+              connected: true,
+              margin: EdgeInsets.zero,
+              children: [item],
+            );
+    }
+
+    final rows = (extensions.length / columns).ceil();
+    return SliverPadding(
+      key: const ValueKey('store-desktop-grid'),
+      padding: EdgeInsets.fromLTRB(edge, 4, edge, 0),
+      sliver: SliverList.builder(
+        itemCount: rows,
+        itemBuilder: (context, row) => Padding(
+          padding: const EdgeInsets.only(bottom: _desktopGridGap),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (var column = 0; column < columns; column++) ...[
+                if (column > 0) const SizedBox(width: _desktopGridGap),
+                Expanded(
+                  child: row * columns + column < extensions.length
+                      ? tile(extensions[row * columns + column])
+                      : const SizedBox.shrink(),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
