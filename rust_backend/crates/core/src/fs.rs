@@ -77,6 +77,82 @@ pub fn write_atomic(
     Ok(())
 }
 
+/// Portable spellings of the Unix open flags used for host-owned files.
+/// Unix keeps the exact flags and modes; other platforms apply the closest
+/// equivalent or nothing.
+pub trait OpenOptionsPortableExt {
+    /// Refuse to follow a final-component link and never block on a FIFO or
+    /// device. Unix: `O_NOFOLLOW | O_NONBLOCK`. Windows:
+    /// `FILE_FLAG_OPEN_REPARSE_POINT`, so a symlink, junction or mount point
+    /// opens as itself and fails the caller's regular-file check. Replaces
+    /// earlier custom flags.
+    fn nofollow_nonblock(&mut self) -> &mut Self;
+    /// Unix: `O_NONBLOCK`, replacing earlier custom flags. No-op elsewhere.
+    fn nonblock(&mut self) -> &mut Self;
+    /// Unix: the creation mode. No-op elsewhere; Windows files inherit the
+    /// ACL of their parent directory.
+    fn unix_mode(&mut self, mode: u32) -> &mut Self;
+}
+
+impl OpenOptionsPortableExt for std::fs::OpenOptions {
+    fn nofollow_nonblock(&mut self) -> &mut Self {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            self.custom_flags(
+                (rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK).bits() as i32,
+            );
+        }
+        #[cfg(windows)]
+        {
+            use std::os::windows::fs::OpenOptionsExt;
+            use windows_sys::Win32::Storage::FileSystem::FILE_FLAG_OPEN_REPARSE_POINT;
+            self.custom_flags(FILE_FLAG_OPEN_REPARSE_POINT);
+        }
+        self
+    }
+
+    fn nonblock(&mut self) -> &mut Self {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            self.custom_flags(rustix::fs::OFlags::NONBLOCK.bits() as i32);
+        }
+        self
+    }
+
+    fn unix_mode(&mut self, mode: u32) -> &mut Self {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::OpenOptionsExt;
+            self.mode(mode);
+        }
+        #[cfg(not(unix))]
+        let _ = mode;
+        self
+    }
+}
+
+/// Portable spelling of [`std::os::unix::fs::DirBuilderExt::mode`].
+pub trait DirBuilderPortableExt {
+    /// Unix: the creation mode. No-op elsewhere; Windows directories inherit
+    /// the ACL of their parent directory.
+    fn unix_mode(&mut self, mode: u32) -> &mut Self;
+}
+
+impl DirBuilderPortableExt for std::fs::DirBuilder {
+    fn unix_mode(&mut self, mode: u32) -> &mut Self {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::DirBuilderExt;
+            self.mode(mode);
+        }
+        #[cfg(not(unix))]
+        let _ = mode;
+        self
+    }
+}
+
 /// Lexically cleans a path like Go's `filepath.Clean`: drops `.` components,
 /// folds `name/..`, keeps leading `..` on relative paths, drops `..` above the
 /// root, and returns `.` for an empty result. The filesystem is not consulted.

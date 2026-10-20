@@ -36,5 +36,8 @@ pub mod storage;
 pub mod transfer_policy;
 mod url_host;
 mod utility_host;
+// Pure path checks, so host tests cover them on every platform.
+#[cfg(any(not(unix), test))]
+mod windows_path;
 
 pub use runtime::{ExtensionError, ExtensionRuntime, ExtensionServices, RuntimeLimits};

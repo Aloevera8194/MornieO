@@ -8,13 +8,12 @@ pub use model::{Registry, RepoExtension, normalize_sha256};
 pub use package::{destination_path, write_verified_package};
 pub use urls::{RegistryLocation, registry_location, require_https};
 
-use mornye_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
+use mornye_core::fs::{DEFAULT_TEMP_PREFIX, OpenOptionsPortableExt, write_atomic};
 use mornye_network::{HttpRequest, NetworkService, NetworkSession};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
-use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
@@ -114,10 +113,8 @@ impl ExtensionRepository {
             .write(true)
             .create(true)
             .truncate(false)
-            .mode(0o600)
-            .custom_flags(
-                (rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK).bits() as i32,
-            )
+            .unix_mode(0o600)
+            .nofollow_nonblock()
             .open(cache_directory.join(".backend-repository.lock"))
             .map_err(|e| cause("failed to lock repository cache", e))?;
         if !lock
@@ -132,9 +129,7 @@ impl ExtensionRepository {
         let cache = (|| {
             let file = OpenOptions::new()
                 .read(true)
-                .custom_flags(
-                    (rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK).bits() as i32,
-                )
+                .nofollow_nonblock()
                 .open(cache_directory.join(CACHE_FILE))
                 .ok()?;
             let metadata = file.metadata().ok()?;

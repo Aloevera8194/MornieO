@@ -713,6 +713,7 @@ mod tests {
         }
     }
 
+    #[cfg(unix)]
     #[test]
     fn walk_still_rejects_nested_symlinks() {
         let root = tempfile::tempdir().unwrap();

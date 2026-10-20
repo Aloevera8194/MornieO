@@ -1604,6 +1604,7 @@ dependencies = [
  "tz-rs",
  "unicode-general-category",
  "unicode-normalization",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1648,6 +1649,7 @@ dependencies = [
  "tempfile",
  "thiserror",
  "time",
+ "windows-sys 0.61.2",
  "zeroize",
  "zip",
 ]
@@ -1714,7 +1716,6 @@ dependencies = [
  "mornye-core",
  "mornye-network",
  "regex",
- "rustix",
  "scraper",
  "serde",
  "serde_json",
