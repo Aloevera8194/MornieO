@@ -221,108 +221,120 @@ class _TrackItemWithStatus extends ConsumerWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        InkWell(
-          onTap: () => _handleTap(
-            context,
-            ref,
-            isQueued: isQueued,
-            isInHistory: isInHistory,
-            isInLocalLibrary: isInLocalLibrary,
-          ),
-          onLongPress: () => TrackCollectionQuickActions.showTrackOptionsSheet(
-            context,
-            ref,
-            track,
-            hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
-          ),
-          splashColor: colorScheme.primary.withValues(alpha: 0.12),
-          highlightColor: colorScheme.primary.withValues(alpha: 0.08),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              12,
-              context.tokens.trackRowPaddingV,
-              6,
-              context.tokens.trackRowPaddingV,
+        DesktopContextMenuRegion(
+          onContextMenu: (position) =>
+              TrackCollectionQuickActions.showTrackOptionsSheet(
+                context,
+                ref,
+                track,
+                position: position,
+                hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
+              ),
+          child: InkWell(
+            onTap: () => _handleTap(
+              context,
+              ref,
+              isQueued: isQueued,
+              isInHistory: isInHistory,
+              isInLocalLibrary: isInLocalLibrary,
             ),
-            child: Row(
-              children: [
-                Semantics(
-                  label:
-                      '${context.l10n.dialogDownload} '
-                      '${context.l10n.editMetadataFieldCover}: ${track.name}',
-                  button: hasCover,
-                  onLongPress: hasCover ? onSaveCover : null,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    excludeFromSemantics: true,
+            onLongPress: () =>
+                TrackCollectionQuickActions.showTrackOptionsSheet(
+                  context,
+                  ref,
+                  track,
+                  hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
+                ),
+            splashColor: colorScheme.primary.withValues(alpha: 0.12),
+            highlightColor: colorScheme.primary.withValues(alpha: 0.08),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                12,
+                context.tokens.trackRowPaddingV,
+                6,
+                context.tokens.trackRowPaddingV,
+              ),
+              child: Row(
+                children: [
+                  Semantics(
+                    label:
+                        '${context.l10n.dialogDownload} '
+                        '${context.l10n.editMetadataFieldCover}: ${track.name}',
+                    button: hasCover,
                     onLongPress: hasCover ? onSaveCover : null,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: hasCover
-                          ? CachedCoverImage(
-                              imageUrl: track.coverUrl!,
-                              width: thumbWidth,
-                              height: thumbHeight,
-                              fit: BoxFit.cover,
-                            )
-                          : Container(
-                              width: thumbWidth,
-                              height: thumbHeight,
-                              color: colorScheme.surfaceContainerHighest,
-                              child: Icon(
-                                Icons.music_note,
-                                color: colorScheme.onSurfaceVariant,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      excludeFromSemantics: true,
+                      onLongPress: hasCover ? onSaveCover : null,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: hasCover
+                            ? CachedCoverImage(
+                                imageUrl: track.coverUrl!,
+                                width: thumbWidth,
+                                height: thumbHeight,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                width: thumbWidth,
+                                height: thumbHeight,
+                                color: colorScheme.surfaceContainerHighest,
+                                child: Icon(
+                                  Icons.music_note,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        track.name,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: context.isMornye
-                              ? FontWeight.w600
-                              : FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      TrackMetadataBadgesLine(
-                        primary: ClickableArtistName(
-                          artistName: track.artistName,
-                          artistId: track.artistId,
-                          coverUrl: track.coverUrl,
-                          extensionId: extensionId,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          track.name,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontWeight: context.isMornye
+                                    ? FontWeight.w600
+                                    : FontWeight.w500,
+                              ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        badges: [
-                          ...buildQualityBadges(
-                            audioQuality: track.audioQuality,
-                            audioModes: track.audioModes,
-                            colorScheme: colorScheme,
-                            explicit: track.isExplicit,
+                        const SizedBox(height: 2),
+                        TrackMetadataBadgesLine(
+                          primary: ClickableArtistName(
+                            artistName: track.artistName,
+                            artistId: track.artistId,
+                            coverUrl: track.coverUrl,
+                            extensionId: extensionId,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          if (isInLocalLibrary) const InLibraryBadge(),
-                        ],
-                      ),
-                    ],
+                          badges: [
+                            ...buildQualityBadges(
+                              audioQuality: track.audioQuality,
+                              audioModes: track.audioModes,
+                              colorScheme: colorScheme,
+                              explicit: track.isExplicit,
+                            ),
+                            if (isInLocalLibrary) const InLibraryBadge(),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                PreviewButton(track: track),
-                TrackCollectionQuickActions(
-                  track: track,
-                  hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
-                ),
-              ],
+                  PreviewButton(track: track),
+                  TrackCollectionQuickActions(
+                    track: track,
+                    hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
