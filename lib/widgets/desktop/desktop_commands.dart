@@ -192,7 +192,7 @@ List<ShellTab> desktopDestinationTabs({
   ShellTab.settings,
 ];
 
-/// Whether the Mornye desktop sidebar is collapsed to icons. Kept for the
+/// Whether the Mornye desktop sidebar is hidden. Kept for the
 /// app session so the menu bar, shortcut and toolbar button share it.
 final desktopSidebarCollapsed = ValueNotifier<bool>(false);
 

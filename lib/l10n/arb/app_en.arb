@@ -7640,6 +7640,10 @@
   "@desktopDropNothingToImport": {
     "description": "Snackbar when the dropped items contain no folders or audio files"
   },
+  "desktopAllPlaylists": "All Playlists",
+  "@desktopAllPlaylists": {
+    "description": "Desktop sidebar row that opens the list of every playlist"
+  },
   "desktopMenuSettings": "Settings…",
   "@desktopMenuSettings": {
     "description": "macOS app menu item that opens Settings"
