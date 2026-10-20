@@ -1607,6 +1607,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "mornye-desktop"
+version = "0.1.0"
+dependencies = [
+ "getrandom 0.4.3",
+ "mornye-mobile",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "url",
+]
+
+[[package]]
 name = "mornye-extensions"
 version = "0.1.0"
 dependencies = [
