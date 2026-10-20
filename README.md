@@ -233,16 +233,6 @@ Full/Lite variants, crash symbols, validation, and pull request guidelines.
 
 ---
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-related-dark.svg"><img src="assets/readme/sections/section-related-light.svg" height="32" align="top" alt=""></picture> Related Projects
-
-### [SpotiFLAC (Desktop)](https://github.com/afkarxyz/SpotiFLAC)
-Download music in true lossless FLAC from extension-provided sources on Windows, macOS & Linux.
-
-### [SpotiFLAC (Python Module)](https://github.com/BartolomeoRusso9/SpotiFLAC-Module-Version)
-Python library for SpotiFLAC integration, maintained by [@BartolomeoRusso9](https://github.com/BartolomeoRusso9).
-
----
-
 ## <picture><source media="(prefers-color-scheme: dark)" srcset="assets/readme/sections/section-faq-dark.svg"><img src="assets/readme/sections/section-faq-light.svg" height="32" align="top" alt=""></picture> FAQ
 
 <details>
