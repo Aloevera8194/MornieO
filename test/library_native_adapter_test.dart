@@ -218,6 +218,7 @@ void main() {
   Future<LibraryScanNDJSONFile> scan(
     List<Map<String, dynamic>> rows, {
     int errors = 0,
+    List<String>? preserveMissingPaths,
   }) async {
     final file = File('${root.path}/scan.ndjson');
     await file.writeAsString(rows.map(jsonEncode).join('\n'));
@@ -225,6 +226,7 @@ void main() {
       file: file,
       expectedCount: rows.length,
       errorCount: errors,
+      preserveMissingPaths: preserveMissingPaths,
     );
   }
 
@@ -318,6 +320,50 @@ void main() {
       await cleaned();
     },
   );
+
+  test('partial NAS publication retains only unreadable scopes', () async {
+    const prefix = 'network://nas/music/';
+    await addNativeLibraryTrack(
+      live,
+      nativeLibraryTrack('unreadable', path: '${prefix}unreadable.flac'),
+    );
+    await addNativeLibraryTrack(
+      live,
+      nativeLibraryTrack('offline', path: '${prefix}offline%25_/keep.flac'),
+    );
+    await addNativeLibraryTrack(
+      live,
+      nativeLibraryTrack('deleted', path: '${prefix}test/deleted.flac'),
+    );
+    final refreshed = nativeLibraryTrack(
+      'refreshed',
+      path: '${prefix}offline%25_/keep.flac',
+    );
+    await adapter.importScanFile(
+      'source',
+      await scan(
+        [refreshed],
+        errors: 2,
+        preserveMissingPaths: [
+          '${prefix}offline%25_/',
+          '${prefix}unreadable.flac',
+        ],
+      ),
+      requestId: 'partial-nas',
+      isCancelled: () => false,
+    );
+    expect(
+      (await live.query('library')).map((row) => row['id']),
+      unorderedEquals(['refreshed', 'unreadable', 'other']),
+    );
+    expect(
+      (await live.query(
+        'library_path_keys',
+      )).map((row) => row['item_id']).toSet(),
+      {'refreshed', 'unreadable', 'other'},
+    );
+    await cleaned();
+  });
 
   test(
     'incremental removes current downloads and exact source-scoped deleted paths',

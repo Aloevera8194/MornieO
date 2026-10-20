@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:mornye/services/library_cleanup.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/library_schema.dart';
 import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
@@ -180,6 +181,7 @@ class LibraryNativeAdapter {
     },
     incremental: false,
     preserveMissing: scan.errorCount > 0,
+    preserveMissingPaths: scan.preserveMissingPaths,
     requestId: requestId,
     isCancelled: isCancelled,
   );
@@ -210,6 +212,7 @@ class LibraryNativeAdapter {
     Map<String, dynamic> operation, {
     required bool incremental,
     required bool preserveMissing,
+    List<String>? preserveMissingPaths,
     required String requestId,
     required bool Function() isCancelled,
   }) async {
@@ -236,6 +239,7 @@ class LibraryNativeAdapter {
         result,
         incremental: incremental,
         preserveMissing: preserveMissing,
+        preserveMissingPaths: preserveMissingPaths,
         isCancelled: isCancelled,
       );
     } on NativeSqliteSnapshotDetachException catch (error) {
@@ -253,6 +257,7 @@ class LibraryNativeAdapter {
     Map<String, dynamic> nativeResult, {
     required bool incremental,
     required bool preserveMissing,
+    List<String>? preserveMissingPaths,
     required bool Function() isCancelled,
   }) => _attached(privatePath, (alias) async {
     return sqlite.transactionWithBusyRetry(database, (txn) async {
@@ -311,13 +316,13 @@ class LibraryNativeAdapter {
           [sourceId],
         );
       } else {
-        await deleteWhere(
-          preserveMissing
-              ? 'source_id = ? AND (id IN(SELECT id FROM $alias.library) '
-                    'OR file_path IN(SELECT file_path FROM $alias.library))'
-              : 'source_id = ?',
-          [sourceId],
+        final predicate = libraryScanReplacementPredicate(
+          sourceId,
+          stageTable: '$alias.library',
+          preserveMissing: preserveMissing,
+          preserveMissingPaths: preserveMissingPaths,
         );
+        await deleteWhere(predicate.where, predicate.args);
       }
       _check(isCancelled);
       await txn.rawDelete(

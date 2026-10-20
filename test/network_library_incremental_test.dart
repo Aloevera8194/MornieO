@@ -94,6 +94,7 @@ void main() {
       Future<LibraryScanNDJSONFile> scan({
         bool force = false,
         bool commit = true,
+        String root = '',
       }) async {
         // A fresh reader per scan proves reuse comes from persisted Library
         // rows, rather than the playback service's short-lived memory cache.
@@ -122,7 +123,7 @@ void main() {
           },
         );
         final result = await scanner.scan(
-          NetworkStorageService.source('nas', ''),
+          NetworkStorageService.source('nas', root),
           forceFullScan: force,
           checkpoint: () async {
             if (cancelled) throw StateError('cancelled');
@@ -134,6 +135,7 @@ void main() {
             'source',
             result.rows(),
             preserveMissing: result.errorCount > 0,
+            preserveMissingPaths: result.preserveMissingPaths,
           );
         }
         return result;
@@ -263,7 +265,11 @@ void main() {
           final partial = await scan();
           expect(partial.errorCount, 1);
           expect(reads, ['bad.flac']);
-          expect(await database.query('library'), hasLength(3));
+          expect(await database.query('library'), hasLength(2));
+          expect(
+            (await database.query('library')).map((row) => row['file_path']),
+            isNot(contains('network://nas/missing.flac')),
+          );
           failedTracks.clear();
           reads.clear();
           await scan();
@@ -329,6 +335,50 @@ void main() {
           );
         },
       );
+
+      test(
+        'partial scan removes a deleted folder but retains failed scopes',
+        () async {
+          storage.tree[''] = [
+            const NetworkEntry('test/', 'test', directory: true),
+            const NetworkEntry('offline%_/', 'offline%_', directory: true),
+            track('unreadable.flac'),
+          ];
+          storage.tree['test/'] = [track('test/stale.flac')];
+          storage.tree['offline%_/'] = [track('offline%_/keep.flac')];
+          await scan();
+          storage.tree['']!.removeAt(0);
+          storage.tree['']![1] = track('unreadable.flac', modified: 2000);
+          storage.failedFolders.add('offline%_/');
+          failedTracks.add('unreadable.flac');
+          final result = await scan();
+          expect(result.errorCount, 2);
+          expect(
+            (await database.query('library')).map((row) => row['file_path']),
+            unorderedEquals([
+              'network://nas/offline%25_/keep.flac',
+              'network://nas/unreadable.flac',
+            ]),
+          );
+        },
+      );
+
+      test('selected NAS folders stay scoped to their own subtree', () async {
+        storage.tree[''] = [
+          const NetworkEntry('downloads/', 'downloads', directory: true),
+          const NetworkEntry('processed/', 'processed', directory: true),
+        ];
+        storage.tree['downloads/'] = [track('downloads/original.flac')];
+        storage.tree['processed/'] = [track('processed/converted.flac')];
+        for (final folder in ['downloads/', 'processed/']) {
+          reads.clear();
+          final result = await scan(root: folder, commit: false);
+          final rows = await result.rows().toList();
+          expect(rows, hasLength(1));
+          expect(rows.single['filePath'], startsWith('network://nas/$folder'));
+          expect(reads, hasLength(1));
+        }
+      });
 
       test(
         'cancellation after cache lookup discards staging and preserves rows',

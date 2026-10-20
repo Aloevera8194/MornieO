@@ -17,7 +17,7 @@ final _log = AppLogger('LocalLibrary');
 
 /// Bounded tag prefetch; only NDJSON and artwork are stored locally.
 /// Failed listings never count as empty directories. Partial scans retain old
-/// rows through the same ingestion policy used for local/SAF scans.
+/// rows only under unreadable folders or at unreadable files.
 class NetworkLibraryScanner {
   NetworkLibraryScanner({
     NetworkStorageService? storage,
@@ -108,6 +108,19 @@ class NetworkLibraryScanner {
     // Fail before creating scan output if the root cannot be listed.
     List<NetworkEntry>? first = await _storage.list(connection, root);
     await checkpoint();
+    List<String>? preserveMissingPaths = [];
+    void preserve(String path) {
+      final paths = preserveMissingPaths;
+      if (paths == null) return;
+      // Keep failed-scan memory and publication SQL bounded. Widespread
+      // failures fall back to retaining the whole previous source snapshot.
+      if (paths.length >= 128) {
+        preserveMissingPaths = null;
+      } else {
+        paths.add(NetworkStorageService.source(connection.id, path));
+      }
+    }
+
     final temp = await Directory(
       '${(await _temporaryDirectory()).path}/network_scans',
     ).create(recursive: true);
@@ -171,6 +184,7 @@ class NetworkLibraryScanner {
           first = null;
         } catch (error) {
           errors++;
+          preserve(folder);
           _log.e('Network folder listing failed [$folder]', error);
           onProgress(processed, errors, folder);
           continue;
@@ -333,6 +347,7 @@ class NetworkLibraryScanner {
             // Cancellation must abort the whole staging operation.
             await checkpoint();
             errors++;
+            preserve(entry.path);
             _log.e('Network track scan failed [$trackSource]', error);
           }
           if (encodedRow != null) {
@@ -374,6 +389,7 @@ class NetworkLibraryScanner {
         file: file,
         expectedCount: written,
         errorCount: errors,
+        preserveMissingPaths: preserveMissingPaths,
       );
     } catch (_) {
       await metadata?.cancelPending();

@@ -98,6 +98,7 @@ class LibraryIngestionStore {
       sourceId,
       validatedRows(),
       preserveMissing: scan.errorCount > 0,
+      preserveMissingPaths: scan.preserveMissingPaths,
     );
   }
 
@@ -362,6 +363,7 @@ class LibraryIngestionStore {
     Stream<Map<String, dynamic>> items, {
     int batchSize = 300,
     bool preserveMissing = false,
+    List<String>? preserveMissingPaths,
   }) async {
     if (batchSize <= 0) {
       throw ArgumentError.value(batchSize, 'batchSize', 'Must be positive');
@@ -459,6 +461,7 @@ class LibraryIngestionStore {
           sourceId,
           stageTable: _scanStageTable,
           preserveMissing: preserveMissing,
+          preserveMissingPaths: preserveMissingPaths,
         );
         await txn.rawDelete('''
           DELETE FROM library_path_keys

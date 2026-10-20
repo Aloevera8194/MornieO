@@ -5,10 +5,15 @@ class LibraryScanNDJSONFile {
   final int expectedCount;
   final int errorCount;
 
+  /// Failed network files, or folder prefixes ending in '/'. Null retains the
+  /// conservative whole-source policy used by local and SAF scans.
+  final List<String>? preserveMissingPaths;
+
   const LibraryScanNDJSONFile({
     required this.file,
     required this.expectedCount,
     this.errorCount = 0,
+    this.preserveMissingPaths,
   });
 
   Stream<Map<String, dynamic>> rows() async* {
