@@ -28,6 +28,11 @@ import 'package:mornye/screens/collapsing_header_scroll_mixin.dart';
 import 'package:mornye/screens/selection_mode_mixin.dart';
 import 'package:mornye/screens/track_metadata_screen.dart';
 import 'package:mornye/widgets/collection_scaffold.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/library_track_menu.dart';
+import 'package:mornye/widgets/desktop/track_table.dart';
 import 'package:mornye/widgets/expressive_button.dart';
 import 'package:mornye/widgets/album_track_tile.dart';
 import 'package:mornye/widgets/animation_utils.dart';
@@ -260,7 +265,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
 
     pruneSelection(tracks.map((t) => t.id).toSet());
 
-    return CollectionScaffold(
+    final scaffold = CollectionScaffold(
       scrollController: scrollController,
       isSelectionMode: isSelectionMode,
       onExitSelectionMode: exitSelectionMode,
@@ -292,6 +297,20 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
         tracks,
         bottomPadding,
       ),
+    );
+    return DesktopListScope(
+      onSelectAll: tracks.isEmpty
+          ? null
+          : () => selectAll(tracks.map((track) => track.id)),
+      onClearSelection: isSelectionMode ? exitSelectionMode : null,
+      onDelete: isSelectionMode ? () => _deleteSelected(tracks) : null,
+      onActivate: () {
+        final anchor = tracks
+            .where((track) => track.id == selectionAnchorId)
+            .firstOrNull;
+        if (anchor != null) _openFile(anchor);
+      },
+      child: scaffold,
     );
   }
 
@@ -478,6 +497,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
     ColorScheme colorScheme,
     List<LocalLibraryItem> tracks,
   ) {
+    if (isDesktopPlatform) return _buildDesktopTable(context, tracks);
     final discGroups = _discGroupsCache;
     final hasMultipleDiscs = _hasMultipleDiscsCache;
 
@@ -512,6 +532,92 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
       sliver: SliverMainAxisGroup(slivers: slivers),
+    );
+  }
+
+  /// The desktop song table: double click plays, right-click opens the
+  /// selection's actions.
+  Widget _buildDesktopTable(
+    BuildContext context,
+    List<LocalLibraryItem> tracks,
+  ) {
+    final mode = ref.watch(
+      settingsProvider.select((s) => s.libraryQualityLabelMode),
+    );
+    final byId = {for (final track in tracks) track.id: track};
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+      sliver: SliverTrackTable(
+        rows: [
+          for (final track in tracks)
+            TrackTableRow(
+              id: track.id,
+              number: track.trackNumber,
+              title: track.trackName,
+              artist: track.artistName,
+              album: track.albumName,
+              quality: buildLibraryAudioQualityLabel(
+                mode: mode,
+                format: track.format,
+                filePath: track.filePath,
+                bitrateKbps: track.bitrate,
+                bitDepth: track.bitDepth,
+                sampleRate: track.sampleRate,
+              ),
+              duration: track.duration == null
+                  ? null
+                  : Duration(seconds: track.duration!),
+            ),
+        ],
+        columns: const [
+          TrackTableColumn.number,
+          TrackTableColumn.title,
+          TrackTableColumn.artist,
+          TrackTableColumn.quality,
+          TrackTableColumn.duration,
+        ],
+        selectedIds: selectedIds,
+        onSelect: applyDesktopClick,
+        onActivate: (id) {
+          final track = byId[id];
+          if (track != null) _openFile(track);
+        },
+        onContextMenu: (id, position) {
+          final track = byId[id];
+          if (track == null) return;
+          selectForContextMenu(id);
+          _showDesktopMenu(context, tracks, track, position);
+        },
+      ),
+    );
+  }
+
+  void _showDesktopMenu(
+    BuildContext context,
+    List<LocalLibraryItem> tracks,
+    LocalLibraryItem track,
+    Offset position,
+  ) {
+    final items = _selectedUnifiedItems(tracks);
+    showContextMenu(
+      context,
+      position: position,
+      groups: libraryTrackMenuGroups(
+        context,
+        ref,
+        items: items,
+        onPlay: () => _openFile(track),
+        onOpenDetails: () => _openMetadata(track),
+        onDone: exitSelectionMode,
+        onReEnrich: () => _reEnrichSelected(tracks),
+        onConvert: () => showBatchConvertSheet(
+          this.context,
+          ref,
+          items,
+          onExitSelectionMode: exitSelectionMode,
+        ),
+        onDelete: () => _deleteSelected(tracks),
+      ),
     );
   }
 
