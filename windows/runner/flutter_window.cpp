@@ -4,6 +4,14 @@
 
 #include "flutter/generated_plugin_registrant.h"
 
+namespace {
+
+// Smallest client area, in logical pixels, that the desktop layouts support.
+constexpr int kMinimumClientWidth = 800;
+constexpr int kMinimumClientHeight = 600;
+
+}  // namespace
+
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
 
@@ -65,6 +73,22 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;
+    case WM_GETMINMAXINFO: {
+      UINT dpi = GetDpiForWindow(hwnd);
+      if (dpi == 0) {
+        dpi = USER_DEFAULT_SCREEN_DPI;
+      }
+      RECT frame = {0, 0,
+                    MulDiv(kMinimumClientWidth, dpi, USER_DEFAULT_SCREEN_DPI),
+                    MulDiv(kMinimumClientHeight, dpi, USER_DEFAULT_SCREEN_DPI)};
+      AdjustWindowRectExForDpi(
+          &frame, static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_STYLE)), FALSE,
+          static_cast<DWORD>(GetWindowLongPtr(hwnd, GWL_EXSTYLE)), dpi);
+      auto* info = reinterpret_cast<MINMAXINFO*>(lparam);
+      info->ptMinTrackSize.x = frame.right - frame.left;
+      info->ptMinTrackSize.y = frame.bottom - frame.top;
+      return 0;
+    }
   }
 
   return Win32Window::MessageHandler(hwnd, message, wparam, lparam);
