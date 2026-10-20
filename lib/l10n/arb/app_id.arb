@@ -181,6 +181,7 @@
   "discordPresenceBuildUnavailable": "SDK Discord tidak tersedia di build ini.",
   "discordPresenceAndroidHelp": "Pasang Discord dan masuk di ponsel ini. Izinkan berbagi aktivitas di Discord. Pemutar eksternal tidak didukung.",
   "discordPresenceIosHelp": "Hubungkan akun melalui Discord dan izinkan berbagi aktivitas. Ketuk untuk menghubungkan ulang jika otorisasi gagal.",
+  "discordPresenceDesktopHelp": "Biarkan aplikasi desktop Discord berjalan dan masuk di komputer ini, lalu izinkan berbagi aktivitas di Discord.",
   "discordPresenceDisconnect": "Putuskan dan lupakan akun",
   "playbackAutomation": "Pemutaran otomatis",
   "playbackPauseOnMute": "Jeda saat volume nol",

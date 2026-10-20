@@ -95,6 +95,7 @@ dependencies:
   audio_service:
     path: third_party/audio_service
   audio_session: ^0.2.4
+  app_links: ^7.2.2
 
 dependency_overrides:
   # Retain the existing Apple keychain fixes while Android uses legacy migration.

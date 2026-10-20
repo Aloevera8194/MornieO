@@ -134,6 +134,11 @@ class LogBuffer extends ChangeNotifier {
   Future<void>? _pendingNativeLogClear;
 
   static bool _loggingEnabled = false;
+
+  /// Receives every entry the buffer keeps, already redacted and filtered.
+  /// Desktop writes these to rotating log files.
+  static void Function(LogEntry entry)? fileSink;
+
   static bool get loggingEnabled => _loggingEnabled;
   static set loggingEnabled(bool value) {
     _loggingEnabled = value;
@@ -187,6 +192,7 @@ class LogBuffer extends ChangeNotifier {
       _entries.removeFirst();
     }
     _entries.add(sanitizedEntry);
+    fileSink?.call(sanitizedEntry);
     return true;
   }
 

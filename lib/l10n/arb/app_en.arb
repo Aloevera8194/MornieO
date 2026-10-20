@@ -7353,6 +7353,7 @@
   "discordPresenceBuildUnavailable": "Discord SDK is not available in this build.",
   "discordPresenceAndroidHelp": "Install Discord and sign in on this phone. Allow activity sharing in Discord. External players are not supported.",
   "discordPresenceIosHelp": "Link your account through Discord and allow activity sharing. Tap to link again if authorization fails.",
+  "discordPresenceDesktopHelp": "Keep the Discord desktop app running and signed in on this computer, and allow activity sharing in Discord.",
   "discordPresenceDisconnect": "Disconnect and forget account",
   "autoMixSettingsTitle": "Mix transitions",
   "autoMixAutomaticDuration": "Automatic duration",

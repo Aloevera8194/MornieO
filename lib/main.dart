@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mornye/app.dart';
+import 'package:mornye/models/library_database_models.dart';
 import 'package:mornye/models/settings.dart';
 import 'package:mornye/providers/download_queue_provider.dart';
 import 'package:mornye/providers/extension_provider.dart';
@@ -26,9 +27,13 @@ import 'package:mornye/services/app_navigation_service.dart';
 import 'package:mornye/services/app_orientation.dart';
 import 'package:mornye/services/activity_attachment.dart';
 import 'package:mornye/services/app_crash_service.dart';
+import 'package:mornye/services/desktop_deep_links.dart';
+import 'package:mornye/services/desktop_diagnostics.dart';
+import 'package:mornye/services/desktop_library_watcher.dart';
 import 'package:mornye/services/music_player_service.dart';
 import 'package:mornye/services/player_widget_service.dart';
 import 'package:mornye/screens/now_playing_screen.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/local_library_scan_prefs.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/utils/extension_auth_launcher.dart';
@@ -51,6 +56,9 @@ void main() {
         // never be answered, leaving extensions uninitialized.
         await waitForActivityAttachment(binding);
       }
+      // Desktop: log files and the unclean-exit marker, before the error
+      // hooks below start writing to them.
+      await DesktopDiagnostics.initialize();
       await setAppOrientation();
       LicenseRegistry.addLicense(() async* {
         yield LicenseEntryWithLineBreaks(const [
@@ -406,6 +414,10 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
   bool _autoScanTriggeredOnLaunch = false;
   StreamSubscription<void>? _verificationNotificationSubscription;
   StreamSubscription<void>? _extensionAuthCallbackSubscription;
+  DesktopDeepLinks? _desktopDeepLinks;
+  DesktopLibraryWatcher? _desktopLibraryWatcher;
+  ProviderSubscription<bool>? _desktopLibraryWatchSub;
+  ProviderSubscription<List<LocalLibrarySource>>? _desktopLibrarySourcesSub;
 
   @override
   void initState() {
@@ -421,6 +433,10 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
           PlatformBridge.extensionAuthCallbackEvents().listen(
             (_) => unawaited(_completeExtensionCallback()),
           );
+      // After the callback subscription, so a launch URL is not missed.
+      if (isDesktopPlatform) {
+        _desktopDeepLinks = DesktopDeepLinks()..start();
+      }
       _initializeAppServices();
       _initializeExtensions();
       _initializeDeferredProviders();
@@ -436,6 +452,9 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
     _localLibraryWarmupTimer?.cancel();
     _verificationNotificationSubscription?.cancel();
     _extensionAuthCallbackSubscription?.cancel();
+    unawaited(_desktopDeepLinks?.dispose());
+    _desktopLibraryWatchSub?.close();
+    _stopDesktopLibraryWatcher();
     NotificationService().verificationNotifications.setHandler(null);
     super.dispose();
   }
@@ -516,6 +535,46 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
         }
       },
     );
+
+    if (isDesktopPlatform) {
+      _desktopLibraryWatchSub = ref.listenManual<bool>(
+        settingsProvider.select(_desktopLibraryWatchEnabled),
+        (_, _) => _updateDesktopLibraryWatcher(),
+      );
+    }
+  }
+
+  /// Desktop watches library folders unless automatic scans are off.
+  static bool _desktopLibraryWatchEnabled(AppSettings settings) =>
+      settings.localLibraryEnabled && settings.localLibraryAutoScan != 'off';
+
+  /// Starts or stops the desktop folder watcher. Starts only once the
+  /// library provider is warm, so watching never delays startup.
+  void _updateDesktopLibraryWatcher() {
+    if (!isDesktopPlatform || !mounted) return;
+    if (!_desktopLibraryWatchEnabled(ref.read(settingsProvider)) ||
+        !ref.exists(localLibraryProvider)) {
+      _stopDesktopLibraryWatcher();
+      return;
+    }
+    if (_desktopLibraryWatcher != null) return;
+    final watcher = _desktopLibraryWatcher = DesktopLibraryWatcher(
+      scanSource: (sourceId) =>
+          ref.read(localLibraryProvider.notifier).startSourceScan(sourceId),
+      isScanning: () => ref.read(localLibraryProvider).isScanning,
+    );
+    _desktopLibrarySourcesSub = ref.listenManual<List<LocalLibrarySource>>(
+      localLibraryProvider.select((state) => state.sources),
+      (_, sources) => unawaited(watcher.updateSources(sources)),
+      fireImmediately: true,
+    );
+  }
+
+  void _stopDesktopLibraryWatcher() {
+    _desktopLibrarySourcesSub?.close();
+    _desktopLibrarySourcesSub = null;
+    unawaited(_desktopLibraryWatcher?.dispose());
+    _desktopLibraryWatcher = null;
   }
 
   Timer _scheduleProviderWarmup(Duration delay, VoidCallback action) {
@@ -536,6 +595,7 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
           return;
         }
         ref.read(localLibraryProvider);
+        _updateDesktopLibraryWatcher();
         if (!_autoScanTriggeredOnLaunch) {
           _autoScanTriggeredOnLaunch = true;
           Future.delayed(const Duration(milliseconds: 500), () {
