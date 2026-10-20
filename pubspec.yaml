@@ -30,8 +30,12 @@ dependencies:
   mornye_discord:
     path: third_party/mornye_discord
   path_provider: ^2.1.6
+  # Windows known-folder lookup for the default desktop Music folder.
+  path_provider_windows: ^2.3.0
   path: ^1.9.1
   sqflite: ^2.4.4+1
+  # Windows and Linux have no sqflite plugin; they use FFI with bundled SQLite.
+  sqflite_common_ffi: ^2.4.4
 
 # HTTP & Network
   http: ^1.6.0
@@ -100,6 +104,17 @@ dependency_overrides:
   # Preserve Android proxy descriptors supplied by network document providers.
   audioplayers_android:
     path: third_party/audioplayers_android
+
+hooks:
+  user_defines:
+    sqlite3:
+      # Only Windows and Linux open databases through sqflite_common_ffi.
+      # Mobile and macOS keep the sqflite plugins, so they bundle no copy.
+      source:
+        android: system
+        ios: system
+        macos: system
+        default: sqlite3
 
 dev_dependencies:
   integration_test:

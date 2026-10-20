@@ -32,6 +32,17 @@ extension _DownloadQueuePaths on DownloadQueueNotifier {
     return downloadDir;
   }
 
+  /// `<Music>/Mornye` on desktop; null when the OS gives no Music folder.
+  Future<Directory?> _ensureDefaultDesktopOutputDir() async {
+    final path = await resolveDesktopDefaultOutputDirectory();
+    if (path == null) return null;
+    final musicDir = Directory(path);
+    if (!await musicDir.exists()) {
+      await musicDir.create(recursive: true);
+    }
+    return musicDir;
+  }
+
   Future<Directory?> _ensureAndroidAppSpecificOutputDir() async {
     final externalDir = await getExternalStorageDirectory();
     if (externalDir == null) return null;
@@ -78,6 +89,7 @@ extension _DownloadQueuePaths on DownloadQueueNotifier {
     final candidates = <Future<Directory?> Function()>[
       if (Platform.isAndroid) _ensureDefaultAndroidDownloadOutputDir,
       if (Platform.isAndroid) _ensureAndroidAppSpecificOutputDir,
+      if (isDesktopPlatform) _ensureDefaultDesktopOutputDir,
       () async => _ensureDefaultDocumentsOutputDir(),
     ];
 
@@ -151,6 +163,11 @@ extension _DownloadQueuePaths on DownloadQueueNotifier {
       try {
         if (Platform.isIOS) {
           final musicDir = await _ensureDefaultDocumentsOutputDir();
+          state = state.copyWith(outputDir: musicDir.path);
+        } else if (isDesktopPlatform) {
+          final musicDir =
+              await _ensureDefaultDesktopOutputDir() ??
+              await _ensureDefaultDocumentsOutputDir();
           state = state.copyWith(outputDir: musicDir.path);
         } else {
           final musicDir =

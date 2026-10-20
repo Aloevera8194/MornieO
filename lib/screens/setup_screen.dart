@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
@@ -25,6 +26,8 @@ import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/constants/language_choices.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_folders.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/widgets/scroll_edge_fade.dart';
 import 'package:mornye/utils/logger.dart';
@@ -48,6 +51,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
     with WidgetsBindingObserver {
   final _progressStore = SetupProgressStore();
   final _platform = defaultTargetPlatform;
+  // Desktop has no runtime storage permission: setup skips that step and
+  // picks a plain folder.
+  final _isDesktop = isDesktopPlatform;
   PageController? _pageController;
   final ScrollController _languageScrollController = ScrollController();
   late final Future<void> _initialization;
@@ -66,7 +72,11 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
   bool _isLoading = false;
   int _androidSdkVersion = 0;
 
-  int get _totalSteps => _androidSdkVersion >= 33 ? 5 : 4;
+  int get _totalSteps => _isDesktop
+      ? 3
+      : _androidSdkVersion >= 33
+      ? 5
+      : 4;
 
   void _setState(VoidCallback fn) => setState(fn);
 
@@ -107,6 +117,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
         _selectedDirectoryBookmark = draft['bookmark'] as String?;
         _selectedTreeUri = draft['treeUri'] as String?;
         _notificationPermissionSkipped = draft['skipNotifications'] == true;
+      }
+      if (_isDesktop) {
+        _selectedDirectory ??= await resolveDesktopDefaultOutputDirectory();
       }
       await _checkInitialPermissions();
       if (_platform == TargetPlatform.android) await _restoreSelectedFolder();
@@ -364,7 +377,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
       // the external picker is visible, including on Android 13 devices.
       await _saveProgress();
       if (!mounted) return;
-      if (_platform == TargetPlatform.iOS) {
+      if (_isDesktop) {
+        await _pickDesktopDirectory();
+      } else if (_platform == TargetPlatform.iOS) {
         await _showIOSDirectoryOptions();
       } else if (_platform == TargetPlatform.android) {
         Map<String, dynamic>? result;
@@ -432,6 +447,23 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Desktop folders are plain paths: no SAF tree and no iOS bookmark.
+  Future<void> _pickDesktopDirectory() async {
+    final title = context.l10n.setupDownloadLocationTitle;
+    final picked = await FilePicker.getDirectoryPath(
+      dialogTitle: title,
+      initialDirectory:
+          _selectedDirectory ?? await resolveDesktopMusicDirectory(),
+    );
+    if (picked == null || picked.isEmpty || !mounted) return;
+    setState(() {
+      _selectedDirectory = picked;
+      _selectedDirectoryBookmark = null;
+      _selectedTreeUri = null;
+    });
+    await _saveProgress();
   }
 
   Future<void> _showIOSDirectoryOptions() async {
@@ -659,6 +691,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
 
     final logicStep = step - 2;
 
+    if (_isDesktop) return logicStep == 0 && _selectedDirectory != null;
     if (_androidSdkVersion >= 33) {
       switch (logicStep) {
         case 0:
@@ -763,7 +796,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
                 children: [
                   _buildWelcomeStep(colorScheme),
                   _buildLanguageStep(colorScheme),
-                  _buildStorageStep(colorScheme),
+                  if (!_isDesktop) _buildStorageStep(colorScheme),
                   if (_androidSdkVersion >= 33)
                     _buildNotificationStep(colorScheme),
                   _buildDirectoryStep(colorScheme),
