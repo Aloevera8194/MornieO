@@ -12,6 +12,7 @@ void main() {
     final calls = <String>[];
     final arguments = <Object?>[];
     final statuses = StreamController<String>.broadcast();
+    addTearDown(statuses.close);
     final channel = DesktopDiscordChannel(
       invoke: (method, argument) async {
         calls.add(method);
@@ -58,6 +59,7 @@ void main() {
   ) async {
     final methods = <String>[];
     final statuses = StreamController<String>.broadcast();
+    addTearDown(statuses.close);
     final service = DiscordPresenceService(
       channel: DesktopDiscordChannel(
         invoke: (method, _) async {

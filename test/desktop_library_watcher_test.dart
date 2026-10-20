@@ -38,6 +38,7 @@ void main() {
 
   setUp(() {
     changes = StreamController<String>.broadcast();
+    addTearDown(changes.close);
     watched = [];
     scans = [];
     unwatches = 0;

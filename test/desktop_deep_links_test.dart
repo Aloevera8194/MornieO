@@ -103,6 +103,7 @@ void main() {
       );
       addTearDown(subscription.cancel);
       final links = StreamController<Uri>();
+      addTearDown(links.close);
       final deepLinks = DesktopDeepLinks(links: links.stream)..start();
       addTearDown(deepLinks.dispose);
 
