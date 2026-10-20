@@ -100,6 +100,36 @@ class _Collections extends LibraryCollectionsNotifier {
   Future<void> ensurePlaylistLoaded(String playlistId) async {}
 }
 
+class _LocalCollections extends _Collections {
+  @override
+  LibraryCollectionsState build() => LibraryCollectionsState(
+    isLoaded: true,
+    playlists: [
+      UserPlaylistCollection(
+        id: 'playlist',
+        name: 'Local playlist',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        tracks: [
+          for (var i = 0; i < 620; i++)
+            CollectionTrackEntry(
+              key: 'local:$i',
+              track: Track(
+                id: 'local_$i',
+                name: 'Local song $i',
+                artistName: 'Local artist',
+                albumName: 'Local album',
+                source: 'local',
+                duration: 180,
+              ),
+              addedAt: DateTime(2026),
+            ),
+        ],
+      ),
+    ],
+  );
+}
+
 class _RemovalCollections extends _Collections {
   _RemovalCollections(this._record);
   final void Function(String, List<String>) _record;
@@ -188,6 +218,54 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   for (final mornye in [false, true]) {
+    testWidgets('large local playlist renders and scrolls ($mornye)', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(400, 850);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(_Settings.new),
+            libraryCollectionsProvider.overrideWith(_LocalCollections.new),
+            localLibraryProvider.overrideWith(_Library.new),
+            downloadHistoryProvider.overrideWith(_History.new),
+            downloadHistoryVisibleBatchExistsProvider.overrideWith(
+              (ref, request) => const {},
+            ),
+            localLibraryCoverProvider.overrideWith(
+              (ref, request) async => null,
+            ),
+            localLibraryFirstCoverProvider.overrideWith(
+              (ref, request) async => null,
+            ),
+          ],
+          child: MaterialApp(
+            theme: mornye
+                ? MornyeTheme.build(Brightness.dark)
+                : AppTheme.light(),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const LibraryTracksFolderScreen(
+              mode: LibraryTracksFolderMode.playlist,
+              playlistId: 'playlist',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('620 tracks'), findsOneWidget);
+      expect(find.text('Local song 0'), findsOneWidget);
+      await tester.scrollUntilVisible(
+        find.text('Local song 619'),
+        1000,
+        maxScrolls: 100,
+      );
+      expect(find.text('Local song 619'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('Wishlist enqueues one selection (Mornye: $mornye)', (
       tester,
     ) async {
