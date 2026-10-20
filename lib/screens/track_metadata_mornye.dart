@@ -114,9 +114,27 @@ extension _TrackMetadataMornye on _TrackMetadataScreenState {
                             ),
                           ),
                         const SizedBox(height: 12),
-                        HeaderMetaRow(items: _headerMetadataItems(context)),
+                        // Centered under the title; desktop detail headers
+                        // start the row at the leading edge instead.
+                        Center(
+                          child: HeaderMetaRow(
+                            items: _headerMetadataItems(context),
+                          ),
+                        ),
                         const SizedBox(height: 16),
-                        _buildActionButtons(context, ref, scheme, _fileExists),
+                        // Music sizes its header buttons to the title column
+                        // rather than the window.
+                        Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 400),
+                            child: _buildActionButtons(
+                              context,
+                              ref,
+                              scheme,
+                              _fileExists,
+                            ),
+                          ),
+                        ),
                         if (_fileAccessMessage(context) case final message?)
                           Padding(
                             padding: const EdgeInsets.only(top: 16),
