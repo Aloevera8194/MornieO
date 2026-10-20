@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/library_collections_provider.dart';
 import 'package:mornye/providers/user_profile_provider.dart';
-import 'package:mornye/screens/now_playing_screen.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/services/user_profile_store.dart';
 import 'package:mornye/theme/app_motion.dart';
@@ -16,6 +15,7 @@ import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
+import 'package:mornye/widgets/desktop/desktop_now_playing.dart';
 import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_window.dart';
 import 'package:mornye/widgets/profile_avatar.dart';
@@ -100,7 +100,7 @@ class DesktopDestination {
 /// navigation, and the top [desktopTitleBarHeight] of the content pane drags
 /// the window.
 ///
-/// Now Playing replaces the content pane while [desktopNowPlayingOpen] is
+/// Now Playing covers the whole window while [desktopNowPlayingOpen] is
 /// set. Lyrics and Up Next ([desktopInspectorPanel]) sit beside the content
 /// from [desktopInspectorBesideBreakpoint] and float over it below that.
 class DesktopShellLayout extends StatelessWidget {
@@ -114,7 +114,7 @@ class DesktopShellLayout extends StatelessWidget {
     this.onOpenLibraryLink,
     this.onOpenProfile,
     this.playerBar = const DesktopPlayerBar(),
-    this.nowPlaying = const DesktopNowPlayingPane(),
+    this.nowPlaying = const DesktopNowPlaying(),
   });
 
   /// Destinations in [desktopDestinationTabs] order; Cmd/Ctrl+1..5 follow it.
@@ -135,8 +135,31 @@ class DesktopShellLayout extends StatelessWidget {
   final Widget playerBar;
   final Widget nowPlaying;
 
+  /// Now Playing covers the whole window, as Music's player does. The
+  /// destinations keep their state underneath, but stop painting and
+  /// ticking.
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+    valueListenable: desktopNowPlayingOpen,
+    builder: (context, nowPlayingOpen, shell) => Stack(
+      fit: StackFit.expand,
+      children: [
+        Visibility(
+          visible: !nowPlayingOpen,
+          maintainState: true,
+          child: shell!,
+        ),
+        if (nowPlayingOpen)
+          KeyedSubtree(
+            key: const ValueKey('desktop-now-playing'),
+            child: nowPlaying,
+          ),
+      ],
+    ),
+    child: Builder(builder: _shell),
+  );
+
+  Widget _shell(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
     if (context.isMornye) {
       // The sidebar always shows; the page background shows around the
@@ -159,7 +182,6 @@ class DesktopShellLayout extends StatelessWidget {
               child: _DesktopContentArea(
                 overlayInspector: desktopInspectorOverlays(width),
                 body: body,
-                nowPlaying: nowPlaying,
                 floatingPlayer: playerBar,
                 titleBarDrag: true,
               ),
@@ -213,7 +235,6 @@ class DesktopShellLayout extends StatelessWidget {
                 child: _DesktopContentArea(
                   overlayInspector: desktopInspectorOverlays(width),
                   body: body,
-                  nowPlaying: nowPlaying,
                   titleBarDrag: true,
                 ),
               ),
@@ -302,21 +323,19 @@ class _PaneMediaQuery extends StatelessWidget {
   );
 }
 
-/// The content pane, Now Playing over it while open, the trailing inspector
-/// and, in Mornye, the floating player. Pages bring their own search fields
-/// (Home, Library), so there is no shell search bar above them.
+/// The content pane, the trailing inspector and, in Mornye, the floating
+/// player. Pages bring their own search fields (Home, Library), so there is
+/// no shell search bar above them.
 class _DesktopContentArea extends StatelessWidget {
   const _DesktopContentArea({
     required this.overlayInspector,
     required this.body,
-    required this.nowPlaying,
     this.floatingPlayer,
     this.titleBarDrag = false,
   });
 
   final bool overlayInspector;
   final Widget body;
-  final Widget nowPlaying;
 
   /// The Mornye player capsule, floating over the bottom of the pane.
   final Widget? floatingPlayer;
@@ -329,113 +348,85 @@ class _DesktopContentArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final player = floatingPlayer;
     final playerInset = player == null ? 0.0 : DesktopPlayerBar.floatingInset;
-    return ValueListenableBuilder<bool>(
-      valueListenable: desktopNowPlayingOpen,
-      builder: (context, nowPlayingOpen, _) =>
-          ValueListenableBuilder<DesktopInspectorPanel?>(
-            valueListenable: desktopInspectorPanel,
-            builder: (context, panel, _) {
-              final content = Stack(
-                fit: StackFit.expand,
-                children: [
-                  // The destinations keep their state, but stop painting and
-                  // ticking while Now Playing covers them.
-                  Visibility(
-                    visible: !nowPlayingOpen,
-                    maintainState: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // A semantics container keeps the tab navigators'
-                        // modal barriers from hiding the sidebar.
-                        Expanded(
-                          key: const ValueKey('desktop-pages'),
-                          child: Semantics(
-                            container: true,
-                            child: _PaneMediaQuery(
-                              bottomInset: playerInset,
-                              child: body,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (nowPlayingOpen)
-                    _PaneMediaQuery(
+    return ValueListenableBuilder<DesktopInspectorPanel?>(
+      valueListenable: desktopInspectorPanel,
+      builder: (context, panel, _) {
+        final content = Stack(
+          fit: StackFit.expand,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // A semantics container keeps the tab navigators'
+                // modal barriers from hiding the sidebar.
+                Expanded(
+                  key: const ValueKey('desktop-pages'),
+                  child: Semantics(
+                    container: true,
+                    child: _PaneMediaQuery(
                       bottomInset: playerInset,
-                      child: nowPlaying,
+                      child: body,
                     ),
-                  if (player != null)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: DesktopPlayerBar.floatingMargin,
-                      child: LayoutBuilder(
-                        builder: (context, constraints) => Center(
-                          child: SizedBox(
-                            width: DesktopPlayerBar.floatingWidth(
-                              constraints.maxWidth,
-                            ),
-                            child: player,
-                          ),
-                        ),
-                      ),
-                    ),
-                  // A narrow window's inspector floats above the player.
-                  if (panel != null && overlayInspector)
-                    PositionedDirectional(
-                      top: 0,
-                      bottom: playerInset,
-                      end: 0,
-                      width: desktopInspectorWidth,
-                      child: DesktopInspector(panel: panel, overlay: true),
-                    ),
-                ],
-              );
-              // One structure for every state, so opening the inspector never
-              // remounts the destinations.
-              final pane = Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(child: content),
-                  if (panel != null && !overlayInspector)
-                    DesktopInspector(panel: panel),
-                ],
-              );
-              if (!titleBarDrag || !desktopTitleBarInContent) return pane;
-              // Pages keep their clicks in the title bar row; a drag that
-              // starts on it moves the window.
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  pane,
-                  const Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: desktopTitleBarHeight,
-                    child: DesktopWindowDragArea(),
                   ),
-                ],
-              );
-            },
-          ),
+                ),
+              ],
+            ),
+            if (player != null)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: DesktopPlayerBar.floatingMargin,
+                child: LayoutBuilder(
+                  builder: (context, constraints) => Center(
+                    child: SizedBox(
+                      width: DesktopPlayerBar.floatingWidth(
+                        constraints.maxWidth,
+                      ),
+                      child: player,
+                    ),
+                  ),
+                ),
+              ),
+            // A narrow window's inspector floats above the player.
+            if (panel != null && overlayInspector)
+              PositionedDirectional(
+                top: 0,
+                bottom: playerInset,
+                end: 0,
+                width: desktopInspectorWidth,
+                child: DesktopInspector(panel: panel, overlay: true),
+              ),
+          ],
+        );
+        // One structure for every state, so opening the inspector never
+        // remounts the destinations.
+        final pane = Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: content),
+            if (panel != null && !overlayInspector)
+              DesktopInspector(panel: panel),
+          ],
+        );
+        if (!titleBarDrag || !desktopTitleBarInContent) return pane;
+        // Pages keep their clicks in the title bar row; a drag that
+        // starts on it moves the window.
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            pane,
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: desktopTitleBarHeight,
+              child: DesktopWindowDragArea(),
+            ),
+          ],
+        );
+      },
     );
   }
-}
-
-/// Now Playing filling the content pane. Escape, Back or its minimize button
-/// return to the content.
-class DesktopNowPlayingPane extends StatelessWidget {
-  const DesktopNowPlayingPane({super.key});
-
-  @override
-  Widget build(BuildContext context) => const HeroMode(
-    // The pane is no route: there is nothing for a Hero to fly between.
-    enabled: false,
-    child: NowPlayingScreen(embedded: true),
-  );
 }
 
 int _positionOf(List<DesktopDestination> destinations, ShellTab tab) =>

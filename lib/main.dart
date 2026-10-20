@@ -37,6 +37,10 @@ import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/local_library_scan_prefs.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/utils/extension_auth_launcher.dart';
+import 'package:mornye/widgets/desktop/desktop_inspector.dart'
+    show bindDesktopFullScreenLyrics;
+import 'package:mornye/widgets/desktop/desktop_window.dart'
+    show listenDesktopWindowFullScreen;
 
 final _log = AppLogger('Main');
 _StartupBenchmark? _startupBenchmark;
@@ -436,6 +440,8 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization>
       // After the callback subscription, so a launch URL is not missed.
       if (isDesktopPlatform) {
         _desktopDeepLinks = DesktopDeepLinks()..start();
+        listenDesktopWindowFullScreen();
+        bindDesktopFullScreenLyrics();
       }
       _initializeAppServices();
       _initializeExtensions();

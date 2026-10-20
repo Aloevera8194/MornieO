@@ -32,6 +32,11 @@ class PlayerPlaybackControls extends ConsumerWidget {
   final bool compact;
   final double transportTopPadding;
 
+  /// The timeline, its times and the transport span the full width with no
+  /// side insets, lining up with the artwork above, as in Music's desktop
+  /// player.
+  final bool edgeAligned;
+
   const PlayerPlaybackControls({
     super.key,
     required this.mediaId,
@@ -41,6 +46,7 @@ class PlayerPlaybackControls extends ConsumerWidget {
     required this.metadata,
     this.compact = false,
     this.transportTopPadding = 16,
+    this.edgeAligned = false,
   });
 
   @override
@@ -65,7 +71,11 @@ class PlayerPlaybackControls extends ConsumerWidget {
               final elapsedSeconds = (preview ?? position).inSeconds;
               return Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: mornye ? _mornyeTimelinePadding : 16,
+                  horizontal: edgeAligned
+                      ? 0
+                      : mornye
+                      ? _mornyeTimelinePadding
+                      : 16,
                 ),
                 child: Column(
                   children: [
@@ -99,12 +109,15 @@ class PlayerPlaybackControls extends ConsumerWidget {
                         onSeek: controller.seek,
                         preview: seekPreview,
                         playing: isPlaying && !isLoading,
+                        edgeAligned: edgeAligned,
                       ),
                     ),
                     if (!mornye) const SizedBox(height: 8),
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: mornye
+                        horizontal: edgeAligned
+                            ? 0
+                            : mornye
                             ? MornyePlayerSlider.horizontalInset
                             : 12,
                       ),
@@ -153,7 +166,7 @@ class PlayerPlaybackControls extends ConsumerWidget {
         SizedBox(height: compact ? 8 : transportTopPadding + (mornye ? 0 : 8)),
         if (!mornye && materialExpressiveEnabled(context))
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: EdgeInsets.symmetric(horizontal: edgeAligned ? 0 : 16),
             child: ExpressivePlaybackTransport(
               colorScheme: colorScheme,
               playing: isPlaying,
@@ -180,10 +193,14 @@ class PlayerPlaybackControls extends ConsumerWidget {
         else
           Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: mornye ? (compact ? 16 : 32) : 0,
+              horizontal: mornye && !edgeAligned ? (compact ? 16 : 32) : 0,
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              // Edge to edge, the shuffle and repeat buttons line up with
+              // the timeline's ends.
+              mainAxisAlignment: edgeAligned && !mornye
+                  ? MainAxisAlignment.spaceBetween
+                  : MainAxisAlignment.spaceEvenly,
               children: [
                 if (!mornye)
                   PlayerPlaybackModeButton(

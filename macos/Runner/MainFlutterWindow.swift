@@ -49,6 +49,21 @@ class MainFlutterWindow: NSWindow {
       )
     }
     layoutWindowControls()
+
+    // Music swaps its lyrics panel for a full-window player in full screen,
+    // so the Flutter side follows the window in and out of it.
+    for (name, fullScreen) in [
+      (NSWindow.willEnterFullScreenNotification, true),
+      (NSWindow.didExitFullScreenNotification, false),
+    ] {
+      NotificationCenter.default.addObserver(
+        forName: name,
+        object: self,
+        queue: .main
+      ) { [weak self] _ in
+        self?.windowChannel?.invokeMethod("fullScreenChanged", arguments: fullScreen)
+      }
+    }
   }
 
   @objc private func windowControlsNeedLayout(_ notification: Notification) {
@@ -101,6 +116,8 @@ class MainFlutterWindow: NSWindow {
       case "titleBarDoubleClick":
         self.performTitleBarDoubleClick()
         result(nil)
+      case "isFullScreen":
+        result(self.styleMask.contains(.fullScreen))
       default:
         result(FlutterMethodNotImplemented)
       }

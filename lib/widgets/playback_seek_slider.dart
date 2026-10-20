@@ -16,6 +16,10 @@ class PlaybackSeekSlider extends StatefulWidget {
   /// player capsule.
   final bool hairline;
 
+  /// The track reaches both ends of the slider instead of leaving room for
+  /// the thumb, to line up with the artwork above it.
+  final bool edgeAligned;
+
   const PlaybackSeekSlider({
     super.key,
     required this.position,
@@ -24,6 +28,7 @@ class PlaybackSeekSlider extends StatefulWidget {
     this.preview,
     this.playing = false,
     this.hairline = false,
+    this.edgeAligned = false,
   });
 
   @override
@@ -120,7 +125,9 @@ class _PlaybackSeekSliderState extends State<PlaybackSeekSlider> {
               max: maxMs,
               trackHeight: widget.hairline ? 2 : 6,
               height: widget.hairline ? 10 : 44,
-              inset: widget.hairline ? 0 : MornyePlayerSlider.horizontalInset,
+              inset: widget.hairline || widget.edgeAligned
+                  ? 0
+                  : MornyePlayerSlider.horizontalInset,
               onChangeStart: _start,
               onChanged: _preview,
               onChangeEnd: _commit,
@@ -143,6 +150,10 @@ class _PlaybackSeekSliderState extends State<PlaybackSeekSlider> {
               )
             : 0,
         max: maxMs,
+        // Keeps the default 48dp height around the 20dp thumb.
+        padding: widget.edgeAligned
+            ? const EdgeInsets.symmetric(vertical: 14)
+            : null,
         onChangeStart: enabled ? _start : null,
         onChanged: enabled ? _preview : null,
         onChangeEnd: enabled ? _commit : null,

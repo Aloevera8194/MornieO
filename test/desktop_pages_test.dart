@@ -24,7 +24,12 @@ import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_downloads_button.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:mornye/widgets/desktop/desktop_navigation.dart';
+import 'package:mornye/widgets/desktop/desktop_now_playing.dart';
+import 'package:mornye/widgets/playback_seek_slider.dart';
+import 'package:mornye/widgets/player_artwork.dart';
 import 'package:mornye/widgets/desktop/desktop_shortcuts.dart';
+import 'package:mornye/widgets/desktop/desktop_window.dart'
+    show desktopWindowFullScreen;
 
 class _Queue extends DownloadQueueNotifier {
   _Queue(this._items);
@@ -75,6 +80,7 @@ void main() {
 
   tearDown(() {
     debugDesktopPlatformOverride = null;
+    desktopWindowFullScreen.value = false;
     desktopNowPlayingOpen.value = false;
     desktopInspectorPanel.value = null;
     desktopSidebarCollapsed.value = false;
@@ -192,7 +198,11 @@ void main() {
         downloadQueueProvider.overrideWith(() => _Queue(const [])),
       ];
 
-      Future<void> pumpShell(WidgetTester tester, double width) async {
+      Future<void> pumpShell(
+        WidgetTester tester,
+        double width, {
+        Widget nowPlaying = const Center(child: Text('now playing')),
+      }) async {
         await setWindow(tester, width);
         final navigatorKey = GlobalKey<NavigatorState>();
         await tester.pumpWidget(
@@ -219,7 +229,7 @@ void main() {
                         const Center(child: Text('content')),
                   ),
                 ),
-                nowPlaying: const Center(child: Text('now playing')),
+                nowPlaying: nowPlaying,
               ),
             ),
           ),
@@ -294,7 +304,7 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Now Playing takes the pane and Escape returns', (
+      testWidgets('Now Playing covers the window and Escape returns', (
         tester,
       ) async {
         await pumpShell(tester, 1400);
@@ -302,11 +312,84 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('now playing'), findsOneWidget);
         expect(find.text('content'), findsNothing);
+        // The sidebar hides under it too.
+        expect(find.text('home'), findsNothing);
+        expect(
+          tester.getSize(find.byKey(const ValueKey('desktop-now-playing'))),
+          const Size(1400, 800),
+        );
 
         await tester.sendKeyEvent(LogicalKeyboardKey.escape);
         await tester.pumpAndSettle();
         expect(find.text('now playing'), findsNothing);
         expect(find.text('content'), findsOneWidget);
+      });
+
+      testWidgets('Now Playing lines the timeline up with the cover', (
+        tester,
+      ) async {
+        await pumpShell(tester, 1400, nowPlaying: const DesktopNowPlaying());
+        desktopNowPlayingOpen.value = true;
+        await tester.pumpAndSettle();
+        // The Material backdrop blurs another copy of the artwork.
+        final cover = tester.getRect(
+          find.byWidgetPredicate(
+            (widget) => widget is PlayerArtwork && widget.iconSize == 96,
+          ),
+        );
+        final timeline = tester.getRect(find.byType(PlaybackSeekSlider));
+        expect(timeline.left, cover.left);
+        expect(timeline.right, cover.right);
+      });
+
+      testWidgets('full screen opens lyrics in Now Playing', (tester) async {
+        bindDesktopFullScreenLyrics();
+        await pumpShell(tester, 1400, nowPlaying: const DesktopNowPlaying());
+        final player = find.byKey(const ValueKey('desktop-now-playing'));
+        final inspectorLyrics = find.byKey(
+          const ValueKey('desktop-inspector-lyrics'),
+        );
+
+        // A window that is not full screen shows lyrics in the panel.
+        await tester.tap(find.byKey(const ValueKey('desktop-player-lyrics')));
+        await tester.pumpAndSettle();
+        expect(player, findsNothing);
+        expect(inspectorLyrics, findsOneWidget);
+        desktopInspectorPanel.value = null;
+
+        desktopWindowFullScreen.value = true;
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('desktop-player-lyrics')));
+        await tester.pumpAndSettle();
+        expect(player, findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('desktop-now-playing-lyrics')),
+          findsOneWidget,
+        );
+        expect(find.text('content'), findsNothing);
+
+        // Escape returns to the shell with the lyrics panel closed.
+        await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+        await tester.pumpAndSettle();
+        expect(player, findsNothing);
+        expect(desktopInspectorPanel.value, isNull);
+        expect(find.text('content'), findsOneWidget);
+
+        // Entering full screen with lyrics open moves them into the player.
+        desktopWindowFullScreen.value = false;
+        desktopInspectorPanel.value = DesktopInspectorPanel.lyrics;
+        await tester.pumpAndSettle();
+        expect(inspectorLyrics, findsOneWidget);
+        desktopWindowFullScreen.value = true;
+        await tester.pumpAndSettle();
+        expect(player, findsOneWidget);
+
+        await tester.tap(
+          find.byKey(const ValueKey('desktop-now-playing-close')),
+        );
+        await tester.pumpAndSettle();
+        expect(player, findsNothing);
+        expect(tester.takeException(), isNull);
       });
 
       testWidgets('nested navigators leave the chrome readable', (

@@ -27,6 +27,32 @@ const double desktopWindowControlsWidth = 78;
 
 const _windowChannel = MethodChannel('com.zarz.mornye/window');
 
+/// Whether the window is in full screen. Only the macOS runner reports it;
+/// elsewhere it stays false.
+final desktopWindowFullScreen = ValueNotifier<bool>(false);
+
+/// Follows the window in and out of full screen. Call once at startup.
+void listenDesktopWindowFullScreen() {
+  if (!desktopTitleBarInContent) return;
+  _windowChannel.setMethodCallHandler((call) async {
+    if (call.method == 'fullScreenChanged') {
+      desktopWindowFullScreen.value = call.arguments == true;
+    }
+  });
+  unawaited(() async {
+    try {
+      final fullScreen = await _windowChannel.invokeMethod<bool>(
+        'isFullScreen',
+      );
+      desktopWindowFullScreen.value = fullScreen ?? false;
+    } on MissingPluginException {
+      // An older runner without the query.
+    } on PlatformException {
+      // The window may close while the call is in flight.
+    }
+  }());
+}
+
 Future<void> _invokeWindow(String method) async {
   try {
     await _windowChannel.invokeMethod<void>(method);

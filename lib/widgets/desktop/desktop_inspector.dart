@@ -11,6 +11,8 @@ import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/playback_seek_preview.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/desktop/desktop_window.dart'
+    show desktopWindowFullScreen;
 import 'package:mornye/widgets/mornye_player_background.dart';
 import 'package:mornye/widgets/mornye_player_queue.dart';
 import 'package:mornye/widgets/player_lyrics_section.dart';
@@ -26,7 +28,7 @@ const double desktopInspectorWidth = 340;
 /// Narrower windows show it as a panel over the content.
 const double desktopInspectorBesideBreakpoint = 1200;
 
-/// Whether Now Playing fills the desktop content pane.
+/// Whether Now Playing covers the desktop window, sidebar included.
 final desktopNowPlayingOpen = ValueNotifier<bool>(false);
 
 /// The panel shown in the trailing inspector, or null while it is closed.
@@ -40,6 +42,40 @@ void toggleDesktopInspector(DesktopInspectorPanel panel) {
       : panel;
 }
 
+bool _wasFullScreen = false;
+DesktopInspectorPanel? _lastPanel;
+bool _fullScreenLyricsBound = false;
+
+/// Opens Now Playing when lyrics open in a full screen window, or when the
+/// window enters full screen with lyrics open, as Music shows lyrics in its
+/// player there rather than in a panel. Call once at startup.
+void bindDesktopFullScreenLyrics() {
+  if (_fullScreenLyricsBound) return;
+  _fullScreenLyricsBound = true;
+  desktopWindowFullScreen.addListener(_syncFullScreenLyrics);
+  desktopInspectorPanel.addListener(_syncFullScreenLyrics);
+  _syncFullScreenLyrics();
+}
+
+void _syncFullScreenLyrics() {
+  final fullScreen = desktopWindowFullScreen.value;
+  final panel = desktopInspectorPanel.value;
+  final lyricsOpened =
+      panel == DesktopInspectorPanel.lyrics &&
+      (!_wasFullScreen || _lastPanel != DesktopInspectorPanel.lyrics);
+  _wasFullScreen = fullScreen;
+  _lastPanel = panel;
+  if (fullScreen && lyricsOpened) desktopNowPlayingOpen.value = true;
+}
+
+/// Closes Now Playing back to the shell. In full screen the lyrics panel
+/// closes with it, so the next lyrics toggle opens the player again rather
+/// than a panel beside the content.
+void closeDesktopNowPlaying() {
+  desktopNowPlayingOpen.value = false;
+  if (desktopWindowFullScreen.value) desktopInspectorPanel.value = null;
+}
+
 /// Whether the inspector floats over the content in a window [windowWidth]
 /// wide.
 bool desktopInspectorOverlays(double windowWidth) =>
@@ -48,20 +84,21 @@ bool desktopInspectorOverlays(double windowWidth) =>
 /// Whether Escape or Back has a player layer to close in a window
 /// [windowWidth] wide.
 bool canDismissDesktopPlayerLayer(double windowWidth) =>
+    desktopNowPlayingOpen.value ||
     (desktopInspectorPanel.value != null &&
-        desktopInspectorOverlays(windowWidth)) ||
-    desktopNowPlayingOpen.value;
+        desktopInspectorOverlays(windowWidth));
 
-/// Closes the top player layer: the inspector while it floats over the
-/// content, then Now Playing. Returns whether a layer closed.
+/// Closes the top player layer: Now Playing, which covers the window, then
+/// the inspector while it floats over the content. Returns whether a layer
+/// closed.
 bool dismissDesktopPlayerLayer(double windowWidth) {
+  if (desktopNowPlayingOpen.value) {
+    closeDesktopNowPlaying();
+    return true;
+  }
   if (desktopInspectorPanel.value != null &&
       desktopInspectorOverlays(windowWidth)) {
     desktopInspectorPanel.value = null;
-    return true;
-  }
-  if (desktopNowPlayingOpen.value) {
-    desktopNowPlayingOpen.value = false;
     return true;
   }
   return false;
@@ -156,7 +193,7 @@ class DesktopInspector extends ConsumerWidget {
           DesktopInspectorPanel.upNext =>
             mornye
                 ? MornyePlayerQueue(colorScheme: colorScheme)
-                : _MaterialQueue(colorScheme: colorScheme),
+                : DesktopMaterialQueue(colorScheme: colorScheme),
         };
       }
       return Column(
@@ -276,16 +313,17 @@ class _InspectorLyricsState extends ConsumerState<_InspectorLyrics> {
   );
 }
 
-class _MaterialQueue extends StatefulWidget {
-  const _MaterialQueue({required this.colorScheme});
+/// The Material Up Next list in a desktop panel.
+class DesktopMaterialQueue extends StatefulWidget {
+  const DesktopMaterialQueue({super.key, required this.colorScheme});
 
   final ColorScheme colorScheme;
 
   @override
-  State<_MaterialQueue> createState() => _MaterialQueueState();
+  State<DesktopMaterialQueue> createState() => _DesktopMaterialQueueState();
 }
 
-class _MaterialQueueState extends State<_MaterialQueue> {
+class _DesktopMaterialQueueState extends State<DesktopMaterialQueue> {
   final _scrollController = ScrollController();
 
   @override
