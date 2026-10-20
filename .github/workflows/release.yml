@@ -420,6 +420,19 @@ jobs:
       - name: Build Rust desktop library
         run: bash scripts/build_rust_backend.sh desktop
 
+      # The from-source LGPL build only changes with the script, which pins
+      # every source archive.
+      - name: Cache LGPL FFmpeg build
+        id: ffmpeg-cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: build/ffmpeg/macos-universal
+          key: ffmpeg-macos-universal-${{ hashFiles('scripts/fetch_desktop_ffmpeg.sh') }}
+
+      - name: Build LGPL FFmpeg
+        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        run: bash scripts/fetch_desktop_ffmpeg.sh macos-universal
+
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
@@ -437,10 +450,12 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # The Xcode "Embed Rust Backend" phase embeds the library built above.
+      # The Xcode "Embed Rust Backend" and "Embed FFmpeg" phases embed the
+      # library and the FFmpeg tools built above.
       - name: Build macOS app
         env:
           MORNYE_SKIP_RUST_BUILD: "1"
+          MORNYE_REQUIRE_FFMPEG: "1"
         run: |
           flutter build macos --release --target lib/main.dart \
             --dart-define="GIT_COMMIT=$(git rev-parse --short=8 HEAD)"
@@ -451,6 +466,12 @@ jobs:
         run: |
           app="build/macos/Build/Products/Release/Mornye.app"
           test -s "$app/Contents/Frameworks/libmornye_desktop.dylib"
+          for tool in ffmpeg ffprobe; do
+            test -x "$app/Contents/Resources/ffmpeg/$tool"
+            for arch in arm64 x86_64; do
+              lipo "$app/Contents/Resources/ffmpeg/$tool" -verify_arch "$arch"
+            done
+          done
           bash scripts/package_macos_dmg.sh "$app" "build/desktop/Mornye-${VERSION}-macos-universal.dmg"
           (cd build/desktop && shasum -a 256 Mornye-*.dmg > SHA256SUMS-macos.txt)
 
@@ -511,6 +532,9 @@ jobs:
       - name: Build Rust desktop library
         run: bash scripts/build_rust_backend.sh desktop
 
+      - name: Fetch LGPL FFmpeg
+        run: bash scripts/fetch_desktop_ffmpeg.sh "linux-${{ matrix.flutter_arch }}"
+
       - name: Setup Flutter
         if: matrix.flutter_arch == 'x64'
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
@@ -540,7 +564,8 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # linux/CMakeLists.txt installs the Rust library into lib/.
+      # linux/CMakeLists.txt installs the Rust library into lib/ and the
+      # FFmpeg tools staged above into lib/ffmpeg/.
       - name: Build Linux bundle
         run: |
           flutter build linux --release --target lib/main.dart \
@@ -562,6 +587,9 @@ jobs:
           bundle="build/linux/${FLUTTER_ARCH}/release/bundle"
           test -x "$bundle/mornye"
           test -s "$bundle/lib/libmornye_desktop.so"
+          test -x "$bundle/lib/ffmpeg/ffmpeg"
+          test -x "$bundle/lib/ffmpeg/ffprobe"
+          test -s "$bundle/lib/ffmpeg/LICENSE.txt"
           export MORNYE_PACKAGE_ARCH="$ARCH"
           bash scripts/package_linux.sh appimage "$bundle" "$VERSION" \
             "build/desktop/Mornye-${VERSION}-linux-${ARCH}.AppImage"
@@ -611,6 +639,11 @@ jobs:
       - name: Build Rust desktop library
         run: ./scripts/build_rust_backend_windows.ps1
 
+      # Git Bash provides curl, unzip and sha256sum for the fetch script.
+      - name: Fetch LGPL FFmpeg
+        shell: bash
+        run: bash scripts/fetch_desktop_ffmpeg.sh windows-x64
+
       - name: Setup Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
@@ -628,13 +661,16 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
-      # windows/CMakeLists.txt installs the Rust library next to mornye.exe.
+      # windows/CMakeLists.txt installs the Rust library next to mornye.exe
+      # and the FFmpeg tools staged above into ffmpeg\.
       - name: Build Windows app
         run: |
           $commit = git rev-parse --short=8 HEAD
           flutter build windows --release --target lib/main.dart --dart-define="GIT_COMMIT=$commit"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          foreach ($required in 'mornye.exe', 'mornye_desktop.dll') {
+          $requiredFiles = 'mornye.exe', 'mornye_desktop.dll', 'ffmpeg\ffmpeg.exe',
+            'ffmpeg\ffprobe.exe', 'ffmpeg\LICENSE.txt'
+          foreach ($required in $requiredFiles) {
             if (-not (Test-Path "build\windows\x64\runner\Release\$required")) {
               throw "Missing $required"
             }
