@@ -4,6 +4,7 @@ import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
 import 'package:mornye/widgets/settings_group.dart';
 
 /// How a [TrackCard] paints its container.
@@ -96,6 +97,7 @@ class TrackCard extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
     this.onLongPress,
+    this.onContextMenu,
     this.margin,
   });
 
@@ -121,6 +123,10 @@ class TrackCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
+
+  /// Desktop right-click, with the global pointer position. See
+  /// [DesktopContextMenuRegion].
+  final ValueChanged<Offset>? onContextMenu;
 
   /// Overrides the default outer margin. Prefer the default so track lists stay
   /// aligned with each other.
@@ -224,19 +230,27 @@ class TrackCard extends StatelessWidget {
         ],
       ),
     );
-    if (!context.isMornye) return card;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        card,
-        Padding(
-          padding: EdgeInsetsDirectional.only(
-            start: tokens.coverList + 40,
-            end: 20,
+    if (!context.isMornye) {
+      return DesktopContextMenuRegion(
+        onContextMenu: onContextMenu,
+        child: card,
+      );
+    }
+    return DesktopContextMenuRegion(
+      onContextMenu: onContextMenu,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          card,
+          Padding(
+            padding: EdgeInsetsDirectional.only(
+              start: tokens.coverList + 40,
+              end: 20,
+            ),
+            child: const Divider(),
           ),
-          child: const Divider(),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -252,6 +266,7 @@ class TrackGridCard extends StatelessWidget {
     this.overlays = const [],
     this.onTap,
     this.onLongPress,
+    this.onContextMenu,
     this.isSelected = false,
     this.semanticLabel,
   });
@@ -270,6 +285,9 @@ class TrackGridCard extends StatelessWidget {
 
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
+
+  /// Desktop right-click, with the global pointer position.
+  final ValueChanged<Offset>? onContextMenu;
   final bool isSelected;
   final String? semanticLabel;
 
@@ -280,6 +298,19 @@ class TrackGridCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final borderRadius = tokens.borderRadiusThumb;
 
+    return DesktopContextMenuRegion(
+      onContextMenu: onContextMenu,
+      child: _buildCell(context, tokens, theme, colorScheme, borderRadius),
+    );
+  }
+
+  Widget _buildCell(
+    BuildContext context,
+    AppTokens tokens,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    BorderRadius borderRadius,
+  ) {
     return Semantics(
       label: semanticLabel,
       button: onTap != null,

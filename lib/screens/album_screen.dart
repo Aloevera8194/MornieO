@@ -33,6 +33,10 @@ import 'package:mornye/widgets/playlist_picker_sheet.dart';
 import 'package:mornye/utils/clickable_metadata.dart';
 import 'package:mornye/widgets/cross_extension_share_sheet.dart';
 import 'package:mornye/widgets/track_list_tile.dart';
+import 'package:mornye/widgets/track_collection_quick_actions.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/track_table.dart';
 import 'package:mornye/widgets/audio_quality_badges.dart';
 import 'package:mornye/widgets/motion_header_banner.dart';
 import 'package:mornye/widgets/track_detail_actions.dart';
@@ -102,6 +106,9 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
   String? _headerImageUrl;
   List<String> _audioTraits = const [];
   String? _description;
+
+  /// Double click and Enter actions of the desktop table rows, by row id.
+  final Map<String, VoidCallback> _desktopActivations = {};
 
   String get _cacheKey =>
       '${_effectiveMetadataProviderIdFromAlbumId()}:${widget.albumId}';
@@ -442,7 +449,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
         _trackSelectionId(tracks[index], index),
     });
 
-    return CollectionScaffold(
+    final scaffold = CollectionScaffold(
       scrollController: scrollController,
       isSelectionMode: isSelectionMode,
       onExitSelectionMode: exitSelectionMode,
@@ -488,6 +495,17 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
           _buildAlbumFooter(context, colorScheme, tracks),
         ],
       ],
+    );
+    return DesktopListScope(
+      onSelectAll: tracks.isEmpty
+          ? null
+          : () => selectAll([
+              for (var index = 0; index < tracks.length; index++)
+                _trackSelectionId(tracks[index], index),
+            ]),
+      onClearSelection: isSelectionMode ? exitSelectionMode : null,
+      onActivate: () => _desktopActivations[selectionAnchorId]?.call(),
+      child: scaffold,
     );
   }
 
@@ -691,6 +709,14 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
     final hasMultipleDiscs = tracks.any(
       (track) => discNumber(track) > 1 || (track.totalDiscs ?? 1) > 1,
     );
+    if (isDesktopPlatform) {
+      return _buildTrackTable(
+        context,
+        tracks,
+        isInHistory: (index) =>
+            existingHistoryKeys.contains(historyLookups[index].lookupKey),
+      );
+    }
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
       sliver: SliverList(
@@ -753,6 +779,82 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
           }
           return row;
         }, childCount: tracks.length),
+      ),
+    );
+  }
+
+  /// The desktop song table. Its rows share the selection ids of the mobile
+  /// list, and double click or Enter does what a tap on a mobile row does.
+  Widget _buildTrackTable(
+    BuildContext context,
+    List<Track> tracks, {
+    required bool Function(int index) isInHistory,
+  }) {
+    final rows = <TrackTableRow>[];
+    final rowTracks = <String, (Track, bool)>{};
+    _desktopActivations.clear();
+    for (var index = 0; index < tracks.length; index++) {
+      final track = tracks[index];
+      final id = _trackSelectionId(track, index);
+      final inHistory = isInHistory(index);
+      rowTracks[id] = (track, inHistory);
+      _desktopActivations[id] = () => TrackListTile.activate(
+        context,
+        ref,
+        track,
+        isInHistory: inHistory,
+        onDownload: ({bool forceQualityPicker = false}) => _downloadTrack(
+          context,
+          track,
+          forceQualityPicker: forceQualityPicker,
+        ),
+      );
+      rows.add(
+        TrackTableRow(
+          id: id,
+          number: track.trackNumber,
+          title: track.name,
+          artist: track.artistName,
+          album: track.albumName,
+          quality: track.audioQuality,
+          duration: track.duration > 0
+              ? Duration(seconds: track.duration)
+              : null,
+          titleTrailing: TrackListTileBadges(
+            track: track,
+            isInHistory: inHistory,
+          ),
+          trailing: TrackCollectionQuickActions(
+            track: track,
+            hasLocalPlaybackCandidate: inHistory,
+          ),
+        ),
+      );
+    }
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+      sliver: SliverTrackTable(
+        rows: rows,
+        columns: const [
+          TrackTableColumn.number,
+          TrackTableColumn.title,
+          TrackTableColumn.artist,
+          TrackTableColumn.quality,
+          TrackTableColumn.duration,
+        ],
+        selectedIds: selectedIds,
+        onSelect: applyDesktopClick,
+        onActivate: (id) => _desktopActivations[id]?.call(),
+        onContextMenu: (id, position) {
+          final (track, inHistory) = rowTracks[id]!;
+          TrackCollectionQuickActions.showTrackOptionsSheet(
+            context,
+            ref,
+            track,
+            position: position,
+            hasLocalPlaybackCandidate: inHistory,
+          );
+        },
       ),
     );
   }
