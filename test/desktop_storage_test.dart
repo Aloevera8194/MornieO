@@ -29,7 +29,7 @@ class _DirectoryPicker extends FilePickerPlatform {
 
   final String? result;
   String? initialDirectory;
-  var calls = 0;
+  int calls = 0;
 
   @override
   Future<String?> getDirectoryPath({
