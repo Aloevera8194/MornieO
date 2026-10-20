@@ -19,30 +19,33 @@ class DynamicColorWrapper extends ConsumerWidget {
     final themeSettings = ref.watch(themeProvider);
     final fontFamily = ref.watch(customFontFamilyProvider).asData?.value;
 
-    if (themeSettings.style == AppThemeStyle.mornye) {
-      return builder(
-        MornyeTheme.build(
-          Brightness.light,
-          accent: themeSettings.mornyeAccent,
-          useSystemFont: themeSettings.useSystemFont,
-          fontFamily: fontFamily,
-          glassClarity: themeSettings.mornyeGlassClarity,
-          glassOutlines: themeSettings.mornyeGlassOutlines,
-        ),
-        MornyeTheme.build(
-          Brightness.dark,
-          accent: themeSettings.mornyeAccent,
-          useSystemFont: themeSettings.useSystemFont,
-          fontFamily: fontFamily,
-          glassClarity: themeSettings.mornyeGlassClarity,
-          glassOutlines: themeSettings.mornyeGlassOutlines,
-        ),
-        themeSettings.themeMode,
-      );
-    }
-
+    // Both styles build below the same DynamicColorBuilder. Switching styles
+    // must update the app in place: a different parent remounted the whole
+    // app, losing its state and briefly mounting a second macOS menu bar.
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
+        if (themeSettings.style == AppThemeStyle.mornye) {
+          return builder(
+            MornyeTheme.build(
+              Brightness.light,
+              accent: themeSettings.mornyeAccent,
+              useSystemFont: themeSettings.useSystemFont,
+              fontFamily: fontFamily,
+              glassClarity: themeSettings.mornyeGlassClarity,
+              glassOutlines: themeSettings.mornyeGlassOutlines,
+            ),
+            MornyeTheme.build(
+              Brightness.dark,
+              accent: themeSettings.mornyeAccent,
+              useSystemFont: themeSettings.useSystemFont,
+              fontFamily: fontFamily,
+              glassClarity: themeSettings.mornyeGlassClarity,
+              glassOutlines: themeSettings.mornyeGlassOutlines,
+            ),
+            themeSettings.themeMode,
+          );
+        }
+
         ColorScheme lightScheme;
         ColorScheme darkScheme;
 

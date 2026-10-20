@@ -109,6 +109,41 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('switching theme style updates the app in place', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(
+      overrides: [
+        initialThemeSettingsProvider.overrideWithValue(
+          loadBootstrapThemeSettings(prefs),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: DynamicColorWrapper(
+          builder: (light, dark, mode) => MaterialApp(
+            theme: light,
+            home: const Scaffold(body: TextField(key: ValueKey('app-state'))),
+          ),
+        ),
+      ),
+    );
+    final before = tester.state(find.byKey(const ValueKey('app-state')));
+
+    await container.read(themeProvider.notifier).setStyle(AppThemeStyle.mornye);
+    await tester.pumpAndSettle();
+    expect(tester.state(find.byKey(const ValueKey('app-state'))), before);
+
+    await container
+        .read(themeProvider.notifier)
+        .setStyle(AppThemeStyle.material);
+    await tester.pumpAndSettle();
+    expect(tester.state(find.byKey(const ValueKey('app-state'))), before);
+  });
+
   for (final mode in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets(
       'glass outlines toggle survives restart and local themes ($mode)',

@@ -235,23 +235,24 @@ class MornyeApp extends ConsumerWidget {
                 ),
               ),
             );
+            // HeroMode only affects heroes below a *route* subtree. At this
+            // level it sits above the router's Navigator, so the controller
+            // never encounters it while collecting heroes. Removing the
+            // inherited controller disables flights on the root Navigator.
+            if (!heroAnimationsEnabled) {
+              appContent = HeroControllerScope.none(child: appContent);
+            }
             // Above the root navigator, so shortcuts and the macOS menu bar
-            // also reach Now Playing, dialogs and pushed pages.
+            // also reach Now Playing, dialogs and pushed pages. It stays
+            // outside every conditional wrapper: remounting it would mount a
+            // second macOS menu bar before the first is gone.
             if (isDesktopPlatform) {
               appContent = DesktopShortcuts(child: appContent);
             }
             return MediaQuery(
               data: mediaQuery.copyWith(displayFeatures: const []),
-              // HeroMode only affects heroes below a *route* subtree. At this
-              // level it sits above the router's Navigator, so the controller
-              // never encounters it while collecting heroes. Removing the
-              // inherited controller disables flights on the root Navigator.
               child: MornyeGlassPreparation(
-                child: AdaptiveUiScaler(
-                  child: heroAnimationsEnabled
-                      ? appContent
-                      : HeroControllerScope.none(child: appContent),
-                ),
+                child: AdaptiveUiScaler(child: appContent),
               ),
             );
           },
