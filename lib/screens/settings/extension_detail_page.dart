@@ -107,142 +107,155 @@ class _ExtensionDetailPageState extends ConsumerState<ExtensionDetailPage> {
           slivers: [
             AppSliverHeader.page(title: extension.displayName),
 
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: _ExtensionOverviewSurface(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: context.isMornye
-                                  ? MornyeTheme.controlFill(context)
-                                  : hasError
-                                  ? colorScheme.errorContainer
-                                  : colorScheme.primaryContainer,
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child:
-                                extension.iconPath != null &&
-                                    extension.iconPath!.isNotEmpty
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: Image.file(
-                                      File(extension.iconPath!),
-                                      width: 56,
-                                      height: 56,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (
-                                            context,
-                                            error,
-                                            stackTrace,
-                                          ) => AppIcon(
-                                            context.isMornye
-                                                ? (hasError
-                                                      ? CupertinoIcons
-                                                            .exclamationmark_circle
-                                                      : CupertinoIcons
-                                                            .square_grid_2x2)
-                                                : hasError
-                                                ? Icons.error_outline
-                                                : Icons.extension,
-                                            size: 28,
-                                            color: hasError
-                                                ? colorScheme.error
-                                                : colorScheme
-                                                      .onPrimaryContainer,
-                                          ),
+            SliverLayoutBuilder(
+              builder: (context, constraints) => SliverToBoxAdapter(
+                child: Padding(
+                  // Same column as the settings groups below on wide panes.
+                  padding: EdgeInsets.symmetric(
+                    horizontal: settingsHorizontalInset(
+                      constraints.crossAxisExtent,
+                    ),
+                    vertical: 16,
+                  ),
+                  child: _ExtensionOverviewSurface(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: context.isMornye
+                                    ? MornyeTheme.controlFill(context)
+                                    : hasError
+                                    ? colorScheme.errorContainer
+                                    : colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child:
+                                  extension.iconPath != null &&
+                                      extension.iconPath!.isNotEmpty
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: Image.file(
+                                        File(extension.iconPath!),
+                                        width: 56,
+                                        height: 56,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (
+                                              context,
+                                              error,
+                                              stackTrace,
+                                            ) => AppIcon(
+                                              context.isMornye
+                                                  ? (hasError
+                                                        ? CupertinoIcons
+                                                              .exclamationmark_circle
+                                                        : CupertinoIcons
+                                                              .square_grid_2x2)
+                                                  : hasError
+                                                  ? Icons.error_outline
+                                                  : Icons.extension,
+                                              size: 28,
+                                              color: hasError
+                                                  ? colorScheme.error
+                                                  : colorScheme
+                                                        .onPrimaryContainer,
+                                            ),
+                                      ),
+                                    )
+                                  : AppIcon(
+                                      context.isMornye
+                                          ? (hasError
+                                                ? CupertinoIcons
+                                                      .exclamationmark_circle
+                                                : CupertinoIcons
+                                                      .square_grid_2x2)
+                                          : hasError
+                                          ? Icons.error_outline
+                                          : Icons.extension,
+                                      size: 28,
+                                      color: hasError
+                                          ? colorScheme.error
+                                          : colorScheme.onPrimaryContainer,
                                     ),
-                                  )
-                                : AppIcon(
-                                    context.isMornye
-                                        ? (hasError
-                                              ? CupertinoIcons
-                                                    .exclamationmark_circle
-                                              : CupertinoIcons.square_grid_2x2)
-                                        : hasError
-                                        ? Icons.error_outline
-                                        : Icons.extension,
-                                    size: 28,
-                                    color: hasError
-                                        ? colorScheme.error
-                                        : colorScheme.onPrimaryContainer,
-                                  ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  extension.displayName,
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  'v${extension.version}',
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
-                                      ),
-                                ),
-                              ],
                             ),
-                          ),
-                          AppSwitch(
-                            value: extension.enabled,
-                            semanticLabel: extension.displayName,
-                            onChanged: hasError
-                                ? null
-                                : (enabled) => ref
-                                      .read(extensionProvider.notifier)
-                                      .setExtensionEnabled(
-                                        widget.extensionId,
-                                        enabled,
-                                      ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    extension.displayName,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    'v${extension.version}',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            AppSwitch(
+                              value: extension.enabled,
+                              semanticLabel: extension.displayName,
+                              onChanged: hasError
+                                  ? null
+                                  : (enabled) => ref
+                                        .read(extensionProvider.notifier)
+                                        .setExtensionEnabled(
+                                          widget.extensionId,
+                                          enabled,
+                                        ),
+                            ),
+                          ],
+                        ),
+                        if (extension.description.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            extension.description,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: colorScheme.onSurfaceVariant),
                           ),
                         ],
-                      ),
-                      if (extension.description.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        Text(
-                          extension.description,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
+                        if (context.isMornye)
+                          Divider(
+                            color: MornyeTheme.metadataDividerColor(context),
+                          ),
+                        _InfoRow(
+                          label: context.l10n.extensionId,
+                          value: extension.id,
                         ),
+                        if (!context.isMornye)
+                          _InfoRow(
+                            label: context.l10n.extensionsVersion(
+                              extension.version,
+                            ),
+                            value: '',
+                          ),
+                        if (hasError && extension.errorMessage != null)
+                          _InfoRow(
+                            label: context.l10n.extensionError,
+                            value: context.friendlyError(
+                              extension.errorMessage,
+                              fallback: context.l10n.extensionsErrorLoading,
+                            ),
+                            isError: true,
+                          ),
                       ],
-                      const SizedBox(height: 16),
-                      if (context.isMornye)
-                        Divider(
-                          color: MornyeTheme.metadataDividerColor(context),
-                        ),
-                      _InfoRow(
-                        label: context.l10n.extensionId,
-                        value: extension.id,
-                      ),
-                      if (!context.isMornye)
-                        _InfoRow(
-                          label: context.l10n.extensionsVersion(
-                            extension.version,
-                          ),
-                          value: '',
-                        ),
-                      if (hasError && extension.errorMessage != null)
-                        _InfoRow(
-                          label: context.l10n.extensionError,
-                          value: context.friendlyError(
-                            extension.errorMessage,
-                            fallback: context.l10n.extensionsErrorLoading,
-                          ),
-                          isError: true,
-                        ),
-                    ],
+                    ),
                   ),
                 ),
               ),
