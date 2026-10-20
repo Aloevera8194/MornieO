@@ -394,12 +394,15 @@ class _HomeShelf extends StatelessWidget {
     final textScale = MediaQuery.textScalerOf(context).scale(1);
     return SizedBox(
       height: _homeShelfCoverSize + 52 * textScale,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.symmetric(horizontal: inset),
-        itemCount: itemCount,
-        separatorBuilder: (_, _) => const SizedBox(width: 12),
-        itemBuilder: itemBuilder,
+      child: DesktopScrollArrows(
+        builder: (context, controller) => ListView.separated(
+          controller: controller,
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.symmetric(horizontal: inset),
+          itemCount: itemCount,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: itemBuilder,
+        ),
       ),
     );
   }

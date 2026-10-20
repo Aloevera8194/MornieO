@@ -7629,5 +7629,13 @@
   "desktopDownloadsCancel": "Cancel download",
   "@desktopDownloadsCancel": {
     "description": "Tooltip of the button that cancels one download in the desktop downloads popover"
+  },
+  "desktopScrollBack": "Scroll back",
+  "@desktopScrollBack": {
+    "description": "Tooltip of the desktop button that scrolls a horizontal shelf of albums or artists back"
+  },
+  "desktopScrollForward": "Scroll forward",
+  "@desktopScrollForward": {
+    "description": "Tooltip of the desktop button that scrolls a horizontal shelf of albums or artists forward"
   }
 }
