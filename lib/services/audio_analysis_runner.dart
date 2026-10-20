@@ -2,16 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_session.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffprobe_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mornye/services/audio_analysis_ffmpeg.dart';
 import 'package:mornye/services/audio_analysis_jobs.dart';
 import 'package:mornye/services/audio_analysis_models.dart';
+import 'package:mornye/services/ffmpeg_models.dart';
+import 'package:mornye/services/ffmpeg_support.dart';
 import 'package:mornye/services/network_audio_analysis_input.dart';
 import 'package:mornye/services/platform_bridge.dart';
 
@@ -120,22 +118,9 @@ class _LevelMetrics {
 /// and answers by throwing [AudioAnalysisCancelled].
 class AudioAnalysisRunner {
   final networkInput = NetworkAudioAnalysisInput();
-  final _analysisJobs = AudioAnalysisJobs<FFmpegSession>(
-    start: (arguments) async {
-      final completed = Completer<FFmpegSession>();
-      final session = await FFmpegKit.executeWithArgumentsAsync(
-        arguments,
-        completed.complete,
-      );
-      final id = session.getSessionId();
-      if (id == null) {
-        // Never pass null to cancel: FFmpegKit interprets it as cancel-all.
-        await completed.future;
-        throw StateError('Analysis session has no ID');
-      }
-      return (id: id, completed: completed.future);
-    },
-    cancel: (id) => FFmpegKit.cancel(id),
+  final _analysisJobs = AudioAnalysisJobs<FFmpegSessionResult>(
+    start: FFmpegExecution.start,
+    cancel: FFmpegExecution.cancel,
   );
 
   void _checkCancelled(bool Function() isCancelled) {
@@ -351,9 +336,8 @@ class AudioAnalysisRunner {
         ),
       );
 
-      final returnCode = await session.getReturnCode();
-      if (!ReturnCode.isSuccess(returnCode)) {
-        final logs = await session.getLogsAsString();
+      if (!session.success) {
+        final logs = await session.logs();
         throw Exception('FFmpeg spectrogram failed: $logs');
       }
 
@@ -434,8 +418,7 @@ class AudioAnalysisRunner {
   }
 
   Future<_MediaInfo> _getMediaInfo(String filePath) async {
-    final session = await FFprobeKit.getMediaInformation(filePath);
-    final info = session.getMediaInformation();
+    final info = await FFmpegExecution.mediaInformation(filePath);
 
     if (info == null) {
       throw Exception('Failed to get media information');
@@ -615,8 +598,7 @@ class AudioAnalysisRunner {
         ),
       );
 
-      final returnCode = await session.getReturnCode();
-      if (!ReturnCode.isSuccess(returnCode)) {
+      if (!session.success) {
         return null;
       }
 
@@ -624,9 +606,7 @@ class AudioAnalysisRunner {
           ? await metadataFile.readAsString()
           : '';
       final metadataSummary = parseAudioAnalysisMetadata(metadata);
-      final logs = metadataSummary == null
-          ? await session.getAllLogsAsString() ?? ''
-          : '';
+      final logs = metadataSummary == null ? await session.logs() : '';
       final summary = metadataSummary ?? parseAudioAstatsSummary(logs);
       if (summary == null) return null;
       final channelStats = metadataSummary?.channelStats.isNotEmpty == true

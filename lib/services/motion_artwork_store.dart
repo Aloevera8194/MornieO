@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mornye/services/ffmpeg_service.dart';
+import 'package:mornye/services/ffmpeg_support.dart';
 import 'package:mornye/services/motion_artwork_download.dart';
 import 'package:mornye/services/motion_artwork_proxy.dart';
 import 'package:mornye/utils/file_access.dart';
@@ -280,19 +279,14 @@ class MotionArtworkStore {
     List<String> arguments, {
     required Duration timeout,
   }) async {
-    final completed = Completer<bool>();
-    final session = await FFmpegKit.executeWithArgumentsAsync(arguments, (
-      session,
-    ) async {
-      final success = ReturnCode.isSuccess(await session.getReturnCode());
-      if (!completed.isCompleted) completed.complete(success);
-    });
-    return completed.future.timeout(
+    final session = await FFmpegExecution.start(arguments);
+    final completed = session.completed.then((result) => result.success);
+    return completed.timeout(
       timeout,
       onTimeout: () async {
-        await FFmpegKit.cancel(session.getSessionId());
+        await FFmpegExecution.cancel(session.id);
         // Wait for this session to release its file before removing partials.
-        await completed.future.timeout(
+        await completed.timeout(
           const Duration(seconds: 5),
           onTimeout: () => false,
         );

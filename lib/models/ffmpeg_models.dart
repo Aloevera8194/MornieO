@@ -114,6 +114,23 @@ class FFmpegResult {
   });
 }
 
+/// Outcome of an FFmpeg session started with `FFmpegExecution.start`. Logs
+/// are read on demand because most callers only need the return code.
+class FFmpegSessionResult {
+  /// Null when the session ended without a return code.
+  final int? returnCode;
+  final Future<String> Function() _logs;
+
+  FFmpegSessionResult({
+    required this.returnCode,
+    required Future<String> Function() logs,
+  }) : _logs = logs;
+
+  bool get success => returnCode == 0;
+
+  Future<String> logs() => _logs();
+}
+
 /// Result of an EBU R128 loudness scan, used to compute ReplayGain tags.
 class ReplayGainResult {
   /// Track gain in dB, e.g. "-6.50 dB".

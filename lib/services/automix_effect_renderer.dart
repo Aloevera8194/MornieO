@@ -2,11 +2,10 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mornye/models/automix_options.dart';
 import 'package:mornye/services/audio_analysis_jobs.dart';
+import 'package:mornye/services/ffmpeg_support.dart';
 
 /// Keep the beginning dry for the live deck handover, then ease in the FX.
 String autoMixEffectFilters(AutoMixOptions options, Duration duration) {
@@ -57,7 +56,10 @@ class AutoMixEffectRenderer {
     Future<Directory> Function()? temporaryDirectory,
   }) : _jobs =
            jobs ??
-           AudioAnalysisJobs<bool>(start: _start, cancel: FFmpegKit.cancel),
+           AudioAnalysisJobs<bool>(
+             start: _start,
+             cancel: FFmpegExecution.cancel,
+           ),
        _temporaryDirectory = temporaryDirectory ?? getTemporaryDirectory;
 
   final AudioAnalysisJobs<bool> _jobs;
@@ -67,21 +69,18 @@ class AutoMixEffectRenderer {
   static Future<({int id, Future<bool> completed})> _start(
     List<String> arguments,
   ) async {
-    final done = Completer<bool>();
-    final session = await FFmpegKit.executeWithArgumentsAsync(arguments, (
-      session,
-    ) async {
-      if (!done.isCompleted) {
-        done.complete(ReturnCode.isSuccess(await session.getReturnCode()));
-      }
-    });
-    final id = session.getSessionId();
-    if (id == null) throw StateError('Mix effect session has no ID');
+    final session = await FFmpegExecution.start(arguments);
+    final id = session.id;
     final timeout = Timer(
       const Duration(seconds: 30),
-      () => unawaited(FFmpegKit.cancel(id)),
+      () => unawaited(FFmpegExecution.cancel(id)),
     );
-    return (id: id, completed: done.future.whenComplete(timeout.cancel));
+    return (
+      id: id,
+      completed: session.completed
+          .then((result) => result.success)
+          .whenComplete(timeout.cancel),
+    );
   }
 
   void cancel() {

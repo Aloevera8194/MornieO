@@ -67,6 +67,9 @@ void main() {
           'rusqlite',
           'roxmltree',
         ], await rootBundle.loadString('assets/licenses/native_data_jobs.txt'));
+        yield LicenseEntryWithLineBreaks(const [
+          'FFmpeg',
+        ], await rootBundle.loadString('assets/licenses/ffmpeg.txt'));
         if (Platform.isAndroid) {
           yield LicenseEntryWithLineBreaks(const [
             'libusb',

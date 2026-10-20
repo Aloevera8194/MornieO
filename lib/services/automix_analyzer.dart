@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mornye/services/audio_analysis_jobs.dart';
 import 'package:mornye/services/automix_analysis.dart';
+import 'package:mornye/services/ffmpeg_support.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/utils/logger.dart';
 
@@ -19,21 +18,19 @@ class AutoMixAnalyzer {
   final _cache = <String, AutoMixBeatGrid>{};
   final _jobs = AudioAnalysisJobs<bool>(
     start: (arguments) async {
-      final done = Completer<bool>();
-      final session = await FFmpegKit.executeWithArgumentsAsync(arguments, (
-        session,
-      ) async {
-        final success = ReturnCode.isSuccess(await session.getReturnCode());
-        if (!done.isCompleted) done.complete(success);
-      });
-      final id = session.getSessionId();
-      if (id == null) throw StateError('AutoMix analysis session has no ID');
+      final session = await FFmpegExecution.start(arguments);
+      final id = session.id;
       final timeout = Timer(const Duration(seconds: 20), () {
-        unawaited(FFmpegKit.cancel(id));
+        unawaited(FFmpegExecution.cancel(id));
       });
-      return (id: id, completed: done.future.whenComplete(timeout.cancel));
+      return (
+        id: id,
+        completed: session.completed
+            .then((result) => result.success)
+            .whenComplete(timeout.cancel),
+      );
     },
-    cancel: FFmpegKit.cancel,
+    cancel: FFmpegExecution.cancel,
   );
   int _generation = 0;
   final _nativeRequests = <String>{};
