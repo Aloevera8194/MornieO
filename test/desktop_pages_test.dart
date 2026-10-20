@@ -20,6 +20,7 @@ import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_downloads_button.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:mornye/widgets/desktop/desktop_navigation.dart';
@@ -69,12 +70,14 @@ void main() {
     debugDesktopPlatformOverride = true;
     desktopNowPlayingOpen.value = false;
     desktopInspectorPanel.value = null;
+    desktopSidebarCollapsed.value = false;
   });
 
   tearDown(() {
     debugDesktopPlatformOverride = null;
     desktopNowPlayingOpen.value = false;
     desktopInspectorPanel.value = null;
+    desktopSidebarCollapsed.value = false;
   });
 
   Future<void> setWindow(WidgetTester tester, double width) async {

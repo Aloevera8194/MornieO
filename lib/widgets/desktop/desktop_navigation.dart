@@ -1,17 +1,15 @@
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-// The rail's own item, used for Settings at the bottom of the rail so it
-// keeps the same pill, label and motion as the destinations above it.
-import 'package:material_3_expressive/components/navigation_rail/components/m3e_rail_item.dart';
-import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/library_collections_provider.dart';
 import 'package:mornye/providers/user_profile_provider.dart';
 import 'package:mornye/screens/now_playing_screen.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/services/user_profile_store.dart';
+import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/material_expressive.dart';
 import 'package:mornye/theme/mornye_theme.dart';
@@ -28,6 +26,9 @@ const double desktopExpandedRailBreakpoint = 1200;
 
 /// Expanded Material rail width.
 const double desktopSidebarWidth = 220;
+
+/// Collapsed Material rail width.
+const double desktopCollapsedRailWidth = 96;
 
 /// Window width below which the Mornye sidebar hides itself, as Music does
 /// in narrow windows. The sidebar button shows it again.
@@ -145,6 +146,7 @@ class DesktopShellLayout extends StatelessWidget {
     if (context.isMornye) {
       return _DesktopSidebarAutoHide(
         windowWidth: width,
+        threshold: desktopSidebarAutoHideWidth,
         child: ValueListenableBuilder<bool>(
           valueListenable: desktopSidebarCollapsed,
           // The page background shows around the inset sidebar panel.
@@ -206,12 +208,25 @@ class DesktopShellLayout extends StatelessWidget {
                         width: desktopWindowControlsWidth,
                         child: DesktopWindowDragArea(zoomOnDoubleClick: true),
                       ),
+                    // Collapsed below [desktopExpandedRailBreakpoint]; the
+                    // rail's menu button and the sidebar shortcut toggle it
+                    // in between, as they hide the Mornye sidebar.
                     Expanded(
-                      child: DesktopNavigationRail(
-                        destinations: destinations,
-                        selected: selected,
-                        onSelected: onSelected,
-                        extended: width >= desktopExpandedRailBreakpoint,
+                      child: _DesktopSidebarAutoHide(
+                        windowWidth: width,
+                        threshold: desktopExpandedRailBreakpoint,
+                        child: ValueListenableBuilder<bool>(
+                          valueListenable: desktopSidebarCollapsed,
+                          builder: (context, collapsed, _) =>
+                              DesktopNavigationRail(
+                                destinations: destinations,
+                                selected: selected,
+                                onSelected: onSelected,
+                                extended: !collapsed,
+                                onExtendedChanged: (extended) =>
+                                    desktopSidebarCollapsed.value = !extended,
+                              ),
+                        ),
                       ),
                     ),
                   ],
@@ -234,16 +249,19 @@ class DesktopShellLayout extends StatelessWidget {
   }
 }
 
-/// Hides the Mornye sidebar when the window narrows past
-/// [desktopSidebarAutoHideWidth] and shows it again when it widens back.
-/// The sidebar button and shortcut still toggle it in between.
+/// Hides the Mornye sidebar, or collapses the Material rail, when the window
+/// narrows past [threshold] and restores it when it widens back. The sidebar
+/// button, the rail's menu button and the shortcut still toggle it in
+/// between.
 class _DesktopSidebarAutoHide extends StatefulWidget {
   const _DesktopSidebarAutoHide({
     required this.windowWidth,
+    required this.threshold,
     required this.child,
   });
 
   final double windowWidth;
+  final double threshold;
   final Widget child;
 
   @override
@@ -255,7 +273,7 @@ class _DesktopSidebarAutoHideState extends State<_DesktopSidebarAutoHide> {
   bool? _narrow;
 
   void _update() {
-    final narrow = widget.windowWidth < desktopSidebarAutoHideWidth;
+    final narrow = widget.windowWidth < widget.threshold;
     final previous = _narrow;
     _narrow = narrow;
     // A wide first frame keeps the remembered choice; crossing the width
@@ -477,7 +495,8 @@ int _positionOf(List<DesktopDestination> destinations, ShellTab tab) =>
 
 /// Material 3 Expressive navigation rail for desktop windows: collapsed
 /// below [desktopExpandedRailBreakpoint], expanded to [desktopSidebarWidth]
-/// above it, with Settings anchored at the bottom.
+/// above it, with Settings anchored at the bottom. A menu button on top
+/// toggles it.
 class DesktopNavigationRail extends StatelessWidget {
   const DesktopNavigationRail({
     super.key,
@@ -485,6 +504,7 @@ class DesktopNavigationRail extends StatelessWidget {
     required this.selected,
     required this.onSelected,
     required this.extended,
+    this.onExtendedChanged,
   });
 
   final List<DesktopDestination> destinations;
@@ -492,14 +512,9 @@ class DesktopNavigationRail extends StatelessWidget {
   final ValueChanged<ShellTab> onSelected;
   final bool extended;
 
-  M3ENavigationRailDestination _railDestination(
-    DesktopDestination destination,
-  ) => M3ENavigationRailDestination(
-    icon: AppIcon(destination.icon),
-    selectedIcon: AppIcon(destination.selectedIcon),
-    label: destination.label,
-    badgeCount: destination.badgeCount > 0 ? destination.badgeCount : null,
-  );
+  /// Called by the rail's menu button. Without it the rail has no menu
+  /// button and follows [extended] alone.
+  final ValueChanged<bool>? onExtendedChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -538,76 +553,287 @@ class DesktopNavigationRail extends StatelessWidget {
     final settings = destinations
         .where((destination) => destination.tab == ShellTab.settings)
         .firstOrNull;
-    return MaterialExpressiveScope(
-      child: _RailItemSpacing(
-        child: M3ENavigationRail(
-          type: extended
-              ? M3ENavigationRailType.alwaysExpand
-              : M3ENavigationRailType.alwaysCollapse,
-          expandedWidth: desktopSidebarWidth,
-          background: background,
-          selectedIndex: primary.indexWhere((d) => d.tab == selected),
-          onDestinationSelected: (index) => onSelected(primary[index].tab),
-          sections: [
-            M3ENavigationRailSection(
-              destinations: [
-                for (final destination in primary)
-                  _railDestination(destination),
-              ],
+    final onExtendedChanged = this.onExtendedChanged;
+    final material = MaterialLocalizations.of(context);
+    final motion = AppMotion.spatial(
+      context,
+      const AppMotionSpec(Duration(milliseconds: 300), Curves.easeInOutCubic),
+    );
+    // One expansion value drives the width, every pill and every label, so
+    // the rail morphs continuously instead of swapping layouts at the end.
+    return TweenAnimationBuilder<double>(
+      tween: Tween(end: extended ? 1 : 0),
+      duration: motion.duration,
+      curve: motion.curve,
+      builder: (context, expansion, _) {
+        Widget item(DesktopDestination destination) => _RailDestination(
+          key: ValueKey('desktop-rail:${destination.tab.name}'),
+          destination: destination,
+          selected: destination.tab == selected,
+          expansion: expansion,
+          onTap: () => onSelected(destination.tab),
+        );
+        final gap = lerpDouble(4, desktopRailItemGap, expansion)!;
+        return ColoredBox(
+          color: background,
+          child: SizedBox(
+            width: lerpDouble(
+              desktopCollapsedRailWidth,
+              desktopSidebarWidth,
+              expansion,
             ),
-          ],
-          trailing: settings == null
-              ? null
-              : Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  // The rail insets its trailing slot by 16dp per side; undo
-                  // that so Settings lines up with the destinations above.
-                  child: LayoutBuilder(
-                    builder: (context, constraints) => OverflowBox(
-                      fit: OverflowBoxFit.deferToChild,
-                      minWidth: constraints.maxWidth + 32,
-                      maxWidth: constraints.maxWidth + 32,
-                      child: M3ERailItem(
-                        destination: _railDestination(settings),
-                        selected: selected == ShellTab.settings,
-                        onTap: () => onSelected(ShellTab.settings),
-                        expanded: extended,
-                        labelBehavior:
-                            M3ENavigationRailLabelBehavior.alwaysShow,
+            child: ClipRect(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (onExtendedChanged != null)
+                    Padding(
+                      // Centered over the collapsed rail, where it stays.
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        24,
+                        4,
+                        0,
+                        4,
+                      ),
+                      child: IconButton(
+                        tooltip: extended
+                            ? material.expandedIconTapHint
+                            : material.collapsedIconTapHint,
+                        icon: AppIcon(extended ? Icons.menu_open : Icons.menu),
+                        onPressed: () => onExtendedChanged(!extended),
+                      ),
+                    ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Column(
+                        children: [
+                          for (final (index, destination)
+                              in primary.indexed) ...[
+                            if (index > 0) SizedBox(height: gap),
+                            item(destination),
+                          ],
+                        ],
                       ),
                     ),
                   ),
-                ),
-        ),
-      ),
+                  if (settings != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: item(settings),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-/// Separates the expanded rail's destinations by [desktopRailItemGap]. The
-/// package stacks its 56dp items with no gap, so the selected indicator and
-/// a hovered item's state layer (the same pill) would touch. Collapsed items
-/// keep the package's own gap below their label.
-class _RailItemSpacing extends StatelessWidget {
-  const _RailItemSpacing({required this.child});
+/// One Material rail destination at [expansion] (0 collapsed, 1 expanded).
+///
+/// Collapsed, a 56x32 indicator holds the icon with the label below it.
+/// Expanded, a 56dp pill hugs the icon and the label beside it, as M3
+/// Expressive specifies. In between the pill grows from one shape to the
+/// other around a fixed icon, and the labels cross-fade, so collapsing and
+/// expanding never jump. Only the indicator (with the label below it while
+/// collapsed) takes clicks and hover.
+class _RailDestination extends StatefulWidget {
+  const _RailDestination({
+    super.key,
+    required this.destination,
+    required this.selected,
+    required this.expansion,
+    required this.onTap,
+  });
 
-  final Widget child;
+  final DesktopDestination destination;
+  final bool selected;
+  final double expansion;
+  final VoidCallback onTap;
 
-  static final _themes = Expando<M3EThemeData>();
+  /// Distance from the rail's leading edge to the indicator, centering the
+  /// 56dp collapsed indicator in the 96dp collapsed rail.
+  static const double _inset = (desktopCollapsedRailWidth - 56) / 2;
+
+  @override
+  State<_RailDestination> createState() => _RailDestinationState();
+}
+
+class _RailDestinationState extends State<_RailDestination> {
+  bool _hovered = false;
+  bool _focused = false;
+  bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
-    final base = M3ETheme.of(context);
-    final spaced = _themes[base] ??= base.copyWith(
-      navigationRailTheme: base.navigationRailTheme.copyWith(
-        expandedItemGap: desktopRailItemGap,
-        // The whole row is the click target, so the pill spans it too, as
-        // in a navigation drawer; a pill hugging the label would light up
-        // from clicks beside it.
-        indicatorFillsWidth: true,
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final destination = widget.destination;
+    final selected = widget.selected;
+    final t = widget.expansion.clamp(0.0, 1.0);
+    const inset = _RailDestination._inset;
+
+    final expandedStyle = textTheme.labelLarge!.copyWith(
+      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+    );
+    final collapsedStyle = textTheme.labelMedium!.copyWith(
+      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+    );
+    // The expanded pill hugs its label, so measure it.
+    final labelWidth = (TextPainter(
+      text: TextSpan(text: destination.label, style: expandedStyle),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout()).width;
+    final maxPillWidth = desktopSidebarWidth - inset * 2;
+    final expandedPillWidth = (16 + 24 + 8 + labelWidth + 16).clamp(
+      56.0,
+      maxPillWidth,
+    );
+
+    final height = lerpDouble(64, 56, t)!;
+    final pill = Rect.fromLTWH(
+      inset,
+      lerpDouble(4, 0, t)!,
+      lerpDouble(56, expandedPillWidth, t)!,
+      lerpDouble(32, 56, t)!,
+    );
+    // Collapsed, the label under the indicator belongs to the target too.
+    final target = Rect.lerp(Rect.fromLTWH(inset - 8, 0, 72, 64), pill, t)!;
+    final iconTop = pill.top + (pill.height - 24) / 2;
+    final collapsedLabel = (1 - t * 2).clamp(0.0, 1.0);
+    final expandedLabel = (t * 2 - 1).clamp(0.0, 1.0);
+
+    final foreground = selected
+        ? colorScheme.onSecondaryContainer
+        : colorScheme.onSurfaceVariant;
+    final stateOpacity = _pressed
+        ? 0.1
+        : _focused
+        ? 0.1
+        : _hovered
+        ? 0.08
+        : 0.0;
+    final motion = AppMotion.spatialFast(
+      context,
+      const AppMotionSpec(Duration(milliseconds: 200), Curves.easeOutCubic),
+    );
+
+    return Semantics(
+      container: true,
+      button: true,
+      selected: selected,
+      child: SizedBox(
+        height: height,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // The selected indicator grows out from the pill's center.
+            Positioned.fromRect(
+              rect: pill,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(end: selected ? 1 : 0),
+                duration: motion.duration,
+                curve: motion.curve,
+                builder: (context, shown, _) => Center(
+                  child: FractionallySizedBox(
+                    widthFactor: shown.clamp(0.0, 1.0),
+                    heightFactor: 1,
+                    child: DecoratedBox(
+                      decoration: ShapeDecoration(
+                        color: colorScheme.secondaryContainer,
+                        shape: const StadiumBorder(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            if (stateOpacity > 0)
+              Positioned.fromRect(
+                rect: pill,
+                child: DecoratedBox(
+                  decoration: ShapeDecoration(
+                    color: foreground.withValues(alpha: stateOpacity),
+                    shape: const StadiumBorder(),
+                  ),
+                ),
+              ),
+            PositionedDirectional(
+              start: inset + 16,
+              top: iconTop,
+              child: IconTheme.merge(
+                data: IconThemeData(color: foreground, size: 24),
+                child: Badge(
+                  isLabelVisible: destination.badgeCount > 0,
+                  label: Text('${destination.badgeCount}'),
+                  child: AppIcon(
+                    selected ? destination.selectedIcon : destination.icon,
+                  ),
+                ),
+              ),
+            ),
+            if (collapsedLabel > 0)
+              PositionedDirectional(
+                start: 0,
+                width: desktopCollapsedRailWidth,
+                top: 40,
+                child: Opacity(
+                  opacity: collapsedLabel,
+                  child: Text(
+                    destination.label,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: collapsedStyle.copyWith(
+                      color: selected
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ),
+            if (expandedLabel > 0)
+              PositionedDirectional(
+                // Slides in from under the icon as it fades in.
+                start: inset + 16 + 24 + 8 - 8 * (1 - expandedLabel),
+                width: expandedPillWidth - (16 + 24 + 8 + 16),
+                top: 0,
+                bottom: 0,
+                child: Opacity(
+                  opacity: expandedLabel,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      destination.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: expandedStyle.copyWith(color: foreground),
+                    ),
+                  ),
+                ),
+              ),
+            Positioned.fromRect(
+              rect: target,
+              child: InkWell(
+                onTap: widget.onTap,
+                customBorder: const StadiumBorder(),
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                splashFactory: NoSplash.splashFactory,
+                onHover: (value) => setState(() => _hovered = value),
+                onFocusChange: (value) => setState(() => _focused = value),
+                onHighlightChanged: (value) => setState(() => _pressed = value),
+              ),
+            ),
+          ],
+        ),
       ),
     );
-    return M3ETheme(data: spaced, child: child);
   }
 }
 

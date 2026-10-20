@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mornye/l10n/app_localizations.dart';
 import 'package:mornye/models/library_collections.dart';
 import 'package:mornye/providers/music_player_provider.dart';
@@ -180,7 +179,11 @@ void main() {
       await pumpShell(tester, mornye: false, width: 900);
 
       expect(find.byType(DesktopNavigationRail), findsOneWidget);
-      expect(tester.getSize(find.byType(M3ENavigationRail)).width, 96);
+      // The rail springs closed from the remembered expanded state.
+      expect(
+        tester.getSize(find.byType(DesktopNavigationRail)).width,
+        closeTo(desktopCollapsedRailWidth, 0.5),
+      );
       expect(find.byType(DesktopSidebar), findsNothing);
       expectNoTouchNavigation();
       expect(find.byType(DesktopPlayerBar), findsOneWidget);
@@ -198,7 +201,7 @@ void main() {
       await pumpShell(tester, mornye: false, width: 1400);
 
       expect(
-        tester.getSize(find.byType(M3ENavigationRail)).width,
+        tester.getSize(find.byType(DesktopNavigationRail)).width,
         desktopSidebarWidth,
       );
       expectNoTouchNavigation();
@@ -261,6 +264,50 @@ void main() {
       // 56dp indicators with an 8dp gap: label centers 64dp apart.
       expect(library.center.dy - home.center.dy, closeTo(56 + 8, 0.5));
     });
+
+    testWidgets('rail menu button collapses and expands the rail', (
+      tester,
+    ) async {
+      await pumpShell(tester, mornye: false, width: 1400);
+      double railWidth() =>
+          tester.getSize(find.byType(DesktopNavigationRail)).width;
+      expect(railWidth(), desktopSidebarWidth);
+
+      await tester.tap(find.byTooltip('Collapse'));
+      // Halfway, the rail is between its widths with one label showing.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 120));
+      expect(railWidth(), lessThan(desktopSidebarWidth));
+      expect(railWidth(), greaterThan(desktopCollapsedRailWidth));
+      expect(find.text('library'), findsOneWidget);
+      await tester.pumpAndSettle();
+      expect(desktopSidebarCollapsed.value, isTrue);
+      expect(railWidth(), closeTo(desktopCollapsedRailWidth, 0.5));
+
+      await tester.tap(find.byTooltip('Expand'));
+      await tester.pumpAndSettle();
+      expect(desktopSidebarCollapsed.value, isFalse);
+      expect(railWidth(), closeTo(desktopSidebarWidth, 0.5));
+    });
+
+    testWidgets('expanded rail pills hug their labels and take the clicks', (
+      tester,
+    ) async {
+      await pumpShell(tester, mornye: false, width: 1400);
+
+      final library = tester.getRect(find.text('library'));
+      final settings = tester.getRect(find.text('settings'));
+      // Beside a pill, inside the rail: nothing happens.
+      final rail = tester.getRect(find.byType(DesktopNavigationRail));
+      await tester.tapAt(Offset(rail.right - 12, library.center.dy));
+      await tester.tapAt(Offset(rail.right - 12, settings.center.dy));
+      expect(selections, isEmpty);
+
+      // On the pill, just past the label: selects.
+      await tester.tapAt(Offset(library.right + 8, library.center.dy));
+      await tester.tapAt(Offset(settings.right + 8, settings.center.dy));
+      expect(selections, [ShellTab.library, ShellTab.settings]);
+    });
   });
 
   group('Mornye shell', () {
@@ -275,7 +322,6 @@ void main() {
         );
         // The Material rail must not appear in the Mornye style.
         expect(find.byType(DesktopNavigationRail), findsNothing);
-        expect(find.byType(M3ENavigationRail), findsNothing);
         expect(find.byType(NavigationRail), findsNothing);
         expectNoTouchNavigation();
         expect(find.byType(DesktopPlayerBar), findsOneWidget);
