@@ -15,6 +15,7 @@ import 'package:mornye/services/backup_service.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/services/user_profile_store.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/profile_avatar.dart';
 import 'package:mornye/widgets/settings_group.dart';
 
@@ -255,6 +256,43 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('desktop Settings keeps the profile page open after Save', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    debugDesktopPlatformOverride = true;
+    addTearDown(() => debugDesktopPlatformOverride = null);
+    final container = ProviderContainer(
+      overrides: [userProfileStoreProvider.overrideWithValue(store)],
+    );
+    addTearDown(container.dispose);
+    await container.read(userProfileProvider.future);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp(
+          theme: MornyeTheme.build(Brightness.dark),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const Scaffold(body: SettingsTab()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('settings-category:profile')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).last, 'Listener');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(container.read(userProfileProvider).value?.name, 'Listener');
+    // The detail pane still shows the profile page, not an empty pane.
+    expect(find.text('Save'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('Home avatar opens Settings and reflects the saved name', (
     tester,

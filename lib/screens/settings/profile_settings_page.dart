@@ -74,7 +74,11 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       await ref
           .read(userProfileProvider.notifier)
           .save(name: _name.text, photo: _photo, removePhoto: _removePhoto);
-      if (mounted) Navigator.of(context).pop();
+      // In the desktop Settings detail pane the page is the pane's only
+      // route and stays open.
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(
