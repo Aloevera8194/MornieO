@@ -111,7 +111,7 @@ void main() {
       await files[0].writeAsBytes(_drumWav(120));
       await files[1].writeAsBytes(_drumWav(124));
       for (final effect in [AutoMixEffect.auto, AutoMixEffect.crossfade]) {
-        final decks = <String, MusicPlaybackDeck>{};
+        final decks = <String, AudioplayersPlaybackDeck>{};
         final runtime = MusicPlayerRuntime(
           settings: AppSettings(
             autoMix: true,
@@ -120,7 +120,7 @@ void main() {
           ),
           dependencies: PlaybackDependencies(
             createDeck: (id) {
-              final deck = MusicPlaybackDeck(playerId: id);
+              final deck = AudioplayersPlaybackDeck(playerId: id);
               decks[id] = deck;
               return deck;
             },

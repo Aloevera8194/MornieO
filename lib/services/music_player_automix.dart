@@ -14,10 +14,10 @@ class _MusicAutoMix {
   final AutoMixEffectRenderer renderer;
   final _preparationPins = <int, Set<String>>{};
   final _mixPins = <String>{};
-  MusicPlaybackDeck? _prepared;
-  MusicPlaybackDeck? _outgoing;
-  MusicPlaybackDeck? _effectDry;
-  MusicPlaybackDeck? _effectPrepared;
+  PlaybackDeck? _prepared;
+  PlaybackDeck? _outgoing;
+  PlaybackDeck? _effectDry;
+  PlaybackDeck? _effectPrepared;
   RenderedMixTail? _effectTail;
   AutoMixPlan? _plan;
   PlayableMedia? _next;
@@ -61,7 +61,7 @@ class _MusicAutoMix {
       handler._sourceReady &&
       !handler._userPaused &&
       !handler._interruptionActive &&
-      handler._player.state == PlayerState.playing &&
+      handler._player.state == PlaybackDeckState.playing &&
       handler._repeatMode != AudioServiceRepeatMode.one &&
       handler._media.length > 1;
 
@@ -110,8 +110,8 @@ class _MusicAutoMix {
         : -1;
     final pins = <String>{};
     _preparationPins[generation] = pins;
-    MusicPlaybackDeck? deck;
-    MusicPlaybackDeck? effectDeck;
+    PlaybackDeck? deck;
+    PlaybackDeck? effectDeck;
     RenderedMixTail? effectTail;
     final options = handler._settings.autoMixOptions;
     try {
@@ -129,11 +129,10 @@ class _MusicAutoMix {
         'music-mix-$generation-${DateTime.now().microsecondsSinceEpoch}',
       );
       handler._listenToPlayer(deck);
-      await deck.setReleaseMode(ReleaseMode.stop);
-      await deck.setAudioContext(_musicAudioContext);
+      await deck.configureOutput();
       await deck.setVolume(0);
       if (!_current(generation)) return;
-      await deck.setSource(DeviceFileSource(nextPath));
+      await deck.setFileSource(nextPath);
       if (!_current(generation)) return;
       final nextDuration =
           await deck.getDuration() ?? next.duration ?? Duration.zero;
@@ -175,10 +174,9 @@ class _MusicAutoMix {
           );
           handler._listenToPlayer(effectDeck);
           try {
-            await effectDeck.setReleaseMode(ReleaseMode.stop);
-            await effectDeck.setAudioContext(_musicAudioContext);
+            await effectDeck.configureOutput();
             await effectDeck.setVolume(0);
-            await effectDeck.setSource(DeviceFileSource(effectTail.path));
+            await effectDeck.setFileSource(effectTail.path);
           } catch (error) {
             _log.w('AutoMix effect preparation fallback: $error');
             await handler._disposeDeck(effectDeck);
@@ -340,7 +338,7 @@ class _MusicAutoMix {
             .copyWith(duration: _nextDuration),
       );
       handler._broadcastPosition(audiblePosition, force: true);
-      handler._broadcastState(playerState: PlayerState.playing);
+      handler._broadcastState(playerState: PlaybackDeckState.playing);
       unawaited(handler._persistSession(position: audiblePosition));
       final clock = autoMixStopwatch()..start();
       _fadeTimer = Timer.periodic(const Duration(milliseconds: 40), (_) {
@@ -426,8 +424,8 @@ class _MusicAutoMix {
   /// Keeps the silent effect deck within [tolerance] of the live song. Two
   /// players cannot share a clock, so a corrected seek is checked again.
   Future<bool> _alignEffect(
-    MusicPlaybackDeck effect,
-    MusicPlaybackDeck live,
+    PlaybackDeck effect,
+    PlaybackDeck live,
     AutoMixPlan plan,
     int generation, {
     Duration tolerance = const Duration(milliseconds: 50),
@@ -450,7 +448,7 @@ class _MusicAutoMix {
   }
 
   Future<Duration?> _waitForProgress(
-    MusicPlaybackDeck deck,
+    PlaybackDeck deck,
     Duration initialPosition,
     int generation,
   ) async {

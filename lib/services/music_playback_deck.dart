@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/logger.dart';
+import 'package:mornye/services/playback_deck.dart';
 import 'package:mornye/services/playback_equalizer.dart';
 
 final _log = AppLogger('AudioOutput');
@@ -41,7 +43,7 @@ class UsbVolumeState {
 Future<void> setUsbHardwareVolume(double fraction) async {
   final state = usbHardwareVolume.value;
   if (state == null || !state.available) return;
-  final result = await MusicPlaybackDeck._channel
+  final result = await AudioplayersPlaybackDeck._channel
       .invokeMapMethod<String, dynamic>('volume', {
         'token': state.token,
         'db': state.minDb + fraction.clamp(0, 1) * (state.maxDb - state.minDb),
@@ -69,21 +71,45 @@ class UsbAudioStatus {
   final String driver;
 }
 
-/// Keeps the existing transport and AutoMix API while adding a local USB path.
-/// Each prepare owns a token so delayed native events cannot affect a new song.
-class MusicPlaybackDeck {
-  MusicPlaybackDeck({
+final AudioContext _musicAudioContext = AudioContext(
+  android: const AudioContextAndroid(
+    audioFocus: AndroidAudioFocus.none,
+    contentType: AndroidContentType.music,
+    usageType: AndroidUsageType.media,
+    stayAwake: true,
+  ),
+);
+
+PlaybackDeckState _deckState(PlayerState state) => switch (state) {
+  PlayerState.stopped => PlaybackDeckState.stopped,
+  PlayerState.playing => PlaybackDeckState.playing,
+  PlayerState.paused => PlaybackDeckState.paused,
+  PlayerState.completed => PlaybackDeckState.completed,
+  PlayerState.disposed => PlaybackDeckState.disposed,
+};
+
+/// The audioplayers deck (Android, iOS, macOS), with Android's native USB
+/// path. Each prepare owns a token so delayed native events cannot affect a
+/// new song.
+class AudioplayersPlaybackDeck implements PlaybackDeck {
+  AudioplayersPlaybackDeck({
     required String playerId,
     bool? nativeAvailable,
     bool? equalizerAvailable,
   }) : _ordinary = AudioPlayer(playerId: playerId),
+       // The Darwin fork's tap is shared source, so macOS has it as well.
+       // isDesktopPlatform keeps host-run tests on the mobile default.
        _equalizerAvailable =
-           equalizerAvailable ?? (Platform.isAndroid || Platform.isIOS),
+           equalizerAvailable ??
+           (Platform.isAndroid ||
+               Platform.isIOS ||
+               (isDesktopPlatform && Platform.isMacOS)),
        _nativeAvailable = nativeAvailable ?? Platform.isAndroid {
     playbackEqualizer.addListener(_equalizerChanged);
+    playbackOutputVolume.addListener(_outputVolumeChanged);
     _subscriptions.addAll([
       _ordinary.onPlayerStateChanged.listen((value) {
-        if (!_direct) _states.add(value);
+        if (!_direct) _states.add(_deckState(value));
       }),
       _ordinary.eventStream.listen(
         (event) {
@@ -126,8 +152,19 @@ class MusicPlaybackDeck {
   }
 
   Future<void> _syncEqualizer() async {
-    if (_disposed || _equalizerDisposed || !_equalizerAvailable) return;
+    if (_disposed || _equalizerDisposed) return;
     final settings = playbackEqualizer.value;
+    if (!_equalizerAvailable) {
+      // Windows and Linux get the equalizer with their own deck. Until then
+      // the editor must not claim it is active.
+      if (isDesktopPlatform) {
+        reportEqualizerError(
+          _ordinary.playerId,
+          settings.enabled ? 'Equalizer is not available on this system' : null,
+        );
+      }
+      return;
+    }
     if (!settings.enabled && !_equalizerSent) {
       reportEqualizerError(_ordinary.playerId, null);
       return;
@@ -158,7 +195,7 @@ class MusicPlaybackDeck {
   }
 
   final bool _nativeAvailable;
-  final _states = StreamController<PlayerState>.broadcast();
+  final _states = StreamController<PlaybackDeckState>.broadcast();
   final _durations = StreamController<Duration>.broadcast();
   final _positions = StreamController<Duration>.broadcast();
   final _completions = StreamController<void>.broadcast();
@@ -177,41 +214,74 @@ class MusicPlaybackDeck {
   bool _routeLost = false;
   bool _nativeStarted = false;
   bool _volumeBlocked = false;
-  PlayerState _directState = PlayerState.stopped;
+  double _gain = 1;
+  PlaybackDeckState _directState = PlaybackDeckState.stopped;
   UsbAudioStatus _preparedStatus = const UsbAudioStatus();
 
+  @override
   bool get isDirect => _direct;
+  @override
   bool get needsSourceReload => _direct && _routeLost;
+  @override
   Future<void> cancelPreparation() async {
     if (_preparing) await stop();
   }
 
-  PlayerState get state => _direct ? _directState : _ordinary.state;
-  Stream<PlayerState> get onPlayerStateChanged => _states.stream;
+  @override
+  PlaybackDeckState get state =>
+      _direct ? _directState : _deckState(_ordinary.state);
+  @override
+  Stream<PlaybackDeckState> get onPlayerStateChanged => _states.stream;
+  @override
   Stream<Duration> get onDurationChanged => _durations.stream;
+  @override
   Stream<Duration> get onPositionChanged => _positions.stream;
+  @override
   Stream<void> get onPlayerComplete => _completions.stream;
 
-  set positionUpdater(PositionUpdater updater) {
-    _ordinary.positionUpdater = updater;
+  @override
+  void startPositionUpdates(Duration interval) {
+    _ordinary.positionUpdater = TimerPositionUpdater(
+      interval: interval,
+      getPosition: getCurrentPosition,
+    );
     unawaited(_positionSubscription?.cancel());
     _positionSubscription = _ordinary.onPositionChanged.listen((value) {
       if (!_direct) _positions.add(value);
     });
   }
 
-  Future<void> setReleaseMode(ReleaseMode mode) =>
-      _ordinary.setReleaseMode(mode);
-  Future<void> setAudioContext(AudioContext context) =>
-      _ordinary.setAudioContext(context);
-  Future<void> setVolume(double volume) async {
-    if (!_direct) await _ordinary.setVolume(volume);
+  @override
+  Future<void> configureOutput() async {
+    await _ordinary.setReleaseMode(ReleaseMode.stop);
+    // audioplayers has no audio context outside Android and iOS.
+    if (Platform.isAndroid || Platform.isIOS) {
+      await _ordinary.setAudioContext(_musicAudioContext);
+    }
   }
 
+  @override
+  Future<void> setVolume(double volume) async {
+    if (_direct) return;
+    _gain = volume;
+    await _ordinary.setVolume(volume * playbackOutputVolume.value);
+  }
+
+  void _outputVolumeChanged() {
+    if (_direct || _disposed) return;
+    unawaited(
+      _ordinary
+          .setVolume(_gain * playbackOutputVolume.value)
+          .catchError((Object error) => _log.w('Output volume: $error')),
+    );
+  }
+
+  @override
   Future<void> setPlaybackRate(double rate) async {
     if (!_direct) await _ordinary.setPlaybackRate(rate);
   }
 
+  @override
   Future<void> setNetworkSource(String url) async {
     await stop();
     _source = null;
@@ -220,8 +290,9 @@ class MusicPlaybackDeck {
     await _setOrdinarySource(UrlSource(url));
   }
 
-  Future<void> setSource(
-    DeviceFileSource source, {
+  @override
+  Future<void> setFileSource(
+    String path, {
     bool preferBitPerfect = false,
     bool directUsb = false,
     bool allowDop = false,
@@ -230,6 +301,7 @@ class MusicPlaybackDeck {
     bool dapExclusive = false,
   }) async {
     await stop();
+    final source = DeviceFileSource(path);
     _source = source;
     _routeLost = false;
     _nativeStarted = false;
@@ -269,7 +341,7 @@ class MusicPlaybackDeck {
               ? UsbVolumeState(volume)
               : null;
           _direct = true;
-          _directState = PlayerState.stopped;
+          _directState = PlaybackDeckState.stopped;
           _duration = Duration(
             milliseconds: (response?['duration'] as num?)?.toInt() ?? 0,
           );
@@ -334,26 +406,27 @@ class MusicPlaybackDeck {
       case 'paused':
         _routeLost = true;
         _timer?.cancel();
-        _setState(PlayerState.paused);
+        _setState(PlaybackDeckState.paused);
         usbAudioStatus.value = const UsbAudioStatus(reason: 'route_changed');
       case 'complete':
         _timer?.cancel();
-        _setState(PlayerState.completed);
+        _setState(PlaybackDeckState.completed);
         _completions.add(null);
     }
   }
 
-  void _setState(PlayerState value) {
+  void _setState(PlaybackDeckState value) {
     _directState = value;
     if (!_disposed) _states.add(value);
   }
 
   void _pauseLostRoute(UsbAudioStatus status) {
     _routeLost = true;
-    _setState(PlayerState.paused);
+    _setState(PlaybackDeckState.paused);
     usbAudioStatus.value = status;
   }
 
+  @override
   Future<void> resume() async {
     if (!_direct) {
       void checkError() {
@@ -401,14 +474,15 @@ class MusicPlaybackDeck {
       await stop();
       usbAudioStatus.value = const UsbAudioStatus(reason: 'unsupported');
       if (source == null || _disposed) return;
-      await _ordinary.setVolume(1);
+      _gain = 1;
+      await _ordinary.setVolume(playbackOutputVolume.value);
       await _setOrdinarySource(source);
       if (position > Duration.zero) await _ordinary.seek(position);
       return _ordinary.resume();
     }
     if (_disposed || token != _token || !_direct) return;
     _nativeStarted = true;
-    _setState(PlayerState.playing);
+    _setState(PlaybackDeckState.playing);
     usbAudioStatus.value = _preparedStatus;
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(milliseconds: 200), (_) async {
@@ -428,14 +502,16 @@ class MusicPlaybackDeck {
     });
   }
 
+  @override
   Future<void> pause() async {
     if (!_direct) return _ordinary.pause();
     final token = _token;
     _timer?.cancel();
     await _channel.invokeMethod<void>('pause');
-    if (token == _token && _direct) _setState(PlayerState.paused);
+    if (token == _token && _direct) _setState(PlaybackDeckState.paused);
   }
 
+  @override
   Future<void> seek(Duration position) async {
     if (!_direct) return _ordinary.seek(position);
     final token = _token;
@@ -445,22 +521,25 @@ class MusicPlaybackDeck {
     if (!_disposed && token == _token && _direct) _positions.add(position);
   }
 
+  @override
   Future<Duration?> getCurrentPosition() async {
     if (!_direct) return _ordinary.getCurrentPosition();
     final milliseconds = await _channel.invokeMethod<int>('position');
     return milliseconds == null ? null : Duration(milliseconds: milliseconds);
   }
 
+  @override
   Future<Duration?> getDuration() =>
       _direct ? Future.value(_duration) : _ordinary.getDuration();
 
+  @override
   Future<void> stop() async {
     _timer?.cancel();
     if (_direct || _preparing) {
       _token = ++_nextToken;
       _preparing = false;
       await _channel.invokeMethod<void>('stop');
-      _setState(PlayerState.stopped);
+      _setState(PlaybackDeckState.stopped);
       _direct = false;
       _volumeBlocked = false;
       usbHardwareVolume.value = null;
@@ -469,9 +548,11 @@ class MusicPlaybackDeck {
     await _ordinary.stop();
   }
 
+  @override
   Future<void> dispose() async {
     _equalizerDisposed = true;
     playbackEqualizer.removeListener(_equalizerChanged);
+    playbackOutputVolume.removeListener(_outputVolumeChanged);
     _equalizerTimer?.cancel();
     reportEqualizerError(_ordinary.playerId, null);
     await stop();

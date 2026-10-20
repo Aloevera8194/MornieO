@@ -15,6 +15,7 @@ import 'package:mornye/services/music_player_service.dart';
 import 'package:mornye/services/network_metadata_service.dart';
 import 'package:mornye/services/network_storage_service.dart';
 import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/playback_deck.dart';
 import 'package:mornye/services/playback_notification.dart';
 import 'package:mornye/services/player_widget_service.dart';
 import 'package:mornye/services/source_deletion_events.dart';
@@ -52,7 +53,7 @@ class PlaybackDependencies {
        _isIOS = isIOS,
        _isAndroid = isAndroid;
 
-  final MusicPlaybackDeck Function(String playerId) createDeck;
+  final PlaybackDeck Function(String playerId) createDeck;
   final Future<AudioSession> Function() audioSession;
   final Future<Map<String, dynamic>> Function(String, {String? displayName})
   readMetadata;
@@ -81,8 +82,10 @@ class PlaybackDependencies {
   bool get isIOS => _isIOS ?? Platform.isIOS;
   bool get isAndroid => _isAndroid ?? Platform.isAndroid;
 
-  static MusicPlaybackDeck _createDeck(String playerId) =>
-      MusicPlaybackDeck(playerId: playerId);
+  // Windows and Linux move to a media_kit deck; audioplayers plays there
+  // meanwhile, without the equalizer.
+  static PlaybackDeck _createDeck(String playerId) =>
+      AudioplayersPlaybackDeck(playerId: playerId);
   static Future<AudioSession> _getAudioSession() => AudioSession.instance;
   static Future<Map<String, dynamic>> _readNetworkMetadata(String source) =>
       NetworkMetadataService.instance.read(source);

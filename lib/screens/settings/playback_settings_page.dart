@@ -9,6 +9,7 @@ import 'package:mornye/services/music_player_service.dart'
     show resetAutoplayLearning;
 import 'package:mornye/screens/listening_statistics_screen.dart';
 import 'package:mornye/screens/equalizer_screen.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/widgets/app_alert_dialog.dart';
 import 'package:mornye/widgets/app_icon.dart';
@@ -149,20 +150,22 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
                   PlaybackNormalizationSettings(
                     enabled: !settings.usbBitPerfect,
                   ),
-                SettingsSwitchItem(
-                  icon: Icons.vibration,
-                  title: context.l10n.musicHaptics,
-                  subtitle: context.l10n.musicHapticsDescription,
-                  value: settings.musicHaptics,
-                  enabled: settings.playerMode == 'internal',
-                  onChanged: (value) => ref
-                      .read(settingsProvider.notifier)
-                      .setMusicHaptics(value),
-                ),
-                if (settings.musicHaptics)
-                  MusicHapticsSettings(
+                if (!isDesktopPlatform) ...[
+                  SettingsSwitchItem(
+                    icon: Icons.vibration,
+                    title: context.l10n.musicHaptics,
+                    subtitle: context.l10n.musicHapticsDescription,
+                    value: settings.musicHaptics,
                     enabled: settings.playerMode == 'internal',
+                    onChanged: (value) => ref
+                        .read(settingsProvider.notifier)
+                        .setMusicHaptics(value),
                   ),
+                  if (settings.musicHaptics)
+                    MusicHapticsSettings(
+                      enabled: settings.playerMode == 'internal',
+                    ),
+                ],
                 SettingsSwitchItem(
                   icon: Icons.compare_arrows,
                   title: 'AutoMix',
@@ -222,40 +225,44 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
               ],
             ),
           ),
-          SliverToBoxAdapter(
-            child: SettingsSectionHeader(
-              title: context.l10n.playbackAutomation,
+          // Mute and headphone routes come from mobile system audio.
+          if (!isDesktopPlatform) ...[
+            SliverToBoxAdapter(
+              child: SettingsSectionHeader(
+                title: context.l10n.playbackAutomation,
+              ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: SettingsGroup(
-              children: [
-                SettingsSwitchItem(
-                  icon: Icons.volume_off_outlined,
-                  title: context.l10n.playbackPauseOnMute,
-                  subtitle: context.l10n.playbackPauseOnMuteDescription,
-                  value: settings.pauseOnMute,
-                  enabled:
-                      settings.playerMode == 'internal' &&
-                      !settings.usbBitPerfect,
-                  onChanged: (value) =>
-                      ref.read(settingsProvider.notifier).setPauseOnMute(value),
-                ),
-                SettingsSwitchItem(
-                  icon: Icons.headphones_outlined,
-                  title: context.l10n.playbackOnHeadphonesConnected,
-                  subtitle:
-                      context.l10n.playbackOnHeadphonesConnectedDescription,
-                  value: settings.playOnHeadphonesConnected,
-                  enabled: settings.playerMode == 'internal',
-                  onChanged: (value) => ref
-                      .read(settingsProvider.notifier)
-                      .setPlayOnHeadphonesConnected(value),
-                  showDivider: false,
-                ),
-              ],
+            SliverToBoxAdapter(
+              child: SettingsGroup(
+                children: [
+                  SettingsSwitchItem(
+                    icon: Icons.volume_off_outlined,
+                    title: context.l10n.playbackPauseOnMute,
+                    subtitle: context.l10n.playbackPauseOnMuteDescription,
+                    value: settings.pauseOnMute,
+                    enabled:
+                        settings.playerMode == 'internal' &&
+                        !settings.usbBitPerfect,
+                    onChanged: (value) => ref
+                        .read(settingsProvider.notifier)
+                        .setPauseOnMute(value),
+                  ),
+                  SettingsSwitchItem(
+                    icon: Icons.headphones_outlined,
+                    title: context.l10n.playbackOnHeadphonesConnected,
+                    subtitle:
+                        context.l10n.playbackOnHeadphonesConnectedDescription,
+                    value: settings.playOnHeadphonesConnected,
+                    enabled: settings.playerMode == 'internal',
+                    onChanged: (value) => ref
+                        .read(settingsProvider.notifier)
+                        .setPlayOnHeadphonesConnected(value),
+                    showDivider: false,
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
           SliverToBoxAdapter(
             child: SettingsSectionHeader(title: context.l10n.playerCoverStyle),
           ),

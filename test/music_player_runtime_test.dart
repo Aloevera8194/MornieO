@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show AppLifecycleState;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,16 +12,16 @@ import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/services/app_state_database.dart';
 import 'package:mornye/services/autoplay_personalization.dart';
 import 'package:mornye/services/listening_statistics.dart';
-import 'package:mornye/services/music_playback_deck.dart';
 import 'package:mornye/services/music_player_service.dart';
+import 'package:mornye/services/playback_deck.dart';
 import 'package:mornye/services/playback_notification.dart';
 import 'package:mornye/services/source_deletion_events.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/utils/logger.dart';
 
-class _Deck implements MusicPlaybackDeck {
+class _Deck implements PlaybackDeck {
   @override
-  PlayerState state = PlayerState.stopped;
+  PlaybackDeckState state = PlaybackDeckState.stopped;
   final volumes = <double>[];
   Map<String, bool>? outputOptions;
   Duration position = Duration.zero;
@@ -34,7 +33,7 @@ class _Deck implements MusicPlaybackDeck {
   @override
   bool get needsSourceReload => false;
   @override
-  Stream<PlayerState> get onPlayerStateChanged => const Stream.empty();
+  Stream<PlaybackDeckState> get onPlayerStateChanged => const Stream.empty();
   @override
   Stream<Duration> get onPositionChanged => const Stream.empty();
   @override
@@ -42,11 +41,9 @@ class _Deck implements MusicPlaybackDeck {
   @override
   Stream<void> get onPlayerComplete => const Stream.empty();
   @override
-  set positionUpdater(PositionUpdater updater) {}
+  void startPositionUpdates(Duration interval) {}
   @override
-  Future<void> setReleaseMode(ReleaseMode mode) async {}
-  @override
-  Future<void> setAudioContext(AudioContext context) async {}
+  Future<void> configureOutput() async {}
   @override
   Future<void> setVolume(double volume) async => volumes.add(volume);
   @override
@@ -54,13 +51,13 @@ class _Deck implements MusicPlaybackDeck {
   @override
   Future<void> stop() async {
     if (failStop) throw StateError('Transport failed');
-    state = PlayerState.stopped;
+    state = PlaybackDeckState.stopped;
   }
 
   @override
-  Future<void> pause() async => state = PlayerState.paused;
+  Future<void> pause() async => state = PlaybackDeckState.paused;
   @override
-  Future<void> resume() async => state = PlayerState.playing;
+  Future<void> resume() async => state = PlaybackDeckState.playing;
   @override
   Future<void> seek(Duration value) async => position = value;
   @override
@@ -70,8 +67,8 @@ class _Deck implements MusicPlaybackDeck {
   @override
   Future<void> dispose() async => disposals++;
   @override
-  Future<void> setSource(
-    DeviceFileSource source, {
+  Future<void> setFileSource(
+    String path, {
     bool preferBitPerfect = false,
     bool directUsb = false,
     bool allowDop = false,
@@ -178,7 +175,7 @@ MusicPlayerRuntime _runtime({
   Future<MusicPlayerHandler> Function(MusicPlayerHandler Function())?
   initialize,
   List<_Deck>? decks,
-  MusicPlaybackDeck Function(String)? createDeck,
+  PlaybackDeck Function(String)? createDeck,
   Stream<double> volumeChanges = const Stream.empty(),
   SourceDeletionEvents? sourceDeletionEvents,
   ListeningRecorder? recorder,
@@ -1157,8 +1154,8 @@ void main() {
         addTearDown(container.dispose);
         await container.read(musicPlayerControllerProvider).playSingle(_track);
       }
-      expect(firstDecks.single.state, PlayerState.playing);
-      expect(secondDecks.single.state, PlayerState.playing);
+      expect(firstDecks.single.state, PlaybackDeckState.playing);
+      expect(secondDecks.single.state, PlaybackDeckState.playing);
       expect(firstDecks.single.volumes.last, closeTo(0.501, 0.001));
       expect(secondDecks.single.volumes.last, 1);
       expect(firstDecks.single.outputOptions!.values, everyElement(isFalse));
