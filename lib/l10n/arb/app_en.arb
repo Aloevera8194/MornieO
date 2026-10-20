@@ -198,25 +198,25 @@
   "@rebrandTourReplay": {
     "description": "About page entry that replays the rebrand tour"
   },
-  "rebrandWelcomeTitle": "Goodbye SpotiFLAC,\nhello Mornye.",
+  "rebrandWelcomeTitle": "A new morning,\nhello Mornye.",
   "@rebrandWelcomeTitle": {
-    "description": "First page title of the rebrand tour. Keep the old app name SpotiFLAC as is."
+    "description": "First page title of the rebrand tour. Do not name the app's former name anywhere in the tour."
   },
   "rebrandWelcomeBody": "Every morning is a fresh start, and so is this one. The app you know has a new name, a new look and the same love for your music.",
   "rebrandNameTitle": "A new name",
-  "rebrandNameBody": "SpotiFLAC is now Mornye, named for the morning: a calm, bright start to every listen.",
+  "rebrandNameBody": "This app is now Mornye, named for the morning: a calm, bright start to every listen.",
   "rebrandLogoTitle": "A new logo",
   "rebrandLogoBody": "A fresh icon on your home screen, in notifications and across the app.",
   "rebrandSameAppTitle": "Same app at heart",
   "rebrandSameAppBody": "Extensions, the player, lyrics and your library work just like before.",
   "rebrandMoveTitle": "Bring your\nlibrary along.",
-  "rebrandMoveBody": "Mornye installs as a new app next to SpotiFLAC, so your data moves over with a backup.",
-  "rebrandMoveBackupTitle": "Back up in SpotiFLAC",
+  "rebrandMoveBody": "Mornye installs as a new app next to the old one, so your data moves over with a backup.",
+  "rebrandMoveBackupTitle": "Back up in the old app",
   "rebrandMoveBackupBody": "Open Settings → Backup & Restore and create a backup file.",
   "rebrandMoveRestoreTitle": "Restore in Mornye",
   "rebrandMoveRestoreBody": "Choose that file in Settings → Backup & Restore here, then reinstall your extensions from Repo.",
   "rebrandMoveGoodbyeTitle": "Then say goodbye",
-  "rebrandMoveGoodbyeBody": "Once your library and downloads are in Mornye, you can remove SpotiFLAC.",
+  "rebrandMoveGoodbyeBody": "Once your library and downloads are in Mornye, you can remove the old app.",
   "rebrandCommunityTitle": "Same community,\nnew address.",
   "rebrandCommunityBody": "Docs, updates and the community now go by Mornye. Tap a link below to open it.",
   "rebrandWebsiteBody": "Extension docs and news.",

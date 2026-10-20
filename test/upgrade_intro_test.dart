@@ -137,7 +137,7 @@ void main() {
       tester,
     ) async {
       await openTour(tester, brightness: brightness);
-      expect(find.text('Goodbye SpotiFLAC,\nhello Mornye.'), findsOneWidget);
+      expect(find.text('A new morning,\nhello Mornye.'), findsOneWidget);
       expect(find.bySemanticsLabel('1 / 4'), findsOneWidget);
       await capturePage(tester, '${brightness.name}-welcome');
       await tester.tap(find.text('Continue'));
@@ -146,7 +146,7 @@ void main() {
       await capturePage(tester, '${brightness.name}-themes');
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Goodbye SpotiFLAC,\nhello Mornye.'), findsOneWidget);
+      expect(find.text('A new morning,\nhello Mornye.'), findsOneWidget);
       const titles = [
         'Make it\nyour own.',
         'Bring your\nlibrary along.',
