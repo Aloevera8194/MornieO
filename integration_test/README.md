@@ -102,6 +102,7 @@ Suites:
 | `automix_analysis_test.dart` | Native decoding for AutoMix beats; Auto and crossfade playback |
 | `automix_effects_test.dart` | Bundled FFmpeg supports every AutoMix transition effect |
 | `collection_remove_batch_test.dart` | Removing 2000 tracks from a collection; rollback and retry |
+| `desktop_playback_deck_test.dart` | macOS only (`-d macos`): the default deck plays a generated tone, applies an EQ preset and in-app volume, pauses |
 | `discord_sdk_test.dart` | Native Discord SDK initialize, stop and restart |
 | `download_cancel_dispatch_test.dart` | Native cancel and clear of queued IDs; invalid batches |
 | `download_lossless_container_test.dart` | Foreground queue finalizes lossless M4A without provider hints |
