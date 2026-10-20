@@ -57,6 +57,7 @@ import 'package:mornye/widgets/downloadable_cover.dart';
 import 'package:mornye/widgets/expressive_button_group.dart';
 import 'package:mornye/widgets/expressive_icon_button.dart';
 import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/detail_header.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/material_expressive.dart';
@@ -783,7 +784,13 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                     ),
                   ),
                   SliverToBoxAdapter(
-                    child: SizedBox(height: isSelectionMode ? 120 : 32),
+                    child: SizedBox(
+                      height: isSelectionMode
+                          ? 120
+                          : isDesktopPlatform
+                          ? desktopDetailBottomInset
+                          : 32,
+                    ),
                   ),
                   const NavBarSliverSpacer(),
                 ],

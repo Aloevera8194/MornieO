@@ -373,11 +373,20 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
           ),
         ],
       ),
-      actions: context.isMornye
+      actions: isDesktopPlatform
+          // Desktop: each control at its own width beside the artwork.
           ? Row(
-              mainAxisAlignment: isDesktopPlatform
-                  ? MainAxisAlignment.start
-                  : MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              spacing: 10,
+              children: [
+                _buildLoveAllButton(),
+                _buildDownloadAllCenterButton(context),
+                _buildAddToPlaylistButton(context),
+              ],
+            )
+          : context.isMornye
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildLoveAllButton(),
                 const SizedBox(width: 16),

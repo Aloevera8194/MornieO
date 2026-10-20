@@ -74,7 +74,19 @@ class SliverTrackTable extends StatefulWidget {
     this.sort,
     this.onSort,
     this.sortableColumns,
+    this.albumLayout = false,
+    this.albumArtist,
   });
+
+  /// The album page layout of Apple Music: no column headers, the number,
+  /// title and duration with a "More" button, the artist under the title only
+  /// when it differs from [albumArtist], separators from the title column,
+  /// and a play glyph in place of the number under the pointer. [columns],
+  /// sorting and the rows' trailing widgets do not apply.
+  final bool albumLayout;
+
+  /// The album's artist, which album rows leave out.
+  final String? albumArtist;
 
   final List<TrackTableRow> rows;
   final List<TrackTableColumn> columns;
@@ -148,6 +160,37 @@ class _SliverTrackTableState extends State<SliverTrackTable> {
     final sort = _sort;
     final orderedIds = [for (final row in rows) row.id];
     final hasTrailing = rows.any((row) => row.trailing != null);
+    if (widget.albumLayout) {
+      final albumArtist = widget.albumArtist?.trim().toLowerCase();
+      return SliverList.builder(
+        itemCount: rows.length,
+        itemBuilder: (context, index) {
+          final row = rows[index];
+          final artist = row.artist?.trim();
+          return _AlbumRowView(
+            key: ValueKey(row.id),
+            row: row,
+            artist:
+                artist == null ||
+                    artist.isEmpty ||
+                    artist.toLowerCase() == albumArtist
+                ? null
+                : artist,
+            last: index == rows.length - 1,
+            selected: widget.selectedIds.contains(row.id),
+            onTap: () => handleDesktopRowClick(
+              row.id,
+              select: (kind) => widget.onSelect(row.id, kind, orderedIds),
+              activate: () => widget.onActivate(row.id),
+            ),
+            onPlay: () => widget.onActivate(row.id),
+            onContextMenu: widget.onContextMenu == null
+                ? null
+                : (position) => widget.onContextMenu!(row.id, position),
+          );
+        },
+      );
+    }
     return SliverMainAxisGroup(
       slivers: [
         SliverPersistentHeader(
@@ -553,6 +596,209 @@ class _TrackTableRowViewState extends State<_TrackTableRowView> {
                       trailing: trailing,
                     ),
                   ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One song of a [SliverTrackTable.albumLayout] list.
+class _AlbumRowView extends StatefulWidget {
+  const _AlbumRowView({
+    super.key,
+    required this.row,
+    required this.artist,
+    required this.last,
+    required this.selected,
+    required this.onTap,
+    required this.onPlay,
+    required this.onContextMenu,
+  });
+
+  final TrackTableRow row;
+
+  /// Shown under the title; null when it is the album's artist.
+  final String? artist;
+  final bool last;
+  final bool selected;
+  final VoidCallback onTap;
+  final VoidCallback onPlay;
+  final ValueChanged<Offset>? onContextMenu;
+
+  @override
+  State<_AlbumRowView> createState() => _AlbumRowViewState();
+}
+
+class _AlbumRowViewState extends State<_AlbumRowView> {
+  bool _hovered = false;
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final row = widget.row;
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final tokens = context.tokens;
+    final secondary = theme.textTheme.bodyMedium?.copyWith(
+      color: scheme.onSurfaceVariant,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+    final active = _hovered || widget.selected || _focused;
+    final l10n = MaterialLocalizations.of(context);
+    final onContextMenu = widget.onContextMenu;
+    final number = SizedBox(
+      width: 32,
+      child: _hovered
+          ? IconButton(
+              tooltip: context.l10n.tooltipPlay,
+              onPressed: widget.onPlay,
+              padding: EdgeInsets.zero,
+              style: IconButton.styleFrom(
+                minimumSize: const Size.square(28),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              icon: AppIcon.adaptive(
+                Icons.play_arrow_rounded,
+                size: 16,
+                color: scheme.primary,
+              ),
+            )
+          : Text(
+              row.number?.toString() ?? '',
+              textAlign: TextAlign.end,
+              style: secondary,
+            ),
+    );
+    final more = onContextMenu == null
+        ? const SizedBox(width: 32)
+        : Focus(
+            canRequestFocus: false,
+            skipTraversal: true,
+            onFocusChange: (focused) => setState(() => _focused = focused),
+            child: AnimatedOpacity(
+              opacity: active ? 1 : 0,
+              duration: tokens.motionFast,
+              child: Builder(
+                builder: (buttonContext) => IconButton(
+                  tooltip: l10n.showMenuTooltip,
+                  padding: EdgeInsets.zero,
+                  style: IconButton.styleFrom(
+                    minimumSize: const Size.square(32),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  icon: AppIcon.adaptive(
+                    Icons.more_horiz,
+                    size: 20,
+                    color: scheme.primary,
+                  ),
+                  onPressed: () => onContextMenu(
+                    contextMenuPositionBelow(buttonContext) ?? Offset.zero,
+                  ),
+                ),
+              ),
+            ),
+          );
+    final title = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Flexible(
+              child: Text(
+                row.title,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            if (row.titleTrailing != null) ...[
+              const SizedBox(width: 6),
+              row.titleTrailing!,
+            ],
+          ],
+        ),
+        if (widget.artist != null)
+          Text(
+            widget.artist!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+      ],
+    );
+    final selectedFill = context.isMornye
+        ? scheme.primary.withValues(alpha: 0.16)
+        : scheme.secondaryContainer;
+    return Semantics(
+      selected: widget.selected,
+      label: [row.title, ?widget.artist].join(', '),
+      child: DesktopContextMenuRegion(
+        onContextMenu: onContextMenu,
+        child: Material(
+          color: widget.selected || _hovered
+              ? (widget.selected
+                    ? selectedFill
+                    : scheme.onSurface.withValues(alpha: 0.05))
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: widget.onTap,
+            onHover: (hovered) => setState(() => _hovered = hovered),
+            hoverColor: Colors.transparent,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 46),
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(start: tokens.gapXs),
+                child: Row(
+                  children: [
+                    number,
+                    const SizedBox(width: 14),
+                    // The separator starts at the title, as in Apple Music.
+                    Expanded(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: widget.last
+                              ? null
+                              : Border(
+                                  bottom: BorderSide(
+                                    color: scheme.outlineVariant.withValues(
+                                      alpha: 0.6,
+                                    ),
+                                    width: 0.5,
+                                  ),
+                                ),
+                        ),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 46),
+                          child: Row(
+                            children: [
+                              Expanded(child: title),
+                              const SizedBox(width: 12),
+                              Text(
+                                row.duration == null
+                                    ? ''
+                                    : _formatDuration(row.duration!),
+                                style: secondary,
+                              ),
+                              const SizedBox(width: 8),
+                              more,
+                              SizedBox(width: tokens.gapXs),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

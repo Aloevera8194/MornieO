@@ -34,6 +34,7 @@ import 'package:mornye/utils/clickable_metadata.dart';
 import 'package:mornye/widgets/cross_extension_share_sheet.dart';
 import 'package:mornye/widgets/track_list_tile.dart';
 import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/detail_header.dart';
 import 'package:mornye/widgets/desktop/desktop_selection.dart';
 import 'package:mornye/widgets/desktop/track_list_table.dart';
 import 'package:mornye/widgets/audio_quality_badges.dart';
@@ -610,13 +611,15 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
               artistId: _artistId,
               coverUrl: widget.coverUrl,
               extensionId: widget.extensionId,
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontSize: context.tokens.headerSubtitleSize,
-                fontWeight: context.isMornye
-                    ? FontWeight.w400
-                    : FontWeight.w600,
-              ),
+              style: isDesktopPlatform
+                  ? desktopDetailSubtitleStyle(context)
+                  : TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: context.tokens.headerSubtitleSize,
+                      fontWeight: context.isMornye
+                          ? FontWeight.w400
+                          : FontWeight.w600,
+                    ),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -625,11 +628,30 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
       meta: _buildHeaderMeta(context, releaseDate, commonQualityTrack),
       actions: isSelectionMode
           ? null
+          : isDesktopPlatform
+          // Desktop: each control at its own width beside the artwork.
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 10,
+              children: [
+                _buildLoveAllButton(),
+                HeaderFilledButton(
+                  icon: context.isMornye
+                      ? CupertinoIcons.arrow_down_circle_fill
+                      : Icons.download,
+                  label: context.isMornye
+                      ? context.l10n.dialogDownload
+                      : context.l10n.downloadAllCount(tracks.length),
+                  onPressed: tracks.isEmpty
+                      ? null
+                      : () => _downloadAll(context),
+                ),
+                _buildAddToPlaylistButton(context),
+              ],
+            )
           : context.isMornye
           ? Row(
-              mainAxisAlignment: isDesktopPlatform
-                  ? MainAxisAlignment.start
-                  : MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _buildLoveAllButton(),
                 const SizedBox(width: 16),
@@ -741,6 +763,12 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
         selectedIds: selectedIds,
         onSelect: applyDesktopClick,
         onActivate: activate,
+        albumLayout: context.isMornye,
+        albumArtist:
+            widget.artistName ??
+            (tracks.isEmpty
+                ? null
+                : (tracks.first.albumArtist ?? tracks.first.artistName)),
       );
     }
     return SliverPadding(

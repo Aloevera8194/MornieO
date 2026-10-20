@@ -26,7 +26,13 @@ class TrackListTable extends ConsumerWidget {
     this.onContextMenu,
     this.showArtwork = false,
     this.showAlbum = false,
+    this.albumLayout = false,
+    this.albumArtist,
   });
+
+  /// See [SliverTrackTable.albumLayout] and [SliverTrackTable.albumArtist].
+  final bool albumLayout;
+  final String? albumArtist;
 
   final List<Track> tracks;
 
@@ -92,6 +98,8 @@ class TrackListTable extends ConsumerWidget {
           TrackTableColumn.duration,
         ],
         selectedIds: selectedIds,
+        albumLayout: albumLayout,
+        albumArtist: albumArtist,
         onSelect: onSelect,
         onActivate: (id) {
           final index = indexById[id];

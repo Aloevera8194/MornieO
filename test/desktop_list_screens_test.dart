@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -160,41 +161,82 @@ void main() {
       tester,
     ) async {
       debugDesktopPlatformOverride = true;
-      await _pumpAlbum(tester, mornye: mornye);
+      final playback = await _pumpAlbum(tester, mornye: mornye);
 
-      // No hero: the back control sits in the pinned toolbar and the details
-      // start at the table's left edge, beside the artwork.
+      // No hero: the back control sits at the top of the pane and the
+      // details start beside the artwork, at the list's left edge.
       expect(find.byType(FlexibleSpaceBar), findsNothing);
       final back = find.byTooltip(
         const DefaultMaterialLocalizations().backButtonTooltip,
       );
       expect(back, findsOneWidget);
       expect(tester.getTopLeft(back).dy, lessThan(52));
-      final playAll = find.text('Play').first;
-      final tableHeader = find.text('#');
-      expect(
-        tester.getTopLeft(playAll).dx,
-        greaterThan(tester.getTopLeft(tableHeader).dx + 160),
-      );
-      expect(
-        tester.getTopLeft(playAll).dy,
-        lessThan(tester.getTopLeft(tableHeader).dy),
-      );
-
-      // Desktop row density, with the row's play button shown on hover.
       final row = find
           .ancestor(of: find.text('Alpha'), matching: find.byType(InkWell))
           .first;
-      expect(tester.getSize(row).height, mornye ? 40 : 48);
+      final playAll = find.text('Play').first;
+      expect(
+        tester.getTopLeft(playAll).dx,
+        greaterThan(tester.getTopLeft(row).dx + 200),
+      );
+      expect(
+        tester.getTopLeft(playAll).dy,
+        lessThan(tester.getTopLeft(row).dy),
+      );
+      // The Play button keeps its own width.
+      final playButton = find
+          .ancestor(
+            of: playAll,
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is ButtonStyleButton || widget is CupertinoButton,
+            ),
+          )
+          .first;
+      expect(tester.getSize(playButton).width, lessThan(200));
+
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      addTearDown(mouse.removePointer);
+      if (mornye) {
+        // Album rows of Apple Music: 46pt, no column headers, the number
+        // turns into a play button under the pointer and "More" shows.
+        expect(find.text('#'), findsNothing);
+        expect(tester.getSize(row).height, 46);
+        final more = find.descendant(
+          of: row,
+          matching: find.byType(AnimatedOpacity),
+        );
+        double opacity() => tester.widget<AnimatedOpacity>(more).opacity;
+        expect(opacity(), 0);
+        expect(find.descendant(of: row, matching: find.text('2')), findsOne);
+        await mouse.addPointer(location: tester.getCenter(find.text('Alpha')));
+        await tester.pumpAndSettle();
+        expect(opacity(), 1);
+        expect(
+          find.descendant(of: row, matching: find.text('2')),
+          findsNothing,
+        );
+        final rowPlay = find.descendant(
+          of: row,
+          matching: find.byTooltip('Play'),
+        );
+        await tester.tap(rowPlay);
+        await tester.pumpAndSettle();
+        expect(playback.started, ['2']);
+        return;
+      }
+
+      // Material table density, with the row's play button shown on hover.
+      expect(tester.getSize(row).height, 48);
       final rowY = tester.getCenter(row).dy;
-      final playButton = find.ancestor(
+      final rowPlay = find.ancestor(
         of: find.byWidgetPredicate(
           (widget) => widget is AlbumTrackPlayButton,
           skipOffstage: true,
         ),
         matching: find.byType(AnimatedOpacity),
       );
-      final alphaButton = playButton.evaluate().firstWhere(
+      final alphaButton = rowPlay.evaluate().firstWhere(
         (element) =>
             ((element.renderObject! as RenderBox)
                         .localToGlobal(Offset.zero)
@@ -205,11 +247,9 @@ void main() {
       );
       double opacity() => (alphaButton.widget as AnimatedOpacity).opacity;
       expect(opacity(), 0);
-      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await mouse.addPointer(location: tester.getCenter(find.text('Alpha')));
       await tester.pumpAndSettle();
       expect(opacity(), 1);
-      await mouse.removePointer();
     });
   }
 }

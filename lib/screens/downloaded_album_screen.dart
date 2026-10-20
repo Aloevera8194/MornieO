@@ -32,7 +32,9 @@ import 'package:mornye/widgets/collection_scaffold.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/desktop/context_menu.dart';
 import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/detail_header.dart';
 import 'package:mornye/widgets/desktop/library_track_menu.dart';
+import 'package:mornye/widgets/playlist_picker_sheet.dart';
 import 'package:mornye/widgets/desktop/track_table.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
 import 'package:mornye/widgets/app_snack_bar.dart';
@@ -399,13 +401,17 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
       ),
       subtitle: Text(
         widget.artistName,
-        style: TextStyle(
-          color: context.isMornye
-              ? colorScheme.primary
-              : HeaderPalette.of(context).onSurfaceVariant,
-          fontSize: context.tokens.headerSubtitleSize,
-          fontWeight: context.isMornye ? FontWeight.w400 : FontWeight.w600,
-        ),
+        style: isDesktopPlatform
+            ? desktopDetailSubtitleStyle(context)
+            : TextStyle(
+                color: context.isMornye
+                    ? colorScheme.primary
+                    : HeaderPalette.of(context).onSurfaceVariant,
+                fontSize: context.tokens.headerSubtitleSize,
+                fontWeight: context.isMornye
+                    ? FontWeight.w400
+                    : FontWeight.w600,
+              ),
         textAlign: TextAlign.center,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -419,8 +425,27 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
               shuffleTooltip: context.l10n.actionShuffle,
               onPlay: () => _playAll(tracks),
               onShuffle: () => _shuffleAll(tracks),
+              onAddToPlaylist: () => showAddTracksToPlaylistSheet(
+                Navigator.of(context, rootNavigator: true).context,
+                ref,
+                [
+                  for (final track in tracks)
+                    UnifiedLibraryItem.fromDownloadHistory(track).toTrack(),
+                ],
+              ),
             )
           : null,
+      moreMenu: tracks.isEmpty
+          ? null
+          : () => libraryTrackMenuGroups(
+              context,
+              ref,
+              items: [
+                for (final track in tracks)
+                  UnifiedLibraryItem.fromDownloadHistory(track),
+              ],
+              onPlay: () => _playAll(tracks),
+            ),
     );
   }
 
@@ -677,6 +702,8 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
           TrackTableColumn.duration,
         ],
         selectedIds: selectedIds,
+        albumLayout: context.isMornye,
+        albumArtist: widget.artistName,
         onSelect: applyDesktopClick,
         onActivate: (id) {
           final index = indexById[id];

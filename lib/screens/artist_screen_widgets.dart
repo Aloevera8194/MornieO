@@ -218,9 +218,11 @@ extension _ArtistScreenSections on _ArtistScreenState {
       actions: isSelectionMode
           ? null
           : Row(
-              spacing: 12,
+              mainAxisSize: MainAxisSize.min,
+              spacing: 10,
               children: [
                 HeaderCircleButton(
+                  tonal: true,
                   icon: isFavoriteArtist
                       ? (mornye ? CupertinoIcons.star_fill : Icons.favorite)
                       : (mornye ? CupertinoIcons.star : Icons.favorite_border),
@@ -234,6 +236,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
                 ),
                 if (hasDiscography && !_isLoadingDiscography)
                   HeaderCircleButton(
+                    tonal: true,
                     icon: mornye
                         ? CupertinoIcons.arrow_down
                         : Icons.download_rounded,
