@@ -18,6 +18,7 @@ class AppSliverHeader extends StatelessWidget {
     required this.title,
     this.actions,
     this.alignToContent = false,
+    this.contentInset,
   }) : leading = null,
        _showLeading = false;
 
@@ -29,7 +30,8 @@ class AppSliverHeader extends StatelessWidget {
     this.actions,
     this.leading,
     this.alignToContent = true,
-  }) : _showLeading = true;
+  }) : contentInset = null,
+       _showLeading = true;
 
   final String title;
   final List<Widget>? actions;
@@ -40,6 +42,10 @@ class AppSliverHeader extends StatelessWidget {
   /// Lines the expanded title up with content centered by [wideListInset] on
   /// tablets. Full-bleed pages (carousels, grids) keep it at the screen edge.
   final bool alignToContent;
+
+  /// The content's centering inset when it is not [wideListInset], such as
+  /// Home's wider desktop feed.
+  final double? contentInset;
 
   final bool _showLeading;
 
@@ -136,7 +142,8 @@ class AppSliverHeader extends StatelessWidget {
               ? ((currentExtent - minExtent) / extentDelta).clamp(0.0, 1.0)
               : 0.0;
           final contentMargin =
-              _contentMargin + (alignToContent ? wideListInset(context) : 0);
+              _contentMargin +
+              (alignToContent ? contentInset ?? wideListInset(context) : 0);
           final leftPadding = showLeading
               ? (_leadingClearance + edgeInset) -
                     (((_leadingClearance + edgeInset) - contentMargin) *

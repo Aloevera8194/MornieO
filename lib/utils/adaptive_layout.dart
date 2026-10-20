@@ -120,6 +120,18 @@ double wideListInset(
   contentMaxWidth: contentMaxWidth,
 );
 
+/// Inset for Home's feed. Desktop runs its shelves across the whole pane,
+/// as Music does, and centers them only on very wide windows; touch devices
+/// keep [wideListInset].
+double homeFeedInset(BuildContext context) => wideListInset(
+  context,
+  contentMaxWidth: isDesktopPlatform
+      ? desktopFeedContentMaxWidth
+      : defaultWideContentMaxWidth,
+);
+
+const double desktopFeedContentMaxWidth = 1600;
+
 /// Scales fixed sizes with the shortest screen side, clamped to [min]..[max].
 double responsiveScale({
   required BuildContext context,

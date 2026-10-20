@@ -960,6 +960,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
   Widget _buildHeaderSliver({required String? greeting}) {
     return AppSliverHeader.tabRoot(
       alignToContent: true,
+      contentInset: homeFeedInset(context),
       title: widget.mode == HomeTabMode.search
           ? context.l10n.mornyeSearch
           : greeting ?? context.l10n.homeTitle,
@@ -1001,13 +1002,13 @@ class _HomeTabState extends ConsumerState<HomeTab>
       child: Padding(
         // Centered with the search results on tablets.
         padding: EdgeInsets.fromLTRB(
-          16 + wideListInset(context),
+          16 + homeFeedInset(context),
           (hasResults || showExplore)
               ? 8
               : greetsInHeader
               ? 20
               : 32,
-          16 + wideListInset(context),
+          16 + homeFeedInset(context),
           (hasResults || showExplore) ? 8 : 16,
         ),
         child: _buildSearchBar(),
@@ -1081,7 +1082,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 showExplore ||
                 showEmptyHomeState)
             ? const SizedBox.shrink()
-            : _HomeSections(inset: 16 + wideListInset(context)),
+            : _HomeSections(inset: 16 + homeFeedInset(context)),
       ),
     );
   }
@@ -1225,7 +1226,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
 
     // The header carries the greeting; prompts take turns beneath it.
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24 + wideListInset(context)),
+      padding: EdgeInsets.symmetric(horizontal: 24 + homeFeedInset(context)),
       child: const Align(
         alignment: AlignmentDirectional.centerStart,
         child: _HomeTagline(),
