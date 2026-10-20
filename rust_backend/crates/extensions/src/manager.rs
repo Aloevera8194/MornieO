@@ -22,12 +22,12 @@ use crate::package::{ExtensionPackage, is_package_path};
 use crate::runtime::{LoadMode, lifecycle_result};
 use crate::{ExtensionError, ExtensionRuntime, RuntimeLimits};
 use mornye_core::cancellation::RequestLease;
+use mornye_core::fs::{DirBuilderPortableExt, OpenOptionsPortableExt};
 use serde_json::{Map, Value, json};
 use std::cmp::Ordering as Comparison;
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::Read;
-use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
@@ -109,7 +109,7 @@ impl ExtensionManager {
         }
         fs::DirBuilder::new()
             .recursive(true)
-            .mode(0o700)
+            .unix_mode(0o700)
             .create(sources)
             .map_err(|e| cause("failed to create extensions directory", e))?;
         let sources = fs::canonicalize(sources)
@@ -127,10 +127,8 @@ impl ExtensionManager {
                 .write(true)
                 .create(true)
                 .truncate(false)
-                .mode(0o600)
-                .custom_flags(
-                    (rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK).bits() as i32,
-                )
+                .unix_mode(0o600)
+                .nofollow_nonblock()
                 .open(directory.join(".backend-manager.lock"))
                 .map_err(|e| cause("failed to lock extension directory", e))?;
             if !lock
@@ -367,7 +365,7 @@ fn error_from_environment(error: crate::environment::EnvironmentError) -> Manage
 fn read_source(path: &Path, limit: u64) -> std::io::Result<String> {
     let mut file = OpenOptions::new()
         .read(true)
-        .custom_flags((rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK).bits() as i32)
+        .nofollow_nonblock()
         .open(path)?;
     if !file.metadata()?.is_file() {
         return Err(std::io::Error::other(

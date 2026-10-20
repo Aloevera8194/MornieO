@@ -22,7 +22,8 @@ mornye-core = { path = "crates/core" }
 mornye-extensions = { path = "crates/extensions" }
 mornye-network = { path = "crates/network" }
 mornye-providers = { path = "crates/providers" }
-rquickjs = { version = "=0.14.0", features = ["bindgen"] }
+# Crates enable `bindgen` per target: rquickjs-sys ships Windows bindings.
+rquickjs = "=0.14.0"
 base64 = "0.23"
 sha2 = "0.11"
 sha1 = "0.11"
@@ -74,6 +75,7 @@ rustix = { version = "=1.1.5", features = ["fs"] }
 roxmltree = "=0.21.1"
 rusqlite = { version = "=0.40.2", features = ["bundled", "modern_sqlite", "hooks"] }
 libc = "=0.2.190"
+windows-sys = "0.61"
 
 [workspace.lints.rust]
 unsafe_code = "deny"

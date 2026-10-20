@@ -1,12 +1,13 @@
 //! Go-compatible successful-lyrics cache with bounded, atomic persistence.
 
-use mornye_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
+use mornye_core::fs::{
+    DEFAULT_TEMP_PREFIX, DirBuilderPortableExt, OpenOptionsPortableExt, write_atomic,
+};
 use mornye_core::lyrics::LyricsResponse;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
-use std::os::unix::fs::{DirBuilderExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
@@ -213,7 +214,7 @@ impl Drop for LyricsCache {
 fn read_snapshot(path: &Path) -> Option<Snapshot> {
     let file = OpenOptions::new()
         .read(true)
-        .custom_flags((rustix::fs::OFlags::NOFOLLOW | rustix::fs::OFlags::NONBLOCK).bits() as i32)
+        .nofollow_nonblock()
         .open(path)
         .ok()?;
     let metadata = file.metadata().ok()?;
@@ -291,7 +292,7 @@ fn write_snapshot(path: &Path, entries: &BTreeMap<String, Entry>) -> std::io::Re
         .unwrap_or(Path::new("."));
     fs::DirBuilder::new()
         .recursive(true)
-        .mode(0o700)
+        .unix_mode(0o700)
         .create(parent)?;
     let bytes = serde_json::to_vec(&snapshot)?;
     if bytes.len() as u64 > MAX_PERSISTED_BYTES {
