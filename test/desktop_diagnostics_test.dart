@@ -15,11 +15,16 @@ void main() {
 
   tearDown(() => directory.delete(recursive: true));
 
+  Directory osReports() =>
+      Directory(p.join(directory.path, 'os-reports'))
+        ..createSync(recursive: true);
+
   DesktopDiagnostics session(int processId, {int maxLogBytes = 1 << 20}) {
     final diagnostics = DesktopDiagnostics(
       directory: directory,
       processId: processId,
       maxLogBytes: maxLogBytes,
+      osCrashReportDirectory: osReports(),
     )..beginSession(device: 'test-os 1');
     addTearDown(diagnostics.close);
     return diagnostics;
@@ -44,7 +49,35 @@ void main() {
     expect(second.latestCrash(), isNull);
   });
 
-  test('an unclean exit becomes a report with the last logs', () async {
+  test('a force quit without crash evidence is logged, not reported', () async {
+    final first = session(1);
+    first.writeEntry(entry('before the force quit'));
+    await first.close();
+
+    final second = session(2);
+    expect(second.pendingCrash(), isNull);
+    expect(second.latestCrash(), isNull);
+    await second.close();
+    expect(
+      second.logFile.readAsStringSync(),
+      contains('ended without quitting'),
+    );
+  });
+
+  test('an OS crash report from that session becomes a report', () async {
+    final first = session(1);
+    await first.close();
+    final executable = p.basenameWithoutExtension(Platform.resolvedExecutable);
+    File(
+      p.join(osReports().path, '$executable-2026-10-20-170000.ips'),
+    ).writeAsStringSync('{"exception": "EXC_BAD_ACCESS"}');
+
+    final report = session(2).pendingCrash()!;
+    expect(report['reason'], 'App crash');
+    expect(report['trace'], contains('EXC_BAD_ACCESS'));
+  });
+
+  test('an unclean exit after a runtime error becomes a report', () async {
     final first = session(1);
     first.writeEntry(entry('before the crash'));
     first.recordRuntimeError(error: 'StateError', stack: '#0 main', logs: '');
@@ -52,7 +85,8 @@ void main() {
 
     final second = session(2);
     final report = second.pendingCrash()!;
-    expect(report['reason'], 'Unclean exit');
+    expect(report['reason'], 'App error');
+    expect(report['description'], 'StateError');
     expect(report['recent_logs'], contains('before the crash'));
     expect(report['runtime_error'], 'StateError');
     expect(report['device'], 'test-os 1');

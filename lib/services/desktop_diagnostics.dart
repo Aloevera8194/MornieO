@@ -24,8 +24,21 @@ class DesktopDiagnostics {
     DateTime Function()? now,
     this.maxLogBytes = 1024 * 1024,
     this.keptLogFiles = 3,
+    Directory? osCrashReportDirectory,
   }) : _pid = processId ?? pid,
-       _now = now ?? DateTime.now;
+       _now = now ?? DateTime.now,
+       osCrashReportDirectory =
+           osCrashReportDirectory ?? _defaultOsCrashReportDirectory();
+
+  /// Where the OS writes crash reports for this app: macOS
+  /// `~/Library/Logs/DiagnosticReports`. Null where none is known.
+  final Directory? osCrashReportDirectory;
+
+  static Directory? _defaultOsCrashReportDirectory() {
+    final home = Platform.environment['HOME'];
+    if (!Platform.isMacOS || home == null) return null;
+    return Directory(p.join(home, 'Library', 'Logs', 'DiagnosticReports'));
+  }
 
   static DesktopDiagnostics? _instance;
 
@@ -73,6 +86,14 @@ class DesktopDiagnostics {
       );
       diagnostics.beginSession(device: _deviceDescription());
       LogBuffer.fileSink = diagnostics.writeEntry;
+      // `kill`, logout and system shutdown ask the app to quit with SIGTERM;
+      // that is a clean quit, not a crash.
+      if (!Platform.isWindows) {
+        ProcessSignal.sigterm.watch().listen((_) {
+          diagnostics.endSession();
+          exit(0);
+        });
+      }
       diagnostics._lifecycle = AppLifecycleListener(
         onExitRequested: () async {
           diagnostics.endSession();
@@ -94,22 +115,36 @@ class DesktopDiagnostics {
   static String _deviceDescription() =>
       '${Platform.operatingSystem} ${Platform.operatingSystemVersion}';
 
-  /// Turns a leftover marker from another process into a crash report, then
-  /// writes this session's marker. A marker from this process (a debug hot
-  /// restart) is not a crash.
+  /// Turns a leftover marker from another process into a crash report when
+  /// that session left evidence of a crash, then writes this session's
+  /// marker. A marker alone means a force quit or power loss, which is only
+  /// logged. A marker from this process (a debug hot restart) is not a crash.
   void beginSession({required String device}) {
     directory.createSync(recursive: true);
     final start = _now();
     _sessionStart = start;
     final previous = _readJson(_marker);
+    var endedWithoutCrash = false;
     if (previous != null && previous['pid'] != _pid) {
-      _writeJson(_report, _buildReport(previous, device));
+      final report = _buildReport(previous, device);
+      if (report != null) {
+        _writeJson(_report, report);
+      } else {
+        endedWithoutCrash = true;
+      }
     }
     if (_runtimeError.existsSync() && previous?['pid'] != _pid) {
       _runtimeError.deleteSync();
     }
     _writeMarker();
     _openLog();
+    if (endedWithoutCrash) {
+      _writeLine(
+        '${start.toIso8601String()} [WARN] [Diagnostics] The previous '
+        'session ended without quitting (force quit or power loss); no '
+        'crash was recorded.',
+      );
+    }
   }
 
   /// A clean quit: the next launch reports nothing.
@@ -138,42 +173,64 @@ class DesktopDiagnostics {
     });
   }
 
-  Map<String, Object?> _buildReport(
+  /// The report for a session that ended without quitting, or null when it
+  /// left no evidence of a crash (no Rust panic, no fatal Dart error, no OS
+  /// crash report), which means a force quit or power loss.
+  Map<String, Object?>? _buildReport(
     Map<String, dynamic> previous,
     String device,
   ) {
     final startedAt = (previous['started_at'] as num?)?.toInt() ?? 0;
+    bool fromSession(DateTime? time) =>
+        time != null && time.millisecondsSinceEpoch >= startedAt;
+    final panic = fromSession(_modified(_panicLog))
+        ? _tail(_panicLog, _panicTailBytes)
+        : '';
+    var runtime = _readJson(_runtimeError);
+    final runtimeAt = (runtime?['timestamp'] as num?)?.toInt();
+    if (runtimeAt == null || runtimeAt < startedAt) runtime = null;
+    final osCrash = _osCrashReportSince(startedAt);
+    if (panic.isEmpty && runtime == null && osCrash == null) return null;
+
     final lastActivity = [
       _modified(logFile),
       _modified(_panicLog),
+      if (osCrash != null) _modified(osCrash),
       DateTime.fromMillisecondsSinceEpoch(startedAt),
     ].whereType<DateTime>().reduce((a, b) => a.isAfter(b) ? a : b);
-    final panicModified = _modified(_panicLog);
-    final panic =
-        panicModified != null &&
-            panicModified.millisecondsSinceEpoch >= startedAt
-        ? _tail(_panicLog, _panicTailBytes)
-        : '';
-    final runtime = _readJson(_runtimeError);
+    final runtimeError = runtime?['error']?.toString() ?? '';
+    final String reason;
+    final String description;
+    final String trace;
+    if (panic.isNotEmpty) {
+      reason = 'Rust panic';
+      description = panic
+          .split('\n')
+          .lastWhere(
+            (line) => line.contains('panicked at'),
+            orElse: () => 'Rust panic',
+          )
+          .trim();
+      trace = panic;
+    } else if (osCrash != null) {
+      reason = 'App crash';
+      description =
+          'The system recorded a crash of the previous session '
+          '(${p.basename(osCrash.path)}).';
+      trace = _tail(osCrash, _panicTailBytes);
+    } else {
+      reason = 'App error';
+      description = runtimeError;
+      trace = runtime?['stack']?.toString() ?? '';
+    }
     return {
       'id': 'desktop-$startedAt',
       'timestamp': lastActivity.millisecondsSinceEpoch,
-      'reason': panic.isEmpty ? 'Unclean exit' : 'Rust panic',
-      'description': panic.isEmpty
-          ? 'The previous session did not quit normally. It may have '
-                'crashed, been force quit, or lost power.'
-          : panic
-                .split('\n')
-                .lastWhere(
-                  (line) => line.contains('panicked at'),
-                  orElse: () => 'Rust panic',
-                )
-                .trim(),
+      'reason': reason,
+      'description': description,
       'version': previous['version']?.toString() ?? '',
       'device': device,
-      'trace': panic.isEmpty
-          ? 'No Rust panic was recorded for this session.'
-          : panic,
+      'trace': trace,
       'runtime_error': runtime?['error']?.toString() ?? '',
       'runtime_stack': runtime?['stack']?.toString() ?? '',
       'recent_logs': _tailLines(logFile, _recentLogLines),
@@ -272,6 +329,35 @@ class DesktopDiagnostics {
     _lifecycle?.dispose();
     await _log?.close();
     _log = null;
+  }
+
+  /// The newest OS crash report for this app written since [startedAt].
+  File? _osCrashReportSince(int startedAt) {
+    final folder = osCrashReportDirectory;
+    if (folder == null) return null;
+    final executable = p.basenameWithoutExtension(Platform.resolvedExecutable);
+    File? newest;
+    DateTime? newestTime;
+    try {
+      if (!folder.existsSync()) return null;
+      for (final entity in folder.listSync()) {
+        if (entity is! File) continue;
+        final name = p.basename(entity.path);
+        final isReport = name.endsWith('.ips') || name.endsWith('.crash');
+        if (!isReport || !name.startsWith('$executable-')) continue;
+        final modified = _modified(entity);
+        if (modified == null || modified.millisecondsSinceEpoch < startedAt) {
+          continue;
+        }
+        if (newestTime == null || modified.isAfter(newestTime)) {
+          newest = entity;
+          newestTime = modified;
+        }
+      }
+    } on FileSystemException {
+      return null;
+    }
+    return newest;
   }
 
   static DateTime? _modified(File file) {
