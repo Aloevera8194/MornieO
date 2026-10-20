@@ -18,9 +18,9 @@ extension _HomeTabExploreUI on _HomeTabState {
           if (hasGreeting && index == 0) {
             return Padding(
               padding: EdgeInsets.fromLTRB(
-                16 + homeFeedInset(context),
+                16 + wideListInset(context),
                 12,
-                16 + homeFeedInset(context),
+                16 + wideListInset(context),
                 4,
               ),
               child: Text(
@@ -64,7 +64,7 @@ extension _HomeTabExploreUI on _HomeTabState {
 
     // Titles and the first card line up with the centered column on tablets;
     // the carousel itself still scrolls edge to edge.
-    final inset = homeFeedInset(context);
+    final inset = wideListInset(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -112,7 +112,7 @@ extension _HomeTabExploreUI on _HomeTabState {
   /// [ShimmerLoading] for the sweep effect.
   Widget _buildExploreSectionSkeleton({required bool isArtist}) {
     final cardSize = _exploreCardSize(context);
-    final inset = homeFeedInset(context);
+    final inset = wideListInset(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

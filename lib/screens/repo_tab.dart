@@ -96,9 +96,9 @@ class _RepoTabState extends ConsumerState<RepoTab> {
     }
     final colorScheme = Theme.of(context).colorScheme;
     // Controls share the centered column of the extension list on tablets.
-    // Desktop fills the pane with a grid instead; only the search field
-    // keeps a reading width.
-    final edge = 16 + (isDesktopPlatform ? 0.0 : wideListInset(context));
+    // Desktop fills the pane with a grid instead, with the same edges as the
+    // other tabs.
+    final edge = 16 + wideListInset(context);
     final desktopColumns = isDesktopPlatform
         ? _desktopGridColumns(MediaQuery.sizeOf(context).width - edge * 2)
         : 1;
@@ -110,7 +110,7 @@ class _RepoTabState extends ConsumerState<RepoTab> {
         child: CustomScrollView(
           slivers: [
             AppSliverHeader.tabRoot(
-              alignToContent: !isDesktopPlatform,
+              alignToContent: true,
               title: context.l10n.storeTitle,
               actions: [
                 if (hasRegistryUrl)
@@ -136,24 +136,16 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(edge, 8, edge, 8),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: isDesktopPlatform ? 560 : double.infinity,
-                      ),
-                      child: AppSearchField(
-                        controller: _searchController,
-                        hintText: context.l10n.storeSearch,
-                        clearTooltip: context.l10n.dialogClear,
-                        samplesBackdrop: false,
-                        onChanged: (value) => ref
-                            .read(repoProvider.notifier)
-                            .setSearchQuery(value),
-                        onClear: () =>
-                            ref.read(repoProvider.notifier).setSearchQuery(''),
-                      ),
-                    ),
+                  // Full width like the Home and Library search fields.
+                  child: AppSearchField(
+                    controller: _searchController,
+                    hintText: context.l10n.storeSearch,
+                    clearTooltip: context.l10n.dialogClear,
+                    samplesBackdrop: false,
+                    onChanged: (value) =>
+                        ref.read(repoProvider.notifier).setSearchQuery(value),
+                    onClear: () =>
+                        ref.read(repoProvider.notifier).setSearchQuery(''),
                   ),
                 ),
               ),

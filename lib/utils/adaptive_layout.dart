@@ -111,26 +111,20 @@ double wideInsetForWidth(
 }) => maxWidth > contentMaxWidth ? (maxWidth - contentMaxWidth) / 2 : 0;
 
 /// Horizontal inset that centers full-width list content on tablets/landscape;
-/// zero on phones, so rows stop stretching across the whole screen.
-double wideListInset(
-  BuildContext context, {
-  double contentMaxWidth = defaultWideContentMaxWidth,
-}) => wideInsetForWidth(
-  MediaQuery.sizeOf(context).width,
-  contentMaxWidth: contentMaxWidth,
-);
+/// zero on phones, so rows stop stretching across the whole screen. Desktop
+/// pages run across the whole content pane, as Music's do, and center only
+/// past [desktopContentMaxWidth].
+double wideListInset(BuildContext context, {double? contentMaxWidth}) =>
+    wideInsetForWidth(
+      MediaQuery.sizeOf(context).width,
+      contentMaxWidth:
+          contentMaxWidth ??
+          (isDesktopPlatform
+              ? desktopContentMaxWidth
+              : defaultWideContentMaxWidth),
+    );
 
-/// Inset for Home's feed. Desktop runs its shelves across the whole pane,
-/// as Music does, and centers them only on very wide windows; touch devices
-/// keep [wideListInset].
-double homeFeedInset(BuildContext context) => wideListInset(
-  context,
-  contentMaxWidth: isDesktopPlatform
-      ? desktopFeedContentMaxWidth
-      : defaultWideContentMaxWidth,
-);
-
-const double desktopFeedContentMaxWidth = 1600;
+const double desktopContentMaxWidth = 1600;
 
 /// Scales fixed sizes with the shortest screen side, clamped to [min]..[max].
 double responsiveScale({
