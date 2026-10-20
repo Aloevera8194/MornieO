@@ -70,6 +70,60 @@ extension _QueueTabSelectionActions on _QueueTabState {
     });
   }
 
+  /// A desktop click of [kind] on a library song; [orderedIds] lists the
+  /// songs in the order shown.
+  void _applyDesktopClick(
+    String itemId,
+    DesktopClick kind,
+    List<String> orderedIds,
+  ) {
+    var shouldHideOverlay = false;
+    _setState(() {
+      _isPlaylistSelectionMode = false;
+      _selectedPlaylistIds.clear();
+      _selectionAnchorId = applyDesktopClickTo(
+        _selectedIds,
+        target: itemId,
+        kind: kind,
+        orderedIds: orderedIds,
+        anchor: _selectionAnchorId,
+      );
+      _isSelectionMode = _selectedIds.isNotEmpty;
+      shouldHideOverlay = !_isSelectionMode;
+    });
+    _hidePlaylistSelectionOverlay();
+    if (shouldHideOverlay) _hideSelectionOverlay();
+  }
+
+  /// Opens the desktop menu of a library song. A song outside the selection
+  /// becomes the selection first, so the menu acts on the song clicked.
+  void _showLibraryItemMenu(
+    BuildContext context,
+    UnifiedLibraryItem item,
+    List<UnifiedLibraryItem> libraryItems,
+    Offset position, {
+    VoidCallback? onOpenDetails,
+  }) {
+    if (!_selectedIds.contains(item.id)) {
+      _applyDesktopClick(item.id, DesktopClick.replace, const []);
+    }
+    showContextMenu(
+      context,
+      position: position,
+      groups: libraryTrackMenuGroups(
+        context,
+        ref,
+        items: _selectedItemsFromAll(libraryItems),
+        onPlay: () => _playLibraryItem(item, libraryItems),
+        onOpenDetails: onOpenDetails,
+        onDone: _exitSelectionMode,
+        onReEnrich: () => _reEnrichSelectedFromQueue(libraryItems),
+        onConvert: () => _showBatchConvertSheet(this.context, libraryItems),
+        onDelete: () => _deleteSelected(libraryItems),
+      ),
+    );
+  }
+
   void _selectRangeTo(String itemId, List<UnifiedLibraryItem> visibleItems) {
     HapticFeedback.selectionClick();
     _setState(() {

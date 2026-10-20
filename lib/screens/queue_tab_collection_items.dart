@@ -445,6 +445,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
     required String subtitle,
     required VoidCallback onTap,
     VoidCallback? onLongPress,
+    ValueChanged<Offset>? onContextMenu,
   }) {
     final cover =
         coverWidget ??
@@ -466,7 +467,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
           ),
         );
 
-    return AppContentCard(
+    final card = AppContentCard(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       mornyeSurface: false,
       onTap: onTap,
@@ -510,6 +511,86 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
         ),
       ),
     );
+    return DesktopContextMenuRegion(
+      onContextMenu:
+          onContextMenu ??
+          (position) => _showOpenMenu(context, position, onTap),
+      child: card,
+    );
+  }
+
+  /// The desktop menu of a folder that offers nothing beyond opening it.
+  void _showOpenMenu(
+    BuildContext context,
+    Offset position,
+    VoidCallback onOpen,
+  ) => showContextMenu(
+    context,
+    position: position,
+    groups: [
+      [
+        ContextMenuAction(
+          icon: Icons.open_in_new,
+          label: context.l10n.desktopMenuOpen,
+          onSelected: onOpen,
+        ),
+      ],
+    ],
+  );
+
+  /// The desktop menu of a playlist: open, rename, and delete. Deleting a
+  /// playlist outside the selection deletes only that playlist.
+  void _showPlaylistMenu(
+    BuildContext context,
+    UserPlaylistCollection playlist,
+    Offset position,
+  ) {
+    final l10n = context.l10n;
+    final root = Navigator.of(context, rootNavigator: true).context;
+    showContextMenu(
+      context,
+      position: position,
+      groups: [
+        [
+          ContextMenuAction(
+            icon: Icons.open_in_new,
+            label: l10n.desktopMenuOpen,
+            onSelected: () => _openPlaylistById(playlist.id),
+          ),
+          ContextMenuAction(
+            icon: Icons.edit_outlined,
+            label: l10n.collectionRenamePlaylist,
+            onSelected: () async {
+              final name = await promptPlaylistName(
+                root,
+                title: l10n.collectionRenamePlaylist,
+                confirmLabel: l10n.dialogSave,
+                initialName: playlist.name,
+              );
+              final trimmed = name?.trim() ?? '';
+              if (trimmed.isEmpty || !mounted) return;
+              await ref
+                  .read(libraryCollectionsProvider.notifier)
+                  .renamePlaylist(playlist.id, trimmed);
+            },
+          ),
+        ],
+        [
+          ContextMenuAction(
+            icon: Icons.delete_outline,
+            label: l10n.collectionDeletePlaylist,
+            destructive: true,
+            onSelected: () {
+              if (!_selectedPlaylistIds.contains(playlist.id)) {
+                _exitPlaylistSelectionMode();
+                _enterPlaylistSelectionMode(playlist.id);
+              }
+              _deleteSelectedPlaylists(this.context);
+            },
+          ),
+        ],
+      ],
+    );
   }
 
   Widget _buildCollectionGridItem({
@@ -523,6 +604,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
     required int count,
     required VoidCallback onTap,
     VoidCallback? onLongPress,
+    ValueChanged<Offset>? onContextMenu,
   }) {
     final cover =
         coverWidget ??
@@ -542,6 +624,31 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
           ),
         );
 
+    return DesktopContextMenuRegion(
+      onContextMenu:
+          onContextMenu ??
+          (position) => _showOpenMenu(context, position, onTap),
+      child: _buildCollectionGridCell(
+        context: context,
+        colorScheme: colorScheme,
+        cover: cover,
+        title: title,
+        count: count,
+        onTap: onTap,
+        onLongPress: onLongPress,
+      ),
+    );
+  }
+
+  Widget _buildCollectionGridCell({
+    required BuildContext context,
+    required ColorScheme colorScheme,
+    required Widget cover,
+    required String title,
+    required int count,
+    required VoidCallback onTap,
+    VoidCallback? onLongPress,
+  }) {
     return Semantics(
       button: true,
       label: context.l10n.a11yOpenItemCount(title, count),
@@ -684,6 +791,8 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                     onLongPress: _isPlaylistSelectionMode
                         ? () => _togglePlaylistSelection(playlist.id)
                         : () => _enterPlaylistSelectionMode(playlist.id),
+                    onContextMenu: (position) =>
+                        _showPlaylistMenu(context, playlist, position),
                   ),
                   if (_isPlaylistSelectionMode)
                     Positioned(
@@ -842,6 +951,8 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                       onLongPress: _isPlaylistSelectionMode
                           ? () => _togglePlaylistSelection(playlist.id)
                           : () => _enterPlaylistSelectionMode(playlist.id),
+                      onContextMenu: (position) =>
+                          _showPlaylistMenu(context, playlist, position),
                     ),
                   ),
                 ],

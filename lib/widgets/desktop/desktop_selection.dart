@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/utils/ordered_range_selection.dart';
 
 /// How a desktop click changes a list selection.
 enum DesktopClick {
@@ -13,6 +14,37 @@ enum DesktopClick {
 
   /// Shift-click: selects the range from the anchor to the item.
   extend,
+}
+
+/// Applies a desktop click of [kind] on [target] to [selected] and returns
+/// the new range anchor. [orderedIds] lists the visible items in display
+/// order. A Shift range replaces the selection and keeps [anchor], as in
+/// Finder and Explorer.
+T? applyDesktopClickTo<T>(
+  Set<T> selected, {
+  required T target,
+  required DesktopClick kind,
+  required List<T> orderedIds,
+  required T? anchor,
+}) {
+  switch (kind) {
+    case DesktopClick.replace:
+      selected
+        ..clear()
+        ..add(target);
+      return target;
+    case DesktopClick.toggle:
+      return toggleOrderedSelection(selected: selected, target: target);
+    case DesktopClick.extend:
+      selected.clear();
+      addOrderedSelectionRange(
+        selected: selected,
+        visibleItems: orderedIds,
+        target: target,
+        anchor: anchor,
+      );
+      return anchor ?? target;
+  }
 }
 
 /// Command on macOS, Control elsewhere.

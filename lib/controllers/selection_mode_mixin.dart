@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mornye/utils/ordered_range_selection.dart';
 import 'package:mornye/widgets/desktop/desktop_selection.dart';
 
 /// Shared multi-select state for list screens: enter/exit selection mode,
@@ -45,30 +44,13 @@ mixin SelectionModeMixin<T extends StatefulWidget> on State<T> {
     List<String> orderedIds,
   ) {
     setState(() {
-      switch (kind) {
-        case DesktopClick.replace:
-          selectedIds
-            ..clear()
-            ..add(itemId);
-          selectionAnchorId = itemId;
-        case DesktopClick.toggle:
-          selectionAnchorId = toggleOrderedSelection(
-            selected: selectedIds,
-            target: itemId,
-          );
-        case DesktopClick.extend:
-          // The range replaces the selection and keeps its anchor, as in
-          // Finder and Explorer.
-          final anchor = selectionAnchorId;
-          selectedIds.clear();
-          addOrderedSelectionRange(
-            selected: selectedIds,
-            visibleItems: orderedIds,
-            target: itemId,
-            anchor: anchor,
-          );
-          selectionAnchorId = anchor ?? itemId;
-      }
+      selectionAnchorId = applyDesktopClickTo(
+        selectedIds,
+        target: itemId,
+        kind: kind,
+        orderedIds: orderedIds,
+        anchor: selectionAnchorId,
+      );
       isSelectionMode = selectedIds.isNotEmpty;
     });
   }

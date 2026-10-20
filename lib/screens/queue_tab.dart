@@ -94,6 +94,12 @@ import 'package:mornye/widgets/selection_bottom_bar.dart';
 import 'package:mornye/widgets/smoothed_progress.dart';
 import 'package:mornye/widgets/scroll_edge_fade.dart';
 import 'package:mornye/widgets/two_finger_pinch_listener.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/hover_play_button.dart';
+import 'package:mornye/widgets/desktop/library_track_menu.dart';
+import 'package:mornye/widgets/desktop/track_table.dart';
 
 part 'queue_tab_helpers.dart';
 part 'queue_tab_widgets.dart';
@@ -772,7 +778,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
       });
     }
 
-    return PopScope(
+    final page = PopScope(
       canPop: !_isSelectionMode && !_isPlaylistSelectionMode,
       onPopInvokedWithResult: (didPop, result) {
         if (!didPop) {
@@ -1000,6 +1006,31 @@ class _QueueTabState extends ConsumerState<QueueTab> {
           ), // ScrollConfiguration
         ],
       ),
+    );
+    return DesktopListScope(
+      onSelectAll: selectionItems.isEmpty
+          ? null
+          : () {
+              _applyDesktopClick(
+                selectionItems.first.id,
+                DesktopClick.replace,
+                const [],
+              );
+              _selectAll(selectionItems);
+            },
+      onClearSelection: _isPlaylistSelectionMode
+          ? _exitPlaylistSelectionMode
+          : _isSelectionMode
+          ? _exitSelectionMode
+          : null,
+      onDelete: _isSelectionMode ? () => _deleteSelected(selectionItems) : null,
+      onActivate: () {
+        final anchor = selectionItems
+            .where((item) => item.id == _selectionAnchorId)
+            .firstOrNull;
+        if (anchor != null) _playLibraryItem(anchor, selectionItems);
+      },
+      child: page,
     );
   }
 

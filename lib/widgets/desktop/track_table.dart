@@ -9,6 +9,9 @@ import 'package:mornye/widgets/desktop/desktop_selection.dart';
 /// A column of a [SliverTrackTable], in display order.
 enum TrackTableColumn { number, title, artist, album, quality, duration }
 
+/// The column a [SliverTrackTable] is sorted by, and its direction.
+typedef TrackTableSort = ({TrackTableColumn column, bool ascending});
+
 /// One song in a [SliverTrackTable]. Plain values drive sorting; the widgets
 /// only decorate the row.
 class TrackTableRow {
@@ -54,6 +57,10 @@ class TrackTableRow {
 /// range in the shown order, a double click runs [onActivate], and a
 /// right-click runs [onContextMenu]. Wrap the screen in a [DesktopListScope]
 /// for the keyboard.
+///
+/// Lists sorted by their source, such as the paged Library, pass [onSort]:
+/// the table then shows [sort] and leaves [rows] in the given order, and only
+/// [sortableColumns] take header clicks.
 class SliverTrackTable extends StatefulWidget {
   const SliverTrackTable({
     super.key,
@@ -63,6 +70,9 @@ class SliverTrackTable extends StatefulWidget {
     required this.onSelect,
     required this.onActivate,
     this.onContextMenu,
+    this.sort,
+    this.onSort,
+    this.sortableColumns,
   });
 
   final List<TrackTableRow> rows;
@@ -80,36 +90,53 @@ class SliverTrackTable extends StatefulWidget {
   /// Opens the row's menu at a global position.
   final void Function(String id, Offset position)? onContextMenu;
 
+  /// The sort shown when [onSort] is set; null is the source's own order.
+  final TrackTableSort? sort;
+
+  /// Asks the source to sort by the next state of a clicked header, null
+  /// when a third click restores the source's own order.
+  final ValueChanged<TrackTableSort?>? onSort;
+
+  /// Columns whose headers sort; all of them when null.
+  final Set<TrackTableColumn>? sortableColumns;
+
   @override
   State<SliverTrackTable> createState() => _SliverTrackTableState();
 }
 
 class _SliverTrackTableState extends State<SliverTrackTable> {
-  TrackTableColumn? _sortColumn;
-  bool _ascending = true;
+  TrackTableSort? _localSort;
+
+  TrackTableSort? get _sort => widget.onSort == null ? _localSort : widget.sort;
 
   void _sortBy(TrackTableColumn column) {
-    setState(() {
-      if (_sortColumn != column) {
-        _sortColumn = column;
-        _ascending = true;
-      } else if (_ascending) {
-        _ascending = false;
-      } else {
-        _sortColumn = null;
-      }
-    });
+    final current = _sort;
+    final TrackTableSort? next;
+    if (current?.column != column) {
+      next = (column: column, ascending: true);
+    } else if (current!.ascending) {
+      next = (column: column, ascending: false);
+    } else {
+      next = null;
+    }
+    final onSort = widget.onSort;
+    if (onSort != null) {
+      onSort(next);
+    } else {
+      setState(() => _localSort = next);
+    }
   }
 
   List<TrackTableRow> get _sortedRows {
-    final column = _sortColumn;
-    if (column == null) return widget.rows;
+    final sort = _localSort;
+    if (widget.onSort != null || sort == null) return widget.rows;
+    final (:column, :ascending) = sort;
     final indexed = widget.rows.indexed.toList();
     indexed.sort((a, b) {
       final order = compareTrackTableRows(a.$2, b.$2, column);
       // Equal keys keep their original order in both directions.
       if (order == 0) return a.$1.compareTo(b.$1);
-      return _ascending ? order : -order;
+      return ascending ? order : -order;
     });
     return [for (final entry in indexed) entry.$2];
   }
@@ -117,6 +144,7 @@ class _SliverTrackTableState extends State<SliverTrackTable> {
   @override
   Widget build(BuildContext context) {
     final rows = _sortedRows;
+    final sort = _sort;
     final orderedIds = [for (final row in rows) row.id];
     final hasTrailing = rows.any((row) => row.trailing != null);
     return SliverMainAxisGroup(
@@ -127,8 +155,9 @@ class _SliverTrackTableState extends State<SliverTrackTable> {
             height: _TrackTableHeader.heightFor(context),
             child: _TrackTableHeader(
               columns: widget.columns,
-              sortColumn: _sortColumn,
-              ascending: _ascending,
+              sortColumn: sort?.column,
+              ascending: sort?.ascending ?? true,
+              sortableColumns: widget.sortableColumns,
               hasTrailing: hasTrailing,
               onSort: _sortBy,
             ),
@@ -289,6 +318,7 @@ class _TrackTableHeader extends StatelessWidget {
     required this.columns,
     required this.sortColumn,
     required this.ascending,
+    required this.sortableColumns,
     required this.hasTrailing,
     required this.onSort,
   });
@@ -296,6 +326,7 @@ class _TrackTableHeader extends StatelessWidget {
   final List<TrackTableColumn> columns;
   final TrackTableColumn? sortColumn;
   final bool ascending;
+  final Set<TrackTableColumn>? sortableColumns;
   final bool hasTrailing;
   final ValueChanged<TrackTableColumn> onSort;
 
@@ -338,17 +369,18 @@ class _TrackTableHeader extends StatelessWidget {
         size: 14,
         color: colorScheme.onSurface,
       );
+      final sortable = sortableColumns?.contains(column) ?? true;
       return Semantics(
-        button: true,
+        button: sortable,
         label: sorted
             ? (ascending
                   ? context.l10n.desktopTableSortedAscending(label)
                   : context.l10n.desktopTableSortedDescending(label))
             : label,
-        onTap: () => onSort(column),
+        onTap: sortable ? () => onSort(column) : null,
         excludeSemantics: true,
         child: InkWell(
-          onTap: () => onSort(column),
+          onTap: sortable ? () => onSort(column) : null,
           borderRadius: BorderRadius.circular(6),
           child: SizedBox(
             height: heightFor(context),
