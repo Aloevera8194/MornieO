@@ -149,12 +149,14 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Play next'), findsNothing);
 
-      // A double click plays the row.
+      // A click plays the row, as a tap does on a phone, and the second
+      // click of a double click does not play it again.
       await _click(tester, find.text('Alpha'));
       await tester.pump();
       await _click(tester, find.text('Alpha'));
       await tester.pumpAndSettle();
       expect(playback.started, ['2']);
+      expect(find.text('Play next'), findsNothing);
     });
 
     testWidgets('desktop album header and rows are compact (mornye: $mornye)', (

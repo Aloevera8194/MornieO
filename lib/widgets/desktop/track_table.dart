@@ -54,9 +54,9 @@ class TrackTableRow {
 ///
 /// Clicking a header sorts by that column, again reverses the order, and a
 /// third click restores the original order. Rows follow the desktop list
-/// gestures: a click selects, Cmd/Ctrl-click toggles, Shift-click selects a
-/// range in the shown order, a double click runs [onActivate], and a
-/// right-click runs [onContextMenu]. Wrap the screen in a [DesktopListScope]
+/// gestures: a click runs [onActivate], Cmd/Ctrl-click toggles, Shift-click
+/// selects a range in the shown order, and a right-click runs
+/// [onContextMenu]. Wrap the screen in a [DesktopListScope]
 /// for the keyboard.
 ///
 /// Lists sorted by their source, such as the paged Library, pass [onSort]:

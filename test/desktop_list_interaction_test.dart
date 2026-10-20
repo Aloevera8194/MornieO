@@ -278,28 +278,33 @@ void main() {
       );
     });
 
-    testWidgets('click selects, modifier clicks toggle and extend', (
+    testWidgets('click activates, modifier clicks toggle and extend', (
       tester,
     ) async {
-      await tester.pumpWidget(_app(const _TableHost(rows: _rows)));
+      final activated = <String>[];
+      await tester.pumpWidget(
+        _app(_TableHost(rows: _rows, onActivate: activated.add)),
+      );
       final state = tester.state<_TableHostState>(find.byType(_TableHost));
 
+      // A plain click acts like a tap on a phone row and selects nothing.
       await _click(tester, find.text('Bravo'));
-      expect(state.selectedIds, {'b'});
-      expect(state.isSelectionMode, isTrue);
-
-      await _click(tester, find.text('Alpha'));
-      expect(state.selectedIds, {'a'});
+      expect(activated, ['b']);
+      expect(state.selectedIds, isEmpty);
+      expect(state.isSelectionMode, isFalse);
 
       final toggle = defaultTargetPlatform == TargetPlatform.macOS
           ? LogicalKeyboardKey.metaLeft
           : LogicalKeyboardKey.controlLeft;
       await tester.sendKeyDownEvent(toggle);
+      await _click(tester, find.text('Alpha'));
       await _click(tester, find.text('Charlie'));
       expect(state.selectedIds, {'a', 'c'});
+      expect(state.isSelectionMode, isTrue);
       await _click(tester, find.text('Alpha'));
       await tester.sendKeyUpEvent(toggle);
       expect(state.selectedIds, {'c'});
+      expect(activated, ['b']);
 
       // Shift extends from the anchor (Charlie) to Bravo in shown order.
       await tester.sendKeyDownEvent(LogicalKeyboardKey.shiftLeft);
@@ -308,9 +313,8 @@ void main() {
       expect(state.selectedIds, {'c', 'a', 'b'});
     });
 
-    testWidgets('double click and Enter activate, Escape clears', (
-      tester,
-    ) async {
+    testWidgets('a double click activates once, Enter activates, Escape '
+        'clears', (tester) async {
       final activated = <String>[];
       await tester.pumpWidget(
         _app(_TableHost(rows: _rows, onActivate: activated.add)),
@@ -321,8 +325,14 @@ void main() {
       await _click(tester, find.text('Alpha'));
       expect(activated, ['a']);
 
+      final toggle = defaultTargetPlatform == TargetPlatform.macOS
+          ? LogicalKeyboardKey.metaLeft
+          : LogicalKeyboardKey.controlLeft;
+      await tester.sendKeyDownEvent(toggle);
+      await _click(tester, find.text('Bravo'));
+      await tester.sendKeyUpEvent(toggle);
       await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-      expect(activated, ['a', 'a']);
+      expect(activated, ['a', 'b']);
 
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pump();

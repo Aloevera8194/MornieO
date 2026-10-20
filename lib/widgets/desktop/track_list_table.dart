@@ -11,8 +11,8 @@ import 'package:mornye/widgets/track_list_tile.dart';
 
 /// The desktop song table for album, playlist and folder [Track] lists, in
 /// place of
-/// [TrackListTile] rows. Right-click opens the track options; double click
-/// and Enter run [onActivate], which should match a tap on a mobile row (see
+/// [TrackListTile] rows. Right-click opens the track options; a click and
+/// Enter run [onActivate], which should match a tap on a mobile row (see
 /// [TrackListTile.activate]).
 class TrackListTable extends ConsumerWidget {
   const TrackListTable({

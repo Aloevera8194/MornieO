@@ -558,7 +558,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
     );
   }
 
-  /// The desktop song table: double click plays, right-click opens the
+  /// The desktop song table: a click plays, right-click opens the
   /// selection's actions.
   Widget _buildDesktopTable(
     BuildContext context,

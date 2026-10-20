@@ -102,20 +102,22 @@ abstract final class DesktopDoubleClick {
   }
 }
 
-/// Applies a desktop click on a row: a plain double click runs [activate],
-/// any other click runs [select] with the click kind. Returns the click kind,
-/// or null for an activation.
+/// Applies a desktop click on a row: a plain click runs [activate], as a tap
+/// does on a phone, and Cmd/Ctrl-click or Shift-click runs [select] with the
+/// click kind. The second click of a double click does nothing, so it never
+/// activates the row twice. Returns the click kind, or null for a plain
+/// click.
 DesktopClick? handleDesktopRowClick(
   Object target, {
   required ValueChanged<DesktopClick> select,
   required VoidCallback activate,
 }) {
   final kind = desktopClickKind();
-  if (kind == DesktopClick.replace && DesktopDoubleClick.register(target)) {
-    activate();
+  if (kind == DesktopClick.replace) {
+    if (!DesktopDoubleClick.register(target)) activate();
     return null;
   }
-  if (kind != DesktopClick.replace) DesktopDoubleClick.reset();
+  DesktopDoubleClick.reset();
   select(kind);
   return kind;
 }
