@@ -74,7 +74,17 @@ List<Widget> desktopDetailHeaderSlivers(
       0.0,
       double.infinity,
     );
-    final radius = circularArtwork ? side / 2 : (mornye ? 8.0 : 20.0);
+    final radius = circularArtwork ? side / 2 : (mornye ? 12.0 : 20.0);
+    // Mornye draws Apple's continuous corner, as Music does on its covers.
+    final continuous = mornye && !circularArtwork;
+    final corners = BorderRadius.circular(radius);
+    final shadows = [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.18),
+        blurRadius: 18,
+        offset: const Offset(0, 6),
+      ),
+    ];
     final text = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -105,20 +115,21 @@ List<Widget> desktopDetailHeaderSlivers(
           Container(
             width: side,
             height: side,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(radius),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.18),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(radius),
-              child: artwork(context, side),
-            ),
+            decoration: continuous
+                ? ShapeDecoration(
+                    shape: RoundedSuperellipseBorder(borderRadius: corners),
+                    shadows: shadows,
+                  )
+                : BoxDecoration(borderRadius: corners, boxShadow: shadows),
+            child: continuous
+                ? ClipRSuperellipse(
+                    borderRadius: corners,
+                    child: artwork(context, side),
+                  )
+                : ClipRRect(
+                    borderRadius: corners,
+                    child: artwork(context, side),
+                  ),
           ),
           const SizedBox(width: gap),
           Expanded(
