@@ -9,6 +9,7 @@ import 'package:mornye/models/extension.dart';
 import 'package:mornye/models/settings.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/extension_storage_service.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/providers/settings_provider.dart';
 
@@ -210,9 +211,10 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
       }
       await loadProviderPriority();
       await loadMetadataProviderPriority();
-      if (Platform.isAndroid) {
+      if (Platform.isAndroid || isDesktopPlatform) {
         // Exchange a cold-start browser callback before restored downloads can
         // bootstrap a replacement challenge and invalidate its original state.
+        // Desktop queues a launch URL in the backend before this point.
         await PlatformBridge.processPendingExtensionCallbacks();
       }
       state = state.copyWith(

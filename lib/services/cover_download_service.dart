@@ -37,7 +37,7 @@ class CoverDownloadService {
     try {
       final download = await PlatformBridge.downloadCoverToFile(
         normalizedUrl,
-        Platform.isAndroid || Platform.isIOS ? '' : tempPath,
+        PlatformBridge.supportsCoreBackend ? '' : tempPath,
       );
       final error = download['error']?.toString().trim() ?? '';
       if (error.isNotEmpty) throw StateError(error);
