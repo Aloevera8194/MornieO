@@ -578,10 +578,16 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     final groups = _groups(context);
     final destinations = [for (final group in groups) ...group.destinations];
 
-    Widget categoryRow(_Destination destination) {
+    Widget categoryRow(
+      _Destination destination, {
+      bool first = true,
+      bool last = true,
+    }) {
       final index = destinations.indexOf(destination);
       return _CategoryRow(
         key: ValueKey('settings-category:${destination.title}'),
+        first: first,
+        last: last,
         leading: _CategoryIcon(
           icon: destination.icon,
           color: destination.iconColor,
@@ -640,7 +646,12 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     if (query.isEmpty) {
       for (final group in groups) {
         children.add(SizedBox(height: mornye ? 16 : 12));
-        children.addAll(group.destinations.map(categoryRow));
+        final last = group.destinations.length - 1;
+        for (final (index, destination) in group.destinations.indexed) {
+          children.add(
+            categoryRow(destination, first: index == 0, last: index == last),
+          );
+        }
       }
     } else {
       final matches = <_SearchResult>[
@@ -664,10 +675,14 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           ),
         );
       }
-      for (final result in matches) {
+      for (final (position, result) in matches.indexed) {
+        final first = position == 0;
+        final last = position == matches.length - 1;
         final entry = result.entry;
         if (entry == null) {
-          children.add(categoryRow(result.destination));
+          children.add(
+            categoryRow(result.destination, first: first, last: last),
+          );
           continue;
         }
         final index = destinations.indexOf(result.destination);
@@ -676,6 +691,8 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             key: ValueKey(
               'settings-search:${result.destination.title}:${entry.title}',
             ),
+            first: first,
+            last: last,
             leading: _CategoryIcon(
               icon: entry.icon,
               color: result.destination.iconColor,
@@ -882,9 +899,10 @@ class _DonationGoalProgress extends StatelessWidget {
   }
 }
 
-/// A category in the desktop settings list. Material marks the selected
-/// row with a `secondaryContainer` pill, as M3 lists and navigation do;
-/// Mornye fills it with the accent color like the System Settings sidebar.
+/// A category in the desktop settings list. Material lays each group out as
+/// an expressive connected list, like the settings pages beside it, and
+/// marks the selected row with a fully rounded `secondaryContainer` tile;
+/// Mornye fills it with a quiet gray like the System Settings sidebar.
 class _CategoryRow extends StatelessWidget {
   const _CategoryRow({
     super.key,
@@ -893,6 +911,8 @@ class _CategoryRow extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.subtitle,
+    this.first = true,
+    this.last = true,
   });
 
   final Widget leading;
@@ -901,12 +921,20 @@ class _CategoryRow extends StatelessWidget {
   final bool selected;
   final VoidCallback? onTap;
 
+  /// The row's place in its Material connected group.
+  final bool first;
+  final bool last;
+
   @override
   Widget build(BuildContext context) {
     final mornye = context.isMornye;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final radius = BorderRadius.circular(mornye ? 8 : 28);
+    final radius = mornye
+        ? BorderRadius.circular(8)
+        : selected
+        ? BorderRadius.circular(context.tokens.radiusCard)
+        : connectedRowRadius(context, first: first, last: last);
     // Mornye selects with the app sidebar's quiet gray fill, so the colored
     // category tiles keep their own color.
     final dark = colorScheme.brightness == Brightness.dark;
@@ -920,14 +948,14 @@ class _CategoryRow extends StatelessWidget {
         ? foreground.withValues(alpha: 0.8)
         : colorScheme.onSurfaceVariant;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
+      padding: EdgeInsets.only(bottom: mornye || !last ? 2 : 0),
       child: Semantics(
         button: true,
         selected: selected,
         child: Material(
           color: selected
               ? (mornye ? mornyeFill : colorScheme.secondaryContainer)
-              : Colors.transparent,
+              : (mornye ? Colors.transparent : settingsGroupColor(context)),
           borderRadius: radius,
           child: InkWell(
             borderRadius: radius,
