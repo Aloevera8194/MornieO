@@ -304,6 +304,47 @@ class NetworkStorageService {
     pathSegments: networkPath(path).split('/'),
   ).toString();
 
+  /// Identity of a remote file across saved connections to the same NAS root.
+  /// Resolve relative paths before comparing; connection IDs are aliases, not
+  /// physical storage identities. Credentials never leave this service.
+  static String? physicalFileKey(
+    String source,
+    Map<String, NetworkConnection> connections,
+  ) {
+    final uri = Uri.tryParse(source);
+    if (uri == null ||
+        uri.scheme != 'network' ||
+        uri.userInfo.isNotEmpty ||
+        uri.hasQuery ||
+        uri.hasFragment) {
+      return null;
+    }
+    final connection = connections[uri.host];
+    if (connection == null) return null;
+    try {
+      connection.validate();
+      final target = networkTarget(
+        connection,
+        networkPath(uri.pathSegments.join('/')),
+      );
+      // Accounts can expose different virtual trees at an identical address.
+      // Keep them separate and preserve path case, including on WebDAV.
+      final identity = jsonEncode([
+        connection.protocol.name,
+        target.host,
+        connection.protocol == NetworkProtocol.smb && !target.hasPort
+            ? 445
+            : target.port,
+        connection.username,
+        connection.domain,
+        target.pathSegments,
+      ]);
+      return 'network-file:${sha256.convert(utf8.encode(identity))}';
+    } on FormatException {
+      return null;
+    }
+  }
+
   Future<String> resolve(String source) async {
     final uri = Uri.parse(source);
     if (uri.scheme != 'network' ||
