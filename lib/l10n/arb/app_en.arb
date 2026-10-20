@@ -1592,6 +1592,30 @@
   "@updateDontRemind": {
     "description": "Update button - skip this version"
   },
+  "updateViewRelease": "View Release",
+  "@updateViewRelease": {
+    "description": "Update button - open the release page when this install cannot update itself (deb, Flatpak, no matching package)"
+  },
+  "updateStartingInstaller": "Starting the installer...",
+  "@updateStartingInstaller": {
+    "description": "Update status on Windows - the downloaded installer is starting and the app will close"
+  },
+  "updateMacInstallHint": "The disk image is open in Finder. Quit Mornye, then drag Mornye from the disk image to Applications and replace the old copy.",
+  "@updateMacInstallHint": {
+    "description": "Update instructions on macOS after the downloaded disk image opens"
+  },
+  "updateQuitApp": "Quit Mornye",
+  "@updateQuitApp": {
+    "description": "Update button on macOS - quit the app so the new version can replace it"
+  },
+  "updateReadyToRestart": "The update is installed. Restart Mornye to use it.",
+  "@updateReadyToRestart": {
+    "description": "Update status on Linux after the AppImage was replaced"
+  },
+  "updateRestartNow": "Restart Now",
+  "@updateRestartNow": {
+    "description": "Update button on Linux - restart the app after the AppImage was replaced"
+  },
   "providerPriorityTitle": "Provider Priority",
   "@providerPriorityTitle": {
     "description": "Provider priority page title"
