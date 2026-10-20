@@ -540,16 +540,20 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         slivers: [
           AppSliverHeader.page(title: context.l10n.libraryDownloads),
           _buildQueueHeaderSliver(context, colors),
-          SliverList.builder(
-            itemCount: ids.length,
-            itemBuilder: (context, index) => TrackCardSegment.at(
-              key: ValueKey(ids[index]),
-              index: index,
-              count: ids.length,
-              child: _QueueItemSliverRow(
-                itemId: ids[index],
-                colorScheme: colors,
-                itemBuilder: _buildQueueItem,
+          // The rows share the header's centered column on wide windows.
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+            sliver: SliverList.builder(
+              itemCount: ids.length,
+              itemBuilder: (context, index) => TrackCardSegment.at(
+                key: ValueKey(ids[index]),
+                index: index,
+                count: ids.length,
+                child: _QueueItemSliverRow(
+                  itemId: ids[index],
+                  colorScheme: colors,
+                  itemBuilder: _buildQueueItem,
+                ),
               ),
             ),
           ),
