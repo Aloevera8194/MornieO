@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart'
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/theme/mornye_icons.dart';
@@ -24,6 +25,8 @@ class AppSheetHandle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
+    // Desktop shows sheets as dialogs, which nothing drags.
+    if (isDesktopPlatform) return SizedBox(height: tokens.gapMd);
     return ExcludeSemantics(
       child: Center(
         child: Container(
@@ -309,6 +312,9 @@ Future<T?> showAppScrollableBottomSheet<T>({
 );
 
 /// Adaptive surface for sheets which already supply their own header/layout.
+///
+/// Desktop windows present the sheet as a centered dialog instead
+/// ([showAppSheetDialog]); there is no edge to slide from or drag to.
 Future<T?> showAppModalBottomSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -321,6 +327,16 @@ Future<T?> showAppModalBottomSheet<T>({
   BoxConstraints? constraints,
   Color? backgroundColor,
 }) {
+  if (isDesktopPlatform) {
+    return showAppSheetDialog<T>(
+      context: context,
+      builder: builder,
+      isScrollControlled: isScrollControlled,
+      isDismissible: isDismissible,
+      topInset: showDragHandle == true,
+      backgroundColor: backgroundColor,
+    );
+  }
   final mornye = context.isMornye;
   return showModalBottomSheet<T>(
     context: context,
@@ -341,6 +357,107 @@ Future<T?> showAppModalBottomSheet<T>({
         ? MornyeGlassPanel.overlay(child: Builder(builder: builder))
         : builder(context),
   );
+}
+
+/// Widest a sheet presented as a desktop dialog grows.
+const double appSheetDialogMaxWidth = 560;
+
+/// Presents sheet content as a centered modal dialog, as desktop windows do
+/// with every sheet that is not an action menu. The dialog keeps the sheet's
+/// width cap and a height cap (85% of the window for scroll-controlled
+/// sheets, 60% otherwise), so content built for a sheet, including a
+/// [DraggableScrollableSheet], lays out unchanged.
+///
+/// Mornye draws the dialog on overlay glass unless [mornyeGlass] is false
+/// for content that brings its own; Material uses `surfaceContainerHigh`.
+/// [topInset] replaces the space of a drag handle the sheet would show.
+Future<T?> showAppSheetDialog<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool isScrollControlled = false,
+  bool isDismissible = true,
+  bool topInset = false,
+  bool mornyeGlass = true,
+  Color? backgroundColor,
+}) {
+  final mornye = context.isMornye;
+  return showDialog<T>(
+    context: context,
+    barrierDismissible: isDismissible,
+    barrierColor: mornye
+        ? CupertinoDynamicColor.resolve(kCupertinoModalBarrierColor, context)
+        : null,
+    builder: (dialogContext) => AppSheetDialog(
+      isScrollControlled: isScrollControlled,
+      topInset: topInset,
+      mornyeGlass: mornyeGlass,
+      backgroundColor: backgroundColor,
+      child: Builder(builder: builder),
+    ),
+  );
+}
+
+/// The dialog surface of [showAppSheetDialog].
+class AppSheetDialog extends StatelessWidget {
+  const AppSheetDialog({
+    super.key,
+    required this.child,
+    this.isScrollControlled = false,
+    this.topInset = false,
+    this.mornyeGlass = true,
+    this.backgroundColor,
+  });
+
+  final Widget child;
+  final bool isScrollControlled;
+  final bool topInset;
+  final bool mornyeGlass;
+  final Color? backgroundColor;
+
+  static const double _radius = 28;
+  static const double _margin = 24;
+
+  @override
+  Widget build(BuildContext context) {
+    final mornye = context.isMornye;
+    final size = MediaQuery.sizeOf(context);
+    final width = (size.width - _margin * 2).clamp(0.0, appSheetDialogMaxWidth);
+    final maxHeight =
+        (size.height - _margin * 2) * (isScrollControlled ? 0.85 : 0.6);
+    Widget content = MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      removeBottom: true,
+      child: Padding(
+        padding: EdgeInsets.only(top: topInset ? context.tokens.gapLg : 0),
+        child: child,
+      ),
+    );
+    if (mornye && mornyeGlass) {
+      content = MornyeGlassPanel.overlay(radius: _radius, child: content);
+    }
+    return Dialog(
+      key: const ValueKey('app-sheet-dialog'),
+      insetPadding: const EdgeInsets.all(_margin),
+      backgroundColor: mornye
+          ? Colors.transparent
+          : backgroundColor ??
+                Theme.of(context).colorScheme.surfaceContainerHigh,
+      surfaceTintColor: Colors.transparent,
+      elevation: mornye ? 0 : null,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(_radius),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(
+        width: width,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: maxHeight),
+          child: content,
+        ),
+      ),
+    );
+  }
 }
 
 /// Flat rows sit directly on a sheet's glass; Material keeps its ListTile.

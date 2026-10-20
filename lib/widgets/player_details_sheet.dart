@@ -4,7 +4,9 @@ import 'package:mornye/controllers/player_metadata_controller.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/isrc_utils.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/app_content_card.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/mornye_player_details_sheet.dart';
@@ -19,6 +21,31 @@ Future<void> showPlayerDetailsSheet(
   final mornye = context.isMornye;
   final fallback = metadata.detailsSnapshot(mediaItem);
   final metadataFuture = metadata.readDetails(mediaItem);
+  if (isDesktopPlatform) {
+    // The Mornye details already draw their own glass.
+    return showAppSheetDialog<void>(
+      context: context,
+      isScrollControlled: true,
+      topInset: !mornye,
+      mornyeGlass: false,
+      builder: (context) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 1,
+        minChildSize: 1,
+        builder: (context, scrollController) =>
+            FutureBuilder<Map<String, dynamic>>(
+              future: metadataFuture,
+              initialData: fallback,
+              builder: (context, snapshot) => _MetadataList(
+                meta: snapshot.data ?? fallback,
+                colorScheme: colorScheme,
+                scrollController: scrollController,
+                mediaItem: mediaItem,
+              ),
+            ),
+      ),
+    );
+  }
   return showModalBottomSheet<void>(
     context: context,
     sheetAnimationStyle: AppMotion.surfaceEntrance(context),
