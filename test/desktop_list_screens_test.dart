@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,6 +17,7 @@ import 'package:mornye/widgets/album_track_tile.dart';
 import 'package:mornye/widgets/desktop/desktop_selection.dart';
 import 'package:mornye/widgets/desktop/track_table.dart';
 import 'package:mornye/widgets/mornye_context_menu.dart';
+import 'package:mornye/widgets/selection_bottom_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class _Player extends MusicPlayerController {
@@ -157,6 +159,34 @@ void main() {
       await tester.pumpAndSettle();
       expect(playback.started, ['2']);
       expect(find.text('Play next'), findsNothing);
+    });
+
+    testWidgets('desktop selection bar stays bounded (mornye: $mornye)', (
+      tester,
+    ) async {
+      debugDesktopPlatformOverride = true;
+      await _pumpAlbum(tester, mornye: mornye);
+
+      final toggle = defaultTargetPlatform == TargetPlatform.macOS
+          ? LogicalKeyboardKey.metaLeft
+          : LogicalKeyboardKey.controlLeft;
+      await tester.sendKeyDownEvent(toggle);
+      await _click(tester, find.text('Alpha'));
+      await tester.sendKeyUpEvent(toggle);
+      await tester.pumpAndSettle();
+
+      // The bar's ends sit inside a 640pt column centered on the page.
+      final close = tester.getRect(
+        find.descendant(
+          of: find.byType(SelectionBottomBar),
+          matching: find.byTooltip(
+            const DefaultMaterialLocalizations().closeButtonTooltip,
+          ),
+        ),
+      );
+      final selectAll = tester.getRect(find.text('Select All'));
+      expect(close.left, greaterThanOrEqualTo(1280 / 2 - 320));
+      expect(selectAll.right, lessThanOrEqualTo(1280 / 2 + 320));
     });
 
     testWidgets('desktop album header and rows are compact (mornye: $mornye)', (

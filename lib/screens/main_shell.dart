@@ -958,19 +958,18 @@ class _MainShellState extends ConsumerState<MainShell>
         repoUpdatesCount: repoUpdatesCount,
       );
       return DownloadQueueFeedback(
-        child: SelectionOverlayHost(
-          child: Scaffold(
-            body: DesktopShellLayout(
-              destinations: destinations,
-              selected: selectedTab,
-              onSelected: _onShellTabRequested,
-              libraryLinks: mornye
-                  ? _desktopLibraryLinks(queueCount: queueState)
-                  : const [],
-              onOpenLibraryLink: mornye ? _openDesktopLibraryLink : null,
-              onOpenProfile: mornye ? _openDesktopProfile : null,
-              body: pageView,
-            ),
+        child: Scaffold(
+          body: DesktopShellLayout(
+            destinations: destinations,
+            selected: selectedTab,
+            onSelected: _onShellTabRequested,
+            libraryLinks: mornye
+                ? _desktopLibraryLinks(queueCount: queueState)
+                : const [],
+            onOpenLibraryLink: mornye ? _openDesktopLibraryLink : null,
+            onOpenProfile: mornye ? _openDesktopProfile : null,
+            // The selection bar floats over the pages, not the sidebar.
+            body: SelectionOverlayHost(child: pageView),
           ),
         ),
       );

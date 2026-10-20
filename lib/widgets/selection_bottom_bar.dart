@@ -6,6 +6,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/detail_header.dart'
+    show desktopDetailBottomInset;
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/expressive_button.dart';
@@ -346,7 +349,7 @@ class SelectionBottomBar extends StatelessWidget {
       ),
     );
     const floatingMargin = 12.0;
-    return _SelectionPanelDrag(
+    final panel = _SelectionPanelDrag(
       onClose: onClose,
       header: header,
       bottomPadding: bottomPadding,
@@ -397,6 +400,22 @@ class SelectionBottomBar extends StatelessWidget {
           ),
         );
       },
+    );
+    if (!isDesktopPlatform) return panel;
+    // Desktop: a bounded toolbar over the page, clear of Mornye's floating
+    // player, rather than a sheet across the whole pane.
+    return Align(
+      alignment: Alignment.bottomCenter,
+      heightFactor: 1,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 640),
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: context.isMornye ? desktopDetailBottomInset : 0,
+          ),
+          child: panel,
+        ),
+      ),
     );
   }
 }
