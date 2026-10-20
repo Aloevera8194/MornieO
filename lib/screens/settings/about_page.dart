@@ -75,12 +75,6 @@ class AboutPage extends StatelessWidget {
                     showDivider: true,
                   ),
                   _ContributorItem(
-                    name: AppInfo.originalAuthor,
-                    description: context.l10n.aboutOriginalCreator,
-                    githubUsername: AppInfo.originalAuthor,
-                    showDivider: true,
-                  ),
-                  _ContributorItem(
                     name: 'Amonoman',
                     description: context.l10n.aboutLogoArtist,
                     githubUsername: 'Amonoman',
@@ -179,13 +173,6 @@ class AboutPage extends StatelessWidget {
                     title: context.l10n.aboutMobileSource,
                     subtitle: 'github.com/${AppInfo.githubRepo}',
                     onTap: () => _launchUrl(AppInfo.githubUrl),
-                    showDivider: true,
-                  ),
-                  _AboutSettingsItem(
-                    icon: Icons.computer,
-                    title: context.l10n.aboutPCSource,
-                    subtitle: 'github.com/${AppInfo.originalAuthor}/SpotiFLAC',
-                    onTap: () => _launchUrl(AppInfo.originalGithubUrl),
                     showDivider: true,
                   ),
                   _AboutSettingsItem(

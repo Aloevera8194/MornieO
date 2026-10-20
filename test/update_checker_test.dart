@@ -24,9 +24,9 @@ Map<String, Object?> release(String version) => {
   'assets': [
     for (final abi in ['arm32', 'arm64'])
       {
-        'name': 'SpotiFLAC-v$version-$abi.apk',
+        'name': 'Mornye-v$version-$abi.apk',
         'browser_download_url':
-            'https://example.test/SpotiFLAC-v$version-$abi.apk',
+            'https://example.test/Mornye-v$version-$abi.apk',
         'digest': 'sha256:${List.filled(64, 'a').join()}',
       },
   ],

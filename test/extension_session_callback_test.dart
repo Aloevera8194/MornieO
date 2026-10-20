@@ -4,7 +4,7 @@ import 'package:mornye/utils/extension_session_callback.dart';
 void main() {
   test('parses a signed-session callback without treating state as an id', () {
     final callback = parseExtensionSessionGrantCallback(
-      'spotiflac://session-grant?cb_version=v2grant&state=nonce_123&grant=gr_456',
+      'mornye://session-grant?cb_version=v2grant&state=nonce_123&grant=gr_456',
     );
 
     expect(callback, isNotNull);
@@ -14,7 +14,7 @@ void main() {
 
   test('extracts the expected state from a nested challenge callback', () {
     final callback = Uri(
-      scheme: 'spotiflac',
+      scheme: 'mornye',
       host: 'session-grant',
       queryParameters: const {'cb_version': 'v2grant', 'state': 'nonce_123'},
     );
@@ -27,14 +27,12 @@ void main() {
 
   test('rejects callbacks without both a grant and state', () {
     expect(
-      parseExtensionSessionGrantCallback(
-        'spotiflac://session-grant?grant=gr_456',
-      ),
+      parseExtensionSessionGrantCallback('mornye://session-grant?grant=gr_456'),
       isNull,
     );
     expect(
       parseExtensionSessionGrantCallback(
-        'spotiflac://session-grant?state=nonce_123',
+        'mornye://session-grant?state=nonce_123',
       ),
       isNull,
     );

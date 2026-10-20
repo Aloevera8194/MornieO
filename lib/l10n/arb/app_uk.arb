@@ -503,10 +503,6 @@
   "@aboutMobileDeveloper": {
     "description": "Role description for mobile dev"
   },
-  "aboutOriginalCreator": "Творець оригінального SpotiFLAC",
-  "@aboutOriginalCreator": {
-    "description": "Role description for original creator"
-  },
   "aboutLogoArtist": "Талановитий художник, який створив чудовий логотип нашого додатку!",
   "@aboutLogoArtist": {
     "description": "Role description for logo artist"
@@ -526,10 +522,6 @@
   "aboutMobileSource": "Мобільний вихідний код",
   "@aboutMobileSource": {
     "description": "Link to mobile GitHub repo"
-  },
-  "aboutPCSource": "Вихідний код для ПК",
-  "@aboutPCSource": {
-    "description": "Link to PC GitHub repo"
   },
   "aboutReportIssue": "Повідомити про проблему",
   "@aboutReportIssue": {

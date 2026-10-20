@@ -484,10 +484,6 @@
   "@aboutMobileDeveloper": {
     "description": "Role description for mobile dev"
   },
-  "aboutOriginalCreator": "منشئ SpotiFLAC",
-  "@aboutOriginalCreator": {
-    "description": "Role description for original creator"
-  },
   "aboutLogoArtist": "الفنان الموهوب الذي أنشأ شعار التطبيق الجميل!",
   "@aboutLogoArtist": {
     "description": "Role description for logo artist"
@@ -507,10 +503,6 @@
   "aboutMobileSource": "كود مصدر برنامج الهاتف",
   "@aboutMobileSource": {
     "description": "Link to mobile GitHub repo"
-  },
-  "aboutPCSource": "كود مصدر برنامج الكمبيوتر",
-  "@aboutPCSource": {
-    "description": "Link to PC GitHub repo"
   },
   "aboutReportIssue": "الإبلاغ عن خطأ",
   "@aboutReportIssue": {

@@ -484,10 +484,6 @@
   "@aboutMobileDeveloper": {
     "description": "Role description for mobile dev"
   },
-  "aboutOriginalCreator": "Criador do SpotiFLAC original",
-  "@aboutOriginalCreator": {
-    "description": "Role description for original creator"
-  },
   "aboutLogoArtist": "O artista talentoso que criou o nosso lindo logotipo do aplicativo!",
   "@aboutLogoArtist": {
     "description": "Role description for logo artist"
@@ -507,10 +503,6 @@
   "aboutMobileSource": "Código-fonte do app móvel",
   "@aboutMobileSource": {
     "description": "Link to mobile GitHub repo"
-  },
-  "aboutPCSource": "Código-fonte do app desktop",
-  "@aboutPCSource": {
-    "description": "Link to PC GitHub repo"
   },
   "aboutReportIssue": "Reportar um problema",
   "@aboutReportIssue": {

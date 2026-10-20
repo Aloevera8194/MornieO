@@ -2,7 +2,7 @@ Pod::Spec.new do |s|
   s.name = 'mornye_discord'
   s.version = '0.1.0'
   s.summary = 'Playback presence through the Discord Social SDK.'
-  s.homepage = 'https://github.com/spotiflacapp/SpotiFLAC-Mobile'
+  s.homepage = 'https://mornye.com'
   s.license = { :type => 'MIT' }
   s.author = 'Mornye'
   s.source = { :path => '.' }

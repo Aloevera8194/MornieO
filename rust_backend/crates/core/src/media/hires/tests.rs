@@ -1,4 +1,4 @@
-//! Port of SpotiFLAC-Module-Version's tests/test_hires_check.py. Signals are
+//! Port of the Python reference checker's test_hires_check.py. Signals are
 //! synthesised rather than fixtured: a "fake Hi-Res" file is exactly a
 //! band-limited 44.1 kHz signal carried at a higher rate, which a few lines
 //! build more clearly than any committed binary could describe.

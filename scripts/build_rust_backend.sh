@@ -27,11 +27,6 @@ fi
 
 cd "$RUST_BACKEND_DIR"
 export CARGO_TARGET_DIR="$RUST_BACKEND_DIR/target"
-# Remove obsolete generated names so incremental builds stage only Mornye.
-rm -rf "$CARGO_TARGET_DIR/bindings/kotlin/com/spotiflac"
-rm -f "$CARGO_TARGET_DIR/bindings/swift/SpotiFLACBackend.swift" \
-  "$CARGO_TARGET_DIR/bindings/swift/SpotiFLACBackendFFI.h" \
-  "$CARGO_TARGET_DIR/bindings/swift/SpotiFLACBackendFFI.modulemap"
 # AES 0.9 detects ARM64 AES at runtime and retains the software fallback;
 # do not force target-feature=+aes on Android.
 
@@ -114,7 +109,6 @@ if [[ "$PLATFORM" == "android" ]]; then
       armv7-linux-androideabi) ABI="armeabi-v7a" ;;
     esac
     mkdir -p "$CARGO_TARGET_DIR/android/jniLibs/$ABI"
-    rm -f "$CARGO_TARGET_DIR/android/jniLibs/$ABI/libspotiflac_mobile.so"
     cp "$CARGO_TARGET_DIR/$target/release/libmornye_mobile.so" \
       "$CARGO_TARGET_DIR/android/jniLibs/$ABI/"
   done
@@ -132,10 +126,6 @@ elif [[ "$PLATFORM" == "ios" ]]; then
     cargo build --locked --release -p mornye-mobile --target "$target"
   done
   HEADERS_DIR="$CARGO_TARGET_DIR/ios/headers"
-  rm -rf "$CARGO_TARGET_DIR/ios/SpotiFLACBackendFFI.xcframework"
-  rm -f "$CARGO_TARGET_DIR/ios/SpotiFLACBackend.swift" \
-    "$CARGO_TARGET_DIR/ios/SpotiFLACBackend.podspec" \
-    "$HEADERS_DIR/SpotiFLACBackendFFI.h"
   FRAMEWORK_DIR="$CARGO_TARGET_DIR/ios/MornyeBackendFFI.xcframework"
   SIMULATOR_LIBRARY="$CARGO_TARGET_DIR/ios/simulator/libmornye_mobile.a"
   mkdir -p "$HEADERS_DIR" "$(dirname "$SIMULATOR_LIBRARY")"

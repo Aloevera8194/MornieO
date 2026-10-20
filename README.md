@@ -1,9 +1,9 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/readme/banner-readme-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/readme/banner-readme-light.svg">
-  <img alt="Mornye" src="assets/readme/banner-readme-light.svg" width="650" height="auto">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/brand/logo/svg/mornye-lockup-horizontal-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/brand/logo/svg/mornye-lockup-horizontal-light.svg">
+  <img alt="Mornye" src="assets/brand/logo/svg/mornye-lockup-horizontal-light.svg" width="650" height="auto">
 </picture>
 
 <p align="center">
@@ -199,7 +199,7 @@
       <p>
         Add metadata and lyrics sources from community extension
         repositories, then choose their priority. Building one? See the
-        <a href="https://spotiflac.zarz.moe/docs">extension documentation</a>.
+        <a href="https://mornye.com/docs">extension documentation</a>.
       </p>
       <p></p>
     </td>

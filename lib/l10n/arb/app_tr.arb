@@ -484,10 +484,6 @@
   "@aboutMobileDeveloper": {
     "description": "Role description for mobile dev"
   },
-  "aboutOriginalCreator": "Orijinal SpotiFLAC'ın kurucusu",
-  "@aboutOriginalCreator": {
-    "description": "Role description for original creator"
-  },
   "aboutLogoArtist": "Uygulama logomuzu yaratmış yetenekli sanatçımız!",
   "@aboutLogoArtist": {
     "description": "Role description for logo artist"
@@ -507,10 +503,6 @@
   "aboutMobileSource": "Mobil kaynak kodu",
   "@aboutMobileSource": {
     "description": "Link to mobile GitHub repo"
-  },
-  "aboutPCSource": "PC kaynak kodu",
-  "@aboutPCSource": {
-    "description": "Link to PC GitHub repo"
   },
   "aboutReportIssue": "Sorun bildir",
   "@aboutReportIssue": {

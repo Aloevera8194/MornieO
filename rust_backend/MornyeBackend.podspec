@@ -2,7 +2,7 @@ Pod::Spec.new do |spec|
   spec.name = 'MornyeBackend'
   spec.version = '0.1.0'
   spec.summary = 'Rust backend bindings for Mornye'
-  spec.homepage = 'https://github.com/spotiflacapp/SpotiFLAC-Mobile'
+  spec.homepage = 'https://mornye.com'
   spec.license = { :type => 'MIT', :file => 'LICENSE' }
   spec.author = { 'Mornye' => 'noreply@mornye.local' }
   spec.source = { :path => '.' }

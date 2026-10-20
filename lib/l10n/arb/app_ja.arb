@@ -484,10 +484,6 @@
   "@aboutMobileDeveloper": {
     "description": "Role description for mobile dev"
   },
-  "aboutOriginalCreator": "オリジナルの SpotiFLAC の作者",
-  "@aboutOriginalCreator": {
-    "description": "Role description for original creator"
-  },
   "aboutLogoArtist": "美しいアプリロゴを作成した才能あるアーティストです！",
   "@aboutLogoArtist": {
     "description": "Role description for logo artist"
@@ -507,10 +503,6 @@
   "aboutMobileSource": "モバイル版のソースコード",
   "@aboutMobileSource": {
     "description": "Link to mobile GitHub repo"
-  },
-  "aboutPCSource": "PC 版のソースコード",
-  "@aboutPCSource": {
-    "description": "Link to PC GitHub repo"
   },
   "aboutReportIssue": "問題を報告する",
   "@aboutReportIssue": {

@@ -32,7 +32,7 @@ void main() {
       ...List.generate(64, (i) => i),
     ];
     const version = '5.0.0';
-    const url = 'https://updates.example.test/SpotiFLAC-Mobile.apk';
+    const url = 'https://updates.example.test/Mornye.apk';
     final finalPath = p.join(directory.path, 'Mornye-$version.apk');
     final part = File('$finalPath.part');
     await part.writeAsBytes(payload.sublist(0, 12));

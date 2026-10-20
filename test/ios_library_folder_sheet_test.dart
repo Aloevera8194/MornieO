@@ -71,7 +71,7 @@ void main() {
     testWidgets('internal music bypasses Files (Mornye=$mornye)', (
       tester,
     ) async {
-      final music = File('${documents.path}/SpotiFLAC/example.flac');
+      final music = File('${documents.path}/Mornye/example.flac');
       music.parent.createSync(recursive: true);
       music.writeAsBytesSync([1, 2, 3]);
       await openSheet(tester, mornye: mornye);

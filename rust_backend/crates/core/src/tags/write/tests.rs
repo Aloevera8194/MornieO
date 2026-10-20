@@ -71,7 +71,7 @@ fn primary_artist_uses_the_shared_separator_set() {
 
 fn editable_flac() -> (Vec<u8>, usize, Fields) {
     let mut comments = Vec::new();
-    put_string(&mut comments, b"SpotiFLAC");
+    put_string(&mut comments, b"Mornye");
     comments.extend(2_u32.to_le_bytes());
     put_string(&mut comments, b"CUSTOM=preserve");
     put_string(&mut comments, b"TITLE=Example");

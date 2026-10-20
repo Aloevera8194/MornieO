@@ -46,7 +46,7 @@ void main() {
         final metadata = <String, dynamic>{
           'magic': BackupService.magic,
           'format_version': version,
-          'app': 'SpotiFLAC Mobile',
+          'app': 'Mornye',
           'app_version': '5.1.0',
           'created_at': '2026-10-07T00:00:00.000Z',
           'history_count': 0,

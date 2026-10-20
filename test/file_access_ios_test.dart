@@ -38,7 +38,7 @@ void main() {
           isIOS: true,
           isSafMode: false,
           outputDir:
-              '/private/var/mobile/Containers/Data/Application/ABC/Documents/SpotiFLAC',
+              '/private/var/mobile/Containers/Data/Application/ABC/Documents/Mornye',
           downloadDirectoryBookmark: '',
         ),
         isTrue,
@@ -71,7 +71,7 @@ void main() {
         shouldValidateIosOutputDir(
           isIOS: false,
           isSafMode: false,
-          outputDir: '/data/user/0/com.zarz.mornye/files/SpotiFLAC',
+          outputDir: '/data/user/0/com.zarz.mornye/files/Mornye',
           downloadDirectoryBookmark: '',
         ),
         isFalse,
