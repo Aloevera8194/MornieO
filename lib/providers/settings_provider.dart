@@ -131,6 +131,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
   Future<SharedPreferences> get _prefs => _loadPreferences();
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage(
     aOptions: secureStorageAndroidOptions,
+    mOptions: secureStorageMacOsOptions,
   );
   Future<void>? _saveSettingsFuture;
   bool _saveQueued = false;

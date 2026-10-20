@@ -9,3 +9,10 @@ const secureStorageAndroidOptions = AndroidOptions(
   keyCipherAlgorithm: KeyCipherAlgorithm.RSA_ECB_OAEPwithSHA_256andMGF1Padding,
   storageCipherAlgorithm: StorageCipherAlgorithm.AES_GCM_NoPadding,
 );
+
+// The data protection keychain needs a signed keychain-access-groups
+// entitlement; the login keychain works for Developer ID and local builds.
+// Linux keeps the default libsecret options.
+const secureStorageMacOsOptions = MacOsOptions(
+  usesDataProtectionKeychain: false,
+);

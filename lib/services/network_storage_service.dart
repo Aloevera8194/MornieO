@@ -213,6 +213,7 @@ class NetworkStorageService {
   static final instance = NetworkStorageService();
   static const _storage = FlutterSecureStorage(
     aOptions: secureStorageAndroidOptions,
+    mOptions: secureStorageMacOsOptions,
   );
   static const _key = 'network_storage_connections_v1';
   final Future<String?> Function() _read;

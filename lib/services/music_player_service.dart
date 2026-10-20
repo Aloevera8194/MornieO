@@ -31,6 +31,7 @@ import 'package:mornye/models/settings.dart';
 import 'package:mornye/services/automix_effect_renderer.dart';
 import 'package:mornye/services/automix_status.dart';
 import 'package:mornye/services/music_haptics.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/int_utils.dart';
 import 'package:mornye/utils/playback_artwork.dart';
 import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
@@ -536,6 +537,8 @@ class MusicPlayerHandler extends BaseAudioHandler
   /// pauses and the UI/notification reflect the real state instead of staying
   /// stuck on "playing".
   Future<void> _configureAudioSession() async {
+    // audio_session models mobile audio focus; desktop has no equivalent.
+    if (isDesktopPlatform) return;
     try {
       final session = await _dependencies.audioSession();
       _audioSession = session;
@@ -695,6 +698,7 @@ class MusicPlayerHandler extends BaseAudioHandler
   }
 
   Future<void> _activateAudioSession() async {
+    if (isDesktopPlatform) return;
     try {
       final session = _audioSession ?? await _dependencies.audioSession();
       _audioSession = session;

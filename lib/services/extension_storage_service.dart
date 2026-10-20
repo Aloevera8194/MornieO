@@ -27,6 +27,7 @@ class ExtensionStorageService {
 
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage(
     aOptions: secureStorageAndroidOptions,
+    mOptions: secureStorageMacOsOptions,
   );
   static Future<ExtensionStoragePaths>? _preparing;
 

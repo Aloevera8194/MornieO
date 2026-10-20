@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:mornye/services/network_storage_service.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/source_deletion_events.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/ios_container_paths.dart';
 import 'package:mornye/utils/mime_utils.dart';
 
@@ -439,6 +441,14 @@ Future<void> openFile(String path) async {
   final realPath = path;
   if (isContentUri(realPath)) {
     await PlatformBridge.openContentUri(realPath, mimeType: '');
+    return;
+  }
+  if (isDesktopPlatform) {
+    // open_filex has no desktop implementation; the OS opens file URIs with
+    // the user's default application.
+    if (!await launchUrl(Uri.file(realPath))) {
+      throw Exception('No application can open $realPath');
+    }
     return;
   }
   final mimeType = audioMimeTypeForPath(realPath);
