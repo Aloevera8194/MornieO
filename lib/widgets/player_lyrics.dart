@@ -320,7 +320,9 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
   }
 
   Duration get _displayPosition =>
-      widget.seekPreview.value ?? ref.read(playbackPositionProvider);
+      widget.seekPreview.value ??
+      ref.read(playbackStateProvider).value?.position ??
+      Duration.zero;
 
   void _scheduleUserScrollReturn() {
     _userScrollIdleTimer?.cancel();
@@ -447,9 +449,16 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     }
     if (nextBoundary == null) return;
     final boundary = nextBoundary;
-    _lineBoundaryTimer = Timer(boundary - position, () {
+    final remaining = boundary - position;
+    final speed = ref.read(playbackStateProvider).value?.speed ?? 1.0;
+    final delay = speed.isFinite && speed > 0
+        ? Duration(microseconds: (remaining.inMicroseconds / speed).ceil())
+        : remaining;
+    _lineBoundaryTimer = Timer(delay, () {
       if (!mounted || !_visible || !_playing || _loading) return;
-      _scheduleNextLine(boundary);
+      // A delayed callback must catch up to the audio clock, rather than
+      // treating its scheduled boundary as the current playback position.
+      _scheduleNextLine(_displayPosition);
     });
   }
 
