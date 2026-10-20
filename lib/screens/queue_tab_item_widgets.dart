@@ -864,7 +864,8 @@ extension _QueueTabItemWidgets on _QueueTabState {
     );
   }
 
-  /// A desktop click on a library song selects it; a double click plays it.
+  /// A desktop click on a library song opens its details, as a tap does on
+  /// a phone; modifier clicks select.
   void _desktopLibraryItemClick(
     UnifiedLibraryItem item,
     List<UnifiedLibraryItem> libraryItems,
@@ -875,7 +876,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
       select: (kind) => _applyDesktopClick(item.id, kind, [
         for (final song in libraryItems) song.id,
       ]),
-      activate: () => _playLibraryItem(item, libraryItems),
+      activate: open,
     );
   }
 
@@ -941,9 +942,10 @@ extension _QueueTabItemWidgets on _QueueTabState {
             ],
             selectedIds: _selectedIds,
             onSelect: _applyDesktopClick,
+            // A click opens the song's details, as a tap does on a phone.
             onActivate: (id) {
               final item = byId[id];
-              if (item != null) _playLibraryItem(item, items);
+              if (item != null) openAction(item)();
             },
             onContextMenu: (id, position) {
               final item = byId[id];
