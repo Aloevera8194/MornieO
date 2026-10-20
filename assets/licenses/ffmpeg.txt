@@ -3,10 +3,17 @@ Copyright (c) the FFmpeg developers. https://ffmpeg.org/
 
 Mornye uses FFmpeg for audio conversion, tagging, analysis and artwork
 handling. Desktop builds ship unmodified, separately executable `ffmpeg` and
-`ffprobe` programs built with --disable-gpl and --disable-nonfree. They also
-contain LAME (LGPL 2.0 or later) and Opus (BSD 3-Clause). Mobile builds
-include FFmpegKit (https://github.com/arthenica/ffmpeg-kit), which is
-licensed under the GNU Lesser General Public License version 3.
+`ffprobe` programs built without GPL or nonfree components. They also contain
+LAME (LGPL 2.0 or later), the SoX Resampler library (LGPL 2.1 or later) and
+Opus (BSD 3-Clause). The macOS programs are built from source under the GNU
+Lesser General Public License version 2.1 or later (text below). The Linux and
+Windows programs are the BtbN/FFmpeg-Builds "lgpl" variant, configured with
+--enable-version3, and are licensed under the GNU Lesser General Public
+License version 3. Mobile builds include FFmpegKit
+(https://github.com/arthenica/ffmpeg-kit), which is licensed under the GNU
+Lesser General Public License version 3. The text of version 3 is listed
+separately under FFmpegKit; it incorporates the GNU General Public License
+version 3, available at https://www.gnu.org/licenses/gpl-3.0.html.
 
 FFmpeg is free software; you can redistribute it and/or modify it under the
 terms of the GNU Lesser General Public License as published by the Free

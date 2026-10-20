@@ -70,6 +70,11 @@ void main() {
         yield LicenseEntryWithLineBreaks(const [
           'FFmpeg',
         ], await rootBundle.loadString('assets/licenses/ffmpeg.txt'));
+        // FFmpegKit (mobile) and the Linux and Windows FFmpeg builds.
+        yield LicenseEntryWithLineBreaks(const [
+          'FFmpeg',
+          'FFmpegKit',
+        ], await rootBundle.loadString('assets/licenses/lgpl-3.0.txt'));
         if (Platform.isAndroid) {
           yield LicenseEntryWithLineBreaks(const [
             'libusb',

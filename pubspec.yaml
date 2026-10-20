@@ -168,6 +168,7 @@ flutter:
     - assets/licenses/wavpack.txt
     - assets/licenses/flac.txt
     - assets/licenses/ffmpeg.txt
+    - assets/licenses/lgpl-3.0.txt
     - assets/licenses/libsmb2.txt
     - assets/licenses/native_palette.txt
     - assets/licenses/native_data_jobs.txt
