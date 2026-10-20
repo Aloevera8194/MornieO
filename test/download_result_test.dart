@@ -56,6 +56,31 @@ void main() {
   );
 
   test(
+    'final FLAC clears obsolete provider container and conversion hints',
+    () {
+      final result = DownloadResult.fromMap({
+        'file_name': 'Song.m4a',
+        'file_path': '/cache/input.m4a',
+        'container': 'mp4',
+        'actual_container': 'mp4',
+        'requires_container_conversion': true,
+        'requiresContainerConversion': true,
+        'actual_bit_depth': 24,
+        'actual_sample_rate': 96000,
+      });
+      result.markFlacContainer(path: '/music/Song.flac', name: 'Song.flac');
+      expect(result.filePath, '/music/Song.flac');
+      expect(result.fileName, 'Song.flac');
+      expect(result['actual_container'], 'flac');
+      expect(result['container'], 'flac');
+      expect(result.outputExtension(), '.flac');
+      expect(result.requiresContainerConversion, isFalse);
+      expect(result.actualBitDepth, 24);
+      expect(result.actualSampleRate, 96000);
+    },
+  );
+
+  test(
     'conversion and decryption accept current and legacy extension keys',
     () {
       for (final key in [

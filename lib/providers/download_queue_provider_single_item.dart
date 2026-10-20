@@ -1019,7 +1019,19 @@ class _DownloadRun {
   }
 
   void _markFinalOutputAsFlac() {
-    result.markFlacContainer();
+    final path = filePath;
+    String? name;
+    if (path != null) {
+      name = finalizedAudioFileName(
+        fileName: effectiveSafMode
+            ? (finalSafFileName ?? safFileName ?? result.fileName ?? 'track')
+            : File(path).uri.pathSegments.last,
+        localPath: path,
+        fallbackExtension: '.flac',
+      );
+      if (effectiveSafMode) finalSafFileName = name;
+    }
+    result.markFlacContainer(path: path, name: name);
     resultOutputExt = '.flac';
   }
 

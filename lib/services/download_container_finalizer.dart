@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:mornye/models/download_result.dart';
 import 'package:mornye/services/download_saf_file_replacer.dart';
 import 'package:mornye/utils/audio_format_utils.dart';
@@ -91,8 +93,7 @@ class DownloadContainerFinalizer {
       );
       if (preserve) return filePath;
       if (uri == null) return null;
-      result.fileName = flacName;
-      result.markFlacContainer();
+      result.markFlacContainer(path: uri, name: flacName);
       return uri;
     }
     final codec = await probeCodec(filePath);
@@ -103,7 +104,19 @@ class DownloadContainerFinalizer {
         : await convertToFlac(filePath);
     if (output == null) return null;
     await embedMetadata?.call(output);
-    result.markFlacContainer();
+    result.markFlacContainer(
+      path: output,
+      name: useSaf
+          ? finalizedAudioFileName(
+              fileName:
+                  result.fileName ??
+                  fallbackFileName ??
+                  File(output).uri.pathSegments.last,
+              localPath: output,
+              fallbackExtension: '.flac',
+            )
+          : File(output).uri.pathSegments.last,
+    );
     return output;
   }
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import com.antonkarpenko.ffmpegkit.FFmpegKit
 import com.antonkarpenko.ffmpegkit.FFmpegSessionCompleteCallback
 import com.zarz.mornye.SafDownloadHandler.mimeTypeForExt
+import com.zarz.mornye.SafDownloadHandler.normalizeExt
 import com.zarz.mornye.NativeFinalizationPolicy.normalizeAudioCodec
 import org.json.JSONObject
 import java.io.File
@@ -264,6 +265,22 @@ object NativeDownloadFinalizer {
 
             result.put("file_path", state.filePath)
             if (state.fileName.isNotBlank()) result.put("file_name", state.fileName)
+            // Extension result fields describe the pre-conversion input.
+            // Publish the actual container with the finalized path and name.
+            val finalName = if (state.filePath.startsWith("content://")) state.fileName else state.filePath
+            val finalExtension = normalizeExt(File(finalName).extension)
+            if (finalExtension.isNotBlank()) {
+                result.put("actual_extension", finalExtension)
+                result.put("output_extension", finalExtension)
+                result.put("actual_container", finalExtension.removePrefix("."))
+                if (result.has("container")) result.put("container", finalExtension.removePrefix("."))
+            }
+            if (!state.audioCodec.isNullOrBlank()) {
+                result.put("audio_codec", state.audioCodec)
+                result.put("format", state.audioCodec)
+            }
+            result.put("requires_container_conversion", false)
+            result.remove("requiresContainerConversion")
             if (state.quality.isNotBlank()) result.put("quality", state.quality)
             result.put("native_finalized", true)
             result.put("history_written", history != null)

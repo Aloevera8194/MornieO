@@ -147,6 +147,7 @@ internal fun NativeDownloadFinalizer.finalizeContainerConversion(
             }
             embedBasicMetadata(context, nativeFlacOutput, input, "flac")
             replaceStatePath(context, input, state, nativeFlacOutput, deleteOld = true)
+            state.audioCodec = "flac"
             adoptedOutput = true
             return
         }
@@ -164,6 +165,7 @@ internal fun NativeDownloadFinalizer.finalizeContainerConversion(
         }
         createdOutput = true
         replaceStatePath(context, input, state, output, deleteOld = true)
+        state.audioCodec = "flac"
         adoptedOutput = true
     } finally {
         if (!adoptedOutput) {

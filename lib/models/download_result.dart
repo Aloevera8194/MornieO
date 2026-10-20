@@ -59,11 +59,17 @@ class DownloadResult extends MapBase<String, dynamic> {
     _values.remove('actual_sample_rate');
   }
 
-  void markFlacContainer() {
+  void markFlacContainer({String? path, String? name}) {
+    if (path != null) filePath = path;
+    if (name != null) fileName = name;
     _values['audio_codec'] = 'flac';
     _values['format'] = 'flac';
+    _values['actual_container'] = 'flac';
+    if (_values.containsKey('container')) _values['container'] = 'flac';
     _values['actual_extension'] = '.flac';
     _values['output_extension'] = '.flac';
+    _values['requires_container_conversion'] = false;
+    _values.remove('requiresContainerConversion');
   }
 
   String? outputExtension({String? path}) {

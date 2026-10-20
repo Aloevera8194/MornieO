@@ -171,6 +171,8 @@ void main() {
           'audio_codec': 'm4a',
           'decryption_key': 'abcd',
           'output_extension': '.mp4',
+          'actual_container': 'mp4',
+          'requires_container_conversion': true,
         });
         final path = await finalize(
           stage,
@@ -184,8 +186,38 @@ void main() {
         expect(path, '${directory.path}/Song.flac');
         expect(events, [native ? 'rename' : 'remux', 'tag']);
         expect(result.outputExtension(), '.flac');
+        expect(result.fileName, 'Song.flac');
+        expect(result.filePath, path);
+        expect(result['actual_container'], 'flac');
+        expect(result.requiresContainerConversion, isFalse);
         await File(path!).delete();
       }
+    },
+  );
+
+  test(
+    'deferred SAF keeps the logical name with the finalized FLAC suffix',
+    () async {
+      final source = await File(
+        '${directory.path}/native_saf_work_123.m4a',
+      ).writeAsString('MP4audio');
+      final outputPath = '${directory.path}/native_saf_work_123.flac';
+      final result = DownloadResult.fromMap({
+        'file_name': 'Artist - Song.m4a',
+        'file_path': source.path,
+        'output_extension': '.m4a',
+        'saf_deferred_publish': true,
+      });
+      final path = await finalize(
+        finalizer(probe: (_) async => 'flac', convert: (_) async => outputPath),
+        result,
+        path: source.path,
+        saf: true,
+      );
+      expect(path, outputPath);
+      expect(result.filePath, outputPath);
+      expect(result.fileName, 'Artist - Song.flac');
+      expect(result.outputExtension(), '.flac');
     },
   );
 
@@ -237,6 +269,7 @@ void main() {
         expect(path, published ? 'content://final' : null);
         expect(result.fileName, published ? 'Song.flac' : 'Song.m4a');
         expect(result.audioCodec, published ? 'flac' : 'm4a');
+        expect(result.filePath, published ? 'content://final' : null);
         expect(deleted, published);
         expect(await directory.list().length, 0);
       }
