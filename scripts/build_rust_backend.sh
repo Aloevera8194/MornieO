@@ -9,8 +9,8 @@ RUST_BACKEND_DIR="$PROJECT_DIR/rust_backend"
 PLATFORM="${1:-host}"
 
 case "$PLATFORM" in
-  host|android|ios) ;;
-  *) echo "Usage: bash scripts/build_rust_backend.sh [host|android|ios]" >&2; exit 1 ;;
+  host|android|ios|desktop) ;;
+  *) echo "Usage: bash scripts/build_rust_backend.sh [host|android|ios|desktop]" >&2; exit 1 ;;
 esac
 
 if [[ "$PLATFORM" == "android" ]]; then
@@ -29,6 +29,52 @@ cd "$RUST_BACKEND_DIR"
 export CARGO_TARGET_DIR="$RUST_BACKEND_DIR/target"
 # AES 0.9 detects ARM64 AES at runtime and retains the software fallback;
 # do not force target-feature=+aes on Android.
+
+# Desktop: the C ABI library loaded by dart:ffi (crates/desktop). It needs no
+# UniFFI bindings. Output: target/desktop/<os>/libmornye_desktop.{dylib,so}.
+#
+# Windows is not built by this script (Rust portability work is unit D12).
+# The intended CI commands, from PowerShell in rust_backend/ with LLVM
+# (libclang, for rquickjs bindgen) on PATH, are:
+#   $env:CARGO_TARGET_DIR = "$PWD\target"
+#   cargo build --locked --release -p mornye-desktop --target x86_64-pc-windows-msvc
+#   New-Item -ItemType Directory -Force target\desktop\windows | Out-Null
+#   Copy-Item target\x86_64-pc-windows-msvc\release\mornye_desktop.dll target\desktop\windows\
+# and the same with aarch64-pc-windows-msvc for Windows on Arm.
+if [[ "$PLATFORM" == "desktop" ]]; then
+  case "$(uname -s)" in
+    Darwin)
+      # Same default as the host build. The Flutter macOS runner's deployment
+      # target must not be older than this.
+      export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-11.0}"
+      DESKTOP_DIR="$CARGO_TARGET_DIR/desktop/macos"
+      rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      for target in aarch64-apple-darwin x86_64-apple-darwin; do
+        cargo build --locked --release -p mornye-desktop --target "$target"
+      done
+      mkdir -p "$DESKTOP_DIR"
+      xcrun lipo -create \
+        "$CARGO_TARGET_DIR/aarch64-apple-darwin/release/libmornye_desktop.dylib" \
+        "$CARGO_TARGET_DIR/x86_64-apple-darwin/release/libmornye_desktop.dylib" \
+        -output "$DESKTOP_DIR/libmornye_desktop.dylib"
+      # Load by rpath from the app bundle's Frameworks directory.
+      install_name_tool -id "@rpath/libmornye_desktop.dylib" \
+        "$DESKTOP_DIR/libmornye_desktop.dylib"
+      # install_name_tool drops the linker's ad hoc signature, and arm64
+      # refuses unsigned code. The app build re-signs with its identity.
+      codesign --force --sign - "$DESKTOP_DIR/libmornye_desktop.dylib"
+      ;;
+    Linux)
+      DESKTOP_DIR="$CARGO_TARGET_DIR/desktop/linux"
+      cargo build --locked --release -p mornye-desktop
+      mkdir -p "$DESKTOP_DIR"
+      cp "$CARGO_TARGET_DIR/release/libmornye_desktop.so" "$DESKTOP_DIR/"
+      ;;
+    *) echo "Error: use macOS or Linux for desktop builds (Windows: see the comment above)." >&2; exit 1 ;;
+  esac
+  echo "Rust desktop library is staged in $DESKTOP_DIR."
+  exit 0
+fi
 
 case "$(uname -s)" in
   Darwin)
