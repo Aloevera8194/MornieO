@@ -31,6 +31,7 @@ workspace crate.
 | `crates/providers` | `mornye-providers` | core, network |
 | `crates/extensions` | `mornye-extensions` | core, network, providers |
 | `crates/mobile` | `mornye-mobile` | core, network, extensions |
+| `crates/desktop` | `mornye-desktop` | mobile |
 | `crates/bindgen` | `mornye-bindgen` | `uniffi` CLI only |
 
 **core.** Shared backend logic, independent of mobile bindings and UI
@@ -63,6 +64,15 @@ It adds native data jobs, the native library, cache, collections, playlists
 and backup, lyrics, ID3 and network tags, `rusqlite`, and USB audio
 (`libusb1-sys`, Android only).
 
+**desktop.** The C ABI for macOS, Linux and Windows, loaded by Flutter
+through `dart:ffi` (`cdylib` `libmornye_desktop`). It exports `mornye_init`,
+`mornye_call`, `mornye_cancel`, `mornye_subscribe`, `mornye_unsubscribe` and
+`mornye_free`, dispatches MethodChannel method names as JSON on a worker
+pool (`src/dispatch.rs` is the single method table), pushes download and
+library scan progress, and runs the bundled `ffmpeg` executable for the
+backend's FFmpeg command queue. It is the only crate that allows unsafe
+code, in `src/ffi.rs`.
+
 **bindgen.** The UniFFI bindgen command line (`uniffi_bindgen_main`), used
 only to generate the Kotlin and Swift bindings. It enables the `cli` and
 `cargo-metadata` features of `uniffi`; the build script builds the library
@@ -83,6 +93,7 @@ checks are in `rust_backend/vendor/README.md`. Third-party notices are in
 | `bash scripts/build_rust_backend.sh host` | Release host library and Kotlin and Swift bindings |
 | `bash scripts/build_rust_backend.sh android` | Host step, then `libmornye_mobile.so` for each ABI |
 | `bash scripts/build_rust_backend.sh ios` | Host step, then the XCFramework and CocoaPods staging |
+| `bash scripts/build_rust_backend.sh desktop` | `libmornye_desktop` in `target/desktop/<os>/` (macOS universal, Linux host); Windows commands are in the script |
 | `bash scripts/check_rust_backend.sh` | `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test` |
 
 Every `cargo build`, `cargo run`, `cargo clippy` and `cargo test` call in
