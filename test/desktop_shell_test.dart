@@ -127,7 +127,6 @@ void main() {
     required bool mornye,
     required double width,
     MediaItem? item = _track,
-    bool searchInContent = false,
     List<DesktopSidebarLink> libraryLinks = const [],
     ValueChanged<String>? onOpenLibraryLink,
     VoidCallback? onOpenProfile,
@@ -153,7 +152,6 @@ void main() {
               libraryLinks: libraryLinks,
               onOpenLibraryLink: onOpenLibraryLink,
               onOpenProfile: onOpenProfile,
-              searchInContent: searchInContent,
               body: const Center(child: Text('content')),
             ),
           ),
@@ -243,45 +241,15 @@ void main() {
       expect(controller.calls, isEmpty);
     });
 
-    testWidgets('top bar search opens Search on pages without their own', (
+    testWidgets('pages start at the top with no shell search bar', (
       tester,
     ) async {
-      final searches = <ShellTab>[];
-      final owner = Object();
-      ShellNavigationService.registerTabSelectionHandler(
-        owner: owner,
-        handler: searches.add,
-      );
-      addTearDown(
-        () => ShellNavigationService.unregisterTabSelectionHandler(owner),
-      );
       await pumpShell(tester, mornye: false, width: 1400);
 
-      expect(find.byType(DesktopTopBar), findsOneWidget);
-      expect(tester.getRect(contentPage()).top, DesktopTopBar.height);
-      await tester.tap(find.byKey(const ValueKey('desktop-top-bar-search')));
-      expect(searches, [ShellTab.search]);
-      // Downloads live in the player bar on every page.
-      expect(find.byType(DesktopDownloadsButton), findsOneWidget);
-    });
-
-    testWidgets('top bar steps aside for a page with its own search', (
-      tester,
-    ) async {
-      await pumpShell(
-        tester,
-        mornye: false,
-        width: 1400,
-        searchInContent: true,
-      );
-
-      expect(find.byType(DesktopTopBar), findsNothing);
-      expect(
-        find.byKey(const ValueKey('desktop-top-bar-search')),
-        findsNothing,
-      );
-      // No empty strip is left: the page starts at the top of the pane.
+      // Home and Library bring their own search fields, so the shell adds
+      // no second one above them.
       expect(tester.getRect(contentPage()).top, 0);
+      // Downloads live in the player bar on every page.
       expect(find.byType(DesktopDownloadsButton), findsOneWidget);
     });
 

@@ -94,8 +94,7 @@ class DesktopDestination {
 /// The desktop shell: navigation on the leading edge, the content pane and
 /// the trailing inspector.
 ///
-/// Material uses [DesktopNavigationRail], a top bar with search, and the
-/// player bar docked across the bottom. Mornye follows Music: the
+/// Material uses [DesktopNavigationRail] and the player bar docked across the bottom. Mornye follows Music: the
 /// [DesktopSidebar] runs the full window height, and the player floats as a
 /// glass capsule at the bottom of the content pane, which pads its pages so
 /// their last rows scroll clear of it.
@@ -118,7 +117,6 @@ class DesktopShellLayout extends StatelessWidget {
     this.libraryLinks = const [],
     this.onOpenLibraryLink,
     this.onOpenProfile,
-    this.searchInContent = false,
     this.playerBar = const DesktopPlayerBar(),
     this.nowPlaying = const DesktopNowPlayingPane(),
   });
@@ -138,10 +136,6 @@ class DesktopShellLayout extends StatelessWidget {
 
   /// Mornye: opens the profile from the sidebar's account row.
   final VoidCallback? onOpenProfile;
-
-  /// Material: the visible page has its own search field, so the top bar
-  /// steps aside rather than stacking a second one above it.
-  final bool searchInContent;
   final Widget playerBar;
   final Widget nowPlaying;
 
@@ -228,7 +222,6 @@ class DesktopShellLayout extends StatelessWidget {
                   overlayInspector: desktopInspectorOverlays(width),
                   body: body,
                   nowPlaying: nowPlaying,
-                  showTopBar: !searchInContent,
                   titleBarDrag: true,
                 ),
               ),
@@ -343,15 +336,15 @@ class _PaneMediaQuery extends StatelessWidget {
   );
 }
 
-/// The content pane (with the Material top bar), Now Playing over it while
-/// open, the trailing inspector and, in Mornye, the floating player.
+/// The content pane, Now Playing over it while open, the trailing inspector
+/// and, in Mornye, the floating player. Pages bring their own search fields
+/// (Home, Library), so there is no shell search bar above them.
 class _DesktopContentArea extends StatelessWidget {
   const _DesktopContentArea({
     required this.overlayInspector,
     required this.body,
     required this.nowPlaying,
     this.floatingPlayer,
-    this.showTopBar = false,
     this.titleBarDrag = false,
   });
 
@@ -361,9 +354,6 @@ class _DesktopContentArea extends StatelessWidget {
 
   /// The Mornye player capsule, floating over the bottom of the pane.
   final Widget? floatingPlayer;
-
-  /// Material: shows [DesktopTopBar] above the pages.
-  final bool showTopBar;
 
   /// Whether the top of the pane is the window's title bar row, where a
   /// drag moves the window.
@@ -390,9 +380,8 @@ class _DesktopContentArea extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (showTopBar) const DesktopTopBar(),
                         // A semantics container keeps the tab navigators'
-                        // modal barriers from hiding the sidebar and top bar.
+                        // modal barriers from hiding the sidebar.
                         Expanded(
                           key: const ValueKey('desktop-pages'),
                           child: Semantics(
@@ -481,89 +470,6 @@ class DesktopNowPlayingPane extends StatelessWidget {
     enabled: false,
     child: NowPlayingScreen(embedded: true),
   );
-}
-
-/// The Material top bar of the content pane: a persistent search field that
-/// opens Search and focuses its input. Home has its own search field, so
-/// the shell leaves the bar out there ([DesktopShellLayout.searchInContent]);
-/// downloads live in the player bar so they stay in reach on every page.
-class DesktopTopBar extends StatelessWidget {
-  const DesktopTopBar({super.key});
-
-  static const double height = 64;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final hint = context.l10n.homeSearchHintDefault;
-    final radius = BorderRadius.circular(context.tokens.radiusSheet);
-    return Material(
-      color: colorScheme.surface,
-      child: SizedBox(
-        height: height,
-        child: Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
-          child: Row(
-            children: [
-              Expanded(
-                child: Align(
-                  alignment: AlignmentDirectional.centerStart,
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 560),
-                    child: Tooltip(
-                      message: desktopTooltip(
-                        context,
-                        context.l10n.mornyeSearch,
-                        DesktopCommand.search,
-                      ),
-                      child: Semantics(
-                        button: true,
-                        label: hint,
-                        excludeSemantics: true,
-                        child: InkWell(
-                          key: const ValueKey('desktop-top-bar-search'),
-                          borderRadius: radius,
-                          onTap: ShellNavigationService.requestSearch,
-                          child: Ink(
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: colorScheme.surfaceContainerHigh,
-                              borderRadius: radius,
-                            ),
-                            child: Row(
-                              children: [
-                                const SizedBox(width: 16),
-                                AppIcon(
-                                  Icons.search,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    hint,
-                                    style: textTheme.bodyLarge?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 int _positionOf(List<DesktopDestination> destinations, ShellTab tab) =>
@@ -695,6 +601,10 @@ class _RailItemSpacing extends StatelessWidget {
     final spaced = _themes[base] ??= base.copyWith(
       navigationRailTheme: base.navigationRailTheme.copyWith(
         expandedItemGap: desktopRailItemGap,
+        // The whole row is the click target, so the pill spans it too, as
+        // in a navigation drawer; a pill hugging the label would light up
+        // from clicks beside it.
+        indicatorFillsWidth: true,
       ),
     );
     return M3ETheme(data: spaced, child: child);

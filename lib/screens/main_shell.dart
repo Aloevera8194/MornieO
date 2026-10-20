@@ -112,10 +112,8 @@ class _MainShellState extends ConsumerState<MainShell>
   late final _PreviewStopNavigatorObserver _repoPreviewStopObserver;
   late final _PreviewStopNavigatorObserver _searchPreviewStopObserver;
 
-  /// Desktop: whether Home and Library show their root page. Material's top
-  /// bar steps aside on the Home root, which has its own search field, and
-  /// the Mornye sidebar returns to the Library root's link.
-  final _homeDepthObserver = _PageDepthObserver();
+  /// Desktop: whether Library shows its root page, so the Mornye sidebar
+  /// returns to the Library root's link.
   late final _libraryDepthObserver = _PageDepthObserver(
     onRoot: () => desktopSidebarLink.value = null,
   );
@@ -303,7 +301,6 @@ class _MainShellState extends ConsumerState<MainShell>
     _tabJumpOpacity.dispose();
     _tabJumpTransitionController.dispose();
     _mornyeChrome.dispose();
-    _homeDepthObserver.dispose();
     _libraryDepthObserver.dispose();
     super.dispose();
   }
@@ -756,10 +753,7 @@ class _MainShellState extends ConsumerState<MainShell>
       _TabNavigator(
         key: const ValueKey('tab-home'),
         navigatorKey: _homeTabNavigatorKey,
-        observers: [
-          _homePreviewStopObserver,
-          if (isDesktopPlatform) _homeDepthObserver,
-        ],
+        observers: [_homePreviewStopObserver],
         heroAnimationsEnabled: heroAnimationsEnabled,
         child: Builder(
           builder: (context) => HomeTab(
@@ -966,23 +960,16 @@ class _MainShellState extends ConsumerState<MainShell>
       return DownloadQueueFeedback(
         child: SelectionOverlayHost(
           child: Scaffold(
-            // Material's Home has its own search field; its top bar steps
-            // aside while Home shows its root page.
-            body: ValueListenableBuilder<int>(
-              valueListenable: _homeDepthObserver.depth,
-              builder: (context, homeDepth, _) => DesktopShellLayout(
-                destinations: destinations,
-                selected: selectedTab,
-                onSelected: _onShellTabRequested,
-                libraryLinks: mornye
-                    ? _desktopLibraryLinks(queueCount: queueState)
-                    : const [],
-                onOpenLibraryLink: mornye ? _openDesktopLibraryLink : null,
-                onOpenProfile: mornye ? _openDesktopProfile : null,
-                searchInContent:
-                    !mornye && selectedTab == ShellTab.home && homeDepth <= 1,
-                body: pageView,
-              ),
+            body: DesktopShellLayout(
+              destinations: destinations,
+              selected: selectedTab,
+              onSelected: _onShellTabRequested,
+              libraryLinks: mornye
+                  ? _desktopLibraryLinks(queueCount: queueState)
+                  : const [],
+              onOpenLibraryLink: mornye ? _openDesktopLibraryLink : null,
+              onOpenProfile: mornye ? _openDesktopProfile : null,
+              body: pageView,
             ),
           ),
         ),
