@@ -17,6 +17,10 @@ import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/app_search_field.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/app_snack_bar.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/hover_play_button.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
 import 'package:mornye/widgets/local_library_artwork_builder.dart';
 import 'package:mornye/widgets/library_search_results.dart';
@@ -123,12 +127,7 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
       );
       return;
     }
-    Future<List<LocalLibraryItem>> loadTracks() async {
-      final rows = await LibraryDatabase.instance.getQueueLocalAlbumTracksByKey(
-        entry.key,
-      );
-      return rows.map(LocalLibraryItem.fromJson).toList(growable: false);
-    }
+    Future<List<LocalLibraryItem>> loadTracks() => _loadLocalAlbum(entry);
 
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -142,26 +141,72 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
     );
   }
 
-  Future<void> _chooseSort() async {
-    final selected = await showAppBottomSheet<String>(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final option in [
-            ('a-z', context.l10n.searchSortTitleAZ),
-            ('latest', context.l10n.libraryRecentlyAdded),
-          ])
-            ListTile(
-              title: Text(option.$2),
-              selected: _sort == option.$1,
-              selectedColor: Theme.of(context).colorScheme.onSurface,
-              trailing: _sort == option.$1 ? const Icon(Icons.check) : null,
-              onTap: () => Navigator.pop(context, option.$1),
+  Future<List<LocalLibraryItem>> _loadLocalAlbum(
+    LibraryBrowseEntry entry,
+  ) async {
+    final rows = await LibraryDatabase.instance.getQueueLocalAlbumTracksByKey(
+      entry.key,
+    );
+    return rows.map(LocalLibraryItem.fromJson).toList(growable: false);
+  }
+
+  /// Desktop shows the choices as a checked menu below [buttonContext];
+  /// returns null there and on phones, where the caller opens its sheet.
+  Future<String?>? _chooseFromMenu(
+    BuildContext buttonContext,
+    List<(String, String, IconData)> options,
+    String current,
+  ) {
+    final position = isDesktopPlatform
+        ? contextMenuPositionBelow(buttonContext)
+        : null;
+    if (position == null) return null;
+    final chosen = Completer<String?>();
+    showContextMenu(
+      buttonContext,
+      position: position,
+      groups: [
+        [
+          for (final option in options)
+            ContextMenuAction(
+              icon: option.$3,
+              label: option.$2,
+              checked: option.$1 == current,
+              onSelected: () => chosen.complete(option.$1),
             ),
         ],
-      ),
-    );
+      ],
+    ).whenComplete(() {
+      if (!chosen.isCompleted) chosen.complete(null);
+    });
+    return chosen.future;
+  }
+
+  Future<void> _chooseSort(BuildContext buttonContext) async {
+    final options = [
+      ('a-z', context.l10n.searchSortTitleAZ, Icons.sort_by_alpha),
+      ('latest', context.l10n.libraryRecentlyAdded, Icons.schedule),
+    ];
+    final selected =
+        await (_chooseFromMenu(buttonContext, options, _sort) ??
+            showAppBottomSheet<String>(
+              context: context,
+              builder: (context) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final option in options)
+                    ListTile(
+                      title: Text(option.$2),
+                      selected: _sort == option.$1,
+                      selectedColor: Theme.of(context).colorScheme.onSurface,
+                      trailing: _sort == option.$1
+                          ? const Icon(Icons.check)
+                          : null,
+                      onTap: () => Navigator.pop(context, option.$1),
+                    ),
+                ],
+              ),
+            ));
     if (!mounted || selected == null || selected == _sort) return;
     setState(() {
       _sort = selected;
@@ -170,32 +215,40 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
     _scroll.jumpTo(0);
   }
 
-  Future<void> _chooseCompleteness() async {
-    final selected = await showAppBottomSheet<String>(
-      context: context,
-      builder: (context) => Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (final option in [
-            ('', context.l10n.libraryFilterAll),
-            (incompleteAlbumFilter, context.l10n.libraryFilterIncompleteAlbums),
-            (
-              unknownAlbumCompletenessFilter,
-              context.l10n.libraryAlbumCompletenessUnknown,
-            ),
-          ])
-            ListTile(
-              title: Text(option.$2),
-              selected: (_completeness ?? '') == option.$1,
-              selectedColor: Theme.of(context).colorScheme.onSurface,
-              trailing: (_completeness ?? '') == option.$1
-                  ? const Icon(Icons.check)
-                  : null,
-              onTap: () => Navigator.pop(context, option.$1),
-            ),
-        ],
+  Future<void> _chooseCompleteness(BuildContext buttonContext) async {
+    final options = [
+      ('', context.l10n.libraryFilterAll, Icons.album_outlined),
+      (
+        incompleteAlbumFilter,
+        context.l10n.libraryFilterIncompleteAlbums,
+        Icons.rule,
       ),
-    );
+      (
+        unknownAlbumCompletenessFilter,
+        context.l10n.libraryAlbumCompletenessUnknown,
+        Icons.help_outline,
+      ),
+    ];
+    final selected =
+        await (_chooseFromMenu(buttonContext, options, _completeness ?? '') ??
+            showAppBottomSheet<String>(
+              context: context,
+              builder: (context) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final option in options)
+                    ListTile(
+                      title: Text(option.$2),
+                      selected: (_completeness ?? '') == option.$1,
+                      selectedColor: Theme.of(context).colorScheme.onSurface,
+                      trailing: (_completeness ?? '') == option.$1
+                          ? const Icon(Icons.check)
+                          : null,
+                      onTap: () => Navigator.pop(context, option.$1),
+                    ),
+                ],
+              ),
+            ));
     if (!mounted || selected == null || selected == (_completeness ?? '')) {
       return;
     }
@@ -281,18 +334,22 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
           },
         )
       else if (!_artists) ...[
-        IconButton(
-          tooltip: context.l10n.searchSortTitle,
-          icon: const Icon(Icons.sort),
-          onPressed: _chooseSort,
-        ),
-        IconButton(
-          tooltip: context.l10n.libraryFilterTitle,
-          icon: Badge(
-            isLabelVisible: _completeness != null,
-            child: const Icon(Icons.filter_list),
+        Builder(
+          builder: (buttonContext) => IconButton(
+            tooltip: context.l10n.searchSortTitle,
+            icon: const Icon(Icons.sort),
+            onPressed: () => _chooseSort(buttonContext),
           ),
-          onPressed: _chooseCompleteness,
+        ),
+        Builder(
+          builder: (buttonContext) => IconButton(
+            tooltip: context.l10n.libraryFilterTitle,
+            icon: Badge(
+              isLabelVisible: _completeness != null,
+              child: const Icon(Icons.filter_list),
+            ),
+            onPressed: () => _chooseCompleteness(buttonContext),
+          ),
         ),
       ],
     ];
@@ -442,27 +499,43 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                   itemCount: _rows.length,
                   itemBuilder: (context, index) {
                     final entry = _rows[index];
+                    void open() => _openPage(
+                      MornyeLibraryPage.albums,
+                      artist: entry.artist,
+                    );
                     return Column(
                       children: [
-                        ListTile(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 24 + listInset,
-                            vertical: 8,
+                        DesktopContextMenuRegion(
+                          onContextMenu: (position) => showContextMenu(
+                            context,
+                            position: position,
+                            groups: [
+                              [
+                                ContextMenuAction(
+                                  icon: Icons.open_in_new,
+                                  label: context.l10n.desktopMenuOpen,
+                                  onSelected: open,
+                                ),
+                              ],
+                            ],
                           ),
-                          leading: ClipOval(
-                            child: SizedBox.square(
-                              dimension: 56,
-                              child: _LibraryBrowseArtwork(entry: entry),
+                          child: ListTile(
+                            contentPadding: EdgeInsets.symmetric(
+                              horizontal: 24 + listInset,
+                              vertical: 8,
                             ),
-                          ),
-                          title: Text(entry.artist),
-                          subtitle: Text(
-                            context.l10n.queueTrackCount(entry.trackCount),
-                          ),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () => _openPage(
-                            MornyeLibraryPage.albums,
-                            artist: entry.artist,
+                            leading: ClipOval(
+                              child: SizedBox.square(
+                                dimension: 56,
+                                child: _LibraryBrowseArtwork(entry: entry),
+                              ),
+                            ),
+                            title: Text(entry.artist),
+                            subtitle: Text(
+                              context.l10n.queueTrackCount(entry.trackCount),
+                            ),
+                            trailing: const Icon(Icons.chevron_right),
+                            onTap: open,
                           ),
                         ),
                         Divider(
@@ -499,57 +572,10 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                         itemCount: _rows.length,
                         itemBuilder: (context, index) {
                           final entry = _rows[index];
-                          return Semantics(
-                            button: true,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () => _openAlbum(entry),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AspectRatio(
-                                    aspectRatio: 1,
-                                    child: Stack(
-                                      fit: StackFit.expand,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                          child: _LibraryBrowseArtwork(
-                                            entry: entry,
-                                          ),
-                                        ),
-                                        if (entry.completeness != null)
-                                          Positioned(
-                                            right: 8,
-                                            bottom: 8,
-                                            child: _buildCompletenessBadge(
-                                              entry.completeness!,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    entry.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: const TextStyle(fontSize: 16),
-                                  ),
-                                  Text(
-                                    entry.artist,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: colors.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                          return DesktopContextMenuRegion(
+                            onContextMenu: (position) =>
+                                _showAlbumMenu(entry, position),
+                            child: _buildAlbumTile(entry, colors),
                           );
                         },
                       );
@@ -582,6 +608,93 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
           ],
           const NavBarSliverSpacer(),
         ],
+      ),
+    );
+  }
+
+  Future<void> _playAlbum(LibraryBrowseEntry entry) async {
+    try {
+      if (entry.source == 'local') {
+        await playLocalAlbum(ref, await _loadLocalAlbum(entry));
+      } else {
+        await playDownloadedAlbum(
+          ref,
+          albumName: entry.name,
+          artistName: entry.artist,
+        );
+      }
+    } catch (e) {
+      if (mounted) showCannotOpenFileSnackBar(context, e);
+    }
+  }
+
+  void _showAlbumMenu(LibraryBrowseEntry entry, Offset position) {
+    showContextMenu(
+      context,
+      position: position,
+      groups: [
+        [
+          ContextMenuAction(
+            icon: Icons.open_in_new,
+            label: context.l10n.desktopMenuOpen,
+            onSelected: () => _openAlbum(entry),
+          ),
+          ContextMenuAction(
+            icon: Icons.play_arrow,
+            label: context.l10n.tooltipPlay,
+            onSelected: () => _playAlbum(entry),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildAlbumTile(LibraryBrowseEntry entry, ColorScheme colors) {
+    return Semantics(
+      button: true,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _openAlbum(entry),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AspectRatio(
+              aspectRatio: 1,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _LibraryBrowseArtwork(entry: entry),
+                  ),
+                  if (entry.completeness != null)
+                    Positioned(
+                      right: 8,
+                      bottom: 8,
+                      child: _buildCompletenessBadge(entry.completeness!),
+                    ),
+                  DesktopHoverPlayButton(
+                    tooltip: context.l10n.tooltipPlay,
+                    onPlay: () => _playAlbum(entry),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              entry.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 16),
+            ),
+            Text(
+              entry.artist,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 14, color: colors.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -29,6 +29,13 @@ import 'package:mornye/screens/selection_mode_mixin.dart';
 import 'package:mornye/screens/track_metadata_screen.dart';
 import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
 import 'package:mornye/widgets/collection_scaffold.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/detail_header.dart';
+import 'package:mornye/widgets/desktop/library_track_menu.dart';
+import 'package:mornye/widgets/playlist_picker_sheet.dart';
+import 'package:mornye/widgets/desktop/track_table.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
 import 'package:mornye/widgets/app_snack_bar.dart';
 import 'package:mornye/widgets/album_track_tile.dart';
@@ -274,17 +281,30 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
         ? MediaQuery.paddingOf(context).bottom
         : 0.0;
 
-    return CollectionScaffold(
-      scrollController: scrollController,
-      isSelectionMode: isSelectionMode,
-      onExitSelectionMode: exitSelectionMode,
-      appBar: _buildAppBar(context, colorScheme, tracks, qualityLabelMode),
-      slivers: [_buildTrackList(context, colorScheme, order)],
-      selectionBar: _buildSelectionBottomBar(
-        context,
-        colorScheme,
-        tracks,
-        bottomPadding,
+    return DesktopListScope(
+      onSelectAll: tracks.isEmpty
+          ? null
+          : () => selectAll(tracks.map((track) => track.id)),
+      onClearSelection: isSelectionMode ? exitSelectionMode : null,
+      onDelete: isSelectionMode ? () => _deleteSelected(tracks) : null,
+      onActivate: () {
+        final anchor = tracks
+            .where((track) => track.id == selectionAnchorId)
+            .firstOrNull;
+        if (anchor != null) _openFile(anchor, queueItems: tracks);
+      },
+      child: CollectionScaffold(
+        scrollController: scrollController,
+        isSelectionMode: isSelectionMode,
+        onExitSelectionMode: exitSelectionMode,
+        appBar: _buildAppBar(context, colorScheme, tracks, qualityLabelMode),
+        slivers: [_buildTrackList(context, colorScheme, order)],
+        selectionBar: _buildSelectionBottomBar(
+          context,
+          colorScheme,
+          tracks,
+          bottomPadding,
+        ),
       ),
     );
   }
@@ -381,13 +401,17 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
       ),
       subtitle: Text(
         widget.artistName,
-        style: TextStyle(
-          color: context.isMornye
-              ? colorScheme.primary
-              : HeaderPalette.of(context).onSurfaceVariant,
-          fontSize: context.tokens.headerSubtitleSize,
-          fontWeight: context.isMornye ? FontWeight.w400 : FontWeight.w600,
-        ),
+        style: isDesktopPlatform
+            ? desktopDetailSubtitleStyle(context)
+            : TextStyle(
+                color: context.isMornye
+                    ? colorScheme.primary
+                    : HeaderPalette.of(context).onSurfaceVariant,
+                fontSize: context.tokens.headerSubtitleSize,
+                fontWeight: context.isMornye
+                    ? FontWeight.w400
+                    : FontWeight.w600,
+              ),
         textAlign: TextAlign.center,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
@@ -401,8 +425,27 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
               shuffleTooltip: context.l10n.actionShuffle,
               onPlay: () => _playAll(tracks),
               onShuffle: () => _shuffleAll(tracks),
+              onAddToPlaylist: () => showAddTracksToPlaylistSheet(
+                Navigator.of(context, rootNavigator: true).context,
+                ref,
+                [
+                  for (final track in tracks)
+                    UnifiedLibraryItem.fromDownloadHistory(track).toTrack(),
+                ],
+              ),
             )
           : null,
+      moreMenu: tracks.isEmpty
+          ? null
+          : () => libraryTrackMenuGroups(
+              context,
+              ref,
+              items: [
+                for (final track in tracks)
+                  UnifiedLibraryItem.fromDownloadHistory(track),
+              ],
+              onPlay: () => _playAll(tracks),
+            ),
     );
   }
 
@@ -537,6 +580,7 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
     final tracks = order.tracks;
     final discMap = order.discGroups;
 
+    if (isDesktopPlatform) return _buildDesktopTable(context, tracks);
     if (discMap.length <= 1) {
       return SliverPadding(
         padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
@@ -603,6 +647,99 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
       sliver: SliverMainAxisGroup(slivers: slivers),
+    );
+  }
+
+  /// The desktop song table: double click plays, right-click opens the
+  /// selection's actions.
+  Widget _buildDesktopTable(
+    BuildContext context,
+    List<DownloadHistoryItem> tracks,
+  ) {
+    final mode = ref.watch(
+      settingsProvider.select((s) => s.libraryQualityLabelMode),
+    );
+    final indexById = {
+      for (var index = 0; index < tracks.length; index++)
+        tracks[index].id: index,
+    };
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
+      sliver: SliverTrackTable(
+        rows: [
+          for (final track in tracks)
+            TrackTableRow(
+              id: track.id,
+              number: track.trackNumber,
+              title: track.trackName,
+              artist: track.artistName,
+              album: track.albumName,
+              quality: buildLibraryAudioQualityLabel(
+                mode: mode,
+                format: track.format,
+                filePath: track.filePath,
+                fileName: track.safFileName,
+                bitrateKbps: track.bitrate,
+                bitDepth: track.bitDepth,
+                sampleRate: track.sampleRate,
+                storedQuality: track.quality,
+              ),
+              duration: track.duration == null
+                  ? null
+                  : Duration(seconds: track.duration!),
+              trailing: AlbumTrackPlayButton(
+                isPlaying: false,
+                onPlay: () => _openFile(track, queueItems: tracks),
+                dense: true,
+              ),
+            ),
+        ],
+        columns: const [
+          TrackTableColumn.number,
+          TrackTableColumn.title,
+          TrackTableColumn.artist,
+          TrackTableColumn.quality,
+          TrackTableColumn.duration,
+        ],
+        selectedIds: selectedIds,
+        albumLayout: context.isMornye,
+        albumArtist: widget.artistName,
+        onSelect: applyDesktopClick,
+        onActivate: (id) {
+          final index = indexById[id];
+          if (index != null) _openFile(tracks[index], queueItems: tracks);
+        },
+        onContextMenu: (id, position) {
+          final index = indexById[id];
+          if (index == null) return;
+          selectForContextMenu(id);
+          final items = _selectedUnifiedItems(tracks);
+          showContextMenu(
+            context,
+            position: position,
+            groups: libraryTrackMenuGroups(
+              context,
+              ref,
+              items: items,
+              onPlay: () => _openFile(tracks[index], queueItems: tracks),
+              onOpenDetails: () => _navigateToMetadataScreen(
+                tracks[index],
+                navigationItems: tracks,
+                navigationIndex: index,
+              ),
+              onDone: exitSelectionMode,
+              onReEnrich: () => _reEnrichSelected(tracks),
+              onConvert: () => showBatchConvertSheet(
+                this.context,
+                ref,
+                items,
+                onExitSelectionMode: exitSelectionMode,
+              ),
+              onDelete: () => _deleteSelected(tracks),
+            ),
+          );
+        },
+      ),
     );
   }
 

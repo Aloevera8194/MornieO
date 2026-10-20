@@ -19,6 +19,7 @@ import 'package:mornye/utils/adaptive_layout.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_snack_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_shortcuts.dart';
+import 'package:mornye/widgets/desktop/library_drop_target.dart';
 import 'package:mornye/widgets/mornye_glass_preparation.dart';
 import 'package:mornye/widgets/playback_feedback.dart';
 
@@ -226,7 +227,11 @@ class MornyeApp extends ConsumerWidget {
             Widget appContent = _OrientationFade(
               child: AppScaffoldMessenger(
                 child: PlaybackFeedback(
-                  child: child ?? const SizedBox.shrink(),
+                  // Desktop only: music dropped on the window joins the
+                  // Library.
+                  child: DesktopLibraryDropTarget(
+                    child: child ?? const SizedBox.shrink(),
+                  ),
                 ),
               ),
             );

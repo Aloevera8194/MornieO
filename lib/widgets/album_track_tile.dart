@@ -60,25 +60,46 @@ class AlbumTrackTile extends StatelessWidget {
       ),
       title: trackName,
       subtitle: subtitle,
-      trailing: AppIconButton(
-        tooltip: isPlaying
-            ? context.l10n.actionPause
-            : context.l10n.tooltipPlay,
-        onPressed: onPlay,
-        icon: Icon(
-          context.isMornye
-              ? (isPlaying
-                    ? CupertinoIcons.pause_fill
-                    : CupertinoIcons.play_fill)
-              : (isPlaying ? Icons.pause : Icons.play_arrow),
-          color: colorScheme.primary,
-        ),
-        style: IconButton.styleFrom(
-          minimumSize: Size.square(context.tokens.minTouchTarget),
-          backgroundColor: context.isMornye
-              ? Colors.transparent
-              : colorScheme.primaryContainer.withValues(alpha: 0.3),
-        ),
+      trailing: AlbumTrackPlayButton(isPlaying: isPlaying, onPlay: onPlay),
+    );
+  }
+}
+
+/// The play or pause button at the end of an album track row.
+class AlbumTrackPlayButton extends StatelessWidget {
+  const AlbumTrackPlayButton({
+    super.key,
+    required this.isPlaying,
+    required this.onPlay,
+    this.dense = false,
+  });
+
+  final bool isPlaying;
+  final VoidCallback? onPlay;
+
+  /// A 32dp pointer target for desktop table rows.
+  final bool dense;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return AppIconButton(
+      tooltip: isPlaying ? context.l10n.actionPause : context.l10n.tooltipPlay,
+      onPressed: onPlay,
+      icon: Icon(
+        context.isMornye
+            ? (isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill)
+            : (isPlaying ? Icons.pause : Icons.play_arrow),
+        color: colorScheme.primary,
+        size: dense ? 18 : null,
+      ),
+      style: IconButton.styleFrom(
+        minimumSize: Size.square(dense ? 32 : context.tokens.minTouchTarget),
+        padding: dense ? EdgeInsets.zero : null,
+        tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
+        backgroundColor: context.isMornye
+            ? Colors.transparent
+            : colorScheme.primaryContainer.withValues(alpha: 0.3),
       ),
     );
   }

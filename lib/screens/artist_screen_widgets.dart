@@ -57,6 +57,18 @@ extension _ArtistScreenSections on _ArtistScreenState {
       ),
     );
 
+    if (isDesktopPlatform) {
+      return _buildDesktopHeader(
+        context,
+        colorScheme,
+        albums: albums,
+        hasDiscography: hasDiscography,
+        imageUrl: hasValidImage ? imageUrl : null,
+        listenersText: listenersText,
+        isFavoriteArtist: isFavoriteArtist,
+      );
+    }
+
     if (context.isMornye) {
       final artwork = hasValidImage
           ? DownloadableCover(
@@ -152,6 +164,101 @@ extension _ArtistScreenSections on _ArtistScreenState {
         ),
       ),
     ];
+  }
+
+  /// Desktop: the round photo beside the name and actions, under a pinned
+  /// toolbar, in the same column as the discography.
+  List<Widget> _buildDesktopHeader(
+    BuildContext context,
+    ColorScheme colorScheme, {
+    required List<ArtistAlbum> albums,
+    required bool hasDiscography,
+    required String? imageUrl,
+    required String? listenersText,
+    required bool isFavoriteArtist,
+  }) {
+    final mornye = context.isMornye;
+    final placeholder = ColoredBox(
+      color: colorScheme.surfaceContainerHighest,
+      child: Center(
+        child: Icon(
+          mornye ? CupertinoIcons.person : Icons.person,
+          size: 64,
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+    );
+    return desktopDetailHeaderSlivers(
+      context,
+      title: widget.artistName,
+      circularArtwork: true,
+      artwork: (context, size) => imageUrl == null
+          ? placeholder
+          : DownloadableCover(
+              coverUrl: imageUrl,
+              baseName: widget.artistName,
+              child: CachedCoverImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+                memCacheWidth: (size * MediaQuery.devicePixelRatioOf(context))
+                    .round(),
+                errorWidget: (_, _, _) => placeholder,
+              ),
+            ),
+      subtitle: listenersText == null
+          ? null
+          : Text(
+              listenersText,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+      meta: _concerts.isEmpty || isSelectionMode ? null : _concertsButton(),
+      actions: isSelectionMode
+          ? null
+          : Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 10,
+              children: [
+                HeaderCircleButton(
+                  tonal: true,
+                  icon: isFavoriteArtist
+                      ? (mornye ? CupertinoIcons.star_fill : Icons.favorite)
+                      : (mornye ? CupertinoIcons.star : Icons.favorite_border),
+                  iconColor: isFavoriteArtist && !mornye
+                      ? colorScheme.error
+                      : colorScheme.primary,
+                  tooltip: isFavoriteArtist
+                      ? context.l10n.artistOptionRemoveFromFavorites
+                      : context.l10n.artistOptionAddToFavorites,
+                  onPressed: () => _toggleFavoriteArtist(context),
+                ),
+                if (hasDiscography && !_isLoadingDiscography)
+                  HeaderCircleButton(
+                    tonal: true,
+                    icon: mornye
+                        ? CupertinoIcons.arrow_down
+                        : Icons.download_rounded,
+                    iconColor: colorScheme.primary,
+                    tooltip: context.l10n.discographyDownload,
+                    onPressed: () =>
+                        _showDiscographyOptions(context, colorScheme, albums),
+                  ),
+              ],
+            ),
+      appBarActions: isSelectionMode
+          ? const []
+          : [
+              HeaderCircleButton(
+                icon: mornye
+                    ? CupertinoIcons.square_arrow_up
+                    : Icons.open_in_new_rounded,
+                tooltip: context.l10n.openInOtherServices,
+                onPressed: () => _showShareSheet(context),
+              ),
+            ],
+    );
   }
 
   Widget _buildArtistAppBar(
@@ -648,127 +755,146 @@ extension _ArtistScreenSections on _ArtistScreenState {
 
         final isQueued = queueItem != null;
 
-        final row = InkWell(
-          onTap: () => _handlePopularTrackTap(
-            track,
-            isQueued: isQueued,
-            isInHistory: isInHistory,
-            isInLocalLibrary: isInLocalLibrary,
-          ),
-          onLongPress: () => TrackCollectionQuickActions.showTrackOptionsSheet(
-            context,
-            ref,
-            track,
-            hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
-          ),
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(context.isMornye ? 20 : 16, 8, 10, 8),
-            child: Row(
-              children: [
-                if (!context.isMornye) ...[
-                  SizedBox(
-                    width: 24,
-                    child: Text(
-                      '$rank',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+        final row = DesktopContextMenuRegion(
+          onContextMenu: (position) =>
+              TrackCollectionQuickActions.showTrackOptionsSheet(
+                context,
+                ref,
+                track,
+                position: position,
+                hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
+              ),
+          child: InkWell(
+            onTap: () => _handlePopularTrackTap(
+              track,
+              isQueued: isQueued,
+              isInHistory: isInHistory,
+              isInLocalLibrary: isInLocalLibrary,
+            ),
+            onLongPress: () =>
+                TrackCollectionQuickActions.showTrackOptionsSheet(
+                  context,
+                  ref,
+                  track,
+                  hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
+                ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                context.isMornye ? 20 : 16,
+                8,
+                10,
+                8,
+              ),
+              child: Row(
+                children: [
+                  if (!context.isMornye) ...[
+                    SizedBox(
+                      width: 24,
+                      child: Text(
+                        '$rank',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                track.coverUrl != null
-                    ? DownloadableCover(
-                        coverUrl: track.coverUrl,
-                        baseName: '${track.artistName} - ${track.name}',
-                        child: CachedCoverImage(
-                          imageUrl: track.coverUrl!,
-                          width: 48,
-                          height: 48,
-                          borderRadius: BorderRadius.circular(4),
-                          placeholder: (context, url) => ShimmerLoading(
-                            child: Container(
+                    const SizedBox(width: 12),
+                  ],
+                  track.coverUrl != null
+                      ? DownloadableCover(
+                          coverUrl: track.coverUrl,
+                          baseName: '${track.artistName} - ${track.name}',
+                          child: CachedCoverImage(
+                            imageUrl: track.coverUrl!,
+                            width: 48,
+                            height: 48,
+                            borderRadius: BorderRadius.circular(4),
+                            placeholder: (context, url) => ShimmerLoading(
+                              child: Container(
+                                width: 48,
+                                height: 48,
+                                color: colorScheme.surfaceContainerHighest,
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
                               width: 48,
                               height: 48,
                               color: colorScheme.surfaceContainerHighest,
-                            ),
-                          ),
-                          errorWidget: (context, url, error) => Container(
-                            width: 48,
-                            height: 48,
-                            color: colorScheme.surfaceContainerHighest,
-                            child: Icon(
-                              Icons.music_note,
-                              color: colorScheme.onSurfaceVariant,
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        width: 48,
-                        height: 48,
-                        color: colorScheme.surfaceContainerHighest,
-                        child: Icon(
-                          Icons.music_note,
-                          color: colorScheme.onSurfaceVariant,
-                          size: 24,
-                        ),
-                      ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        track.name,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontSize: context.isMornye ? 17 : null,
-                          fontWeight: context.isMornye
-                              ? FontWeight.w400
-                              : FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (track.albumName.isNotEmpty ||
-                          isInLocalLibrary ||
-                          isInHistory)
-                        Row(
-                          children: [
-                            if (track.albumName.isNotEmpty)
-                              Expanded(
-                                child: ClickableAlbumName(
-                                  albumName: track.albumName,
-                                  albumId: track.albumId,
-                                  artistName: track.artistName,
-                                  coverUrl: track.coverUrl,
-                                  extensionId: widget.extensionId,
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: colorScheme.onSurfaceVariant,
-                                        fontSize: context.isMornye ? 15 : null,
-                                      ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              child: Icon(
+                                Icons.music_note,
+                                color: colorScheme.onSurfaceVariant,
+                                size: 24,
                               ),
-                            if (isInLocalLibrary || isInHistory) ...[
-                              if (track.albumName.isNotEmpty)
-                                const SizedBox(width: 6),
-                              const InLibraryBadge(),
-                            ],
-                          ],
+                            ),
+                          ),
+                        )
+                      : Container(
+                          width: 48,
+                          height: 48,
+                          color: colorScheme.surfaceContainerHighest,
+                          child: Icon(
+                            Icons.music_note,
+                            color: colorScheme.onSurfaceVariant,
+                            size: 24,
+                          ),
                         ),
-                    ],
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          track.name,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                fontSize: context.isMornye ? 17 : null,
+                                fontWeight: context.isMornye
+                                    ? FontWeight.w400
+                                    : FontWeight.w500,
+                              ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (track.albumName.isNotEmpty ||
+                            isInLocalLibrary ||
+                            isInHistory)
+                          Row(
+                            children: [
+                              if (track.albumName.isNotEmpty)
+                                Expanded(
+                                  child: ClickableAlbumName(
+                                    albumName: track.albumName,
+                                    albumId: track.albumId,
+                                    artistName: track.artistName,
+                                    coverUrl: track.coverUrl,
+                                    extensionId: widget.extensionId,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(
+                                          color: colorScheme.onSurfaceVariant,
+                                          fontSize: context.isMornye
+                                              ? 15
+                                              : null,
+                                        ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              if (isInLocalLibrary || isInHistory) ...[
+                                if (track.albumName.isNotEmpty)
+                                  const SizedBox(width: 6),
+                                const InLibraryBadge(),
+                              ],
+                            ],
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                TrackCollectionQuickActions(
-                  track: track,
-                  hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
-                ),
-              ],
+                  TrackCollectionQuickActions(
+                    track: track,
+                    hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -912,6 +1038,82 @@ extension _ArtistScreenSections on _ArtistScreenState {
   }) {
     final isSelected = selectedIds.contains(album.id);
 
+    return DesktopContextMenuRegion(
+      onContextMenu: (position) => _showAlbumMenu(context, album, position),
+      child: _buildAlbumCardBody(
+        context,
+        album,
+        colorScheme,
+        isSelected: isSelected,
+        tileSize: tileSize,
+        sectionHeight: sectionHeight,
+        showTypeBadge: showTypeBadge,
+      ),
+    );
+  }
+
+  /// The desktop menu of an album card: open it, or act on the selection
+  /// the album joins, as the selection bar does.
+  void _showAlbumMenu(
+    BuildContext context,
+    ArtistAlbum album,
+    Offset position,
+  ) {
+    selectForContextMenu(album.id);
+    final l10n = context.l10n;
+    final selected = [
+      for (final candidate in _albums ?? const <ArtistAlbum>[])
+        if (selectedIds.contains(candidate.id)) candidate,
+    ];
+    if (selected.isEmpty) selected.add(album);
+    showContextMenu(
+      context,
+      position: position,
+      groups: [
+        [
+          if (selected.length == 1)
+            ContextMenuAction(
+              icon: Icons.open_in_new,
+              label: l10n.desktopMenuOpen,
+              onSelected: () {
+                exitSelectionMode();
+                _navigateToAlbum(album);
+              },
+            ),
+          ContextMenuAction(
+            icon: Icons.playlist_add,
+            label: l10n.collectionAddToPlaylist,
+            onSelected: _isFetchingDiscography
+                ? null
+                : () {
+                    exitSelectionMode();
+                    _fetchAndQueueAlbums(
+                      selected,
+                      ref.read(settingsProvider).defaultService,
+                      null,
+                      addToPlaylist: true,
+                    );
+                  },
+          ),
+          ContextMenuAction(
+            icon: Icons.download,
+            label: l10n.discographyDownloadSelected,
+            onSelected: () => _downloadSelectedAlbums(this.context, selected),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildAlbumCardBody(
+    BuildContext context,
+    ArtistAlbum album,
+    ColorScheme colorScheme, {
+    required bool isSelected,
+    required double tileSize,
+    required double sectionHeight,
+    required bool showTypeBadge,
+  }) {
     return Semantics(
       button: true,
       selected: isSelectionMode && isSelected,

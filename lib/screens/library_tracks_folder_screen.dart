@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:mornye/widgets/app_icon_button.dart';
 import 'package:mornye/widgets/collection_scaffold.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/track_list_table.dart';
 import 'package:mornye/widgets/expressive_button.dart';
 import 'package:mornye/widgets/expressive_button_group.dart';
 import 'package:mornye/theme/app_tokens.dart';
@@ -315,7 +319,11 @@ class _LibraryTracksFolderScreenState
         ? MediaQuery.paddingOf(context).bottom
         : 0.0;
 
-    return CollectionScaffold(
+    final inHistory = [
+      for (final lookup in historyLookups)
+        existingHistoryKeys.contains(lookup.lookupKey),
+    ];
+    final scaffold = CollectionScaffold(
       scrollController: scrollController,
       isSelectionMode: isSelectionMode,
       onExitSelectionMode: exitSelectionMode,
@@ -334,6 +342,26 @@ class _LibraryTracksFolderScreenState
               title: emptyTitle,
               subtitle: emptySubtitle,
             ),
+          )
+        else if (isDesktopPlatform)
+          TrackListTable(
+            tracks: folderTracks,
+            ids: [for (final entry in entries) entry.key],
+            isInHistory: inHistory,
+            selectedIds: selectedIds,
+            onSelect: applyDesktopClick,
+            onActivate: (index) =>
+                _activateEntry(entries, folderTracks, inHistory, index),
+            onContextMenu: (index, position) => _showEntryMenu(
+              context,
+              entries,
+              folderTracks,
+              inHistory,
+              index,
+              position,
+            ),
+            showArtwork: true,
+            showAlbum: true,
           )
         else
           SliverPadding(
@@ -370,6 +398,109 @@ class _LibraryTracksFolderScreenState
               }, childCount: entries.length),
             ),
           ),
+      ],
+    );
+    return DesktopListScope(
+      onSelectAll: entries.isEmpty
+          ? null
+          : () => selectAll(entries.map((entry) => entry.key)),
+      onClearSelection: isSelectionMode ? exitSelectionMode : null,
+      onDelete: isSelectionMode ? () => _removeSelected(entries) : null,
+      onActivate: () {
+        final index = entries.indexWhere(
+          (entry) => entry.key == selectionAnchorId,
+        );
+        if (index >= 0) {
+          _activateEntry(entries, folderTracks, inHistory, index);
+        }
+      },
+      child: scaffold,
+    );
+  }
+
+  /// Double click and Enter on a desktop row: plays a downloaded track,
+  /// downloads a wishlist one, and otherwise does what a tap on the mobile
+  /// row does.
+  void _activateEntry(
+    List<CollectionTrackEntry> entries,
+    List<Track> tracks,
+    List<bool> inHistory,
+    int index,
+  ) {
+    if (inHistory[index]) {
+      _playFrom(tracks, index);
+    } else if (widget.mode == LibraryTracksFolderMode.wishlist) {
+      downloadSingleTrack(context, ref, entries[index].track);
+    } else {
+      _openCollectionTrack(context, ref, entries[index].track);
+    }
+  }
+
+  Future<void> _playFrom(List<Track> tracks, int index) async {
+    try {
+      await ref
+          .read(playbackProvider.notifier)
+          .playTrackList(tracks, startIndex: index);
+    } catch (error) {
+      if (mounted) showCannotOpenFileSnackBar(context, error);
+    }
+  }
+
+  /// The right-click menu of a desktop row: the selection bar's actions for
+  /// the selection the row joins, after the row's own Play and details.
+  void _showEntryMenu(
+    BuildContext context,
+    List<CollectionTrackEntry> entries,
+    List<Track> tracks,
+    List<bool> inHistory,
+    int index,
+    Offset position,
+  ) {
+    final l10n = context.l10n;
+    selectForContextMenu(entries[index].key);
+    final count = selectedIds.length;
+    final isPlaylist = widget.mode == LibraryTracksFolderMode.playlist;
+    showContextMenu(
+      context,
+      position: position,
+      groups: [
+        [
+          if (inHistory[index])
+            ContextMenuAction(
+              icon: Icons.play_arrow,
+              label: l10n.tooltipPlay,
+              onSelected: () => _playFrom(tracks, index),
+            ),
+          if (count == 1)
+            ContextMenuAction(
+              icon: Icons.info_outline,
+              label: l10n.desktopMenuShowDetails,
+              onSelected: () =>
+                  _openCollectionTrack(this.context, ref, tracks[index]),
+            ),
+        ],
+        [
+          if (widget.mode == LibraryTracksFolderMode.wishlist)
+            ContextMenuAction(
+              icon: Icons.download,
+              label: '${l10n.settingsDownload} ($count)',
+              onSelected: () => _downloadSelected(entries),
+            ),
+          ContextMenuAction(
+            icon: Icons.playlist_add,
+            label: '${l10n.collectionAddToPlaylist} ($count)',
+            onSelected: () => _addSelectedToPlaylist(entries),
+          ),
+        ],
+        [
+          ContextMenuAction(
+            icon: Icons.remove_circle_outline,
+            label:
+                '${isPlaylist ? l10n.collectionRemoveFromPlaylist : l10n.collectionRemoveFromFolder} ($count)',
+            destructive: true,
+            onSelected: () => _removeSelected(entries),
+          ),
+        ],
       ],
     );
   }
@@ -653,11 +784,14 @@ class _LibraryTracksFolderScreenState
             },
           ),
           const SizedBox(width: 8),
-          HeaderCircleButton(
-            icon: Icons.camera_alt_outlined,
-            iconSize: 20,
-            tooltip: context.l10n.collectionPlaylistChangeCover,
-            onPressed: () => _showCoverOptionsSheet(context, hasCustomCover),
+          Builder(
+            builder: (buttonContext) => HeaderCircleButton(
+              icon: Icons.camera_alt_outlined,
+              iconSize: 20,
+              tooltip: context.l10n.collectionPlaylistChangeCover,
+              onPressed: () =>
+                  _showCoverOptionsSheet(buttonContext, hasCustomCover),
+            ),
           ),
         ],
       ],
@@ -736,6 +870,34 @@ class _LibraryTracksFolderScreenState
 
   void _showCoverOptionsSheet(BuildContext context, bool hasCustomCover) {
     final colorScheme = Theme.of(context).colorScheme;
+    final menuPosition = isDesktopPlatform
+        ? contextMenuPositionBelow(context)
+        : null;
+    if (menuPosition != null) {
+      showContextMenu(
+        context,
+        position: menuPosition,
+        groups: [
+          [
+            ContextMenuAction(
+              icon: Icons.image_outlined,
+              label: context.l10n.collectionPlaylistChangeCover,
+              onSelected: _pickCoverImage,
+            ),
+          ],
+          if (hasCustomCover)
+            [
+              ContextMenuAction(
+                icon: Icons.delete_outline,
+                label: context.l10n.collectionPlaylistRemoveCover,
+                destructive: true,
+                onSelected: _removeCoverImage,
+              ),
+            ],
+        ],
+      );
+      return;
+    }
 
     showAppModalBottomSheet<void>(
       context: context,
@@ -1016,61 +1178,69 @@ class _CollectionTrackTile extends ConsumerWidget {
     downloadSingleTrack(context, ref, entry.track);
   }
 
-  Future<void> _navigateToMetadata(BuildContext context, WidgetRef ref) async {
-    final track = entry.track;
-    final historyNotifier = ref.read(downloadHistoryProvider.notifier);
+  Future<void> _navigateToMetadata(BuildContext context, WidgetRef ref) =>
+      _openCollectionTrack(context, ref, entry.track);
+}
 
-    var historyItem = await historyNotifier.getBySpotifyIdAsync(track.id);
+/// Opens the metadata of [track]'s downloaded or library file, or downloads
+/// it when there is none.
+Future<void> _openCollectionTrack(
+  BuildContext context,
+  WidgetRef ref,
+  Track track,
+) async {
+  final historyNotifier = ref.read(downloadHistoryProvider.notifier);
+
+  var historyItem = await historyNotifier.getBySpotifyIdAsync(track.id);
+  if (!context.mounted) return;
+
+  if (historyItem == null && track.isrc != null && track.isrc!.isNotEmpty) {
+    historyItem = await historyNotifier.getByIsrcAsync(track.isrc!);
     if (!context.mounted) return;
+  }
 
-    if (historyItem == null && track.isrc != null && track.isrc!.isNotEmpty) {
-      historyItem = await historyNotifier.getByIsrcAsync(track.isrc!);
-      if (!context.mounted) return;
-    }
+  historyItem ??= await historyNotifier.findByTrackAndArtistAsync(
+    track.name,
+    track.artistName,
+  );
+  if (!context.mounted) return;
 
-    historyItem ??= await historyNotifier.findByTrackAndArtistAsync(
-      track.name,
-      track.artistName,
-    );
-    if (!context.mounted) return;
-
-    if (historyItem != null) {
-      final embeddedCoverPath =
-          await DownloadedEmbeddedCoverResolver.resolveOrExtract(
-            historyItem.filePath,
-          );
-      if (!context.mounted) return;
-      await precacheMetadataBackdrop(
-        context,
-        embeddedCoverPath ?? historyItem.coverUrl,
-      );
-      if (!context.mounted) return;
-      await Navigator.of(context).push(
-        slidePageRoute<void>(page: TrackMetadataScreen(item: historyItem)),
-      );
-      return;
-    }
-
-    final localItem = await ref
-        .read(localLibraryProvider.notifier)
-        .findExistingAsync(
-          isrc: track.isrc,
-          trackName: track.name,
-          artistName: track.artistName,
+  if (historyItem != null) {
+    final embeddedCoverPath =
+        await DownloadedEmbeddedCoverResolver.resolveOrExtract(
+          historyItem.filePath,
         );
     if (!context.mounted) return;
-
-    if (localItem != null) {
-      await precacheMetadataBackdrop(context, localItem.coverPath);
-      if (!context.mounted) return;
-      await Navigator.of(context).push(
-        slidePageRoute<void>(page: TrackMetadataScreen(localItem: localItem)),
-      );
-      return;
-    }
-
-    _downloadTrack(context, ref);
+    await precacheMetadataBackdrop(
+      context,
+      embeddedCoverPath ?? historyItem.coverUrl,
+    );
+    if (!context.mounted) return;
+    await Navigator.of(
+      context,
+    ).push(slidePageRoute<void>(page: TrackMetadataScreen(item: historyItem)));
+    return;
   }
+
+  final localItem = await ref
+      .read(localLibraryProvider.notifier)
+      .findExistingAsync(
+        isrc: track.isrc,
+        trackName: track.name,
+        artistName: track.artistName,
+      );
+  if (!context.mounted) return;
+
+  if (localItem != null) {
+    await precacheMetadataBackdrop(context, localItem.coverPath);
+    if (!context.mounted) return;
+    await Navigator.of(context).push(
+      slidePageRoute<void>(page: TrackMetadataScreen(localItem: localItem)),
+    );
+    return;
+  }
+
+  downloadSingleTrack(context, ref, track);
 }
 
 class _EmptyFolderState extends StatelessWidget {

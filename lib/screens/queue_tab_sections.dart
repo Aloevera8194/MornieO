@@ -170,13 +170,54 @@ extension _QueueTabSections on _QueueTabState {
   }
 
   /// Quick sort control beside a page's count.
-  Widget _buildSortButton(BuildContext context) => ExpressiveButton(
-    text: true,
-    onPressed: () => _showSortSheet(context),
-    icon: const AppIcon(Icons.sort, size: 18),
-    style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-    child: Text(_sortLabel(context, _sortMode)),
+  Widget _buildSortButton(BuildContext context) => Builder(
+    builder: (context) => ExpressiveButton(
+      text: true,
+      onPressed: () => _showSortSheet(context),
+      icon: const AppIcon(Icons.sort, size: 18),
+      style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+      child: Text(_sortLabel(context, _sortMode)),
+    ),
   );
+
+  void _setSortMode(String mode) {
+    if (mode == _sortMode || !mounted) return;
+    _setState(() {
+      _sortMode = mode;
+      _resetLibraryPaging();
+    });
+  }
+
+  /// The sort modes as a checked menu below the sort button, on desktop.
+  bool _showSortMenu(BuildContext context) {
+    final position = isDesktopPlatform
+        ? contextMenuPositionBelow(context)
+        : null;
+    if (position == null) return false;
+    showContextMenu(
+      context,
+      position: position,
+      groups: [
+        [
+          for (final mode in _librarySortModes)
+            ContextMenuAction(
+              icon: switch (mode) {
+                'a-z' || 'z-a' => Icons.sort_by_alpha,
+                'artist-asc' || 'artist-desc' => Icons.person_outline,
+                'album-asc' || 'album-desc' => Icons.album_outlined,
+                'release-newest' || 'release-oldest' => Icons.event_outlined,
+                'genre-asc' || 'genre-desc' => Icons.category_outlined,
+                _ => Icons.schedule,
+              },
+              label: _sortLabel(context, mode),
+              checked: mode == _sortMode,
+              onSelected: () => _setSortMode(mode),
+            ),
+        ],
+      ],
+    );
+    return true;
+  }
 
   /// Switches song pages between the list and the cover grid.
   Widget _buildViewModeButton(BuildContext context, String viewMode) {
@@ -203,6 +244,7 @@ extension _QueueTabSections on _QueueTabState {
   );
 
   Future<void> _showSortSheet(BuildContext context) async {
+    if (_showSortMenu(context)) return;
     final selected = await _showLibraryOptionsSheet<String>(
       context,
       builder: (sheetContext, scrollController) => AppBottomSheet(
@@ -249,11 +291,7 @@ extension _QueueTabSections on _QueueTabState {
         ),
       ),
     );
-    if (selected == null || selected == _sortMode || !mounted) return;
-    _setState(() {
-      _sortMode = selected;
-      _resetLibraryPaging();
-    });
+    if (selected != null) _setSortMode(selected);
   }
 
   /// Albums | Singles switch at the top of the Albums page.

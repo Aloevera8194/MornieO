@@ -33,6 +33,10 @@ import 'package:mornye/widgets/playlist_picker_sheet.dart';
 import 'package:mornye/utils/clickable_metadata.dart';
 import 'package:mornye/widgets/cross_extension_share_sheet.dart';
 import 'package:mornye/widgets/track_list_tile.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/detail_header.dart';
+import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/track_list_table.dart';
 import 'package:mornye/widgets/audio_quality_badges.dart';
 import 'package:mornye/widgets/motion_header_banner.dart';
 import 'package:mornye/widgets/track_detail_actions.dart';
@@ -102,6 +106,9 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
   String? _headerImageUrl;
   List<String> _audioTraits = const [];
   String? _description;
+
+  /// Double click and Enter actions of the desktop table rows, by row id.
+  final Map<String, VoidCallback> _desktopActivations = {};
 
   String get _cacheKey =>
       '${_effectiveMetadataProviderIdFromAlbumId()}:${widget.albumId}';
@@ -442,7 +449,7 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
         _trackSelectionId(tracks[index], index),
     });
 
-    return CollectionScaffold(
+    final scaffold = CollectionScaffold(
       scrollController: scrollController,
       isSelectionMode: isSelectionMode,
       onExitSelectionMode: exitSelectionMode,
@@ -488,6 +495,17 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
           _buildAlbumFooter(context, colorScheme, tracks),
         ],
       ],
+    );
+    return DesktopListScope(
+      onSelectAll: tracks.isEmpty
+          ? null
+          : () => selectAll([
+              for (var index = 0; index < tracks.length; index++)
+                _trackSelectionId(tracks[index], index),
+            ]),
+      onClearSelection: isSelectionMode ? exitSelectionMode : null,
+      onActivate: () => _desktopActivations[selectionAnchorId]?.call(),
+      child: scaffold,
     );
   }
 
@@ -593,13 +611,15 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
               artistId: _artistId,
               coverUrl: widget.coverUrl,
               extensionId: widget.extensionId,
-              style: TextStyle(
-                color: colorScheme.primary,
-                fontSize: context.tokens.headerSubtitleSize,
-                fontWeight: context.isMornye
-                    ? FontWeight.w400
-                    : FontWeight.w600,
-              ),
+              style: isDesktopPlatform
+                  ? desktopDetailSubtitleStyle(context)
+                  : TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: context.tokens.headerSubtitleSize,
+                      fontWeight: context.isMornye
+                          ? FontWeight.w400
+                          : FontWeight.w600,
+                    ),
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -608,6 +628,27 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
       meta: _buildHeaderMeta(context, releaseDate, commonQualityTrack),
       actions: isSelectionMode
           ? null
+          : isDesktopPlatform
+          // Desktop: each control at its own width beside the artwork.
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 10,
+              children: [
+                _buildLoveAllButton(),
+                HeaderFilledButton(
+                  icon: context.isMornye
+                      ? CupertinoIcons.arrow_down_circle_fill
+                      : Icons.download,
+                  label: context.isMornye
+                      ? context.l10n.dialogDownload
+                      : context.l10n.downloadAllCount(tracks.length),
+                  onPressed: tracks.isEmpty
+                      ? null
+                      : () => _downloadAll(context),
+                ),
+                _buildAddToPlaylistButton(context),
+              ],
+            )
           : context.isMornye
           ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -691,6 +732,45 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
     final hasMultipleDiscs = tracks.any(
       (track) => discNumber(track) > 1 || (track.totalDiscs ?? 1) > 1,
     );
+    if (isDesktopPlatform) {
+      final ids = [
+        for (var i = 0; i < tracks.length; i++) _trackSelectionId(tracks[i], i),
+      ];
+      final inHistory = [
+        for (final lookup in historyLookups)
+          existingHistoryKeys.contains(lookup.lookupKey),
+      ];
+      void activate(int index) => TrackListTile.activate(
+        context,
+        ref,
+        tracks[index],
+        isInHistory: inHistory[index],
+        onDownload: ({bool forceQualityPicker = false}) => _downloadTrack(
+          context,
+          tracks[index],
+          forceQualityPicker: forceQualityPicker,
+        ),
+      );
+      _desktopActivations
+        ..clear()
+        ..addAll({
+          for (var i = 0; i < ids.length; i++) ids[i]: () => activate(i),
+        });
+      return TrackListTable(
+        tracks: tracks,
+        ids: ids,
+        isInHistory: inHistory,
+        selectedIds: selectedIds,
+        onSelect: applyDesktopClick,
+        onActivate: activate,
+        albumLayout: context.isMornye,
+        albumArtist:
+            widget.artistName ??
+            (tracks.isEmpty
+                ? null
+                : (tracks.first.albumArtist ?? tracks.first.artistName)),
+      );
+    }
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
       sliver: SliverList(

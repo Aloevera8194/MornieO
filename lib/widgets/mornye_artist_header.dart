@@ -6,6 +6,7 @@ import 'package:mornye/providers/runtime_profile_provider.dart';
 import 'package:mornye/theme/cover_palette.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/album_detail_header.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
 
@@ -40,6 +41,8 @@ class _MornyeArtistSurfaceState extends State<MornyeArtistSurface> {
 
   @override
   Widget build(BuildContext context) {
+    // Desktop detail pages keep the plain pane background and app accent.
+    if (isDesktopPlatform) return widget.child;
     final darkTheme = MornyeTheme.fromContext(
       context,
       brightness: Brightness.dark,

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderProxySliver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/runtime_profile_provider.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
@@ -19,6 +20,9 @@ import 'package:mornye/widgets/expressive_button.dart';
 import 'package:mornye/widgets/expressive_button_group.dart';
 import 'package:mornye/widgets/expressive_icon_button.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/detail_header.dart';
 
 /// Collapsing album-detail header shared by the album, local-album, and
 /// downloaded-album screens: full-bleed [background] (optionally blurred and
@@ -49,7 +53,11 @@ class AlbumDetailHeader extends StatelessWidget {
     this.backgroundColor,
     this.immersive = false,
     this.squareArtwork = true,
+    this.moreMenu,
   });
+
+  /// Desktop only: page actions behind a "More" button in the toolbar.
+  final List<List<ContextMenuAction>> Function()? moreMenu;
 
   final String title;
   final double expandedHeight;
@@ -105,7 +113,8 @@ class AlbumDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (context.isMornye && (coverBuilder != null || immersive)) {
+    if (isDesktopPlatform ||
+        (context.isMornye && (coverBuilder != null || immersive))) {
       final scheme = Theme.of(context).colorScheme;
       return HeaderPalette(
         scheme: scheme,
@@ -124,6 +133,7 @@ class AlbumDetailHeader extends StatelessWidget {
   /// Keep the toolbar at the collection scroll-view level so it stays pinned
   /// after the dynamically sized artwork and metadata have scrolled away.
   List<Widget> buildSlivers(BuildContext context) {
+    if (isDesktopPlatform) return _buildDesktopSlivers(context);
     if (!context.isMornye || (coverBuilder == null && !immersive)) {
       return [this];
     }
@@ -238,6 +248,22 @@ class AlbumDetailHeader extends StatelessWidget {
       SliverToBoxAdapter(child: details),
     ];
   }
+
+  List<Widget> _buildDesktopSlivers(BuildContext context) =>
+      desktopDetailHeaderSlivers(
+        context,
+        title: title,
+        artwork: (context, size) =>
+            coverBuilder?.call(context, size) ?? background,
+        subtitle: subtitle,
+        meta: meta,
+        actions: actions,
+        appBarActions: appBarActions,
+        moreMenu: moreMenu,
+        appBarTitle: appBarTitle,
+        leading: leading,
+        backgroundColor: backgroundColor,
+      );
 
   Widget _buildMornyeDetails(BuildContext context) => Padding(
     padding: EdgeInsets.fromLTRB(20, immersive ? 0 : 20, 20, 28),
@@ -516,6 +542,18 @@ class AlbumDetailHeader extends StatelessWidget {
   }
 }
 
+/// Marks header buttons grouped in one desktop capsule, where they drop their
+/// own glass circle.
+class HeaderActionGroup extends InheritedWidget {
+  const HeaderActionGroup({super.key, required super.child});
+
+  static bool of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<HeaderActionGroup>() != null;
+
+  @override
+  bool updateShouldNotify(HeaderActionGroup oldWidget) => false;
+}
+
 class _AlbumStretchArtwork extends StatelessWidget {
   const _AlbumStretchArtwork({required this.child});
 
@@ -588,6 +626,7 @@ class AlbumPlayActions extends StatelessWidget {
     required this.onPlay,
     required this.onShuffle,
     this.isPlaying = false,
+    this.onAddToPlaylist,
   });
 
   final String playLabel;
@@ -596,10 +635,14 @@ class AlbumPlayActions extends StatelessWidget {
   final VoidCallback onShuffle;
   final bool isPlaying;
 
+  /// Desktop only: a round "+" after Play that adds the songs to a playlist.
+  final VoidCallback? onAddToPlaylist;
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final scheme = HeaderPalette.of(context);
+    if (isDesktopPlatform) return _buildDesktop(context, scheme);
     if (context.isMornye) {
       return Row(
         children: [
@@ -647,6 +690,64 @@ class AlbumPlayActions extends StatelessWidget {
           backgroundColor: scheme.secondaryContainer.withValues(alpha: 0.8),
           foregroundColor: scheme.onSecondaryContainer,
         ),
+      ],
+    );
+  }
+
+  /// Shuffle, Play and "+" at their own widths along the artwork's bottom
+  /// edge: round gray buttons around the Play capsule in Mornye, a filled
+  /// Play button with tonal icon buttons in Material.
+  Widget _buildDesktop(BuildContext context, ColorScheme scheme) {
+    final addLabel = context.l10n.collectionAddToPlaylist;
+    if (context.isMornye) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 10,
+        children: [
+          HeaderCircleButton(
+            icon: CupertinoIcons.shuffle,
+            tooltip: shuffleTooltip,
+            tonal: true,
+            onPressed: onShuffle,
+          ),
+          _MornyeHeaderButton(
+            icon: isPlaying
+                ? CupertinoIcons.pause_fill
+                : CupertinoIcons.play_fill,
+            label: playLabel,
+            onPressed: onPlay,
+          ),
+          if (onAddToPlaylist != null)
+            HeaderCircleButton(
+              icon: CupertinoIcons.add,
+              tooltip: addLabel,
+              tonal: true,
+              onPressed: onAddToPlaylist,
+            ),
+        ],
+      );
+    }
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 8,
+      children: [
+        FilledButton.icon(
+          onPressed: onPlay,
+          icon: AppIcon(isPlaying ? Icons.pause : Icons.play_arrow, size: 20),
+          label: Text(playLabel),
+          style: FilledButton.styleFrom(minimumSize: const Size(112, 40)),
+        ),
+        IconButton.filledTonal(
+          tooltip: shuffleTooltip,
+          onPressed: onShuffle,
+          icon: const AppIcon(Icons.shuffle),
+        ),
+        if (onAddToPlaylist != null)
+          IconButton.filledTonal(
+            tooltip: addLabel,
+            onPressed: onAddToPlaylist,
+            icon: const AppIcon(Icons.playlist_add),
+          ),
       ],
     );
   }
@@ -732,6 +833,23 @@ class HeaderCircleButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tokens = context.tokens;
     final scheme = HeaderPalette.of(context);
+    // Desktop headers use pointer-sized controls.
+    final desktop = isDesktopPlatform;
+    final buttonSize =
+        this.buttonSize ?? (desktop ? (context.isMornye ? 36.0 : 40.0) : null);
+    final iconSize = desktop && this.iconSize == 22 ? 18.0 : this.iconSize;
+    if (context.isMornye && HeaderActionGroup.of(context)) {
+      return IconButton(
+        onPressed: onPressed,
+        tooltip: tooltip,
+        icon: AppIcon(mornyeIconFor(icon), size: iconSize),
+        style: IconButton.styleFrom(
+          minimumSize: Size.square(buttonSize ?? 36),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          foregroundColor: iconColor ?? scheme.onSurface,
+        ),
+      );
+    }
     if (context.isMornye) {
       if (tonal) {
         return Tooltip(
@@ -740,6 +858,7 @@ class HeaderCircleButton extends ConsumerWidget {
             dimension: buttonSize ?? 44,
             child: CupertinoButton(
               padding: EdgeInsets.zero,
+              minimumSize: Size.square(buttonSize ?? 44),
               borderRadius: BorderRadius.circular((buttonSize ?? 48) / 2),
               color: scheme.onSurface.withValues(
                 alpha: scheme.brightness == Brightness.dark ? 0.10 : 0.06,
@@ -810,17 +929,25 @@ class _MornyeHeaderButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = HeaderPalette.of(context);
+    // Desktop pills are the compact gray capsules of Apple Music.
+    final desktop = isDesktopPlatform;
+    final filled = prominent && !desktop;
     final foreground = onPressed == null
         ? scheme.onSurfaceVariant
-        : prominent
+        : filled
         ? scheme.onPrimary
         : scheme.primary;
     return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 50),
+      constraints: desktop
+          ? const BoxConstraints(minHeight: 36, maxHeight: 36, minWidth: 130)
+          : const BoxConstraints(minHeight: 50),
       child: CupertinoButton(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        borderRadius: BorderRadius.circular(28),
-        color: prominent
+        padding: desktop
+            ? const EdgeInsets.symmetric(horizontal: 18)
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        minimumSize: desktop ? const Size(130, 36) : null,
+        borderRadius: BorderRadius.circular(desktop ? 18 : 28),
+        color: filled
             ? scheme.primary
             : scheme.onSurface.withValues(
                 alpha: scheme.brightness == Brightness.dark ? 0.10 : 0.06,
@@ -830,15 +957,15 @@ class _MornyeHeaderButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppIcon(icon, size: 20, color: foreground),
-            const SizedBox(width: 8),
+            AppIcon(icon, size: desktop ? 16 : 20, color: foreground),
+            SizedBox(width: desktop ? 6 : 8),
             Flexible(
               child: Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 17,
+                  fontSize: desktop ? 15 : 17,
                   fontWeight: FontWeight.w600,
                   color: foreground,
                 ),
@@ -878,7 +1005,8 @@ class HeaderMetaRow extends StatelessWidget {
     }
 
     return Wrap(
-      alignment: WrapAlignment.center,
+      // The desktop header sets its details flush with the artwork.
+      alignment: isDesktopPlatform ? WrapAlignment.start : WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       runSpacing: 4,
       children: parts,
@@ -896,16 +1024,24 @@ class HeaderMetaItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = HeaderPalette.of(context);
+    // Desktop: the small, bold secondary line under the artist.
+    final desktop = isDesktopPlatform;
     final textStyle = TextStyle(
-      color: context.isMornye ? scheme.onSurfaceVariant : scheme.onSurface,
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
+      color: context.isMornye || desktop
+          ? scheme.onSurfaceVariant
+          : scheme.onSurface,
+      fontSize: desktop && context.isMornye ? 12 : 13,
+      fontWeight: desktop ? FontWeight.w600 : FontWeight.w500,
     );
     if (icon == null) return Text(label, style: textStyle);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        AppIcon(icon, size: 15, color: scheme.onSurface),
+        AppIcon(
+          icon,
+          size: 15,
+          color: desktop ? scheme.onSurfaceVariant : scheme.onSurface,
+        ),
         const SizedBox(width: 4),
         Text(label, style: textStyle),
       ],

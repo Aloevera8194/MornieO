@@ -785,6 +785,22 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                     }, childCount: leadCount + filteredUnifiedItems.length),
                   ),
                 )
+              : isDesktopPlatform
+              ? _buildLibrarySongTable(
+                  context,
+                  items: filteredUnifiedItems,
+                  leadCount: leadCount,
+                  leadBuilder: leadListCell,
+                  openAction: (item) => _libraryItemOpenAction(
+                    item,
+                    downloadedNavigationItems: downloadedNavigationItems,
+                    downloadedNavigationIndex:
+                        downloadedNavigationIndexByUnifiedId[item.id],
+                    localNavigationItems: localNavigationItems,
+                    localNavigationIndex:
+                        localNavigationIndexByUnifiedId[item.id],
+                  ),
+                )
               : sectioned
               ? _buildSectionedTrackSlivers(
                   context: context,
@@ -1060,6 +1076,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
           badgeIcon: Icons.music_note,
           coverUrl: album.coverUrl,
           onTap: () => _navigateToDownloadedAlbum(album),
+          onPlay: () => _playDownloadedAlbum(album),
         );
       },
     );
@@ -1096,6 +1113,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         badgeTextColor: colorScheme.onSurfaceVariant,
         badgeIcon: Icons.folder,
         onTap: () => _navigateToLocalAlbum(album),
+        onPlay: () => _playLocalAlbum(album),
       ),
     );
   }
@@ -1124,6 +1142,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
     required Color badgeTextColor,
     required IconData badgeIcon,
     required VoidCallback onTap,
+    VoidCallback? onPlay,
     String? coverUrl,
     AlbumCompleteness? completeness,
   }) {
@@ -1148,75 +1167,134 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         ),
         ?completenessLabel,
       ].join('. '),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: coverWidget ?? _albumPlaceholder(colorScheme),
-                  ),
-                  Positioned(
-                    right: 8,
-                    bottom: 8,
-                    child: Tooltip(
-                      message:
-                          completenessLabel ??
-                          context.l10n.tracksCount(trackCount),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: badgeColor,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            AppIcon(badgeIcon, size: 12, color: badgeTextColor),
-                            const SizedBox(width: 4),
-                            Text(
-                              completeness?.badge ?? '$trackCount',
-                              style: TextStyle(
-                                color: badgeTextColor,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
+      child: DesktopContextMenuRegion(
+        onContextMenu: (position) => showContextMenu(
+          context,
+          position: position,
+          groups: [
+            [
+              ContextMenuAction(
+                icon: Icons.open_in_new,
+                label: context.l10n.desktopMenuOpen,
+                onSelected: onTap,
+              ),
+              if (onPlay != null)
+                ContextMenuAction(
+                  icon: Icons.play_arrow_rounded,
+                  label: context.l10n.tooltipPlay,
+                  onSelected: onPlay,
+                ),
+            ],
+          ],
+        ),
+        child: _buildAlbumGridCell(
+          context: context,
+          albumName: albumName,
+          artistName: artistName,
+          trackCount: trackCount,
+          colorScheme: colorScheme,
+          coverWidget: coverWidget,
+          badgeColor: badgeColor,
+          badgeTextColor: badgeTextColor,
+          badgeIcon: badgeIcon,
+          onTap: onTap,
+          onPlay: onPlay,
+          coverUrl: coverUrl,
+          completeness: completeness,
+          completenessLabel: completenessLabel,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlbumGridCell({
+    required BuildContext context,
+    required String albumName,
+    required String artistName,
+    required int trackCount,
+    required ColorScheme colorScheme,
+    required Widget? coverWidget,
+    required Color badgeColor,
+    required Color badgeTextColor,
+    required IconData badgeIcon,
+    required VoidCallback onTap,
+    required VoidCallback? onPlay,
+    required String? coverUrl,
+    required AlbumCompleteness? completeness,
+    required String? completenessLabel,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: coverWidget ?? _albumPlaceholder(colorScheme),
+                ),
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: Tooltip(
+                    message:
+                        completenessLabel ??
+                        context.l10n.tracksCount(trackCount),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: badgeColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppIcon(badgeIcon, size: 12, color: badgeTextColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            completeness?.badge ?? '$trackCount',
+                            style: TextStyle(
+                              color: badgeTextColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+                DesktopHoverPlayButton(
+                  tooltip: context.l10n.tooltipPlay,
+                  onPlay: onPlay,
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              albumName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            albumName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          ClickableArtistName(
+            artistName: artistName,
+            coverUrl: coverUrl,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
-            ClickableArtistName(
-              artistName: artistName,
-              coverUrl: coverUrl,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

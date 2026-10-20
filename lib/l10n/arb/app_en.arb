@@ -7603,6 +7603,43 @@
   "desktopVolumeDown": "Decrease volume",
   "desktopShowSidebar": "Show sidebar",
   "desktopHideSidebar": "Hide sidebar",
+  "desktopTableSortedAscending": "{column}, sorted ascending",
+  "@desktopTableSortedAscending": {
+    "description": "Screen reader label of a song table column header that sorts the table A to Z",
+    "placeholders": {
+      "column": {"type": "String"}
+    }
+  },
+  "desktopTableSortedDescending": "{column}, sorted descending",
+  "@desktopTableSortedDescending": {
+    "description": "Screen reader label of a song table column header that sorts the table Z to A",
+    "placeholders": {
+      "column": {"type": "String"}
+    }
+  },
+  "desktopMenuOpen": "Open",
+  "@desktopMenuOpen": {
+    "description": "Context menu item that opens an album, artist, playlist or folder"
+  },
+  "desktopMenuShowDetails": "Show details",
+  "@desktopMenuShowDetails": {
+    "description": "Context menu item that opens a track's metadata page"
+  },
+  "desktopDropToImport": "Drop to add to your library",
+  "@desktopDropToImport": {
+    "description": "Overlay shown while music files or folders are dragged over the desktop window"
+  },
+  "desktopDropImported": "Adding {count} {count, plural, =1{folder} other{folders}} to your library",
+  "@desktopDropImported": {
+    "description": "Snackbar after dropping music onto the desktop window; the folders are scanned into the library",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "desktopDropNothingToImport": "Drop music files or folders to add them to your library",
+  "@desktopDropNothingToImport": {
+    "description": "Snackbar when the dropped items contain no folders or audio files"
+  },
   "desktopMenuSettings": "Settings…",
   "@desktopMenuSettings": {
     "description": "macOS app menu item that opens Settings"

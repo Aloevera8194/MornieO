@@ -96,6 +96,10 @@ extension _QueueTabItemWidgets on _QueueTabState {
             onLongPress: item.status == DownloadStatus.queued
                 ? () => _showQueuedItemMenu(context, item)
                 : null,
+            onContextMenu: item.status == DownloadStatus.queued
+                ? (position) =>
+                      _showQueuedItemMenu(context, item, position: position)
+                : null,
             background: item.status == DownloadStatus.downloading
                 ? SmoothedProgressBuilder(
                     builder: (context, progress, child) => Align(
@@ -384,8 +388,47 @@ extension _QueueTabItemWidgets on _QueueTabState {
     );
   }
 
-  Future<void> _showQueuedItemMenu(BuildContext context, DownloadItem item) {
+  /// The queued download's actions: a menu at [position] on desktop, a
+  /// sheet elsewhere.
+  Future<void> _showQueuedItemMenu(
+    BuildContext context,
+    DownloadItem item, {
+    Offset? position,
+  }) {
     final notifier = ref.read(downloadQueueProvider.notifier);
+    if (position != null && isDesktopPlatform) {
+      return showContextMenu(
+        context,
+        position: position,
+        groups: [
+          [
+            ContextMenuAction(
+              icon: Icons.skip_next,
+              label: context.l10n.queueDownloadNext,
+              onSelected: () => notifier.downloadNext(item.id),
+            ),
+            ContextMenuAction(
+              icon: Icons.arrow_upward,
+              label: context.l10n.queueMoveUp,
+              onSelected: () => notifier.moveQueuedItem(item.id, -1),
+            ),
+            ContextMenuAction(
+              icon: Icons.arrow_downward,
+              label: context.l10n.queueMoveDown,
+              onSelected: () => notifier.moveQueuedItem(item.id, 1),
+            ),
+          ],
+          [
+            ContextMenuAction(
+              icon: Icons.close,
+              label: context.l10n.dialogCancel,
+              destructive: true,
+              onSelected: () => notifier.cancelItem(item.id),
+            ),
+          ],
+        ],
+      );
+    }
     return showAppBottomSheet<void>(
       context: context,
       title: item.track.name,
@@ -789,6 +832,163 @@ extension _QueueTabItemWidgets on _QueueTabState {
     );
   }
 
+  /// A tap on a library song outside selection mode: opens its metadata, or
+  /// the bare file when the song has no history or library record.
+  VoidCallback _libraryItemOpenAction(
+    UnifiedLibraryItem item, {
+    required List<DownloadHistoryItem> downloadedNavigationItems,
+    required int? downloadedNavigationIndex,
+    required List<LocalLibraryItem> localNavigationItems,
+    required int? localNavigationIndex,
+  }) {
+    if (item.source == LibraryItemSource.downloaded) {
+      return () => _navigateToHistoryMetadataScreen(
+        item.historyItem!,
+        navigationItems: downloadedNavigationItems,
+        navigationIndex: downloadedNavigationIndex,
+      );
+    }
+    if (item.localItem != null) {
+      return () => _navigateToLocalMetadataScreen(
+        item.localItem!,
+        navigationItems: localNavigationItems,
+        navigationIndex: localNavigationIndex,
+      );
+    }
+    return () => _openFile(
+      item.filePath,
+      title: item.trackName,
+      artist: item.artistName,
+      album: item.albumName,
+      coverUrl: item.coverUrl ?? item.localCoverPath ?? '',
+    );
+  }
+
+  /// A desktop click on a library song selects it; a double click plays it.
+  void _desktopLibraryItemClick(
+    UnifiedLibraryItem item,
+    List<UnifiedLibraryItem> libraryItems,
+    VoidCallback open,
+  ) {
+    handleDesktopRowClick(
+      item.id,
+      select: (kind) => _applyDesktopClick(item.id, kind, [
+        for (final song in libraryItems) song.id,
+      ]),
+      activate: () => _playLibraryItem(item, libraryItems),
+    );
+  }
+
+  /// The desktop Songs table, after the [leadCount] active downloads. Songs
+  /// load in pages already sorted, so the header sorts through the Library
+  /// sort modes.
+  Widget _buildLibrarySongTable(
+    BuildContext context, {
+    required List<UnifiedLibraryItem> items,
+    required int leadCount,
+    required Widget Function(int index) leadBuilder,
+    required VoidCallback Function(UnifiedLibraryItem item) openAction,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final byId = {for (final item in items) item.id: item};
+    final sort = switch (_sortMode) {
+      'a-z' => (column: TrackTableColumn.title, ascending: true),
+      'z-a' => (column: TrackTableColumn.title, ascending: false),
+      'artist-asc' => (column: TrackTableColumn.artist, ascending: true),
+      'artist-desc' => (column: TrackTableColumn.artist, ascending: false),
+      'album-asc' => (column: TrackTableColumn.album, ascending: true),
+      'album-desc' => (column: TrackTableColumn.album, ascending: false),
+      _ => null,
+    };
+    final inset = EdgeInsets.symmetric(horizontal: wideListInset(context));
+    return SliverMainAxisGroup(
+      slivers: [
+        if (leadCount > 0)
+          SliverPadding(
+            padding: inset,
+            sliver: SliverList.builder(
+              itemCount: leadCount,
+              itemBuilder: (context, index) => leadBuilder(index),
+            ),
+          ),
+        SliverPadding(
+          padding: inset,
+          sliver: SliverTrackTable(
+            rows: [
+              for (final item in items)
+                TrackTableRow(
+                  id: item.id,
+                  title: item.trackName,
+                  artist: item.artistName,
+                  album: item.albumName,
+                  quality: item.qualityForMode(_libraryQualityLabelMode),
+                  duration: switch (item.historyItem?.duration ??
+                      item.localItem?.duration) {
+                    final seconds? when seconds > 0 => Duration(
+                      seconds: seconds,
+                    ),
+                    _ => null,
+                  },
+                  leading: _buildUnifiedCoverImage(item, colorScheme, 32),
+                ),
+            ],
+            columns: const [
+              TrackTableColumn.title,
+              TrackTableColumn.artist,
+              TrackTableColumn.album,
+              TrackTableColumn.quality,
+              TrackTableColumn.duration,
+            ],
+            selectedIds: _selectedIds,
+            onSelect: _applyDesktopClick,
+            onActivate: (id) {
+              final item = byId[id];
+              if (item != null) _playLibraryItem(item, items);
+            },
+            onContextMenu: (id, position) {
+              final item = byId[id];
+              if (item == null) return;
+              _showLibraryItemMenu(
+                context,
+                item,
+                items,
+                position,
+                onOpenDetails: openAction(item),
+              );
+            },
+            sort: sort,
+            sortableColumns: const {
+              TrackTableColumn.title,
+              TrackTableColumn.artist,
+              TrackTableColumn.album,
+            },
+            onSort: (next) {
+              final mode = switch (next) {
+                null => 'latest',
+                (column: TrackTableColumn.title, ascending: true) => 'a-z',
+                (column: TrackTableColumn.title, ascending: false) => 'z-a',
+                (column: TrackTableColumn.artist, ascending: true) =>
+                  'artist-asc',
+                (column: TrackTableColumn.artist, ascending: false) =>
+                  'artist-desc',
+                (column: TrackTableColumn.album, ascending: true) =>
+                  'album-asc',
+                (column: TrackTableColumn.album, ascending: false) =>
+                  'album-desc',
+                _ => _sortMode,
+              };
+              if (mode == _sortMode) return;
+              _setState(() {
+                _sortMode = mode;
+                _resetLibraryPaging();
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildUnifiedLibraryItem(
     BuildContext context,
     UnifiedLibraryItem item,
@@ -815,33 +1015,32 @@ extension _QueueTabItemWidgets on _QueueTabState {
     final sourceColor = colorScheme.surfaceContainerHighest;
     final sourceTextColor = colorScheme.onSurfaceVariant;
 
+    final open = _libraryItemOpenAction(
+      item,
+      downloadedNavigationItems: downloadedNavigationItems,
+      downloadedNavigationIndex: downloadedNavigationIndex,
+      localNavigationItems: localNavigationItems,
+      localNavigationIndex: localNavigationIndex,
+    );
+
     return Semantics(
       label: context.l10n.a11yTrackByArtist(item.trackName, item.artistName),
       selected: isSelected,
       child: TrackCard(
         isSelectionMode: _isSelectionMode,
         isSelected: isSelected,
-        onTap: _isSelectionMode
+        onTap: isDesktopPlatform
+            ? () => _desktopLibraryItemClick(item, libraryItems, open)
+            : _isSelectionMode
             ? () => _toggleSelection(item.id)
-            : isDownloaded
-            ? () => _navigateToHistoryMetadataScreen(
-                item.historyItem!,
-                navigationItems: downloadedNavigationItems,
-                navigationIndex: downloadedNavigationIndex,
-              )
-            : item.localItem != null
-            ? () => _navigateToLocalMetadataScreen(
-                item.localItem!,
-                navigationItems: localNavigationItems,
-                navigationIndex: localNavigationIndex,
-              )
-            : () => _openFile(
-                item.filePath,
-                title: item.trackName,
-                artist: item.artistName,
-                album: item.albumName,
-                coverUrl: item.coverUrl ?? item.localCoverPath ?? '',
-              ),
+            : open,
+        onContextMenu: (position) => _showLibraryItemMenu(
+          context,
+          item,
+          libraryItems,
+          position,
+          onOpenDetails: open,
+        ),
         onLongPress: playlistDragEnabled
             ? null
             : _isSelectionMode
@@ -955,33 +1154,32 @@ extension _QueueTabItemWidgets on _QueueTabState {
     final isDownloaded = item.source == LibraryItemSource.downloaded;
     final quality = item.qualityForMode(_libraryQualityLabelMode);
 
+    final open = _libraryItemOpenAction(
+      item,
+      downloadedNavigationItems: downloadedNavigationItems,
+      downloadedNavigationIndex: downloadedNavigationIndex,
+      localNavigationItems: localNavigationItems,
+      localNavigationIndex: localNavigationIndex,
+    );
+
     return TrackGridCard(
       isSelected: _isSelectionMode && isSelected,
       semanticLabel: context.l10n.a11yTrackByArtist(
         item.trackName,
         item.artistName,
       ),
-      onTap: _isSelectionMode
+      onTap: isDesktopPlatform
+          ? () => _desktopLibraryItemClick(item, libraryItems, open)
+          : _isSelectionMode
           ? () => _toggleSelection(item.id)
-          : isDownloaded
-          ? () => _navigateToHistoryMetadataScreen(
-              item.historyItem!,
-              navigationItems: downloadedNavigationItems,
-              navigationIndex: downloadedNavigationIndex,
-            )
-          : item.localItem != null
-          ? () => _navigateToLocalMetadataScreen(
-              item.localItem!,
-              navigationItems: localNavigationItems,
-              navigationIndex: localNavigationIndex,
-            )
-          : () => _openFile(
-              item.filePath,
-              title: item.trackName,
-              artist: item.artistName,
-              album: item.albumName,
-              coverUrl: item.coverUrl ?? item.localCoverPath ?? '',
-            ),
+          : open,
+      onContextMenu: (position) => _showLibraryItemMenu(
+        context,
+        item,
+        libraryItems,
+        position,
+        onOpenDetails: open,
+      ),
       onLongPress: playlistDragEnabled
           ? null
           : _isSelectionMode
@@ -1020,7 +1218,8 @@ extension _QueueTabItemWidgets on _QueueTabState {
               child: _buildLibraryQualityBadge(context, colorScheme, quality),
             ),
           ),
-        if (!_isSelectionMode)
+        // A desktop click selects, so the play button stays during selection.
+        if (!_isSelectionMode || isDesktopPlatform)
           Positioned(
             right: 4,
             bottom: 4,

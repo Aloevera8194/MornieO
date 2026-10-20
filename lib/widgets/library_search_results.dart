@@ -18,6 +18,8 @@ import 'package:mornye/services/local_track_redownload_service.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/app_choice_chip.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
+import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/desktop/library_track_menu.dart';
 import 'package:mornye/widgets/library_track_selection_bar.dart';
 import 'package:mornye/widgets/library_selection_playback_actions.dart';
 import 'package:mornye/widgets/selection_bottom_bar.dart';
@@ -215,6 +217,73 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
     );
   }
 
+  /// The desktop menu of a result. A song outside the selection becomes the
+  /// selection, so the menu acts on the song clicked.
+  Future<void> _showHitMenu(LibrarySearchHit hit, Offset position) async {
+    final l10n = context.l10n;
+    if (hit.kind != LibrarySearchKind.songs) {
+      await showContextMenu(
+        context,
+        position: position,
+        groups: [
+          [
+            ContextMenuAction(
+              icon: Icons.open_in_new,
+              label: l10n.desktopMenuOpen,
+              onSelected: () => _open(hit),
+            ),
+          ],
+        ],
+      );
+      return;
+    }
+    if (!_selected.containsKey(_itemId(hit))) {
+      final item = await _resolve(hit);
+      if (!mounted || item == null) return;
+      setState(() {
+        _selected
+          ..clear()
+          ..[item.id] = item;
+      });
+    }
+    if (!mounted) return;
+    final items = _selected.values.toList(growable: false);
+    await showContextMenu(
+      context,
+      position: position,
+      groups: libraryTrackMenuGroups(
+        context,
+        ref,
+        items: items,
+        onPlay: () => _open(hit, play: true),
+        onOpenDetails: () => _open(hit),
+        onDone: _exitSelection,
+        onReEnrich: () => reEnrichLibraryTracks(
+          context,
+          ref,
+          items,
+          isActive: () => mounted,
+          onSelectionHide: () async => _hideSelectionBar(),
+          onSelectionRestore: _restoreSelectionBar,
+          onComplete: _finishSelectionAction,
+        ),
+        onConvert: () => showBatchConvertSheet(
+          context,
+          ref,
+          items,
+          onExitSelectionMode: _finishSelectionAction,
+        ),
+        onDelete: () => deleteLibraryTracks(
+          context,
+          ref,
+          items,
+          isActive: () => mounted,
+          onComplete: _finishSelectionAction,
+        ),
+      ),
+    );
+  }
+
   String _label(LibrarySearchKind kind) => switch (kind) {
     LibrarySearchKind.songs => context.l10n.searchSongs,
     LibrarySearchKind.albums => context.l10n.searchAlbums,
@@ -356,6 +425,7 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
           ? () => _toggleSelection(hit)
           : null,
       onLongPress: song ? () => _toggleSelection(hit) : null,
+      onContextMenu: (position) => _showHitMenu(hit, position),
     );
   }
 

@@ -154,4 +154,88 @@ class TrackListTile extends ConsumerWidget {
 
     onDownload();
   }
+
+  /// What a tap on the row does, for the desktop song table: offers another
+  /// quality, plays the local copy, or downloads [track].
+  static Future<void> activate(
+    BuildContext context,
+    WidgetRef ref,
+    Track track, {
+    required bool isInHistory,
+    required void Function({bool forceQualityPicker}) onDownload,
+  }) async {
+    if (ref.read(downloadQueueLookupProvider).byTrackId.containsKey(track.id)) {
+      return;
+    }
+    final settings = ref.read(settingsProvider);
+    final isInLocalLibrary =
+        settings.localLibraryEnabled &&
+        settings.localLibraryShowDuplicates &&
+        ref
+            .read(localLibraryProvider)
+            .existsInLibrary(
+              isrc: track.isrc,
+              trackName: track.name,
+              artistName: track.artistName,
+            );
+    if (settings.allowQualityVariants && (isInHistory || isInLocalLibrary)) {
+      onDownload(forceQualityPicker: true);
+      return;
+    }
+    if (await playLocalIfAvailable(context, ref, track)) return;
+    onDownload();
+  }
+}
+
+/// Explicit, Dolby Atmos and In Library badges of a [TrackListTile], for the
+/// title cell of the desktop song table. Quality has its own column there.
+class TrackListTileBadges extends ConsumerWidget {
+  const TrackListTileBadges({
+    super.key,
+    required this.track,
+    required this.isInHistory,
+  });
+
+  final Track track;
+  final bool isInHistory;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final showLocalLibraryIndicator = ref.watch(
+      settingsProvider.select(
+        (s) => s.localLibraryEnabled && s.localLibraryShowDuplicates,
+      ),
+    );
+    final isInLocalLibrary =
+        showLocalLibraryIndicator &&
+        ref.watch(
+          localLibraryProvider.select(
+            (state) => state.existsInLibrary(
+              isrc: track.isrc,
+              trackName: track.name,
+              artistName: track.artistName,
+            ),
+          ),
+        );
+    final badges = [
+      ...buildQualityBadges(
+        audioQuality: null,
+        audioModes: track.audioModes,
+        colorScheme: colorScheme,
+        explicit: track.isExplicit,
+      ),
+      if (isInLocalLibrary || isInHistory) const InLibraryBadge(),
+    ];
+    if (badges.isEmpty) return const SizedBox.shrink();
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final (index, badge) in badges.indexed) ...[
+          if (index > 0) const SizedBox(width: 4),
+          badge,
+        ],
+      ],
+    );
+  }
 }

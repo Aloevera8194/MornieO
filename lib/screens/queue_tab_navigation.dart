@@ -234,24 +234,35 @@ extension _QueueTabNavigation on _QueueTabState {
     );
   }
 
-  void _navigateToLocalAlbum(_GroupedLocalAlbum album) {
-    Future<List<LocalLibraryItem>> loadTracks() async {
-      var rows = album.albumKey.isNotEmpty
-          ? await LibraryDatabase.instance.getQueueLocalAlbumTracksByKey(
-              album.albumKey,
-            )
-          : await LibraryDatabase.instance.getQueueLocalAlbumTracks(
-              album.albumName,
-              album.artistName,
-            );
-      if (rows.isEmpty && album.albumKey.isNotEmpty) {
-        rows = await LibraryDatabase.instance.getQueueLocalAlbumTracks(
-          album.albumName,
-          album.artistName,
-        );
-      }
-      return rows.map(LocalLibraryItem.fromJson).toList(growable: false);
+  /// Plays a scanned album from its first track, loading its tracks when the
+  /// Library page did not.
+  Future<void> _playLocalAlbum(_GroupedLocalAlbum album) async {
+    try {
+      await playLocalAlbum(
+        ref,
+        album.tracks.isNotEmpty
+            ? album.tracks
+            : await _loadLocalAlbumTracks(album),
+      );
+    } catch (e) {
+      if (mounted) showCannotOpenFileSnackBar(context, e);
     }
+  }
+
+  Future<void> _playDownloadedAlbum(_GroupedAlbum album) async {
+    try {
+      await playDownloadedAlbum(
+        ref,
+        albumName: album.albumName,
+        artistName: album.artistName,
+      );
+    } catch (e) {
+      if (mounted) showCannotOpenFileSnackBar(context, e);
+    }
+  }
+
+  void _navigateToLocalAlbum(_GroupedLocalAlbum album) {
+    Future<List<LocalLibraryItem>> loadTracks() => _loadLocalAlbumTracks(album);
 
     _navigateWithUnfocus(
       slidePageRoute(
@@ -266,6 +277,26 @@ extension _QueueTabNavigation on _QueueTabState {
         ),
       ),
     );
+  }
+
+  Future<List<LocalLibraryItem>> _loadLocalAlbumTracks(
+    _GroupedLocalAlbum album,
+  ) async {
+    var rows = album.albumKey.isNotEmpty
+        ? await LibraryDatabase.instance.getQueueLocalAlbumTracksByKey(
+            album.albumKey,
+          )
+        : await LibraryDatabase.instance.getQueueLocalAlbumTracks(
+            album.albumName,
+            album.artistName,
+          );
+    if (rows.isEmpty && album.albumKey.isNotEmpty) {
+      rows = await LibraryDatabase.instance.getQueueLocalAlbumTracks(
+        album.albumName,
+        album.artistName,
+      );
+    }
+    return rows.map(LocalLibraryItem.fromJson).toList(growable: false);
   }
 
   void _openWishlistFolder() {
