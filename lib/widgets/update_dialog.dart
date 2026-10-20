@@ -1,8 +1,11 @@
+import 'dart:io' show exit;
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:mornye/constants/app_info.dart';
 import 'package:mornye/services/update_checker.dart';
 import 'package:mornye/services/apk_downloader.dart';
+import 'package:mornye/services/desktop_updater.dart';
 import 'package:mornye/services/notification_service.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/utils/string_utils.dart';
@@ -51,17 +54,36 @@ class _UpdateDialogState extends State<UpdateDialog> {
   static final RegExp _boldPattern = RegExp(r'\*\*([^*]+)\*\*');
   static final RegExp _codePattern = RegExp(r'`([^`]+)`');
 
-  Future<void> _downloadAndInstall() async {
-    final apkUrl = widget.updateInfo.apkDownloadUrl;
+  /// Set once a desktop update needs one more step from the user: quitting
+  /// (macOS) or restarting (Linux AppImage).
+  _DesktopFinish? _desktopFinish;
 
-    if (apkUrl == null) {
-      final uri = Uri.parse(widget.updateInfo.downloadUrl);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-      if (mounted && !widget.forced) Navigator.pop(context);
+  bool get _opensReleasePage {
+    final info = widget.updateInfo;
+    if (info.installKind == UpdateInstallKind.apk) {
+      return info.apkDownloadUrl == null;
+    }
+    return !info.hasDesktopPackage;
+  }
+
+  Future<void> _openReleasePage() async {
+    final uri = Uri.parse(widget.updateInfo.downloadUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+    if (mounted && !widget.forced) Navigator.pop(context);
+  }
+
+  Future<void> _downloadAndInstall() async {
+    if (_opensReleasePage) {
+      await _openReleasePage();
       return;
     }
+    if (widget.updateInfo.hasDesktopPackage) {
+      await _downloadAndInstallDesktop();
+      return;
+    }
+    final apkUrl = widget.updateInfo.apkDownloadUrl!;
 
     setState(() {
       _isDownloading = true;
@@ -141,6 +163,75 @@ class _UpdateDialogState extends State<UpdateDialog> {
         );
       }
     }
+  }
+
+  Future<void> _downloadAndInstallDesktop() async {
+    final info = widget.updateInfo;
+    final updater = DesktopUpdater();
+    setState(() {
+      _isDownloading = true;
+      _progress = 0;
+      _statusText = context.l10n.updateStartingDownload;
+    });
+
+    try {
+      final file = await updater.download(
+        info,
+        onProgress: (received, total) {
+          if (!mounted) return;
+          setState(() {
+            _progress = total > 0 ? received / total : 0;
+            _statusText =
+                '${formatMegabytes(received)} / ${formatMegabytes(total)} MB';
+          });
+        },
+      );
+      if (!mounted) return;
+
+      switch (info.installKind) {
+        case UpdateInstallKind.windowsInstaller:
+          setState(() => _statusText = context.l10n.updateStartingInstaller);
+          await updater.startWindowsInstaller(file);
+          // The installer waits for this process to close its files.
+          exit(0);
+        case UpdateInstallKind.macosDiskImage:
+          await updater.openDiskImage(file);
+          if (mounted) {
+            setState(() {
+              _isDownloading = false;
+              _desktopFinish = _DesktopFinish.quit;
+            });
+          }
+        case UpdateInstallKind.linuxAppImage:
+          await updater.replaceAppImage(file, info.appImagePath!);
+          if (mounted) {
+            setState(() {
+              _isDownloading = false;
+              _desktopFinish = _DesktopFinish.restart;
+            });
+          }
+        case UpdateInstallKind.apk:
+        case UpdateInstallKind.releasePage:
+          break;
+      }
+    } catch (_) {
+      // DesktopUpdater logs the cause.
+      if (!mounted) return;
+      setState(() {
+        _isDownloading = false;
+        _statusText = context.l10n.updateDownloadFailed;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(context.l10n.updateFailedMessage)));
+    }
+  }
+
+  Future<void> _finishDesktopUpdate() async {
+    if (_desktopFinish == _DesktopFinish.restart) {
+      await DesktopUpdater().restartAppImage(widget.updateInfo.appImagePath!);
+    }
+    exit(0);
   }
 
   @override
@@ -314,6 +405,13 @@ class _UpdateDialogState extends State<UpdateDialog> {
                       ],
                     ),
                   ),
+                ] else if (_desktopFinish != null) ...[
+                  Text(
+                    _desktopFinish == _DesktopFinish.restart
+                        ? context.l10n.updateReadyToRestart
+                        : context.l10n.updateMacInstallHint,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ] else ...[
                   Text(
                     context.l10n.updateWhatsNew,
@@ -371,9 +469,26 @@ class _UpdateDialogState extends State<UpdateDialog> {
                       SizedBox(
                         width: double.infinity,
                         child: AppActionButton(
-                          onPressed: _downloadAndInstall,
-                          icon: const Icon(Icons.download_rounded, size: 20),
-                          label: Text(context.l10n.updateDownloadInstall),
+                          onPressed: _desktopFinish != null
+                              ? _finishDesktopUpdate
+                              : _downloadAndInstall,
+                          icon: Icon(switch (_desktopFinish) {
+                            _DesktopFinish.restart => Icons.restart_alt_rounded,
+                            _DesktopFinish.quit => Icons.exit_to_app_rounded,
+                            null =>
+                              _opensReleasePage
+                                  ? Icons.open_in_new_rounded
+                                  : Icons.download_rounded,
+                          }, size: 20),
+                          label: Text(switch (_desktopFinish) {
+                            _DesktopFinish.restart =>
+                              context.l10n.updateRestartNow,
+                            _DesktopFinish.quit => context.l10n.updateQuitApp,
+                            null =>
+                              _opensReleasePage
+                                  ? context.l10n.updateViewRelease
+                                  : context.l10n.updateDownloadInstall,
+                          }),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -505,6 +620,8 @@ class _UpdateDialogState extends State<UpdateDialog> {
     return formatted.isEmpty ? emptyFallback : formatted;
   }
 }
+
+enum _DesktopFinish { quit, restart }
 
 class _VersionChip extends StatelessWidget {
   final String version;

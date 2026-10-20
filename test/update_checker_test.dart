@@ -337,4 +337,45 @@ void main() {
       },
     );
   }
+
+  testWidgets('installs without a package offer the release page', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [lowEndDeviceProvider.overrideWithValue(false)],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => showUpdateDialog(
+                  context,
+                  updateInfo: UpdateInfo(
+                    version: '5.3.0',
+                    changelog: '- Desktop builds',
+                    downloadUrl: 'https://example.test/releases/v5.3.0',
+                    publishedAt: DateTime(2026, 10, 20),
+                    installKind: UpdateInstallKind.releasePage,
+                  ),
+                  onDisableUpdates: () {},
+                ),
+                child: const Text('Check now'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Check now'));
+    await tester.pumpAndSettle();
+    expect(find.text('View Release').hitTestable(), findsOneWidget);
+    expect(find.text('Download & Install'), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
