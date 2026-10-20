@@ -662,6 +662,10 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
               duration: track.duration == null
                   ? null
                   : Duration(seconds: track.duration!),
+              trailing: AlbumTrackPlayButton(
+                isPlaying: false,
+                onPlay: () => _openFile(track, queueItems: tracks),
+              ),
             ),
         ],
         columns: const [

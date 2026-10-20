@@ -567,6 +567,25 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
               duration: track.duration == null
                   ? null
                   : Duration(seconds: track.duration!),
+              trailing: Consumer(
+                builder: (context, ref, _) {
+                  final isCurrent = ref.watch(
+                    currentMediaItemProvider.select(
+                      (state) => _isCurrentTrack(state.value, track),
+                    ),
+                  );
+                  final isPlaying =
+                      isCurrent && ref.watch(playbackPlayingProvider);
+                  return AlbumTrackPlayButton(
+                    isPlaying: isPlaying,
+                    onPlay: isCurrent
+                        ? () => ref
+                              .read(musicPlayerControllerProvider)
+                              .togglePlayPause(isPlaying)
+                        : () => _openFile(track),
+                  );
+                },
+              ),
             ),
         ],
         columns: const [
