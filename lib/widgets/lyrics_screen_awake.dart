@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('LyricsScreenAwake');
 

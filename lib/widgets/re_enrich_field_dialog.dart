@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:spotiflac_android/theme/mornye_icons.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_action_button.dart';
-import 'package:spotiflac_android/widgets/app_checkbox.dart';
-import 'package:spotiflac_android/widgets/app_text_field.dart';
+import 'package:mornye/theme/mornye_icons.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_action_button.dart';
+import 'package:mornye/widgets/app_checkbox.dart';
+import 'package:mornye/widgets/app_text_field.dart';
 import '../l10n/app_localizations.dart';
-import 'package:spotiflac_android/services/batch_metadata_re_enrich.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/services/batch_metadata_re_enrich.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 Future<ReEnrichFieldSelection?> showReEnrichFieldDialog(
   BuildContext context, {

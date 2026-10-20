@@ -3,8 +3,8 @@
 use super::{RecordStore, RuntimeHints, protocol};
 use crate::auth::{AuthRegistry, PendingAuthRequest};
 use crate::manifest::SignedSession;
+use mornye_network::{HttpRequest, HttpResponse, NetworkSession};
 use serde_json::{Value, json};
-use spotiflac_network::{HttpRequest, HttpResponse, NetworkSession};
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -271,7 +271,7 @@ impl SignedSessionClient {
                 body,
                 headers,
                 default_json: false,
-                user_agent: format!("SpotiFLAC-Mobile/{}", self.config.app_version),
+                user_agent: format!("Mornye/{}", self.config.app_version),
             },
             || self.check(check),
         )

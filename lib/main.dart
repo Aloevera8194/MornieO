@@ -9,29 +9,29 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/app.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/local_library_provider.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/providers/theme_provider.dart';
-import 'package:spotiflac_android/services/notification_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/share_intent_service.dart';
-import 'package:spotiflac_android/services/cover_cache_manager.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
-import 'package:spotiflac_android/services/app_navigation_service.dart';
-import 'package:spotiflac_android/services/app_orientation.dart';
-import 'package:spotiflac_android/services/activity_attachment.dart';
-import 'package:spotiflac_android/services/app_crash_service.dart';
-import 'package:spotiflac_android/services/music_player_service.dart';
-import 'package:spotiflac_android/services/player_widget_service.dart';
-import 'package:spotiflac_android/screens/now_playing_screen.dart';
-import 'package:spotiflac_android/utils/local_library_scan_prefs.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/extension_auth_launcher.dart';
+import 'package:mornye/app.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/local_library_provider.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/providers/theme_provider.dart';
+import 'package:mornye/services/notification_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/share_intent_service.dart';
+import 'package:mornye/services/cover_cache_manager.dart';
+import 'package:mornye/services/app_state_database.dart';
+import 'package:mornye/services/app_navigation_service.dart';
+import 'package:mornye/services/app_orientation.dart';
+import 'package:mornye/services/activity_attachment.dart';
+import 'package:mornye/services/app_crash_service.dart';
+import 'package:mornye/services/music_player_service.dart';
+import 'package:mornye/services/player_widget_service.dart';
+import 'package:mornye/screens/now_playing_screen.dart';
+import 'package:mornye/utils/local_library_scan_prefs.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/extension_auth_launcher.dart';
 
 final _log = AppLogger('Main');
 _StartupBenchmark? _startupBenchmark;
@@ -131,7 +131,7 @@ void main() {
             initialThemeSettingsProvider.overrideWithValue(bootstrapTheme),
           ],
           child: EagerInitialization(
-            child: SpotiFLACApp(
+            child: MornyeApp(
               disableOverscrollEffects: runtimeProfile.disableOverscrollEffects,
             ),
           ),

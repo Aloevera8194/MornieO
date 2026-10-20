@@ -47,6 +47,7 @@ AGENTS.md
 /android/.gradle/
 /android/.kotlin/
 /android/app/build/
+/android/build/
 /android/app/libs/*.aar
 /android/app/libs/*-sources.jar
 /android/local.properties

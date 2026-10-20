@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_action_button.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_action_button.dart';
+import 'package:mornye/widgets/expressive_button.dart';
 
 /// Responsive rows shared by selection-mode action buttons.
 class SelectionActionGrid extends StatelessWidget {

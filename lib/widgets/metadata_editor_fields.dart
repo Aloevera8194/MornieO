@@ -1,12 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/mornye_icons.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/metadata_text_field.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/theme/mornye_icons.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/app_switch.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/metadata_text_field.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 /// Grouped option list used by the metadata editor pickers.
 class MetadataEditorOptions extends StatelessWidget {

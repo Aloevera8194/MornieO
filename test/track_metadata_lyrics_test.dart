@@ -6,13 +6,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/screens/track_metadata_screen.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/screens/track_metadata_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 

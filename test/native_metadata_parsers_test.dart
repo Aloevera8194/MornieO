@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/csv_import_service.dart';
-import 'package:spotiflac_android/services/network_storage_service.dart';
+import 'package:mornye/services/csv_import_service.dart';
+import 'package:mornye/services/network_storage_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -15,7 +15,7 @@ void main() {
             ).readAsStringSync(),
           )
           as Map<String, dynamic>;
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 

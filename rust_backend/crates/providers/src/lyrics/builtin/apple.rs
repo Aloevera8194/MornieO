@@ -2,8 +2,8 @@
 
 use super::*;
 use crate::lyrics::http;
+use mornye_core::lyrics::payloads;
 use regex::Regex;
-use spotiflac_core::lyrics::payloads;
 use std::sync::{LazyLock, MutexGuard, TryLockError};
 use std::time::Duration;
 
@@ -16,7 +16,7 @@ static TOKEN: LazyLock<Regex> =
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 enum AppleLyricsSource {
     Paxsenix,
-    SpotiFlac,
+    ZarzLrc,
 }
 
 impl BuiltinLyricsClient {
@@ -108,13 +108,13 @@ impl BuiltinLyricsClient {
         self.apple_lyrics(&id, AppleLyricsSource::Paxsenix, request, check)
     }
 
-    pub(super) fn spotiflac_lyrics(
+    pub(super) fn zarz_lrc_lyrics(
         &self,
         request: &SearchRequest,
         check: &Check<'_>,
     ) -> Result<LyricsResponse, LyricsError> {
         let id = self.apple_song_id(request, check)?;
-        self.apple_lyrics(&id, AppleLyricsSource::SpotiFlac, request, check)
+        self.apple_lyrics(&id, AppleLyricsSource::ZarzLrc, request, check)
     }
 
     fn apple_song_id(
@@ -186,7 +186,7 @@ impl BuiltinLyricsClient {
                 get.params = pairs(&[("id", id)]);
                 get
             }
-            AppleLyricsSource::SpotiFlac => {
+            AppleLyricsSource::ZarzLrc => {
                 let mut get = Request::new("https://api.zarz.moe/apple-music/lyrics");
                 get.timeout = Duration::from_secs(65);
                 // Let the backup use its account's storefront, since lyric
@@ -226,8 +226,8 @@ impl BuiltinLyricsClient {
                 };
                 (text, "Apple Music")
             }
-            AppleLyricsSource::SpotiFlac => (
-                payloads::format_spotiflac_apple(raw, multi_person, word_timing)
+            AppleLyricsSource::ZarzLrc => (
+                payloads::format_zarz_lrc_apple(raw, multi_person, word_timing)
                     .map_err(LyricsError::Unavailable)?,
                 "Zarz-LRC",
             ),
@@ -251,16 +251,16 @@ mod tests {
     }
 
     #[test]
-    fn spotiflac_lyrics_credit_never_names_the_proxy() {
+    fn zarz_lrc_lyrics_credit_never_names_the_proxy() {
         let lyrics = LyricsResponse::from_text("[00:01.00]Example", "Zarz-LRC", "Zarz-LRC");
-        let saved = spotiflac_core::lyrics::lrc::with_metadata(&lyrics, "Track", "Artist");
+        let saved = mornye_core::lyrics::lrc::with_metadata(&lyrics, "Track", "Artist");
         assert!(saved.contains("source: Zarz-LRC"));
         assert!(!saved.contains("Paxsenix"));
     }
 
     #[test]
     #[ignore = "requires live Apple catalog and Zarz-LRC access"]
-    fn live_spotiflac_lyrics_works_without_paxsenix() {
+    fn live_zarz_lrc_lyrics_works_without_paxsenix() {
         let network = NetworkService::new().unwrap();
         let client = BuiltinLyricsClient::with_endpoints(
             &network,
@@ -278,7 +278,7 @@ mod tests {
             duration: 213.0,
             ..SearchRequest::default()
         };
-        let lyrics = client.spotiflac_lyrics(&request, &|| Ok(())).unwrap();
+        let lyrics = client.zarz_lrc_lyrics(&request, &|| Ok(())).unwrap();
         assert!(lyrics.has_usable_text());
         assert!(lyrics.is_synced());
         assert_eq!(lyrics.provider, "Zarz-LRC");

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/library_row_mapper.dart';
-import 'package:spotiflac_android/utils/path_match_keys.dart';
+import 'package:mornye/services/library_row_mapper.dart';
+import 'package:mornye/utils/path_match_keys.dart';
 
 void main() {
   test(

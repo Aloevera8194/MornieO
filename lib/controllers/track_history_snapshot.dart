@@ -1,6 +1,6 @@
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/services/history_database.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/services/history_database.dart';
 
 /// Retains derived lookups while the immutable source list is unchanged.
 /// Callers replace their list for metadata, order, or filter changes.

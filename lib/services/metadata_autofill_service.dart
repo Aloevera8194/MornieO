@@ -1,6 +1,6 @@
-import 'package:spotiflac_android/models/extension.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/models/extension.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
 
 class MetadataAutofillResult {
   final Map<String, String> values;

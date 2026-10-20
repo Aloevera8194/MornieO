@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/app_state_database.dart';
+import 'package:mornye/utils/logger.dart';
 
 const _maxRecentItems = 20;
 final _log = AppLogger('RecentAccess');

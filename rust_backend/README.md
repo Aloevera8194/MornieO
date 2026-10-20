@@ -1,8 +1,14 @@
-# Rust Backend
+# Mornye Rust Backend
 
 The Rust workspace is the app's only backend on Android and iOS. Flutter
 reaches it through the native channel (see `android/README.md`); Kotlin and
-Swift call it through UniFFI bindings generated from `spotiflac-mobile`.
+Swift call it through UniFFI bindings generated from `mornye-mobile`.
+
+The app identifies itself as Mornye in HTTP requests, exported lyrics and
+new FLAC vendor metadata. Crates, native libraries and generated bindings
+use Mornye names. Legacy backup and extension formats remain readable;
+cryptographic domain separators retain their original values so branding
+changes do not invalidate encrypted storage or external session protocols.
 
 The toolchain is pinned in `rust_backend/rust-toolchain.toml` (Rust 1.99.0
 with rustfmt and clippy). The workspace uses edition 2024, resolver 3, and
@@ -20,12 +26,12 @@ workspace crate.
 
 | Crate | Package | Depends on |
 | --- | --- | --- |
-| `crates/core` | `spotiflac-core` | none |
-| `crates/network` | `spotiflac-network` | none |
-| `crates/providers` | `spotiflac-providers` | core, network |
-| `crates/extensions` | `spotiflac-extensions` | core, network, providers |
-| `crates/mobile` | `spotiflac-mobile` | core, network, extensions |
-| `crates/bindgen` | `spotiflac-bindgen` | `uniffi` CLI only |
+| `crates/core` | `mornye-core` | none |
+| `crates/network` | `mornye-network` | none |
+| `crates/providers` | `mornye-providers` | core, network |
+| `crates/extensions` | `mornye-extensions` | core, network, providers |
+| `crates/mobile` | `mornye-mobile` | core, network, extensions |
+| `crates/bindgen` | `mornye-bindgen` | `uniffi` CLI only |
 
 **core.** Shared backend logic, independent of mobile bindings and UI
 runtimes. Modules cover filenames, tags and metadata, covers and palette
@@ -52,7 +58,7 @@ download backend. Its main types are `ExtensionRuntime` and
 
 **mobile.** The UniFFI mobile API (`uniffi::setup_scaffolding!`). This crate
 is the only backend and routes the app on both platforms. It is built as
-`lib`, `cdylib` (Android `libspotiflac_mobile.so`) and `staticlib` (iOS).
+`lib`, `cdylib` (Android `libmornye_mobile.so`) and `staticlib` (iOS).
 It adds native data jobs, the native library, cache, collections, playlists
 and backup, lyrics, ID3 and network tags, `rusqlite`, and USB audio
 (`libusb1-sys`, Android only).
@@ -75,7 +81,7 @@ checks are in `rust_backend/vendor/README.md`. Third-party notices are in
 | Command | Result |
 | --- | --- |
 | `bash scripts/build_rust_backend.sh host` | Release host library and Kotlin and Swift bindings |
-| `bash scripts/build_rust_backend.sh android` | Host step, then `libspotiflac_mobile.so` for each ABI |
+| `bash scripts/build_rust_backend.sh android` | Host step, then `libmornye_mobile.so` for each ABI |
 | `bash scripts/build_rust_backend.sh ios` | Host step, then the XCFramework and CocoaPods staging |
 | `bash scripts/check_rust_backend.sh` | `cargo fmt --check`, `cargo clippy -D warnings`, `cargo test` |
 
@@ -84,8 +90,8 @@ both scripts passes `--locked`, so `Cargo.lock` must be up to date. The
 scripts do not pass `--offline`; dependencies come from crates.io except the
 vendored patches.
 
-The host step always runs first. It builds `spotiflac-mobile` in release
-mode, then runs `spotiflac-bindgen generate` against the host library for
+The host step always runs first. It builds `mornye-mobile` in release
+mode, then runs `mornye-bindgen generate` against the host library for
 Kotlin and Swift. Output goes to `rust_backend/target/`:
 
 - `target/release/`: host library (`.dylib` on macOS, `.so` on Linux)
@@ -101,7 +107,7 @@ enough. For a manual build:
 
 - Set `ANDROID_NDK_HOME` to NDK 30.0.16248370 (the version CI installs in
   `.github/workflows/ci.yml` and `android/app/build.gradle.kts` uses).
-- `SPOTIFLAC_RUST_ANDROID_ABIS` selects `arm64-v8a`, `armeabi-v7a` or both
+- `MORNYE_RUST_ANDROID_ABIS` selects `arm64-v8a`, `armeabi-v7a` or both
   (comma-separated; the default is both).
 - Libraries link against API 24 with 16 KB page alignment.
 
@@ -113,7 +119,7 @@ fallback on a connected device (see `rust_backend/vendor/README.md`).
 On macOS, `bash scripts/build_rust_backend.sh ios` builds
 `aarch64-apple-ios`, `aarch64-apple-ios-sim` and `x86_64-apple-ios` (iOS 16.0
 deployment target), merges the two simulator slices, and stages
-`target/ios/` with `rust_backend/SpotiFLACBackend.podspec`. Run
+`target/ios/` with `rust_backend/MornyeBackend.podspec`. Run
 `(cd ios && pod install)` afterwards; `ios/Podfile` refuses to install
 without the staged files.
 
@@ -123,8 +129,8 @@ The binding names come from `rust_backend/crates/mobile/uniffi.toml`.
 
 | Platform | Generated | Consumed by |
 | --- | --- | --- |
-| Android | Kotlin package `com.spotiflac.backend`, loading `spotiflac_mobile` through JNA | `android/app/build.gradle.kts` adds `target/bindings/kotlin` and `target/android/jniLibs` as source dirs; used by `android/app/src/rust/kotlin/com/zarz/spotiflac/SelectedCoreBackend.kt` and its neighbors |
-| iOS | Swift module `SpotiFLACBackend` with FFI module `SpotiFLACBackendFFI` | `ios/Podfile` pod `SpotiFLACBackend` at `../rust_backend/target/ios`; imported by `ios/Runner/CoreBackend.swift` |
+| Android | Kotlin package `com.mornye.backend`, loading `mornye_mobile` through JNA | `android/app/build.gradle.kts` adds `target/bindings/kotlin` and `target/android/jniLibs` as source dirs; used by `android/app/src/rust/kotlin/com/zarz/mornye/SelectedCoreBackend.kt` and its neighbors |
+| iOS | Swift module `MornyeBackend` with FFI module `MornyeBackendFFI` | `ios/Podfile` pod `MornyeBackend` at `../rust_backend/target/ios`; imported by `ios/Runner/CoreBackend.swift` |
 
 The generated files are build output under `target/` and are not tracked.
 After changing an exported function, rebuild for the platform you test; the
@@ -134,8 +140,8 @@ Kotlin and Swift call sites must match the new signatures.
 
 ```bash
 bash scripts/check_rust_backend.sh
-(cd rust_backend && cargo test --locked -p spotiflac-core)
-(cd rust_backend && cargo test --locked -p spotiflac-mobile network_tags --lib)
+(cd rust_backend && cargo test --locked -p mornye-core)
+(cd rust_backend && cargo test --locked -p mornye-mobile network_tags --lib)
 ```
 
 - Unit tests sit in `#[cfg(test)] mod tests` blocks. Larger modules keep them

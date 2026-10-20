@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:spotiflac_android/models/automix_options.dart';
-import 'package:spotiflac_android/models/metadata_separators.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
+import 'package:mornye/models/automix_options.dart';
+import 'package:mornye/models/metadata_separators.dart';
+import 'package:mornye/utils/artist_utils.dart';
 
 part 'settings.g.dart';
 
@@ -285,7 +285,7 @@ class AppSettings {
     this.lyricsProviders = const [
       'apple_music',
       'lrcred',
-      'spotiflac_lyrics',
+      'mornye_lyrics',
       'lyricsplus',
       'lrclib',
     ],
@@ -565,7 +565,17 @@ class AppSettings {
     );
   }
 
-  factory AppSettings.fromJson(Map<String, dynamic> json) =>
-      _$AppSettingsFromJson(json);
+  factory AppSettings.fromJson(Map<String, dynamic> json) {
+    final settings = _$AppSettingsFromJson(json);
+    if (!settings.lyricsProviders.contains('spotiflac_lyrics')) {
+      return settings;
+    }
+    return settings.copyWith(
+      lyricsProviders: {
+        for (final provider in settings.lyricsProviders)
+          provider == 'spotiflac_lyrics' ? 'mornye_lyrics' : provider,
+      }.toList(),
+    );
+  }
   Map<String, dynamic> toJson() => _$AppSettingsToJson(this);
 }

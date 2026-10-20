@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/utils/ttl_cache.dart';
+import 'package:mornye/utils/ttl_cache.dart';
 
 void main() {
   test('TtlCache evicts the least recently used entry at its bound', () {

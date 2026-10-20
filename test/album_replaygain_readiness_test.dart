@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/services/album_replaygain_readiness.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/services/album_replaygain_readiness.dart';
 
 import 'support/album_replaygain_benchmark.dart';
 

@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/providers/weekly_releases_provider.dart';
-import 'package:spotiflac_android/screens/listening_statistics_screen.dart';
-import 'package:spotiflac_android/screens/weekly_releases_screen.dart';
-import 'package:spotiflac_android/services/listening_statistics.dart';
-import 'package:spotiflac_android/services/weekly_releases.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/player_artwork.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/providers/weekly_releases_provider.dart';
+import 'package:mornye/screens/listening_statistics_screen.dart';
+import 'package:mornye/screens/weekly_releases_screen.dart';
+import 'package:mornye/services/listening_statistics.dart';
+import 'package:mornye/services/weekly_releases.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/player_artwork.dart';
 
 import 'support/fixed_settings.dart';
 

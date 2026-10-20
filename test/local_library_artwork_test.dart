@@ -7,21 +7,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/providers/library_browse_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/local_album_screen.dart';
-import 'package:spotiflac_android/screens/mornye_library_screen.dart';
-import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/album_detail_header.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
-import 'package:spotiflac_android/widgets/local_library_artwork_builder.dart';
-import 'package:spotiflac_android/widgets/mornye_artist_header.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/providers/library_browse_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/local_album_screen.dart';
+import 'package:mornye/screens/mornye_library_screen.dart';
+import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
+import 'package:mornye/widgets/local_library_artwork_builder.dart';
+import 'package:mornye/widgets/mornye_artist_header.dart';
 
 import 'support/fixed_settings.dart';
 
@@ -32,7 +32,7 @@ class _History extends DownloadHistoryNotifier {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   final png = base64Decode(

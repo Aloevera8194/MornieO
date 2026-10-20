@@ -1,1 +1,1 @@
-export 'package:spotiflac_android/models/ffmpeg_models.dart';
+export 'package:mornye/models/ffmpeg_models.dart';

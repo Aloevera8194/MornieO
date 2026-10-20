@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:spotiflac_android/services/app_remote_config_service.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
-import 'package:spotiflac_android/widgets/donate_icons.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
+import 'package:mornye/services/app_remote_config_service.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_progress_indicator.dart';
+import 'package:mornye/widgets/donate_icons.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
 
 class DonatePage extends StatefulWidget {
   final AppRemoteConfigService? remoteConfigService;

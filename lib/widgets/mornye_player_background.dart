@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/cover_palette.dart';
+import 'package:mornye/theme/cover_palette.dart';
 
 /// Opaque cover-derived surface, with full-bleed artwork on the player page
 /// and a muted two-tone gradient behind lyrics and the queue.

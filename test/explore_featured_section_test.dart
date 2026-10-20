@@ -6,19 +6,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/explore_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/widgets/explore_featured_section.dart';
-import 'package:spotiflac_android/widgets/audio_quality_badges.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/explore_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/widgets/explore_featured_section.dart';
+import 'package:mornye/widgets/audio_quality_badges.dart';
+import 'package:mornye/l10n/app_localizations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('home feed cache ownership', () {
-    const channel = MethodChannel('com.zarz.spotiflac/backend');
+    const channel = MethodChannel('com.zarz.mornye/backend');
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     tearDown(() => messenger.setMockMethodCallHandler(channel, null));

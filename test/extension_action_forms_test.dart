@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/controllers/extension_action_forms.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/controllers/extension_action_forms.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
 
 import 'support/fixed_settings.dart';
 
 void main() {
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   tearDown(
     () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, null),

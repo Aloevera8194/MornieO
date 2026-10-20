@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/screens/equalizer_screen.dart';
-import 'package:spotiflac_android/screens/settings/appearance_settings_page.dart';
-import 'package:spotiflac_android/screens/settings/download_settings_page.dart';
-import 'package:spotiflac_android/screens/settings/lyrics_settings_page.dart';
-import 'package:spotiflac_android/screens/settings/playback_settings_page.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/screens/equalizer_screen.dart';
+import 'package:mornye/screens/settings/appearance_settings_page.dart';
+import 'package:mornye/screens/settings/download_settings_page.dart';
+import 'package:mornye/screens/settings/lyrics_settings_page.dart';
+import 'package:mornye/screens/settings/playback_settings_page.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 void main() {
   final pages = <String, Widget Function()>{

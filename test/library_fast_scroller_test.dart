@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/widgets/library_fast_scroller.dart';
+import 'package:mornye/widgets/library_fast_scroller.dart';
 
 void main() {
   Widget host({required ScrollController controller, int itemCount = 400}) =>

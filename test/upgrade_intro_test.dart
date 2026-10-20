@@ -7,13 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/theme_settings.dart';
-import 'package:spotiflac_android/providers/theme_provider.dart';
-import 'package:spotiflac_android/screens/upgrade_intro_screen.dart';
-import 'package:spotiflac_android/services/upgrade_intro_service.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/theme_settings.dart';
+import 'package:mornye/providers/theme_provider.dart';
+import 'package:mornye/screens/upgrade_intro_screen.dart';
+import 'package:mornye/services/upgrade_intro_service.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -135,7 +135,7 @@ void main() {
       final image = await boundary.toImage(pixelRatio: 2);
       final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
       await File(
-        '/tmp/spotiflac-intro-$name.png',
+        '/tmp/mornye-intro-$name.png',
       ).writeAsBytes(bytes!.buffer.asUint8List());
       image.dispose();
     });
@@ -146,7 +146,7 @@ void main() {
       tester,
     ) async {
       await openTour(tester, brightness: brightness);
-      expect(find.text('Welcome to\nSpotiFLAC-Mobile 5.2'), findsOneWidget);
+      expect(find.text('Welcome to\nMornye 5.2'), findsOneWidget);
       expect(find.bySemanticsLabel('1 / 6'), findsOneWidget);
       await capturePage(tester, '${brightness.name}-welcome');
       await tester.tap(find.text('Continue'));
@@ -155,7 +155,7 @@ void main() {
       await capturePage(tester, '${brightness.name}-themes');
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to\nSpotiFLAC-Mobile 5.2'), findsOneWidget);
+      expect(find.text('Welcome to\nMornye 5.2'), findsOneWidget);
       const titles = [
         'Make it\nyour own.',
         'Material,\nmade expressive.',

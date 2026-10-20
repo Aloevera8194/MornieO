@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 /// Expressive shapes used across the Material theme.
 abstract final class AppShapes {

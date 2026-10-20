@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/providers/preview_player_provider.dart';
-import 'package:spotiflac_android/services/music_player_service.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/providers/preview_player_provider.dart';
+import 'package:mornye/services/music_player_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

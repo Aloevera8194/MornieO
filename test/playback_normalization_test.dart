@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/playback_normalization.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/playback_normalization.dart';
 
 void main() {
   test('updated gain replaces the cached volume for the same URI', () async {

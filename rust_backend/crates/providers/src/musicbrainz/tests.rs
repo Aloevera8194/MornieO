@@ -1,5 +1,5 @@
 use super::*;
-use spotiflac_core::metadata::musicbrainz::{ArtistCredit, Recording, Release, Tag};
+use mornye_core::metadata::musicbrainz::{ArtistCredit, Recording, Release, Tag};
 use std::sync::atomic::AtomicUsize;
 use std::thread;
 

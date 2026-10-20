@@ -18,10 +18,10 @@ publish = false
 
 [workspace.dependencies]
 image = { version = "=0.25.10", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
-spotiflac-core = { path = "crates/core" }
-spotiflac-extensions = { path = "crates/extensions" }
-spotiflac-network = { path = "crates/network" }
-spotiflac-providers = { path = "crates/providers" }
+mornye-core = { path = "crates/core" }
+mornye-extensions = { path = "crates/extensions" }
+mornye-network = { path = "crates/network" }
+mornye-providers = { path = "crates/providers" }
 rquickjs = { version = "=0.14.0", features = ["bindgen"] }
 base64 = "0.23"
 sha2 = "0.11"

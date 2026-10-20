@@ -4,12 +4,12 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/hires_check_service.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/hires_check_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   late Directory directory;
   late File original;
   setUp(() async {

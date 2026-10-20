@@ -8,11 +8,11 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/hires_check_card.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/hires_check_card.dart';
 
 const _limitedResult = <String, dynamic>{
   'supported': true,
@@ -26,7 +26,7 @@ const _limitedResult = <String, dynamic>{
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   final capture = GlobalKey();
   var calls = 0;
 
@@ -104,7 +104,7 @@ void main() {
       final image = await boundary.toImage(pixelRatio: 2);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       await File(
-        '/tmp/spotiflac-hires-$name.png',
+        '/tmp/mornye-hires-$name.png',
       ).writeAsBytes(data!.buffer.asUint8List());
       image.dispose();
     });

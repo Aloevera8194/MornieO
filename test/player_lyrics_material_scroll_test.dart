@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/utils/lyrics_parser.dart';
-import 'package:spotiflac_android/widgets/player_lyrics.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/utils/lyrics_parser.dart';
+import 'package:mornye/widgets/player_lyrics.dart';
 
 void main() {
   testWidgets('Material offscreen seek resumes line progression', (

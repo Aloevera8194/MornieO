@@ -3,14 +3,14 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/services/app_navigation_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/extension_session_callback.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/services/app_navigation_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/extension_session_callback.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
+import 'package:mornye/widgets/expressive_button.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 final _log = AppLogger('ExtensionAuthLauncher');
@@ -506,7 +506,7 @@ Future<void> _completeSessionGrantFromClipboard(
 }
 
 /// Opens an extension auth/verification page. On iOS this prefers an
-/// ASWebAuthenticationSession, which captures the spotiflac:// callback
+/// ASWebAuthenticationSession, which captures the mornye:// callback
 /// in-process — required for environments where the app's URL scheme is not
 /// registered with the OS (sideload containers like LiveContainer) and nicer
 /// everywhere else (the sheet closes itself once the challenge completes).

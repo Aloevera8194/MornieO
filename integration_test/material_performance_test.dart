@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/playback_seek_slider.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/playback_seek_slider.dart';
 
 import 'mornye_artwork_performance_test.dart' as artwork;
 import 'mornye_lyrics_performance_test.dart' as lyrics;

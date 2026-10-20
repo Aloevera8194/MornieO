@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:spotiflac_android/services/download_request_payload.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:mornye/services/download_request_payload.dart';
+import 'package:mornye/services/platform_bridge.dart';
 
 import '../test/support/library_collections_benchmark.dart';
 
@@ -143,7 +143,7 @@ registerExtension({
   );
 
   testWidgets('invalid native batch leaves IDs uncancelled', (tester) async {
-    const channel = MethodChannel('com.zarz.spotiflac/backend');
+    const channel = MethodChannel('com.zarz.mornye/backend');
     await expectLater(
       channel.invokeMethod<void>('cancelDownloads', {
         'item_ids': ['untouched', 1],

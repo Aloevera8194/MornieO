@@ -34,9 +34,9 @@ impl AppVersion {
     pub fn user_agent(&self) -> String {
         let version = self.get();
         if version.is_empty() {
-            "SpotiFLAC-Mobile".into()
+            "Mornye".into()
         } else {
-            format!("SpotiFLAC-Mobile/{version}")
+            format!("Mornye/{version}")
         }
     }
 
@@ -88,16 +88,14 @@ mod tests {
                         version.set(value).unwrap();
                         assert!(matches!(
                             version.user_agent().as_str(),
-                            "SpotiFLAC-Mobile"
-                                | "SpotiFLAC-Mobile/first version"
-                                | "SpotiFLAC-Mobile/second version"
+                            "Mornye" | "Mornye/first version" | "Mornye/second version"
                         ));
                     }
                 });
             }
         });
         version.set("").unwrap();
-        assert_eq!(retained.user_agent(), "SpotiFLAC-Mobile");
+        assert_eq!(retained.user_agent(), "Mornye");
         version.close();
         assert!(retained.set("new").is_err());
         assert_eq!(retained.get(), "");

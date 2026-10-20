@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
 
 /// Applies the same transient-message policy to existing snackbar call sites.
 /// A new message replaces the old one instead of building a stale FIFO queue.

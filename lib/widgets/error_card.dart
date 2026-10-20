@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_shape.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_shape.dart';
+import 'package:mornye/widgets/expressive_button.dart';
 
 /// Error card shown by detail screens: a dedicated rate-limit presentation
 /// when the message looks like an HTTP 429, otherwise a generic error row.

@@ -3,11 +3,11 @@
 use crate::manifest::SignedSession;
 use base64::{Engine, engine::general_purpose::URL_SAFE_NO_PAD};
 use hmac::{Hmac, KeyInit, Mac};
+use mornye_core::lower_hex as hex;
+use mornye_network::{HttpResponse, query, url::UrlParts};
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
-use spotiflac_core::lower_hex as hex;
-use spotiflac_network::{HttpResponse, query, url::UrlParts};
 use std::collections::BTreeMap;
 use std::time::{Duration, UNIX_EPOCH};
 use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time};
@@ -17,7 +17,8 @@ pub fn defaults(mut config: SignedSession) -> SignedSession {
     for (value, fallback) in [
         (&mut config.app_version, "ext-1.0"),
         (&mut config.platform, "extension"),
-        (&mut config.callback_url, "spotiflac://session-grant"),
+        (&mut config.callback_url, "mornye://session-grant"),
+        // This is the server's protocol domain, not the app's display name.
         (&mut config.scheme_label, "SPOTIFLAC-HMAC-V1"),
         (&mut config.header_prefix, "X-Sig-"),
         (&mut config.endpoints.bootstrap, "/bootstrap"),

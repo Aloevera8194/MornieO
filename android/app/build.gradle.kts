@@ -22,21 +22,21 @@ if (keystorePropertiesFile.exists()) {
 }
 
 val rustBackendDir = rootProject.file("../rust_backend")
-val rustAndroidAbis = providers.environmentVariable("SPOTIFLAC_RUST_ANDROID_ABIS")
+val rustAndroidAbis = providers.environmentVariable("MORNYE_RUST_ANDROID_ABIS")
     .orElse("arm64-v8a,armeabi-v7a")
     .get()
     .split(",")
 val supportedRustAndroidAbis = setOf("arm64-v8a", "armeabi-v7a")
-val discordSdkEnabled = providers.environmentVariable("SPOTIFLAC_DISCORD_SDK").orElse("1").get() != "0"
+val discordSdkEnabled = providers.environmentVariable("MORNYE_DISCORD_SDK").orElse("1").get() != "0"
 require(rustAndroidAbis.size == rustAndroidAbis.toSet().size) {
-    "SPOTIFLAC_RUST_ANDROID_ABIS must not contain duplicate ABIs"
+    "MORNYE_RUST_ANDROID_ABIS must not contain duplicate ABIs"
 }
 require(rustAndroidAbis.all { it in supportedRustAndroidAbis }) {
-    "SPOTIFLAC_RUST_ANDROID_ABIS must contain only arm64-v8a and/or armeabi-v7a"
+    "MORNYE_RUST_ANDROID_ABIS must contain only arm64-v8a and/or armeabi-v7a"
 }
 
 android {
-    namespace = "com.zarz.spotiflac"
+    namespace = "com.zarz.mornye"
     compileSdk = 37
     ndkVersion = "30.0.16248370"
 
@@ -90,7 +90,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.zarz.spotiflac"
+        applicationId = "com.zarz.mornye"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         minSdk = flutter.minSdkVersion
         targetSdk = 37
@@ -162,7 +162,7 @@ android {
 val buildRustBackend = tasks.register<Exec>("buildRustBackend") {
     workingDir(rootProject.projectDir.parentFile)
     commandLine("bash", "scripts/build_rust_backend.sh", "android")
-    environment("SPOTIFLAC_RUST_ANDROID_ABIS", rustAndroidAbis.joinToString(","))
+    environment("MORNYE_RUST_ANDROID_ABIS", rustAndroidAbis.joinToString(","))
     environment(
         "ANDROID_NDK_HOME",
         System.getenv("ANDROID_NDK_HOME")
@@ -172,7 +172,7 @@ val buildRustBackend = tasks.register<Exec>("buildRustBackend") {
         include("**/*.rs", "**/*.toml", "**/*.lock", "**/*.js", "**/*.tsv", "**/*.pem")
         exclude("target/**", "smoke/**")
     })
-    inputs.property("SPOTIFLAC_RUST_ANDROID_ABIS", rustAndroidAbis.joinToString(","))
+    inputs.property("MORNYE_RUST_ANDROID_ABIS", rustAndroidAbis.joinToString(","))
     inputs.file(rootProject.file("../scripts/build_rust_backend.sh"))
     outputs.dir(rustBackendDir.resolve("target/bindings/kotlin"))
     outputs.dir(rustBackendDir.resolve("target/android/jniLibs"))
@@ -195,7 +195,7 @@ flutter {
 }
 
 dependencies {
-    val discordSdk = file("../../third_party/spotiflac_discord/sdk/discord_partner_sdk.aar")
+    val discordSdk = file("../../third_party/mornye_discord/sdk/discord_partner_sdk.aar")
     if (discordSdkEnabled && discordSdk.exists()) {
         implementation(files(discordSdk))
     }

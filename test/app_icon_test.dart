@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:spotiflac_android/theme/material_symbols.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
+import 'package:mornye/theme/material_symbols.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
 
 Widget _host(Widget child, {bool mornye = false, bool reduceMotion = false}) {
   return MaterialApp(

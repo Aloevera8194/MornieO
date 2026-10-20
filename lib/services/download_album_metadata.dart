@@ -1,7 +1,7 @@
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 final _log = AppLogger('DownloadAlbumMetadata');
 

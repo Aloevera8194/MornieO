@@ -1,22 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
+import 'package:mornye/widgets/expressive_button.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/providers/local_library_provider.dart';
-import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/utils/duplicate_cleanup_policy.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
-import 'package:spotiflac_android/widgets/audio_quality_badges.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/providers/local_library_provider.dart';
+import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/utils/duplicate_cleanup_policy.dart';
+import 'package:mornye/utils/file_access.dart';
+import 'package:mornye/widgets/audio_quality_badges.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 /// Bottom sheet listing tracks that exist more than once (same ISRC) across
 /// download history and the local library, with keep-best and per-copy

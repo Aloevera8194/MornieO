@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/theme_provider.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_slider.dart';
-import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/theme_provider.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_slider.dart';
+import 'package:mornye/widgets/lyrics_text_scale.dart';
 
 class LyricsSizeSetting extends ConsumerWidget {
   const LyricsSizeSetting({super.key});

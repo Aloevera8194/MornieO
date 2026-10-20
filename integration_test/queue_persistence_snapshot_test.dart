@@ -5,10 +5,10 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
-import 'package:spotiflac_android/services/download_queue_persistence.dart';
-import 'package:spotiflac_android/utils/chunked_list.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/services/app_state_database.dart';
+import 'package:mornye/services/download_queue_persistence.dart';
+import 'package:mornye/utils/chunked_list.dart';
 
 import '../test/support/queue_persistence_baseline.dart';
 import '../test/support/queue_removal_benchmark.dart';

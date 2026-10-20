@@ -7,9 +7,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/download_request_payload.dart';
-import 'package:spotiflac_android/services/history_database.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
+import 'package:mornye/services/download_request_payload.dart';
+import 'package:mornye/services/history_database.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
 
 void main() {
   group('app state database migrations', () {
@@ -86,22 +86,22 @@ void main() {
 
   group('native worker contracts', () {
     final finalizerSource = File(
-      'android/app/src/main/kotlin/com/zarz/spotiflac/'
+      'android/app/src/main/kotlin/com/zarz/mornye/'
       'NativeDownloadFinalizer.kt',
     ).readAsStringSync();
     final finalizerHistorySource = File(
-      'android/app/src/main/kotlin/com/zarz/spotiflac/'
+      'android/app/src/main/kotlin/com/zarz/mornye/'
       'NativeFinalizerHistory.kt',
     ).readAsStringSync();
     final historyStoreSource = File(
-      'android/app/src/main/kotlin/com/zarz/spotiflac/'
+      'android/app/src/main/kotlin/com/zarz/mornye/'
       'NativeHistoryStore.kt',
     ).readAsStringSync();
     final historyDatabaseSource = File(
       'lib/services/history_schema.dart',
     ).readAsStringSync();
     final workerSnapshotSource = File(
-      'android/app/src/main/kotlin/com/zarz/spotiflac/'
+      'android/app/src/main/kotlin/com/zarz/mornye/'
       'DownloadServiceSnapshot.kt',
     ).readAsStringSync();
     final nativeWorkerProviderSource = File(

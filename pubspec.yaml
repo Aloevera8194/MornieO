@@ -1,5 +1,5 @@
-name: spotiflac_android
-description: Extension-driven music metadata and downloads for mobile devices
+name: mornye
+description: Mornye, extension-driven music metadata and downloads for mobile devices
 publish_to: "none"
 version: 5.2.1+163
 
@@ -27,8 +27,8 @@ dependencies:
   # v11 removes legacy Android readers, breaking users who skip the v10 migration.
   # Keep the compatibility release until old encrypted installs can be migrated.
   flutter_secure_storage: 10.3.4
-  spotiflac_discord:
-    path: third_party/spotiflac_discord
+  mornye_discord:
+    path: third_party/mornye_discord
   path_provider: ^2.1.6
   path: ^1.9.1
   sqflite: ^2.4.4+1

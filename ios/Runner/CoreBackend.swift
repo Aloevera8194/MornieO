@@ -2,7 +2,7 @@ import Foundation
 import CryptoKit
 import Darwin
 import ffmpegkit
-import SpotiFLACBackend
+import MornyeBackend
 import Flutter
 
 struct CoreFFmpegCommand: Decodable {
@@ -62,7 +62,7 @@ final class CoreFFmpegExecution {
 private enum CoreFFmpegStaging {
     static let lock = NSLock()
     static var directories = Set<String>()
-    static let prefix = ".spotiflac-ffmpeg-\(Bundle.main.bundleIdentifier ?? "spotiflac")-"
+    static let prefix = ".mornye-ffmpeg-\(Bundle.main.bundleIdentifier ?? "mornye")-"
 
     static func create(for target: URL) throws -> URL {
         let directory = target.deletingLastPathComponent().resolvingSymlinksInPath()
@@ -315,7 +315,7 @@ final class RustCoreBackend: CoreBackend {
                 return try current.runNativeDataJob(requestJson: encoded, bytes: bytes, lease: lease)
             }
         }
-        return try SpotiFLACBackend.runNativeDataJob(requestJson: raw, bytes: bytes, lease: lease)
+        return try MornyeBackend.runNativeDataJob(requestJson: raw, bytes: bytes, lease: lease)
     }
 
     private func repositoryOwner() throws -> ExtensionRepository {
@@ -548,11 +548,11 @@ final class RustCoreBackend: CoreBackend {
     func fileMetadataImplementation(path: String) -> String { "rust" }
 
     func readFileMetadata(path: String, hint: String) throws -> String {
-        try SpotiFLACBackend.readFileMetadata(path: path, hint: hint, lease: nil)
+        try MornyeBackend.readFileMetadata(path: path, hint: hint, lease: nil)
     }
 
     func checkHiResAuthenticity(path: String, optionsJson: String) throws -> String {
-        try SpotiFLACBackend.checkHiresAuthenticity(path: path, optionsJson: optionsJson, lease: nil)
+        try MornyeBackend.checkHiresAuthenticity(path: path, optionsJson: optionsJson, lease: nil)
     }
 
     func editFileMetadata(path: String, metadataJson: String) throws -> String {
@@ -860,11 +860,11 @@ final class RustCoreBackend: CoreBackend {
     }
 
     func buildFilename(template: String, metadataJson: String) throws -> String {
-        try SpotiFLACBackend.buildFilename(template: template, metadataJson: metadataJson)
+        try MornyeBackend.buildFilename(template: template, metadataJson: metadataJson)
     }
 
     func sanitizeFilename(filename: String) -> String {
-        SpotiFLACBackend.sanitizeFilename(filename: filename)
+        MornyeBackend.sanitizeFilename(filename: filename)
     }
 }
 
@@ -873,7 +873,7 @@ func requireSuccessfulExtensionAction(extensionId: String, actionName: String, r
     guard let data = text.data(using: .utf8),
           let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
         throw NSError(
-            domain: "SpotiFLAC",
+            domain: "Mornye",
             code: 1,
             userInfo: [NSLocalizedDescriptionKey: "Extension \(actionName) for \(extensionId) returned invalid JSON: \(String(text.prefix(240)))"]
         )
@@ -884,7 +884,7 @@ func requireSuccessfulExtensionAction(extensionId: String, actionName: String, r
         (obj["message"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ??
         String(text.prefix(240))
     throw NSError(
-        domain: "SpotiFLAC",
+        domain: "Mornye",
         code: 2,
         userInfo: [NSLocalizedDescriptionKey: "Extension \(actionName) failed for \(extensionId): \(error)"]
     )

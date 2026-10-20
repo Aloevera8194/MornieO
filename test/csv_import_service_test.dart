@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/services/csv_import_service.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/services/csv_import_service.dart';
 
 void main() {
   test(

@@ -4,30 +4,30 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/app_snack_bar.dart';
+import 'package:mornye/theme/app_motion.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
+import 'package:mornye/widgets/app_progress_indicator.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/app_snack_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:spotiflac_android/services/setup_progress_store.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/constants/language_choices.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
-import 'package:spotiflac_android/widgets/scroll_edge_fade.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/setup_progress_store.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/constants/language_choices.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/file_access.dart';
+import 'package:mornye/widgets/scroll_edge_fade.dart';
+import 'package:mornye/utils/logger.dart';
 
 part 'setup_steps.dart';
 
@@ -551,7 +551,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
 
   Future<String> _getDefaultDirectory() async {
     if (_platform == TargetPlatform.android) {
-      final downloadDir = Directory('/storage/emulated/0/Download/SpotiFLAC');
+      final downloadDir = Directory('/storage/emulated/0/Download/Mornye');
       try {
         if (!await downloadDir.exists()) {
           await downloadDir.create(recursive: true);
@@ -562,7 +562,7 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
       }
     }
     final appDir = await getApplicationDocumentsDirectory();
-    return '${appDir.path}/SpotiFLAC';
+    return '${appDir.path}/Mornye';
   }
 
   Future<void> _completeSetup() async {

@@ -1,1 +1,1 @@
-export 'package:spotiflac_android/controllers/selection_mode_mixin.dart';
+export 'package:mornye/controllers/selection_mode_mixin.dart';

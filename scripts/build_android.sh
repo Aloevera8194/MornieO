@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the supported Android release APKs for SpotiFLAC Mobile.
+# Build the supported Android release APKs for Mornye.
 
 set -euo pipefail
 
@@ -12,9 +12,9 @@ LITE_BUILD=0
 for argument in "$@"; do
   case "$argument" in
     --production) PRODUCTION_BUILD=1 ;;
-    --lite) LITE_BUILD=1; export SPOTIFLAC_DISCORD_SDK=0 ;;
+    --lite) LITE_BUILD=1; export MORNYE_DISCORD_SDK=0 ;;
     --target-platform|--target-platform=*|--split-per-abi|--no-split-per-abi)
-      echo "Error: set SPOTIFLAC_RUST_ANDROID_ABIS to select the release APK architectures." >&2
+      echo "Error: set MORNYE_RUST_ANDROID_ABIS to select the release APK architectures." >&2
       exit 1
       ;;
     *) FLUTTER_ARGS+=("$argument") ;;
@@ -26,23 +26,23 @@ if [[ "$PRODUCTION_BUILD" == "1" ]]; then
     echo "Error: production builds require Discord; --production cannot be combined with --lite." >&2
     exit 1
   fi
-  export SPOTIFLAC_DISCORD_SDK=1
+  export MORNYE_DISCORD_SDK=1
 fi
 
-case "${SPOTIFLAC_DISCORD_SDK:-1}" in
+case "${MORNYE_DISCORD_SDK:-1}" in
   0|1) ;;
-  *) echo "Error: SPOTIFLAC_DISCORD_SDK must be 0 (Lite) or 1 (full)." >&2; exit 1 ;;
+  *) echo "Error: MORNYE_DISCORD_SDK must be 0 (Lite) or 1 (full)." >&2; exit 1 ;;
 esac
 
-ANDROID_ABIS_RAW="${SPOTIFLAC_RUST_ANDROID_ABIS-arm64-v8a,armeabi-v7a}"
+ANDROID_ABIS_RAW="${MORNYE_RUST_ANDROID_ABIS-arm64-v8a,armeabi-v7a}"
 case "$ANDROID_ABIS_RAW" in
   arm64-v8a|armeabi-v7a|arm64-v8a,armeabi-v7a|armeabi-v7a,arm64-v8a) ;;
   *)
-    echo "Error: SPOTIFLAC_RUST_ANDROID_ABIS must contain arm64-v8a and/or armeabi-v7a, comma-separated without spaces or duplicates." >&2
+    echo "Error: MORNYE_RUST_ANDROID_ABIS must contain arm64-v8a and/or armeabi-v7a, comma-separated without spaces or duplicates." >&2
     exit 1
     ;;
 esac
-export SPOTIFLAC_RUST_ANDROID_ABIS="$ANDROID_ABIS_RAW"
+export MORNYE_RUST_ANDROID_ABIS="$ANDROID_ABIS_RAW"
 IFS=',' read -r -a ANDROID_ABIS <<< "$ANDROID_ABIS_RAW"
 TARGET_PLATFORMS=()
 for abi in "${ANDROID_ABIS[@]}"; do
@@ -54,7 +54,7 @@ done
 TARGET_PLATFORM_LIST="$(IFS=','; echo "${TARGET_PLATFORMS[*]}")"
 
 if [[ "$PRODUCTION_BUILD" == "1" ]]; then
-  SDK_ROOT="$PROJECT_DIR/third_party/spotiflac_discord/sdk"
+  SDK_ROOT="$PROJECT_DIR/third_party/mornye_discord/sdk"
   for sdk_file in discord_partner_sdk.aar notices/Discord-License-Notices.txt android/prefab/modules/discord_partner_sdk/include/discordpp.h; do
     if [[ ! -f "$SDK_ROOT/$sdk_file" ]]; then
       echo "Error: production requires the staged Discord SDK ($sdk_file). Run scripts/setup_discord_sdk.sh with the official SDK first." >&2
@@ -70,7 +70,7 @@ if [[ "$PRODUCTION_BUILD" == "1" ]]; then
 fi
 
 AUDIT_FLAGS=()
-if [[ "${SPOTIFLAC_DISCORD_SDK:-1}" != "0" && -f "$PROJECT_DIR/third_party/spotiflac_discord/sdk/discord_partner_sdk.aar" ]]; then
+if [[ "${MORNYE_DISCORD_SDK:-1}" != "0" && -f "$PROJECT_DIR/third_party/mornye_discord/sdk/discord_partner_sdk.aar" ]]; then
   AUDIT_FLAGS+=(--discord-sdk)
 fi
 

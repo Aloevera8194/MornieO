@@ -35,5 +35,5 @@ uniffi::setup_scaffolding!();
 
 #[uniffi::export]
 pub fn sanitize_filename(filename: String) -> String {
-    spotiflac_core::filename::sanitize_filename(&filename)
+    mornye_core::filename::sanitize_filename(&filename)
 }

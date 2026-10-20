@@ -5,16 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/equalizer_settings.dart';
-import 'package:spotiflac_android/providers/equalizer_provider.dart';
-import 'package:spotiflac_android/screens/equalizer_screen.dart';
-import 'package:spotiflac_android/services/playback_equalizer.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_slider.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/mornye_level_slider.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/equalizer_settings.dart';
+import 'package:mornye/providers/equalizer_provider.dart';
+import 'package:mornye/screens/equalizer_screen.dart';
+import 'package:mornye/services/playback_equalizer.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_slider.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/mornye_level_slider.dart';
 
 void main() {
   setUp(() {
@@ -151,7 +151,14 @@ void main() {
     notifier.savePreset('Desk');
     notifier.update(const EqualizerSettings(enabled: true, preamp: -8));
     final export = notifier.exportPreset('Portable');
+    expect(
+      (jsonDecode(export) as Map<String, dynamic>)['format'],
+      'mornye-equalizer',
+    );
     notifier.importPreset(export);
+    notifier.importPreset(
+      export.replaceFirst('mornye-equalizer', 'spotiflac-equalizer'),
+    );
     expect(container.read(equalizerProvider).presets.map((v) => v.name), [
       'Headphones',
       'Desk',

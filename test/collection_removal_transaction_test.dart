@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/library_collections_database.dart';
+import 'package:mornye/services/library_collections_database.dart';
 
 import 'support/sqlite_process_database.dart';
 

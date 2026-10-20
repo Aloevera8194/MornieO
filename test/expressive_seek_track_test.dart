@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderRepaintBoundary;
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/expressive_seek_track.dart';
-import 'package:spotiflac_android/widgets/playback_seek_slider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/expressive_seek_track.dart';
+import 'package:mornye/widgets/playback_seek_slider.dart';
 
 Widget _host({
   bool playing = true,

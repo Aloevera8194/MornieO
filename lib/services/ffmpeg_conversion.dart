@@ -1,13 +1,13 @@
 import 'dart:io';
 
-import 'package:spotiflac_android/services/audio_metadata_mapper.dart';
-import 'package:spotiflac_android/services/ffmpeg_metadata.dart';
-import 'package:spotiflac_android/services/ffmpeg_models.dart';
-import 'package:spotiflac_android/services/ffmpeg_probe.dart';
-import 'package:spotiflac_android/services/ffmpeg_support.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
-import 'package:spotiflac_android/utils/audio_conversion_utils.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/audio_metadata_mapper.dart';
+import 'package:mornye/services/ffmpeg_metadata.dart';
+import 'package:mornye/services/ffmpeg_models.dart';
+import 'package:mornye/services/ffmpeg_probe.dart';
+import 'package:mornye/services/ffmpeg_support.dart';
+import 'package:mornye/utils/artist_utils.dart';
+import 'package:mornye/utils/audio_conversion_utils.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('FFmpeg');
 

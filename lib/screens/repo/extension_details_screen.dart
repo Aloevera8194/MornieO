@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/widgets/app_snack_bar.dart';
+import 'package:mornye/widgets/app_snack_bar.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/repo_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/utils/nav_bar_inset.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/theme/mornye_icons.dart';
-import 'package:spotiflac_android/widgets/extension_repo_card.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/repo_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/mornye_icons.dart';
+import 'package:mornye/widgets/extension_repo_card.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
+import 'package:mornye/widgets/expressive_button.dart';
 
 class ExtensionDetailsScreen extends ConsumerStatefulWidget {
   final RepoExtension extension;

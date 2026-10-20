@@ -2,28 +2,28 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
-import 'package:spotiflac_android/widgets/app_text_field.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_choice_chip.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_switch.dart';
+import 'package:mornye/widgets/app_text_field.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_choice_chip.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/screens/network_storage_screen.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
-import 'package:spotiflac_android/utils/saf_download_tree.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/screens/network_storage_screen.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/file_access.dart';
+import 'package:mornye/utils/saf_download_tree.dart';
+import 'package:mornye/widgets/settings_group.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
 
 part 'files_settings_page_widgets.dart';
 
@@ -145,7 +145,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                     subtitle: settings.downloadDirectory.isEmpty
                         ? (Platform.isIOS
                               ? context.l10n.setupAppDocumentsFolder
-                              : 'Download/SpotiFLAC')
+                              : 'Download/Mornye')
                         : settings.downloadDirectory,
                     onTap: () => _pickDirectory(context, ref),
                     showDivider: false,
@@ -484,7 +484,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
   }
 
   Future<String> _getDefaultAndroidDirectory() async {
-    const directDownloadPath = '/storage/emulated/0/Download/SpotiFLAC';
+    const directDownloadPath = '/storage/emulated/0/Download/Mornye';
     try {
       final downloadDir = Directory(directDownloadPath);
       if (!await downloadDir.exists()) {
@@ -496,7 +496,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
       final externalDir = await getExternalStorageDirectory();
       if (externalDir != null) {
         final downloadDir = Directory(
-          '${externalDir.parent.parent.parent.parent.path}/Download/SpotiFLAC',
+          '${externalDir.parent.parent.parent.parent.path}/Download/Mornye',
         );
         if (!await downloadDir.exists()) {
           await downloadDir.create(recursive: true);
@@ -505,7 +505,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
       }
     } catch (_) {}
     final appDir = await getApplicationDocumentsDirectory();
-    final fallbackDir = Directory('${appDir.path}/SpotiFLAC');
+    final fallbackDir = Directory('${appDir.path}/Mornye');
     if (!await fallbackDir.exists()) await fallbackDir.create(recursive: true);
     return fallbackDir.path;
   }
@@ -786,31 +786,31 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 'none',
                 context.l10n.folderOrganizationNone,
                 context.l10n.folderOrganizationNoneSubtitle,
-                'SpotiFLAC/Track.flac',
+                'Mornye/Track.flac',
               ),
               (
                 'playlist',
                 context.l10n.folderOrganizationByPlaylist,
                 context.l10n.folderOrganizationByPlaylistSubtitle,
-                'SpotiFLAC/Playlist Name/Track.flac',
+                'Mornye/Playlist Name/Track.flac',
               ),
               (
                 'artist',
                 context.l10n.folderOrganizationByArtist,
                 context.l10n.folderOrganizationByArtistSubtitle,
-                'SpotiFLAC/Artist Name/Track.flac',
+                'Mornye/Artist Name/Track.flac',
               ),
               (
                 'album',
                 context.l10n.folderOrganizationByAlbum,
                 context.l10n.folderOrganizationByAlbumSubtitle,
-                'SpotiFLAC/Album Name/Track.flac',
+                'Mornye/Album Name/Track.flac',
               ),
               (
                 'artist_album',
                 context.l10n.folderOrganizationByArtistAlbum,
                 context.l10n.folderOrganizationByArtistAlbumSubtitle,
-                'SpotiFLAC/Artist/Album/Track.flac',
+                'Mornye/Artist/Album/Track.flac',
               ),
             ])
               _FolderOption(

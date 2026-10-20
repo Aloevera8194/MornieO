@@ -7,7 +7,7 @@
   "usbBitPerfectDescription": "지원되는 출력에서는 소스의 정밀도를 그대로 유지합니다. 아래에서 다이렉트 USB 또는 AAudio 전용 출력을 선택하세요. 그 외의 경우 Android USB 출력은 Android 14 이상에서만 사용할 수 있습니다. 이 설정은 다음 트랙부터 적용되며, AutoMix 또는 볼륨 정규화가 적용되지 않은 상태에서 작동합니다. 다이렉트 USB 출력에서는 휴대전화의 시스템 볼륨 조절이 작동하지 않을 수 있습니다",
   "usbHardwareVolume": "DAC 하드웨어 볼륨",
   "usbVolumeWarningTitle": "청취 볼륨을 확인하세요",
-  "usbVolumeWarning": "다이렉트 USB 오디오는 일반 재생보다 훨씬 크게 출력될 수 있으며, 휴대전화의 볼륨 버튼으로 음량이 조절되지 않을 수 있습니다. 시작하기 전에 DAC 또는 앰프의 볼륨을 낮추세요. 지원되는 경우 SpotiFLAC은 연결 시 DAC의 볼륨을 최대 −40 dB로 설정합니다. 하지만 이것이 모든 앰프나 헤드폰에서 안전한 청취 음량을 보장하는 것은 아닙니다",
+  "usbVolumeWarning": "다이렉트 USB 오디오는 일반 재생보다 훨씬 크게 출력될 수 있으며, 휴대전화의 볼륨 버튼으로 음량이 조절되지 않을 수 있습니다. 시작하기 전에 DAC 또는 앰프의 볼륨을 낮추세요. 지원되는 경우 Mornye는 연결 시 DAC의 볼륨을 최대 −40 dB로 설정합니다. 하지만 이것이 모든 앰프나 헤드폰에서 안전한 청취 음량을 보장하는 것은 아닙니다",
   "usbVolumeAccept": "이해했습니다",
   "usbVolumeUnavailable": "이 DAC에는 검증된 하드웨어 볼륨 조절 기능이 없기 때문에 재생이 일시 중지되었습니다. DAC 또는 앰프의 볼륨을 낮춘 다음, 필요하다면 고정 볼륨 출력을 활성화하고 트랙을 다시 선택하세요",
   "usbFixedVolume": "고정 볼륨 USB 출력 허용",
@@ -70,7 +70,7 @@
   },
   "@@locale": "ko",
   "@@last_modified": "2026-04-28",
-  "appName": "SpotiFLAC Mobile",
+  "appName": "Mornye",
   "@appName": {
     "description": "App name - DO NOT TRANSLATE"
   },
@@ -721,7 +721,7 @@
   "@setupStorageRequired": {
     "description": "Title when storage permission needed"
   },
-  "setupStorageDescription": "SpotiFLAC은 다운로드된 음악 파일을 저장하기 위해 저장소 접근 권한이 필요합니다",
+  "setupStorageDescription": "Mornye는 다운로드된 음악 파일을 저장하기 위해 저장소 접근 권한이 필요합니다",
   "@setupStorageDescription": {
     "description": "Explanation for storage permission"
   },
@@ -1078,7 +1078,7 @@
   "@snackbarFileNotFound": {
     "description": "Snackbar - file doesn't exist"
   },
-  "snackbarSelectExtFile": ".spotiflac-ext 파일을 선택하세요",
+  "snackbarSelectExtFile": ".mornye-ext 파일을 선택하세요",
   "@snackbarSelectExtFile": {
     "description": "Snackbar - wrong file type selected"
   },
@@ -2008,7 +2008,7 @@
   "@extensionsNoExtensions": {
     "description": "Empty state - no extensions"
   },
-  "extensionsNoExtensionsSubtitle": "새 제공자를 추가하려면 .spotiflac-ext 파일을 설치하세요",
+  "extensionsNoExtensionsSubtitle": "새 제공자를 추가하려면 .mornye-ext 파일을 설치하세요",
   "@extensionsNoExtensionsSubtitle": {
     "description": "Empty state subtitle"
   },
@@ -2640,7 +2640,7 @@
   "@libraryRemoveFolder": {
     "description": "Action to remove one indexed library source"
   },
-  "libraryRemoveFolderMessage": "SpotiFLAC Mobile에서 이 폴더와 색인된 트랙을 제거하시겠습니까? 저장소의 오디오 파일은 삭제되지 않습니다",
+  "libraryRemoveFolderMessage": "Mornye에서 이 폴더와 색인된 트랙을 제거하시겠습니까? 저장소의 오디오 파일은 삭제되지 않습니다",
   "@libraryRemoveFolderMessage": {
     "description": "Confirmation shown before removing a library source"
   },
@@ -2800,13 +2800,13 @@
   "@libraryStorageAccessRequired": {
     "description": "Dialog title for storage permission"
   },
-  "libraryStorageAccessMessage": "SpotifyFLAC은 음악 라이브러리를 스캔하기 위해 저장소 접근 권한이 필요합니다. 설정에서 권한을 부여해 주세요",
+  "libraryStorageAccessMessage": "Mornye는 음악 라이브러리를 스캔하기 위해 저장소 접근 권한이 필요합니다. 설정에서 권한을 부여해 주세요",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
   },
   "librarySourceDownloaded": "다운로드됨",
   "@librarySourceDownloaded": {
-    "description": "Badge for tracks downloaded via SpotiFLAC"
+    "description": "Badge for tracks downloaded via Mornye"
   },
   "librarySourceLocal": "로컬",
   "@librarySourceLocal": {
@@ -2934,11 +2934,11 @@
       }
     }
   },
-  "tutorialWelcomeTitle": "SpotiFLAC Mobile에 오신 것을 환영합니다!",
+  "tutorialWelcomeTitle": "Mornye에 오신 것을 환영합니다!",
   "@tutorialWelcomeTitle": {
     "description": "Tutorial welcome page title"
   },
-  "tutorialWelcomeDesc": "SpotiFLAC Mobile에서 확장 기능을 사용하여 음악을 찾고, 원하는 음질을 선택하고, 다운로드를 관리하는 방법을 알아보세요",
+  "tutorialWelcomeDesc": "Mornye에서 확장 기능을 사용하여 음악을 찾고, 원하는 음질을 선택하고, 다운로드를 관리하는 방법을 알아보세요",
   "@tutorialWelcomeDesc": {
     "description": "Tutorial welcome page description"
   },
@@ -4021,7 +4021,7 @@
   "@safMigrationTitle": {
     "description": "Title of SAF migration dialog"
   },
-  "safMigrationMessage1": "SpotiFLAC은 이제 다운로드에 Android 저장소 접근 프레임워크(SAF)를 사용합니다. 이로써 Android 10 이상에서 '권한 거부' 오류가 해결됩니다",
+  "safMigrationMessage1": "Mornye는 이제 다운로드에 Android 저장소 접근 프레임워크(SAF)를 사용합니다. 이로써 Android 10 이상에서 '권한 거부' 오류가 해결됩니다",
   "@safMigrationMessage1": {
     "description": "First paragraph of SAF migration dialog"
   },
@@ -4101,7 +4101,7 @@
   "@backupRestoreFailed": {
     "description": "Snackbar when restore fails"
   },
-  "backupInvalidFile": "이 파일은 유효한 SpotiFLAC 백업이 아닙니다",
+  "backupInvalidFile": "이 파일은 유효한 Mornye 백업이 아닙니다",
   "@backupInvalidFile": {
     "description": "Snackbar when the chosen file is not a valid backup"
   },
@@ -4285,9 +4285,9 @@
     "description": "Subtitle shown in the download location picker sheet"
   },
   "storageAutomaticFolder": "자동 폴더",
-  "storageAutomaticDownloadFolder": "쓰기 가능하면 Download/SpotiFLAC을 사용하고, 그렇지 않으면 앱 저장소를 사용합니다",
+  "storageAutomaticDownloadFolder": "쓰기 가능하면 Download/Mornye을 사용하고, 그렇지 않으면 앱 저장소를 사용합니다",
   "storageSafRecommended": "폴더 선택 (추천)",
-  "storageDownloadFolderHint": "안드로이드 폴더 선택기에서 Download 폴더를 열고 SpotiFLAC을 선택하세요.\n해당 폴더가 없다면 '새 폴더'를 사용해 만든 다음, '이 폴더 사용'을 탭하여 접근 권한을 허용하세요",
+  "storageDownloadFolderHint": "안드로이드 폴더 선택기에서 Download 폴더를 열고 Mornye을 선택하세요.\n해당 폴더가 없다면 '새 폴더'를 사용해 만든 다음, '이 폴더 사용'을 탭하여 접근 권한을 허용하세요",
   "downloadFolderAccessLostTitle": "다운로드 폴더 접근 손실",
   "@downloadFolderAccessLostTitle": {
     "description": "Title of the warning banner shown in Files settings when the saved SAF folder grant is no longer valid"
@@ -5230,7 +5230,7 @@
       }
     }
   },
-  "notifDownloadingUpdate": "SpotiFLAC Mobile v{version}을 다운로드하는 중",
+  "notifDownloadingUpdate": "Mornye v{version}을 다운로드하는 중",
   "@notifDownloadingUpdate": {
     "description": "Notification title while downloading an app update",
     "placeholders": {
@@ -5258,7 +5258,7 @@
   "@notifUpdateReady": {
     "description": "Notification title when app update download is complete"
   },
-  "notifUpdateReadyBody": "SpotiFLAC Mobile v{version} 다운로드 완료. 설치하려면 탭하세요",
+  "notifUpdateReadyBody": "Mornye v{version} 다운로드 완료. 설치하려면 탭하세요",
   "@notifUpdateReadyBody": {
     "description": "Notification body when app update is ready to install",
     "placeholders": {
@@ -6026,7 +6026,7 @@
   "@extensionCustomUrlHandlingSubtitle": {
     "description": "Extension detail subtitle for custom URL handling"
   },
-  "extensionCustomUrlHandlingShareHint": "이 사이트의 링크를 SpotiFLAC Mobile로 공유하면 이 확장 기능이 처리합니다",
+  "extensionCustomUrlHandlingShareHint": "이 사이트의 링크를 Mornye로 공유하면 이 확장 기능이 처리합니다",
   "@extensionCustomUrlHandlingShareHint": {
     "description": "Extension detail hint explaining share-to-app URL handling"
   },
@@ -6236,7 +6236,7 @@
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "SpotiFLAC Mobile에서 바로 음악을 재생합니다",
+  "libraryBuiltInPreviewPlayerSubtitle": "Mornye에서 바로 음악을 재생합니다",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
   },
@@ -6703,11 +6703,11 @@
   "@extensionVerificationHelpTitleWaiting": {
     "description": "Dialog title when verification is taking longer than expected"
   },
-  "extensionVerificationHelpMessageManual": "SpotiFLAC Mobile에서 브라우저를 자동으로 열지 못하였습니다. 아래 링크를 브라우저에서 열거나 직접 복사하세요",
+  "extensionVerificationHelpMessageManual": "Mornye에서 브라우저를 자동으로 열지 못하였습니다. 아래 링크를 브라우저에서 열거나 직접 복사하세요",
   "@extensionVerificationHelpMessageManual": {
     "description": "Dialog message when automatic browser launch for verification fails"
   },
-  "extensionVerificationHelpMessageWaiting": "브라우저가 열리지 않거나 인증을 완료한 후에도 SpotiFLAC Mobile로 돌아가지 않는다면, 아래 링크를 다시 열거나 직접 복사하세요",
+  "extensionVerificationHelpMessageWaiting": "브라우저가 열리지 않거나 인증을 완료한 후에도 Mornye로 돌아가지 않는다면, 아래 링크를 다시 열거나 직접 복사하세요",
   "@extensionVerificationHelpMessageWaiting": {
     "description": "Dialog message when verification may need manual browser help"
   },

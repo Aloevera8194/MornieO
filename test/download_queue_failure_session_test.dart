@@ -8,13 +8,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/app_state_database.dart';
 
 class _Settings extends SettingsNotifier {
   _Settings(this._directory);
@@ -102,7 +102,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'app_state_migrated_queue_to_sqlite_v1': true,
       });
-      const backend = MethodChannel('com.zarz.spotiflac/backend');
+      const backend = MethodChannel('com.zarz.mornye/backend');
       const sqlite = MethodChannel('com.tekartik.sqflite');
       const paths = MethodChannel('plugins.flutter.io/path_provider');
       const notifications = MethodChannel(
@@ -112,7 +112,7 @@ void main() {
         'dev.fluttercommunity.plus/connectivity_status',
       );
       const progress = MethodChannel(
-        'com.zarz.spotiflac/download_progress_stream',
+        'com.zarz.mornye/download_progress_stream',
       );
       final summaries = <String>[];
       final attempts = <String>[];

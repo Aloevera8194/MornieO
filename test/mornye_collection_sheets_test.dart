@@ -6,18 +6,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/library_collections_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_action_button.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/playlist_picker_sheet.dart';
-import 'package:spotiflac_android/widgets/track_collection_quick_actions.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/library_collections_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_action_button.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/playlist_picker_sheet.dart';
+import 'package:mornye/widgets/track_collection_quick_actions.dart';
 
 const _track = Track(
   id: 'example-track',

@@ -1,6 +1,6 @@
 use crate::cancellation::{CancellationError, RequestLease};
-use spotiflac_core::downloads::DownloadState as CoreState;
-use spotiflac_core::progress::{ProgressError, ProgressSubscription};
+use mornye_core::downloads::DownloadState as CoreState;
+use mornye_core::progress::{ProgressError, ProgressSubscription};
 use std::sync::Arc;
 
 #[derive(Debug, thiserror::Error, uniffi::Error)]

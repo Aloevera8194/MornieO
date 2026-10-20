@@ -4,12 +4,12 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const backendChannel = MethodChannel('com.zarz.spotiflac/backend');
+  const backendChannel = MethodChannel('com.zarz.mornye/backend');
   final sourcePaths = <String>[];
   final tempDirectories = <Directory>[];
 

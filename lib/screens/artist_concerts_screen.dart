@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/artist_concert.dart';
-import 'package:spotiflac_android/screens/concert_detail_screen.dart';
-import 'package:spotiflac_android/services/shell_navigation_service.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/utils/nav_bar_inset.dart';
-import 'package:spotiflac_android/widgets/album_detail_header.dart';
-import 'package:spotiflac_android/widgets/app_shape.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/artist_concert.dart';
+import 'package:mornye/screens/concert_detail_screen.dart';
+import 'package:mornye/services/shell_navigation_service.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
+import 'package:mornye/widgets/app_shape.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
+import 'package:mornye/widgets/animation_utils.dart';
 
 class ArtistConcertsScreen extends StatefulWidget {
   const ArtistConcertsScreen({

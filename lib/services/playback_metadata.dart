@@ -1,8 +1,8 @@
 import 'package:audio_service/audio_service.dart';
-import 'package:spotiflac_android/services/network_metadata_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/int_utils.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/services/network_metadata_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/int_utils.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 /// Technical audio metadata carried with a queue item. This is available
 /// immediately when tracks change, before a fresh file probe completes.

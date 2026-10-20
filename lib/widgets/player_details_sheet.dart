@@ -1,14 +1,14 @@
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/isrc_utils.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/mornye_player_details_sheet.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/controllers/player_metadata_controller.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/app_motion.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/isrc_utils.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/mornye_player_details_sheet.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 Future<void> showPlayerDetailsSheet(
   BuildContext context,

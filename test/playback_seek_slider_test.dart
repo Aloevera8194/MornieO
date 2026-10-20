@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/playback_seek_preview.dart';
-import 'package:spotiflac_android/widgets/playback_seek_slider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/playback_seek_preview.dart';
+import 'package:mornye/widgets/playback_seek_slider.dart';
 
 void main() {
   testWidgets('scrubbing previews locally and commits only the final target', (

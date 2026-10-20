@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/system_volume_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_slider.dart';
-import 'package:spotiflac_android/widgets/mornye_player_slider.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/services/music_playback_deck.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/system_volume_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_slider.dart';
+import 'package:mornye/widgets/mornye_player_slider.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/services/music_playback_deck.dart';
 
-export 'package:spotiflac_android/providers/system_volume_provider.dart';
+export 'package:mornye/providers/system_volume_provider.dart';
 
 /// System (or USB hardware) volume slider for the player and USB settings.
 /// Mornye draws its glass slider between speaker glyphs; Material draws the

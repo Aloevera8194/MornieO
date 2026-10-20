@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/file_access_check.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:mornye/services/file_access_check.dart';
+import 'package:mornye/utils/file_access.dart';
 
 void main() {
   test('found files retain their size and modification time', () async {

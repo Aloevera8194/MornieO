@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/utils/re_enrich_result.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/utils/re_enrich_result.dart';
 
 void main() {
   for (final locale in ['en', 'id']) {

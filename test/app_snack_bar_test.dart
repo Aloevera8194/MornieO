@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_snack_bar.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/view_queue_snackbar_action.dart';
-import 'package:spotiflac_android/widgets/track_detail_actions.dart';
-import 'package:spotiflac_android/services/shell_navigation_service.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_snack_bar.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/view_queue_snackbar_action.dart';
+import 'package:mornye/widgets/track_detail_actions.dart';
+import 'package:mornye/services/shell_navigation_service.dart';
 
 void main() {
   for (final brightness in Brightness.values) {

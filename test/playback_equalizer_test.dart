@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/equalizer_settings.dart';
-import 'package:spotiflac_android/services/music_playback_deck.dart';
-import 'package:spotiflac_android/services/playback_equalizer.dart';
+import 'package:mornye/models/equalizer_settings.dart';
+import 'package:mornye/services/music_playback_deck.dart';
+import 'package:mornye/services/playback_equalizer.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +23,7 @@ void main() {
     for (final name in [
       'xyz.luan/audioplayers.global',
       'xyz.luan/audioplayers.global/events',
-      'com.zarz.spotiflac/usb_pcm/events',
+      'com.zarz.mornye/usb_pcm/events',
     ]) {
       messenger.setMockMethodCallHandler(
         MethodChannel(name),
@@ -31,7 +31,7 @@ void main() {
       );
     }
     messenger.setMockMethodCallHandler(
-      const MethodChannel('com.zarz.spotiflac/usb_pcm'),
+      const MethodChannel('com.zarz.mornye/usb_pcm'),
       (call) async => call.method == 'prepare'
           ? {
               'ready': true,

@@ -2,9 +2,9 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/automix_options.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/automix_analysis.dart';
+import 'package:mornye/models/automix_options.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/automix_analysis.dart';
 
 Uint8List drumPattern(double bpm, {double phase = 0.17}) {
   const sampleRate = 11025;

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/repo_provider.dart';
-import 'package:spotiflac_android/screens/repo_tab.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
-import 'package:spotiflac_android/widgets/extension_row.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/repo_provider.dart';
+import 'package:mornye/screens/repo_tab.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/animation_utils.dart';
+import 'package:mornye/widgets/extension_row.dart';
 
 class _LoadingRepo extends RepoNotifier {
   @override
@@ -63,7 +63,7 @@ void main() {
             TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
         messenger.setMockMethodCallHandler(
           paths,
-          (_) async => '/tmp/spotiflac-loading-test',
+          (_) async => '/tmp/mornye-loading-test',
         );
         addTearDown(() => messenger.setMockMethodCallHandler(paths, null));
         await tester.pumpWidget(

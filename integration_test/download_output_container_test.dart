@@ -6,18 +6,18 @@ import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:spotiflac_android/models/download_result.dart';
-import 'package:spotiflac_android/models/extension.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/services/download_metadata_embedding.dart';
-import 'package:spotiflac_android/services/download_request_payload.dart';
-import 'package:spotiflac_android/services/ffmpeg_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:mornye/models/download_result.dart';
+import 'package:mornye/models/extension.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/services/download_metadata_embedding.dart';
+import 'package:mornye/services/download_request_payload.dart';
+import 'package:mornye/services/ffmpeg_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   late Directory root;
   late Directory output;
   late Directory sources;

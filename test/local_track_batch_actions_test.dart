@@ -1,18 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/providers/local_library_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/providers/local_library_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/services/batch_metadata_re_enrich.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/services/local_track_batch_actions.dart';
-import 'package:spotiflac_android/services/local_track_redownload_service.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/services/batch_metadata_re_enrich.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/services/local_track_batch_actions.dart';
+import 'package:mornye/services/local_track_redownload_service.dart';
 
 LocalLibraryItem item(String id) => LocalLibraryItem(
   id: id,
@@ -288,7 +288,7 @@ void main() {
     testWidgets(
       'batch completion respects owner lifecycle during refresh: $leaveDuringRefresh',
       (tester) async {
-        const channel = MethodChannel('com.zarz.spotiflac/backend');
+        const channel = MethodChannel('com.zarz.mornye/backend');
         final settings = _BatchSettings();
         final library = _BatchLibrary();
         var active = true;

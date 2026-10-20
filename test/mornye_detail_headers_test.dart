@@ -6,12 +6,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/theme/cover_palette.dart';
-import 'package:spotiflac_android/services/cover_cache_manager.dart';
-import 'package:spotiflac_android/widgets/album_detail_header.dart';
-import 'package:spotiflac_android/widgets/collection_scaffold.dart';
-import 'package:spotiflac_android/widgets/mornye_artist_header.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/cover_palette.dart';
+import 'package:mornye/services/cover_cache_manager.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
+import 'package:mornye/widgets/collection_scaffold.dart';
+import 'package:mornye/widgets/mornye_artist_header.dart';
 
 void main() {
   testWidgets('artist logo uses a bounded aspect-preserving shared decode', (

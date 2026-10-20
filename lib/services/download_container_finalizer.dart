@@ -1,7 +1,7 @@
-import 'package:spotiflac_android/models/download_result.dart';
-import 'package:spotiflac_android/services/download_saf_file_replacer.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:mornye/models/download_result.dart';
+import 'package:mornye/services/download_saf_file_replacer.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
+import 'package:mornye/utils/file_access.dart';
 
 /// Finalizes a requested lossless container using the measured audio stream.
 /// Native FLAC bytes can be renamed; FLAC-in-MP4 still needs remuxing.

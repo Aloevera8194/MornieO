@@ -5,17 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/models/artist_concert.dart';
-import 'package:spotiflac_android/screens/artist_concerts_screen.dart';
-import 'package:spotiflac_android/screens/concert_detail_screen.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/models/artist_concert.dart';
+import 'package:mornye/screens/artist_concerts_screen.dart';
+import 'package:mornye/screens/concert_detail_screen.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/animation_utils.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const backend = MethodChannel('com.zarz.spotiflac/backend');
-  const calendar = MethodChannel('com.zarz.spotiflac/concert_calendar');
+  const backend = MethodChannel('com.zarz.mornye/backend');
+  const calendar = MethodChannel('com.zarz.mornye/concert_calendar');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 

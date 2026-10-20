@@ -31,7 +31,7 @@ class _ThemePreviewCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 16),
                     Text(
-                      'SpotiFLAC Mobile',
+                      context.l10n.appName,
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],

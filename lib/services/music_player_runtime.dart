@@ -4,22 +4,22 @@ import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/services.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
-import 'package:spotiflac_android/services/autoplay_personalization.dart';
-import 'package:spotiflac_android/services/discord_presence_service.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/services/listening_statistics.dart';
-import 'package:spotiflac_android/services/music_playback_deck.dart';
-import 'package:spotiflac_android/services/music_player_service.dart';
-import 'package:spotiflac_android/services/network_metadata_service.dart';
-import 'package:spotiflac_android/services/network_storage_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/playback_notification.dart';
-import 'package:spotiflac_android/services/player_widget_service.dart';
-import 'package:spotiflac_android/services/source_deletion_events.dart';
-import 'package:spotiflac_android/services/system_volume_service.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/app_state_database.dart';
+import 'package:mornye/services/autoplay_personalization.dart';
+import 'package:mornye/services/discord_presence_service.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/services/listening_statistics.dart';
+import 'package:mornye/services/music_playback_deck.dart';
+import 'package:mornye/services/music_player_service.dart';
+import 'package:mornye/services/network_metadata_service.dart';
+import 'package:mornye/services/network_storage_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/playback_notification.dart';
+import 'package:mornye/services/player_widget_service.dart';
+import 'package:mornye/services/source_deletion_events.dart';
+import 'package:mornye/services/system_volume_service.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('MusicPlayerRuntime');
 
@@ -42,7 +42,7 @@ class PlaybackDependencies {
     bool? isIOS,
     bool? isAndroid,
     this.notificationChannel = const MethodChannel(
-      'com.zarz.spotiflac/playback_notification',
+      'com.zarz.mornye/playback_notification',
     ),
   }) : _sessionDatabase = sessionDatabase,
        _libraryDatabase = libraryDatabase,
@@ -93,7 +93,7 @@ class PlaybackDependencies {
   ) => AudioService.init(
     builder: builder,
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.zarz.spotiflac.playback',
+      androidNotificationChannelId: 'com.zarz.mornye.playback',
       androidNotificationChannelName: 'Playback',
       // System UI draws only the small icon's alpha. The opaque launcher
       // default became a blank dot in the status bar and output switcher.

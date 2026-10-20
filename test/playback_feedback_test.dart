@@ -4,13 +4,13 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/services/music_player_runtime.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_snack_bar.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/playback_feedback.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/services/music_player_runtime.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_snack_bar.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/playback_feedback.dart';
 
 void main() {
   for (final mornye in [false, true]) {

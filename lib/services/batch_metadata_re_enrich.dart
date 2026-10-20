@@ -1,5 +1,5 @@
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/library_database.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/library_database.dart';
 
 /// Field group keys understood by the native re-enrich backend.
 class ReEnrichFields {

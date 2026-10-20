@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/services/metadata_autofill_service.dart';
-import 'package:spotiflac_android/services/metadata_cover_resources.dart';
-import 'package:spotiflac_android/utils/isrc_utils.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:mornye/services/metadata_autofill_service.dart';
+import 'package:mornye/services/metadata_cover_resources.dart';
+import 'package:mornye/utils/isrc_utils.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
 
 class MetadataCandidateTile extends StatelessWidget {
   final Map<String, dynamic> candidate;

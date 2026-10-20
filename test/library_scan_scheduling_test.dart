@@ -8,13 +8,13 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/local_library_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/notification_service.dart';
-import 'package:spotiflac_android/utils/local_library_scan_prefs.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/local_library_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/notification_service.dart';
+import 'package:mornye/utils/local_library_scan_prefs.dart';
 
 class _Settings extends SettingsNotifier {
   @override
@@ -115,7 +115,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   AndroidFlutterLocalNotificationsPlugin.registerWith();
   SharedPreferences.setMockInitialValues({});
-  const backend = MethodChannel('com.zarz.spotiflac/backend');
+  const backend = MethodChannel('com.zarz.mornye/backend');
   const paths = MethodChannel('plugins.flutter.io/path_provider');
   const notifications = MethodChannel(
     'dexterous.com/flutter/local_notifications',

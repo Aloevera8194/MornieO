@@ -6,10 +6,10 @@ import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/services/audio_analysis_jobs.dart';
-import 'package:spotiflac_android/services/automix_analysis.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/audio_analysis_jobs.dart';
+import 'package:mornye/services/automix_analysis.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
 
 /// Only short head/tail windows are decoded. Summaries are bounded in memory;
 /// raw PCM is deleted immediately and is never added to the user's library.

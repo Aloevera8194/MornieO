@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the Rust backend XCFramework used by SpotiFLAC Mobile on iOS.
+# Build the Rust backend XCFramework used by Mornye on iOS.
 
 set -euo pipefail
 

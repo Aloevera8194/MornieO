@@ -5,10 +5,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/utils/logger.dart';
 
 /// Prepares the actual backdrop pipeline, not just the fragment asset. The
 /// detached scene is rasterized once and discarded without presenting a frame.

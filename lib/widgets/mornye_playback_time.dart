@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 /// Rolls only the changed digits, keeping the timeline labels steady in width.
 class MornyePlaybackTime extends StatefulWidget {

@@ -2,12 +2,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
-import 'package:spotiflac_android/theme/cover_palette.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/services/shell_navigation_service.dart';
-import 'package:spotiflac_android/widgets/album_detail_header.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
+import 'package:mornye/theme/cover_palette.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/services/shell_navigation_service.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
 
 /// Share the same artwork-derived dark surface while loading and after the
 /// artist metadata arrives, including when the app itself uses light mode.

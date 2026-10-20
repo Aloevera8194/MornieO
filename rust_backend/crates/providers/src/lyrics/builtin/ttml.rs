@@ -1,8 +1,8 @@
 //! Keyless services that return Apple Music's TTML documents directly.
 use super::*;
 use crate::lyrics::http;
+use mornye_core::lyrics::payloads;
 use serde::Deserialize;
-use spotiflac_core::lyrics::payloads;
 
 #[derive(Default, Deserialize)]
 #[serde(default)]

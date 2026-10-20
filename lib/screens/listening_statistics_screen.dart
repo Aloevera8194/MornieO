@@ -1,29 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/listening_statistics_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/listening_rewind_screen.dart';
-import 'package:spotiflac_android/services/listening_statistics.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart'
-    show SkeletonBox;
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_choice_chip.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_refresh_indicator.dart';
-import 'package:spotiflac_android/widgets/app_shape.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/widgets/player_artwork.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/listening_statistics_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/listening_rewind_screen.dart';
+import 'package:mornye/services/listening_statistics.dart';
+import 'package:mornye/theme/app_motion.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/widgets/animation_utils.dart' show SkeletonBox;
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_choice_chip.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_refresh_indicator.dart';
+import 'package:mornye/widgets/app_shape.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/widgets/player_artwork.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
-export 'package:spotiflac_android/providers/listening_statistics_provider.dart';
+export 'package:mornye/providers/listening_statistics_provider.dart';
 
 class ListeningStatisticsScreen extends ConsumerStatefulWidget {
   const ListeningStatisticsScreen({super.key});

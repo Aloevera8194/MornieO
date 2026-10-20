@@ -2,8 +2,8 @@ import 'package:audio_service/audio_service.dart';
 
 /// Presentation only; every transport action still uses the audio handler.
 class PlaybackNotification {
-  static const favoriteAction = 'spotiflac.favorite';
-  static const shuffleAction = 'spotiflac.shuffle';
+  static const favoriteAction = 'mornye.favorite';
+  static const shuffleAction = 'mornye.shuffle';
 
   final bool mornye;
   final String? mediaId;

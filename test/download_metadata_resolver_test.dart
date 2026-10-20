@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/services/download_metadata_resolver.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/services/download_metadata_resolver.dart';
 
 Extension provider(
   String id, {
@@ -29,7 +29,7 @@ Extension provider(
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   const track = Track(

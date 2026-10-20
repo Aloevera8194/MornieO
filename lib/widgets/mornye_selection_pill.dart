@@ -5,8 +5,8 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/mornye_liquid_backdrop.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/mornye_liquid_backdrop.dart';
 
 Future<ui.FragmentProgram>? _selectionMaskProgram;
 ui.FragmentProgram? _loadedSelectionMaskProgram;

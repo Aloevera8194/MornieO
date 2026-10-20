@@ -1,9 +1,9 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/services/album_completeness.dart';
-import 'package:spotiflac_android/services/library_database_models.dart';
-import 'package:spotiflac_android/services/library_schema.dart';
-import 'package:spotiflac_android/services/sqlite_helpers.dart' as sqlite;
-import 'package:spotiflac_android/utils/library_format_filters.dart';
+import 'package:mornye/services/album_completeness.dart';
+import 'package:mornye/services/library_database_models.dart';
+import 'package:mornye/services/library_schema.dart';
+import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
+import 'package:mornye/utils/library_format_filters.dart';
 
 // SQL builders for the queue tab's history+local union queries.
 

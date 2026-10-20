@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/automix_options.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_slider.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/automix_options.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_slider.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 class AutoMixSettings extends ConsumerStatefulWidget {
   const AutoMixSettings({super.key});

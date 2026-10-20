@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/services/listening_statistics.dart';
+import 'package:mornye/services/listening_statistics.dart';
 
 final listeningSummaryProvider = FutureProvider.autoDispose
     .family<ListeningSummary, ({int days, int year})>((ref, period) async {

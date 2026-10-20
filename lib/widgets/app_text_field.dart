@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:mornye/theme/material_expressive.dart';
 
 /// Text input for Material dialogs, sheets and settings. Expressive builds use
 /// the M3E text field; Mornye and reduced motion keep the plain field with

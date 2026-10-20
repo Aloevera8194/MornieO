@@ -1,7 +1,7 @@
-import 'package:spotiflac_android/models/download_history.dart';
-import 'package:spotiflac_android/services/history_database.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/audio_conversion_utils.dart';
+import 'package:mornye/models/download_history.dart';
+import 'package:mornye/services/history_database.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/audio_conversion_utils.dart';
 
 class ConversionLibraryService {
   const ConversionLibraryService._();

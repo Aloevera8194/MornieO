@@ -8,11 +8,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/widgets/mornye_liquid_backdrop.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/mornye_selection_pill.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
+import 'package:mornye/widgets/mornye_liquid_backdrop.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/mornye_selection_pill.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

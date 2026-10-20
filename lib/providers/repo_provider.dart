@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/constants/app_info.dart';
-import 'package:spotiflac_android/services/extension_storage_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
+import 'package:mornye/constants/app_info.dart';
+import 'package:mornye/services/extension_storage_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/providers/extension_provider.dart';
 
 final _log = AppLogger('StoreProvider');
 final RegExp _leadingVersionPrefix = RegExp(r'^v');

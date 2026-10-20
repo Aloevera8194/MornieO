@@ -8,10 +8,10 @@ mod store;
 
 use crate::files::{ExtensionFiles, FilePath};
 use crate::transfer_policy::DownloadTransferPolicy;
+use mornye_core::app_version::AppVersion;
+use mornye_network::{HttpRequest, HttpResponse, NetworkSession, url::UrlParts};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
-use spotiflac_core::app_version::AppVersion;
-use spotiflac_network::{HttpRequest, HttpResponse, NetworkSession, url::UrlParts};
 use std::collections::BTreeMap;
 use std::io::Write;
 use std::sync::Arc;

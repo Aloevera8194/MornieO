@@ -929,6 +929,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  mornye_discord:
+    dependency: "direct main"
+    description:
+      path: "third_party/mornye_discord"
+      relative: true
+    source: path
+    version: "0.1.0"
   motor:
     dependency: transitive
     description:
@@ -1310,13 +1317,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.2"
-  spotiflac_discord:
-    dependency: "direct main"
-    description:
-      path: "third_party/spotiflac_discord"
-      relative: true
-    source: path
-    version: "0.1.0"
   sqflite:
     dependency: "direct main"
     description:

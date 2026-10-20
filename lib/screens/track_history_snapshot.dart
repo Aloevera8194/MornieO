@@ -1,1 +1,1 @@
-export 'package:spotiflac_android/controllers/track_history_snapshot.dart';
+export 'package:mornye/controllers/track_history_snapshot.dart';

@@ -36,7 +36,7 @@ jobs:
           filters: |
             dart:
               - 'third_party/audio_service/**'
-              - 'third_party/spotiflac_discord/**'
+              - 'third_party/mornye_discord/**'
               - 'lib/**'
               - 'test/**'
               - 'integration_test/**'
@@ -58,7 +58,7 @@ jobs:
               - '.github/workflows/ci.yml'
             ios:
               - 'third_party/audio_service/**'
-              - 'third_party/spotiflac_discord/**'
+              - 'third_party/mornye_discord/**'
               - 'scripts/setup_discord_sdk.sh'
               - 'scripts/prepare_discord_sdk.py'
               - 'scripts/test_prepare_discord_sdk.py'
@@ -77,7 +77,7 @@ jobs:
               - '.github/workflows/ci.yml'
             android:
               - 'third_party/audio_service/**'
-              - 'third_party/spotiflac_discord/**'
+              - 'third_party/mornye_discord/**'
               - 'scripts/setup_discord_sdk.sh'
               - 'scripts/prepare_discord_sdk.py'
               - 'scripts/test_prepare_discord_sdk.py'
@@ -180,7 +180,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.rust == 'true' || needs.changes.outputs.ios == 'true'
     env:
-      SPOTIFLAC_DISCORD_SDK: "0"
+      MORNYE_DISCORD_SDK: "0"
 
     steps:
       - name: Checkout repository
@@ -227,9 +227,9 @@ jobs:
         run: |
           python3 -m unittest discover -s scripts -p 'test_check_backend_ios.py'
           flutter build ios --release --no-codesign --target lib/main.dart
-          if [[ "$SPOTIFLAC_DISCORD_SDK" == "1" ]]; then
+          if [[ "$MORNYE_DISCORD_SDK" == "1" ]]; then
             test -f build/ios/iphoneos/Runner.app/Frameworks/discord_partner_sdk.framework/discord_partner_sdk
-            test -f build/ios/iphoneos/Runner.app/Frameworks/spotiflac_discord.framework/Discord-License-Notices.txt
+            test -f build/ios/iphoneos/Runner.app/Frameworks/mornye_discord.framework/Discord-License-Notices.txt
           fi
           python3 scripts/check_backend_ios.py build/ios/iphoneos/Runner.app \
             --backend rust --archs arm64 --platform ios --release
@@ -240,7 +240,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.android == 'true'
     env:
-      SPOTIFLAC_DISCORD_SDK: "0"
+      MORNYE_DISCORD_SDK: "0"
 
     steps:
       - name: Checkout repository
@@ -304,7 +304,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libclang-dev ffmpeg
           ffmpeg -version
-          echo "SPOTIFLAC_TEST_FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
+          echo "MORNYE_TEST_FFMPEG=$(command -v ffmpeg)" >> "$GITHUB_ENV"
 
       - name: Cache Cargo registry and build output
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -322,7 +322,7 @@ jobs:
 
       - name: Build Rust release application
         run: |
-          if [[ "$SPOTIFLAC_DISCORD_SDK" == "1" ]]; then
+          if [[ "$MORNYE_DISCORD_SDK" == "1" ]]; then
             bash scripts/build_android.sh --production --target lib/main.dart
           else
             bash scripts/build_android.sh --lite --target lib/main.dart
@@ -331,7 +331,7 @@ jobs:
       - name: Verify Rust release APK payloads
         run: |
           audit_flags=()
-          if [[ "$SPOTIFLAC_DISCORD_SDK" == "1" ]]; then
+          if [[ "$MORNYE_DISCORD_SDK" == "1" ]]; then
             audit_flags+=(--discord-sdk)
           fi
           python3 scripts/check_backend_apk.py \

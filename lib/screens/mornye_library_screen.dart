@@ -2,24 +2,24 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/library_browse_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/downloaded_album_screen.dart';
-import 'package:spotiflac_android/screens/listening_rewind_screen.dart';
-import 'package:spotiflac_android/screens/local_album_screen.dart';
-import 'package:spotiflac_android/services/album_completeness.dart';
-import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/utils/nav_bar_inset.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_search_field.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
-import 'package:spotiflac_android/widgets/local_library_artwork_builder.dart';
-import 'package:spotiflac_android/widgets/library_search_results.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/library_browse_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/downloaded_album_screen.dart';
+import 'package:mornye/screens/listening_rewind_screen.dart';
+import 'package:mornye/screens/local_album_screen.dart';
+import 'package:mornye/services/album_completeness.dart';
+import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_search_field.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
+import 'package:mornye/widgets/local_library_artwork_builder.dart';
+import 'package:mornye/widgets/library_search_results.dart';
 
 enum MornyeLibraryPage { overview, albums, artists }
 

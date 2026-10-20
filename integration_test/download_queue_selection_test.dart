@@ -7,12 +7,12 @@ import 'package:integration_test/integration_test.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/app_state_database.dart';
 
 import '../test/support/playlist_batch_benchmark.dart';
 

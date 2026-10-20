@@ -1,9 +1,9 @@
 use super::Backend;
 use crate::files::ExtensionFiles;
 use cap_std::fs::OpenOptions;
+use mornye_core::lyrics::{LyricsResponse, config, file, lrc};
+use mornye_providers::lyrics::{Check, SearchRequest};
 use serde::{Deserialize, Serialize};
-use spotiflac_core::lyrics::{LyricsResponse, config, file, lrc};
-use spotiflac_providers::lyrics::{Check, SearchRequest};
 use std::collections::BTreeMap;
 use std::io::Write;
 

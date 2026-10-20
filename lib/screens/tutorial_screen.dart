@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/widgets/scroll_edge_fade.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:spotiflac_android/widgets/app_progress_indicator.dart';
-import 'package:spotiflac_android/widgets/app_search_field.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/widgets/scroll_edge_fade.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
+import 'package:mornye/widgets/app_progress_indicator.dart';
+import 'package:mornye/widgets/app_search_field.dart';
+import 'package:mornye/widgets/expressive_button.dart';
 
 class TutorialScreen extends ConsumerStatefulWidget {
   const TutorialScreen({super.key});

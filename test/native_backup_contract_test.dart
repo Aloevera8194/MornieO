@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/models/download_history.dart';
-import 'package:spotiflac_android/services/history_database.dart';
-import 'package:spotiflac_android/utils/path_match_keys.dart';
+import 'package:mornye/models/download_history.dart';
+import 'package:mornye/services/history_database.dart';
+import 'package:mornye/utils/path_match_keys.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

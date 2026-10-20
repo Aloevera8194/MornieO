@@ -6,12 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/settings/extension_detail_page.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/settings/extension_detail_page.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 import 'support/fixed_settings.dart';
 
@@ -54,7 +54,7 @@ class _Extensions extends ExtensionNotifier {
 }
 
 void main() {
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   setUp(() => SharedPreferences.setMockInitialValues({}));
   tearDown(() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger

@@ -1,1 +1,1 @@
-export 'package:spotiflac_android/controllers/clickable_metadata.dart';
+export 'package:mornye/controllers/clickable_metadata.dart';

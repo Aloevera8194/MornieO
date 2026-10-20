@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/unified_library_item.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/widgets/playlist_picker_sheet.dart';
-import 'package:spotiflac_android/widgets/selection_action_button.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/unified_library_item.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/widgets/playlist_picker_sheet.dart';
+import 'package:mornye/widgets/selection_action_button.dart';
 
 /// Collection actions stay separate from actions that modify audio files.
 class LibrarySelectionPlaybackActions extends ConsumerWidget {

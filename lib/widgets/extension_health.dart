@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 Color extensionHealthColor(BuildContext context, String status) {
   final colorScheme = Theme.of(context).colorScheme;

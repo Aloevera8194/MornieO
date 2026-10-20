@@ -6,12 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/platform_bridge.dart';
 
 import 'support/fixed_settings.dart';
 
@@ -62,7 +62,7 @@ DownloadItem _item(String id, DownloadStatus status, DownloadErrorType? type) =>
 void main() {
   final messenger =
       TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger;
-  const backend = MethodChannel('com.zarz.spotiflac/backend');
+  const backend = MethodChannel('com.zarz.mornye/backend');
   const sqlite = MethodChannel('com.tekartik.sqflite');
   const paths = MethodChannel('plugins.flutter.io/path_provider');
   const notifications = MethodChannel(

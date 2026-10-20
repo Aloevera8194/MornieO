@@ -4,12 +4,12 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/services/audio_route_info.dart';
-import 'package:spotiflac_android/widgets/audio_info_sheet.dart';
+import 'package:mornye/controllers/player_metadata_controller.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/services/audio_route_info.dart';
+import 'package:mornye/widgets/audio_info_sheet.dart';
 
-const _route = MethodChannel('com.zarz.spotiflac/audio_route');
+const _route = MethodChannel('com.zarz.mornye/audio_route');
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

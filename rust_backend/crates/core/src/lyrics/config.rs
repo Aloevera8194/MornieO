@@ -5,7 +5,7 @@ use std::collections::HashSet;
 pub const DEFAULT_PROVIDERS: &[&str] = &[
     "apple_music",
     "lrcred",
-    "spotiflac_lyrics",
+    "mornye_lyrics",
     "lyricsplus",
     "lrclib",
 ];
@@ -14,7 +14,7 @@ pub const BUILTIN_PROVIDERS: &[&str] = &[
     "netease",
     "musixmatch",
     "apple_music",
-    "spotiflac_lyrics",
+    "mornye_lyrics",
     "qqmusic",
     "spotify",
     "deezer",
@@ -115,7 +115,7 @@ pub fn available_providers() -> Vec<AvailableProvider> {
             "Apple Music synced lyrics via Paxsenix",
         ),
         (
-            "spotiflac_lyrics",
+            "mornye_lyrics",
             "Zarz-LRC",
             false,
             "Word-by-word Apple Music lyrics from Zarz-LRC",
@@ -179,6 +179,13 @@ pub fn normalize_provider_order(providers: &[String]) -> Vec<String> {
     providers
         .iter()
         .map(|name| lowercase(name.trim()))
+        .map(|name| {
+            if name == "spotiflac_lyrics" {
+                "mornye_lyrics".into()
+            } else {
+                name
+            }
+        })
         .filter(|name| {
             BUILTIN_PROVIDERS.contains(&name.as_str())
                 || name
@@ -196,8 +203,15 @@ pub fn resolve_order(configured: &[String], extensions: &[String]) -> Vec<String
         .collect();
     configured
         .iter()
-        .filter(|name| BUILTIN_PROVIDERS.contains(&name.as_str()) || available.contains(*name))
-        .cloned()
+        .map(|name| {
+            if name == "spotiflac_lyrics" {
+                "mornye_lyrics"
+            } else {
+                name.as_str()
+            }
+        })
+        .filter(|name| BUILTIN_PROVIDERS.contains(name) || available.contains(*name))
+        .map(str::to_owned)
         .collect()
 }
 
@@ -226,4 +240,31 @@ pub fn cache_key(
         options.apple_elrc_word_sync,
         options.musixmatch_language
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn legacy_lyrics_provider_id_resolves_to_current_id_without_duplicates() {
+        let configured = vec![
+            " SPOTIFLAC_LYRICS ".into(),
+            "mornye_lyrics".into(),
+            "lrclib".into(),
+        ];
+        assert_eq!(
+            normalize_provider_order(&configured),
+            ["mornye_lyrics", "lrclib"]
+        );
+        assert_eq!(
+            resolve_order(&["spotiflac_lyrics".into()], &[]),
+            ["mornye_lyrics"]
+        );
+        assert!(
+            available_providers()
+                .iter()
+                .any(|p| p.id == "mornye_lyrics")
+        );
+    }
 }

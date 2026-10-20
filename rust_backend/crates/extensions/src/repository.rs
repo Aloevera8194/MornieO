@@ -8,9 +8,9 @@ pub use model::{Registry, RepoExtension, normalize_sha256};
 pub use package::{destination_path, write_verified_package};
 pub use urls::{RegistryLocation, registry_location, require_https};
 
+use mornye_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
+use mornye_network::{HttpRequest, NetworkService, NetworkSession};
 use serde::{Deserialize, Serialize};
-use spotiflac_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
-use spotiflac_network::{HttpRequest, NetworkService, NetworkSession};
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
@@ -520,6 +520,26 @@ fn read_registry(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn downloaded_packages_use_current_brand_and_keep_sflx_extension() {
+        for (url, name) in [
+            (
+                "https://example.test/example.spotiflac-ext",
+                "example.mornye-ext",
+            ),
+            (
+                "https://example.test/example.mornye-ext",
+                "example.mornye-ext",
+            ),
+            ("https://example.test/example.sflx", "example.sflx"),
+        ] {
+            assert_eq!(
+                destination_path(Path::new("/extensions"), "example", url).unwrap(),
+                Path::new("/extensions").join(name)
+            );
+        }
+    }
 
     #[test]
     fn cache_registry_clone_shares_arc_and_round_trips_disk_shape() {

@@ -1,6 +1,6 @@
-import 'package:spotiflac_android/utils/hash_utils.dart';
-import 'package:spotiflac_android/utils/int_utils.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/utils/hash_utils.dart';
+import 'package:mornye/utils/int_utils.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 /// Audio format/quality helpers shared by the download queue and history
 /// providers.

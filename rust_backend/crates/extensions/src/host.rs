@@ -283,8 +283,8 @@ mod tests {
     #[test]
     #[ignore = "manual release-process peak-memory measurement"]
     fn benchmark_owned_text_memory() {
-        let bytes = vec![b'x'; spotiflac_network::MAX_RESPONSE_BYTES];
-        match std::env::var("SPOTIFLAC_TEXT_MEMORY_MODE").as_deref() {
+        let bytes = vec![b'x'; mornye_network::MAX_RESPONSE_BYTES];
+        match std::env::var("MORNYE_TEXT_MEMORY_MODE").as_deref() {
             Ok("copy") => {
                 let text = super::decode_go_utf8(&bytes);
                 assert_eq!(text.len(), bytes.len());
@@ -294,10 +294,10 @@ mod tests {
                 let pointer = bytes.as_ptr();
                 let text = super::decode_go_utf8_owned(bytes);
                 assert_eq!(text.as_ptr(), pointer);
-                assert_eq!(text.len(), spotiflac_network::MAX_RESPONSE_BYTES);
+                assert_eq!(text.len(), mornye_network::MAX_RESPONSE_BYTES);
                 std::hint::black_box(&text);
             }
-            _ => panic!("set SPOTIFLAC_TEXT_MEMORY_MODE to copy or reuse"),
+            _ => panic!("set MORNYE_TEXT_MEMORY_MODE to copy or reuse"),
         }
     }
 

@@ -3,12 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const backend = MethodChannel('com.zarz.spotiflac/backend');
+  const backend = MethodChannel('com.zarz.mornye/backend');
   const paths = MethodChannel('plugins.flutter.io/path_provider');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;

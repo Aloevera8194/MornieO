@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/backup_service.dart';
-import 'package:spotiflac_android/utils/isrc_utils.dart';
-import 'package:spotiflac_android/utils/ordered_range_selection.dart';
+import 'package:mornye/services/backup_service.dart';
+import 'package:mornye/utils/isrc_utils.dart';
+import 'package:mornye/utils/ordered_range_selection.dart';
 
 void main() {
   group('issue 542 utility behavior', () {

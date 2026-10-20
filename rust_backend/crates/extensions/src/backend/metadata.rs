@@ -1,12 +1,12 @@
 //! Backend metadata options and operations: language and region settings, caches, and Deezer lookups.
 
 use super::Backend;
+use mornye_core::metadata::TrackMetadata;
+use mornye_providers::deezer::MetadataLookup;
+use mornye_providers::musicbrainz::MusicBrainzOptions;
+use mornye_providers::resolver::{Check, ResolverError, ResolverOptions};
 use serde::Serialize;
 use serde_json::{Value, json};
-use spotiflac_core::metadata::TrackMetadata;
-use spotiflac_providers::deezer::MetadataLookup;
-use spotiflac_providers::musicbrainz::MusicBrainzOptions;
-use spotiflac_providers::resolver::{Check, ResolverError, ResolverOptions};
 use std::time::{Duration, Instant};
 
 /// Trusted native configuration, never extension arguments or persisted settings.
@@ -220,7 +220,7 @@ mod tests {
     use super::*;
     use crate::RuntimeLimits;
     use crate::environment::ExtensionEnvironment;
-    use spotiflac_network::{NetworkOptions, NetworkService};
+    use mornye_network::{NetworkOptions, NetworkService};
     use std::io::{BufRead, BufReader, ErrorKind, Write};
     use std::net::TcpListener;
     use std::sync::{Arc, mpsc};

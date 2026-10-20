@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
-import 'package:spotiflac_android/services/playback_session_writer.dart';
+import 'package:mornye/services/app_state_database.dart';
+import 'package:mornye/services/playback_session_writer.dart';
 
 class _Database extends Fake implements AppStateDatabase {
   Map<String, dynamic>? row;

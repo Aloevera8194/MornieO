@@ -1,11 +1,11 @@
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/models/extension.dart';
-import 'package:spotiflac_android/services/download_album_metadata.dart';
-import 'package:spotiflac_android/services/download_track_metadata.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/models/extension.dart';
+import 'package:mornye/services/download_album_metadata.dart';
+import 'package:mornye/services/download_track_metadata.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 class DownloadMetadataLookup {
   final Track track;

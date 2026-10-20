@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
-import 'package:spotiflac_android/utils/audio_conversion_utils.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
-import 'package:spotiflac_android/utils/mime_utils.dart';
-import 'package:spotiflac_android/utils/path_match_keys.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/utils/artist_utils.dart';
+import 'package:mornye/utils/audio_conversion_utils.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
+import 'package:mornye/utils/mime_utils.dart';
+import 'package:mornye/utils/path_match_keys.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 void main() {
   group('artist utils', () {

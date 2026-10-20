@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:mornye/theme/material_expressive.dart';
 
 /// Pull-to-refresh with the expressive shape-morphing indicator on Material.
 /// Mornye and reduced motion keep Flutter's [RefreshIndicator].

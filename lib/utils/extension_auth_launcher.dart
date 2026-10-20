@@ -1,1 +1,1 @@
-export 'package:spotiflac_android/controllers/extension_auth_launcher.dart';
+export 'package:mornye/controllers/extension_auth_launcher.dart';

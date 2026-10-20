@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/services/library_cleanup.dart';
-import 'package:spotiflac_android/utils/confirm_and_delete_tracks.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/services/library_cleanup.dart';
+import 'package:mornye/utils/confirm_and_delete_tracks.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
 import 'package:sqflite/sqflite.dart';
 
 class _DeleteDatabase implements Database, Transaction {

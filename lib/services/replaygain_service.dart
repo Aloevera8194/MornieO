@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:spotiflac_android/services/ffmpeg_service.dart';
-import 'package:spotiflac_android/services/music_player_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/ffmpeg_service.dart';
+import 'package:mornye/services/music_player_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/file_access.dart';
+import 'package:mornye/utils/logger.dart';
 
 /// ReplayGain scanning and tag removal for existing audio files.
 ///

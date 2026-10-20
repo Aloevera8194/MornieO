@@ -1,5 +1,5 @@
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/providers/download_queue_state.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/providers/download_queue_state.dart';
 
 /// A native transfer sample, preserving raw values for logging/notifications.
 /// Applying it handles UI quantization and protects terminal queue states.

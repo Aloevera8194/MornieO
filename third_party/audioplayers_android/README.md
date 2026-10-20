@@ -16,7 +16,7 @@
 
 The Android implementation of [`audioplayers`](https://pub.dev/packages/audioplayers).
 
-## SpotiFLAC local changes
+## Mornye local changes
 
 In addition to preserving granted proxy file descriptors, this fork exposes a
 player-specific `setEqualizer` method. On Android 9+, `DynamicsProcessing` attaches

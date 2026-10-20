@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:spotiflac_android/services/audio_analysis_models.dart';
+import 'package:mornye/services/audio_analysis_models.dart';
 
 // Pure FFmpeg argument builders, log/metadata parsers and the spectral
 // cutoff estimator used by the audio analysis runner.

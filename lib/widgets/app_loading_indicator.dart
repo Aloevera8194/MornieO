@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 /// Indeterminate loading only. Downloads/analysis keep their real progress.
 class AppLoadingIndicator extends StatelessWidget {

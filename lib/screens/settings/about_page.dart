@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:spotiflac_android/services/cover_cache_manager.dart';
-import 'package:spotiflac_android/constants/app_info.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/mornye_icons.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/screens/upgrade_intro_screen.dart';
-import 'package:spotiflac_android/services/upgrade_intro_service.dart';
+import 'package:mornye/services/cover_cache_manager.dart';
+import 'package:mornye/constants/app_info.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/mornye_icons.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/widgets/settings_group.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/screens/upgrade_intro_screen.dart';
+import 'package:mornye/services/upgrade_intro_service.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -151,7 +151,7 @@ class AboutPage extends StatelessWidget {
                   _AboutSettingsItem(
                     icon: Icons.lyrics_outlined,
                     title: 'Zarz-LRC',
-                    subtitle: context.l10n.lyricsProviderSpotiflacLyricsDesc,
+                    subtitle: context.l10n.lyricsProviderZarzLrcDesc,
                     onTap: () =>
                         _launchUrl('https://api.zarz.moe/apple-music/docs'),
                     showDivider: true,
@@ -231,14 +231,14 @@ class AboutPage extends StatelessWidget {
                     icon: Icons.telegram,
                     title: context.l10n.aboutTelegramChannel,
                     subtitle: context.l10n.aboutTelegramChannelSubtitle,
-                    onTap: () => _launchUrl('https://t.me/spotiflac'),
+                    onTap: () => _launchUrl('https://t.me/mornyeupdates'),
                     showDivider: true,
                   ),
                   _AboutSettingsItem(
                     icon: Icons.forum_outlined,
                     title: context.l10n.aboutTelegramChat,
                     subtitle: context.l10n.aboutTelegramChatSubtitle,
-                    onTap: () => _launchUrl('https://t.me/spotiflac_chat'),
+                    onTap: () => _launchUrl('https://t.me/mornyecommunity'),
                     showDivider: false,
                   ),
                 ],

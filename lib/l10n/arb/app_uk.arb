@@ -30,7 +30,7 @@
   "usbBitPerfectDescription": "Зберігає точність джерела на сумісних виходах. Виберіть нижче прямий USB або ексклюзивний AAudio; в іншому випадку для виходу Android USB потрібен Android 14 або пізніша версія. Застосовується з наступного треку, без автомікшування або нормалізації. Системна гучність може не керувати прямим USB.",
   "usbHardwareVolume": "Апаратний обсяг ЦАП",
   "usbVolumeWarningTitle": "Перевірте гучність прослуховування",
-  "usbVolumeWarning": "Пряме відтворення аудіо через USB може бути набагато гучнішим за звичайне, і кнопки гучності телефону можуть не керувати ним. Зменште гучність ЦАП або підсилювача перед початком роботи. Якщо підтримується, SpotiFLAC встановлює ЦАП максимум на −40 дБ під час підключення; це не гарантує безпечного рівня прослуховування на кожному підсилювачі чи навушниках.",
+  "usbVolumeWarning": "Пряме відтворення аудіо через USB може бути набагато гучнішим за звичайне, і кнопки гучності телефону можуть не керувати ним. Зменште гучність ЦАП або підсилювача перед початком роботи. Якщо підтримується, Mornye встановлює ЦАП максимум на −40 дБ під час підключення; це не гарантує безпечного рівня прослуховування на кожному підсилювачі чи навушниках.",
   "usbVolumeAccept": "Я розумію",
   "usbVolumeUnavailable": "Відтворення призупинено, оскільки цей ЦАП не має перевіреного апаратного керування гучністю. Зменште гучність ЦАП або підсилювача, потім за потреби увімкніть вихід з фіксованою гучністю та виберіть доріжку ще раз.",
   "usbFixedVolume": "Дозволити вихід USB з фіксованою гучністю",
@@ -93,7 +93,7 @@
   },
   "@@locale": "uk",
   "@@last_modified": "2026-04-28",
-  "appName": "SpotiFLAC Mobile",
+  "appName": "Mornye",
   "@appName": {
     "description": "App name - DO NOT TRANSLATE"
   },
@@ -740,7 +740,7 @@
   "@setupStorageRequired": {
     "description": "Title when storage permission needed"
   },
-  "setupStorageDescription": "SpotiFLAC потребує дозволу на збереження, щоб зберегти завантажені музичні файли.",
+  "setupStorageDescription": "Mornye потребує дозволу на збереження, щоб зберегти завантажені музичні файли.",
   "@setupStorageDescription": {
     "description": "Explanation for storage permission"
   },
@@ -1065,7 +1065,7 @@
   "@snackbarFileNotFound": {
     "description": "Snackbar - file doesn't exist"
   },
-  "snackbarSelectExtFile": "Будь ласка, виберіть файл.spotiflac-ext",
+  "snackbarSelectExtFile": "Будь ласка, виберіть файл.mornye-ext",
   "@snackbarSelectExtFile": {
     "description": "Snackbar - wrong file type selected"
   },
@@ -1995,7 +1995,7 @@
   "@optionsArtistTagModeJoined": {
     "description": "Artist tag mode option that joins multiple artists into one value"
   },
-  "extensionsNoExtensionsSubtitle": "Встановіть файли.spotiflac-ext, щоб додати нових провайдерів",
+  "extensionsNoExtensionsSubtitle": "Встановіть файли.mornye-ext, щоб додати нових провайдерів",
   "@extensionsNoExtensionsSubtitle": {
     "description": "Empty state subtitle"
   },
@@ -2627,7 +2627,7 @@
   "@libraryRemoveFolder": {
     "description": "Action to remove one indexed library source"
   },
-  "libraryRemoveFolderMessage": "Видалити цю теку та її індексовані треки зі SpotiFLAC Mobile? Аудіофайли на сховищі не будуть видалені.",
+  "libraryRemoveFolderMessage": "Видалити цю теку та її індексовані треки зі Mornye? Аудіофайли на сховищі не будуть видалені.",
   "@libraryRemoveFolderMessage": {
     "description": "Confirmation shown before removing a library source"
   },
@@ -2787,13 +2787,13 @@
   "@libraryStorageAccessRequired": {
     "description": "Dialog title for storage permission"
   },
-  "libraryStorageAccessMessage": "SpotiFLAC потрібен доступ до сховища для сканування вашої музичної бібліотеки. Надайте дозвіл у налаштуваннях.",
+  "libraryStorageAccessMessage": "Mornye потрібен доступ до сховища для сканування вашої музичної бібліотеки. Надайте дозвіл у налаштуваннях.",
   "@libraryStorageAccessMessage": {
     "description": "Dialog message for storage permission"
   },
   "librarySourceDownloaded": "Завантажені",
   "@librarySourceDownloaded": {
-    "description": "Badge for tracks downloaded via SpotiFLAC"
+    "description": "Badge for tracks downloaded via Mornye"
   },
   "librarySourceLocal": "Локальні",
   "@librarySourceLocal": {
@@ -2921,11 +2921,11 @@
       }
     }
   },
-  "tutorialWelcomeTitle": "Ласкаво просимо до SpotiFLAC Mobile!",
+  "tutorialWelcomeTitle": "Ласкаво просимо до Mornye!",
   "@tutorialWelcomeTitle": {
     "description": "Tutorial welcome page title"
   },
-  "tutorialWelcomeDesc": "Дізнайтеся, як знаходити музику за допомогою розширень, вибирати потрібну якість і керувати завантаженнями у SpotiFLAC Mobile.",
+  "tutorialWelcomeDesc": "Дізнайтеся, як знаходити музику за допомогою розширень, вибирати потрібну якість і керувати завантаженнями у Mornye.",
   "@tutorialWelcomeDesc": {
     "description": "Tutorial welcome page description"
   },
@@ -4008,7 +4008,7 @@
   "@safMigrationTitle": {
     "description": "Title of SAF migration dialog"
   },
-  "safMigrationMessage1": "SpotiFLAC тепер використовує Android Storage Access Framework (SAF) для завантажень. Це виправляє помилки «відмовлено в доступі» на Android 10+.",
+  "safMigrationMessage1": "Mornye тепер використовує Android Storage Access Framework (SAF) для завантажень. Це виправляє помилки «відмовлено в доступі» на Android 10+.",
   "@safMigrationMessage1": {
     "description": "First paragraph of SAF migration dialog"
   },
@@ -4088,7 +4088,7 @@
   "@backupRestoreFailed": {
     "description": "Snackbar when restore fails"
   },
-  "backupInvalidFile": "Цей файл не є дійсною резервною копією SpotiFLAC",
+  "backupInvalidFile": "Цей файл не є дійсною резервною копією Mornye",
   "@backupInvalidFile": {
     "description": "Snackbar when the chosen file is not a valid backup"
   },
@@ -4272,9 +4272,9 @@
     "description": "Subtitle shown in the download location picker sheet"
   },
   "storageAutomaticFolder": "Автоматична тека",
-  "storageAutomaticDownloadFolder": "Використовує теку Завантаженн/SpotiFLAC, якщо вона доступна для запису; в іншому разі — сховище застосунку",
+  "storageAutomaticDownloadFolder": "Використовує теку Завантаженн/Mornye, якщо вона доступна для запису; в іншому разі: сховище застосунку",
   "storageSafRecommended": "Виберіть теку (рекомендовано)",
-  "storageDownloadFolderHint": "У засобі вибору тек Android відкрийте теку Завантаження і виберіть SpotiFLAC. Якщо її немає, створіть її за допомогою опції «Нова тека», а потім натисніть «Використовувати цю теку», щоб надати доступ.",
+  "storageDownloadFolderHint": "У засобі вибору тек Android відкрийте теку Завантаження і виберіть Mornye. Якщо її немає, створіть її за допомогою опції «Нова тека», а потім натисніть «Використовувати цю теку», щоб надати доступ.",
   "downloadFolderAccessLostTitle": "Втрачено доступ до теки завантажень",
   "@downloadFolderAccessLostTitle": {
     "description": "Title of the warning banner shown in Files settings when the saved SAF folder grant is no longer valid"
@@ -5217,7 +5217,7 @@
       }
     }
   },
-  "notifDownloadingUpdate": "Завантаження SpotiFLAC v{version}",
+  "notifDownloadingUpdate": "Завантаження Mornye v{version}",
   "@notifDownloadingUpdate": {
     "description": "Notification title while downloading an app update",
     "placeholders": {
@@ -5245,7 +5245,7 @@
   "@notifUpdateReady": {
     "description": "Notification title when app update download is complete"
   },
-  "notifUpdateReadyBody": "SpotiFLAC v{version} завантажена. Натисніть щоб установити.",
+  "notifUpdateReadyBody": "Mornye v{version} завантажена. Натисніть щоб установити.",
   "@notifUpdateReadyBody": {
     "description": "Notification body when app update is ready to install",
     "placeholders": {
@@ -6013,7 +6013,7 @@
   "@extensionCustomUrlHandlingSubtitle": {
     "description": "Extension detail subtitle for custom URL handling"
   },
-  "extensionCustomUrlHandlingShareHint": "Поділіться посиланнями з цих сайтів із SpotiFLAC Mobile, і це розширення їх обробить.",
+  "extensionCustomUrlHandlingShareHint": "Поділіться посиланнями з цих сайтів із Mornye, і це розширення їх обробить.",
   "@extensionCustomUrlHandlingShareHint": {
     "description": "Extension detail hint explaining share-to-app URL handling"
   },
@@ -6223,7 +6223,7 @@
   "@libraryBuiltInPreviewPlayer": {
     "description": "Setting option to use the built-in preview player"
   },
-  "libraryBuiltInPreviewPlayerSubtitle": "Play your music right inside SpotiFLAC Mobile",
+  "libraryBuiltInPreviewPlayerSubtitle": "Play your music right inside Mornye",
   "@libraryBuiltInPreviewPlayerSubtitle": {
     "description": "Subtitle for built-in preview player option"
   },
@@ -6703,11 +6703,11 @@
   "@extensionVerificationHelpTitleWaiting": {
     "description": "Dialog title when verification is taking longer than expected"
   },
-  "extensionVerificationHelpMessageManual": "SpotiFLAC Mobile не вдалося автоматично відкрити браузер. Відкрийте це посилання в браузері або скопіюйте його вручну.",
+  "extensionVerificationHelpMessageManual": "Mornye не вдалося автоматично відкрити браузер. Відкрийте це посилання в браузері або скопіюйте його вручну.",
   "@extensionVerificationHelpMessageManual": {
     "description": "Dialog message when automatic browser launch for verification fails"
   },
-  "extensionVerificationHelpMessageWaiting": "Якщо браузер не відкрився або процес перевірки завершився, але не повернув вас до SpotiFLAC Mobile, відкрийте це посилання знову або скопіюйте його вручну.",
+  "extensionVerificationHelpMessageWaiting": "Якщо браузер не відкрився або процес перевірки завершився, але не повернув вас до Mornye, відкрийте це посилання знову або скопіюйте його вручну.",
   "@extensionVerificationHelpMessageWaiting": {
     "description": "Dialog message when verification may need manual browser help"
   },

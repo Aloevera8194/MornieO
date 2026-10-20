@@ -5,20 +5,20 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderProxySliver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/cover_palette.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/theme/mornye_icons.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/expressive_button_group.dart';
-import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
+import 'package:mornye/theme/app_motion.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/cover_palette.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/mornye_icons.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/expressive_button_group.dart';
+import 'package:mornye/widgets/expressive_icon_button.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
 
 /// Collapsing album-detail header shared by the album, local-album, and
 /// downloaded-album screens: full-bleed [background] (optionally blurred and

@@ -1,12 +1,12 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/theme_provider.dart';
-import 'package:spotiflac_android/services/custom_font_service.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/theme_provider.dart';
+import 'package:mornye/services/custom_font_service.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
 
 class CustomFontSetting extends ConsumerStatefulWidget {
   const CustomFontSetting({super.key});

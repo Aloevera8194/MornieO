@@ -2,18 +2,18 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/metadata_separators.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/models/extension.dart';
-import 'package:spotiflac_android/services/download_metadata_resolver.dart';
-import 'package:spotiflac_android/services/ffmpeg_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/replaygain_service.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/lyrics_metadata_helper.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/metadata_separators.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/models/extension.dart';
+import 'package:mornye/services/download_metadata_resolver.dart';
+import 'package:mornye/services/ffmpeg_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/replaygain_service.dart';
+import 'package:mornye/utils/artist_utils.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/lyrics_metadata_helper.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 /// Embeds tags into a local working file; the queue owns publication and state.
 class DownloadMetadataEmbedding {

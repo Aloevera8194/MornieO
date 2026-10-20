@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/l10n/l10n.dart';
 
 /// Shared discard-unsaved-changes confirmation dialog used by priority /
 /// selection settings pages.

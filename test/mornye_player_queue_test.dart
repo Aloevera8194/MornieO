@@ -3,12 +3,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/mornye_player_queue.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/mornye_player_queue.dart';
 
 class _Player extends MusicPlayerController {
   int? jumpedTo;

@@ -6,12 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/services/update_checker.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/widgets/update_dialog.dart';
+import 'package:mornye/services/update_checker.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/widgets/update_dialog.dart';
 
 Map<String, Object?> release(String version) => {
   'tag_name': 'v$version',
@@ -86,6 +86,33 @@ void main() {
       );
     });
   }
+
+  test('discovers Mornye release assets after the app rename', () async {
+    final renamedRelease = release('5.2.1')
+      ..['assets'] = [
+        for (final abi in ['arm32', 'arm64'])
+          {
+            'name': 'Mornye-5.2.1-$abi.apk',
+            'browser_download_url':
+                'https://example.test/Mornye-5.2.1-$abi.apk',
+            'digest': 'sha256:${List.filled(64, 'a').join()}',
+          },
+      ];
+    final checker = UpdateChecker(
+      installedVersion: '5.2.0',
+      isAndroid: true,
+      supportedAbis: ['arm64-v8a'],
+      client: MockClient(
+        (_) async => http.Response(jsonEncode([renamedRelease]), 200),
+      ),
+    );
+    final update = await checker.checkForUpdate();
+    expect(
+      update?.apkDownloadUrl,
+      'https://example.test/Mornye-5.2.1-arm64.apk',
+    );
+    expect(update?.apkSha256, List.filled(64, 'a').join());
+  });
 
   test(
     'checks again immediately and reuses the body only after GitHub 304',

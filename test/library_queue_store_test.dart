@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/services/library_database_models.dart';
-import 'package:spotiflac_android/services/library_queue_store.dart';
-import 'package:spotiflac_android/services/library_row_mapper.dart';
-import 'package:spotiflac_android/services/library_schema.dart';
+import 'package:mornye/services/library_database_models.dart';
+import 'package:mornye/services/library_queue_store.dart';
+import 'package:mornye/services/library_row_mapper.dart';
+import 'package:mornye/services/library_schema.dart';
 
 import 'support/sqlite_process_database.dart';
 

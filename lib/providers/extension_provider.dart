@@ -5,14 +5,14 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/models/extension.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/extension_storage_service.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:mornye/models/extension.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/extension_storage_service.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/providers/settings_provider.dart';
 
-export 'package:spotiflac_android/models/extension.dart';
+export 'package:mornye/models/extension.dart';
 
 part 'extension_provider_priority.dart';
 
@@ -723,7 +723,7 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
     try {
       final tmp = await getTemporaryDirectory();
       destDir = await Directory(
-        '${tmp.path}/spotiflac_restore_ext',
+        '${tmp.path}/mornye_restore_ext',
       ).create(recursive: true);
       await PlatformBridge.initExtensionRepo(destDir.path);
       if (registryUrl.isNotEmpty) {

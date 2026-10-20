@@ -66,6 +66,7 @@ impl StorageMasterKey {
     pub fn derive(&self, extension_id: &str, purpose: &str) -> Zeroizing<[u8; 32]> {
         let mut mac = <Hmac<Sha256> as KeyInit>::new_from_slice(self.0.as_ref())
             .expect("HMAC accepts any key length");
+        // Keep the domain stable across app renames to decrypt existing snapshots.
         mac.update(b"SpotiFLAC Mobile extension storage v2\0");
         mac.update(purpose.as_bytes());
         mac.update(&[0]);
@@ -433,10 +434,10 @@ fn parse_object(data: &[u8]) -> Result<Map<String, Value>, StorageError> {
 pub(crate) fn atomic_write(path: &Path, data: &[u8]) -> Result<(), StorageError> {
     file_identity(path)?;
     let directory = path.parent().ok_or(StorageError::InvalidPath)?;
-    spotiflac_core::fs::write_atomic(
+    mornye_core::fs::write_atomic(
         directory,
         path,
-        ".spotiflac-",
+        ".mornye-",
         |file| file.write_all(data),
         || Ok(()),
         true,

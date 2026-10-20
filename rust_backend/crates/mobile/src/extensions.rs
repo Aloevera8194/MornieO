@@ -1,8 +1,6 @@
 use crate::cancellation::RequestLease;
-use spotiflac_extensions::environment::{
-    EnvironmentError, ExtensionEnvironment as CoreEnvironment,
-};
-use spotiflac_extensions::{ExtensionError, ExtensionRuntime, RuntimeLimits};
+use mornye_extensions::environment::{EnvironmentError, ExtensionEnvironment as CoreEnvironment};
+use mornye_extensions::{ExtensionError, ExtensionRuntime, RuntimeLimits};
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
@@ -10,7 +8,7 @@ use std::sync::{Arc, Mutex};
 /// Explicit close and object destruction both release only these grants.
 #[derive(uniffi::Object)]
 pub struct DownloadDirectoryScope {
-    grants: Mutex<Option<Vec<spotiflac_extensions::files::TemporaryGrant>>>,
+    grants: Mutex<Option<Vec<mornye_extensions::files::TemporaryGrant>>>,
 }
 
 #[uniffi::export]

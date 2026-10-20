@@ -8,22 +8,22 @@ import 'package:analyzer/source/line_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/theme/cover_palette.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/album_detail_header.dart';
-import 'package:spotiflac_android/widgets/app_search_field.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/widgets/collection_scaffold.dart';
-import 'package:spotiflac_android/widgets/selection_action_button.dart';
-import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
-import 'package:spotiflac_android/widgets/track_card.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/cover_palette.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
+import 'package:mornye/widgets/app_search_field.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/widgets/collection_scaffold.dart';
+import 'package:mornye/widgets/selection_action_button.dart';
+import 'package:mornye/widgets/selection_bottom_bar.dart';
+import 'package:mornye/widgets/settings_group.dart';
+import 'package:mornye/widgets/track_card.dart';
 
 import 'support/app_icon_finder.dart';
 
@@ -401,7 +401,7 @@ void main() {
       'local cache identity changes when artwork is replaced in place',
       () async {
         final directory = Directory.systemTemp.createTempSync(
-          'spotiflac-cover-palette-',
+          'mornye-cover-palette-',
         );
         final file = File('${directory.path}/cover.jpg');
         try {

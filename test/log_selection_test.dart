@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/screens/settings/log_screen.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/screens/settings/log_screen.dart';
+import 'package:mornye/utils/logger.dart';
 
 import 'support/app_icon_finder.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
+import 'package:mornye/theme/material_expressive.dart';
 
 /// Settings slider with the Material 3 Expressive track and handle.
 /// Mornye and reduced motion keep the standard [Slider].

@@ -24,7 +24,7 @@
 		<string>zh-Hant</string>
 	</array>
 	<key>CFBundleDisplayName</key>
-	<string>SpotiFLAC Mobile</string>
+	<string>Mornye</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -32,7 +32,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>SpotiFLAC Mobile</string>
+	<string>Mornye</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -105,7 +105,7 @@
 	
 	<!-- Photo Library (for cover art if needed) -->
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SpotiFLAC Mobile needs access to save album artwork</string>
+	<string>Mornye needs access to save album artwork</string>
 	
 	<!-- URL Schemes for deep linking -->
 	<key>CFBundleURLTypes</key>
@@ -114,10 +114,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>CFBundleURLName</key>
-			<string>com.zarz.spotiflac</string>
+			<string>com.zarz.mornye</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>spotiflac</string>
+				<string>mornye</string>
 				<string>discord-1549854098801692862</string>
 			</array>
 		</dict>

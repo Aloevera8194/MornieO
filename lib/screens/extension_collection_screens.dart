@@ -1,26 +1,26 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/error_card.dart';
-import 'package:spotiflac_android/widgets/mornye_artist_header.dart';
-import 'package:spotiflac_android/widgets/album_detail_header.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/error_card.dart';
+import 'package:mornye/widgets/mornye_artist_header.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/models/artist_concert.dart';
-import 'package:spotiflac_android/providers/track_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/album_screen.dart';
-import 'package:spotiflac_android/screens/collapsing_header_scroll_mixin.dart';
-import 'package:spotiflac_android/screens/artist_screen.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/utils/extension_auth_launcher.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
-import 'package:spotiflac_android/utils/editorial_notes.dart';
-import 'package:spotiflac_android/screens/playlist_screen.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/models/artist_concert.dart';
+import 'package:mornye/providers/track_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/album_screen.dart';
+import 'package:mornye/screens/collapsing_header_scroll_mixin.dart';
+import 'package:mornye/screens/artist_screen.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/extension_auth_launcher.dart';
+import 'package:mornye/utils/string_utils.dart';
+import 'package:mornye/utils/editorial_notes.dart';
+import 'package:mornye/screens/playlist_screen.dart';
+import 'package:mornye/widgets/animation_utils.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
 
 /// Legacy `duration_ms` parsing used by extension album/playlist/artist track
 /// parsing, kept separate from [extractDurationMs] which also falls back to

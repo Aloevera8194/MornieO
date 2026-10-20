@@ -4,16 +4,16 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/providers/player_artwork_video_provider.dart';
-import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
-import 'package:spotiflac_android/services/motion_artwork_store.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/audio_quality_badges.dart';
-import 'package:spotiflac_android/widgets/mini_player.dart';
-import 'package:spotiflac_android/widgets/overflow_marquee.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/providers/player_artwork_video_provider.dart';
+import 'package:mornye/providers/player_motion_artwork_provider.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
+import 'package:mornye/services/motion_artwork_store.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/audio_quality_badges.dart';
+import 'package:mornye/widgets/mini_player.dart';
+import 'package:mornye/widgets/overflow_marquee.dart';
 import 'package:video_player/video_player.dart';
 
 void main() {

@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
 
 /// Bounds of the tapped control or row, in the root overlay's coordinates.
 Rect? mornyeMenuAnchor(BuildContext context) {

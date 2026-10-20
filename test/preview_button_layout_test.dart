@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/library_collections_provider.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/providers/preview_player_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/widgets/preview_button.dart';
-import 'package:spotiflac_android/widgets/track_collection_quick_actions.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/library_collections_provider.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/providers/preview_player_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/widgets/preview_button.dart';
+import 'package:mornye/widgets/track_collection_quick_actions.dart';
 
 import 'support/app_icon_finder.dart';
 

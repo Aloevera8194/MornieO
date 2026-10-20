@@ -1,9 +1,9 @@
-import 'package:spotiflac_android/models/library_collections.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/models/download_history.dart';
-import 'package:spotiflac_android/models/library_database_models.dart';
-import 'package:spotiflac_android/utils/audio_quality_badge_policy.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/models/library_collections.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/models/download_history.dart';
+import 'package:mornye/models/library_database_models.dart';
+import 'package:mornye/utils/audio_quality_badge_policy.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 enum LibraryItemSource { downloaded, local }
 

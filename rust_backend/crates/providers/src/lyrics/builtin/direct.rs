@@ -7,8 +7,8 @@ use base64::{
     engine::general_purpose::{GeneralPurpose, GeneralPurposeConfig},
 };
 use html5ever::tendril::TendrilSink;
+use mornye_core::lyrics::lrc;
 use scraper::{Html, HtmlTreeSink, Node};
-use spotiflac_core::lyrics::lrc;
 
 fn base64_text(text: &str, raw: bool) -> Result<String, LyricsError> {
     // Go accepts nonzero padding bits and ignores CR/LF, but not other spaces.

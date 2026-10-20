@@ -7,11 +7,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/services/app_state_database.dart';
-import 'package:spotiflac_android/services/download_queue_codec.dart';
-import 'package:spotiflac_android/services/download_queue_persistence.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/services/app_state_database.dart';
+import 'package:mornye/services/download_queue_codec.dart';
+import 'package:mornye/services/download_queue_persistence.dart';
 
 // Baseline is the synchronous restore loop before the worker change. Keep its
 // parsing, canonical-payload comparison, and corrupt-row behavior comparable.

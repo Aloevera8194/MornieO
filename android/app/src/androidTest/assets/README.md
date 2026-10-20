@@ -35,6 +35,6 @@ shipped FFmpeg dependency. Generate with `-f lavfi -i testsrc2=size=32x32:rate=2
 For a live encrypted HLS gate through `MotionArtworkProxy`, forward its local
 port with `adb reverse tcp:PORT tcp:PORT` and pass
 `-e motionProxyUrl http://127.0.0.1:PORT/TOKEN/0.m3u8` to the instrumentation
-runner for `com.zarz.spotiflac.FFmpegCapabilitiesTest`. The optional gate decodes
+runner for `com.zarz.mornye.FFmpegCapabilitiesTest`. The optional gate decodes
 the input, remuxes it, then decodes the resulting MP4 using the shipped native
 library. Normal fixture tests run without a server or this argument.

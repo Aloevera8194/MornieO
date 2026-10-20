@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/screens/track_metadata_screen.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/screens/track_metadata_screen.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 void main() {
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
 
   for (final mornye in [false, true]) {
     for (final unavailable in [false, true]) {

@@ -1,8 +1,8 @@
 //! Go-compatible successful-lyrics cache with bounded, atomic persistence.
 
+use mornye_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
+use mornye_core::lyrics::LyricsResponse;
 use serde::{Deserialize, Serialize};
-use spotiflac_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
-use spotiflac_core::lyrics::LyricsResponse;
 use std::collections::BTreeMap;
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
@@ -341,7 +341,7 @@ mod tests {
             LyricsResponse::from_text("[00:01.009]Original", "Apple Music", "Zarz-LRC");
         let line = &mut lyrics.lines.as_mut().unwrap()[0];
         line.romanization = Some("Romanized".into());
-        line.romanization_words = Some(vec![spotiflac_core::lyrics::LyricsWord {
+        line.romanization_words = Some(vec![mornye_core::lyrics::LyricsWord {
             text: "Romanized".into(),
             start_time_ms: 1009,
             end_time_ms: 1307,

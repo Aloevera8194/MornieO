@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:material_ui/material_ui.dart' as material_ui;
-import 'package:spotiflac_android/providers/theme_provider.dart';
-import 'package:spotiflac_android/providers/custom_font_provider.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/models/theme_settings.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/providers/theme_provider.dart';
+import 'package:mornye/providers/custom_font_provider.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/models/theme_settings.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 class DynamicColorWrapper extends ConsumerWidget {
   final Widget Function(ThemeData light, ThemeData dark, ThemeMode mode)

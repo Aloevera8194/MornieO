@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
+import 'package:mornye/utils/file_access.dart';
 
 void main() {
   group('Finalized SAF audio names', () {
@@ -50,7 +50,7 @@ void main() {
   group('file deletion', () {
     test('confirms a local file is absent before reporting success', () async {
       final tempDir = await Directory.systemTemp.createTemp(
-        'spotiflac-delete-test-',
+        'mornye-delete-test-',
       );
       addTearDown(() async {
         if (await tempDir.exists()) {

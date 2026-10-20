@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_color_utilities/quantize/quantizer_celebi.dart';
 import 'package:material_color_utilities/score/score.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/widgets/cached_cover_image.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/widgets/cached_cover_image.dart';
 
 Future<List<List<int>>> _quantizePaletteInIsolate(Uint8List bytes) async {
   final result = await QuantizerCelebi().quantize(

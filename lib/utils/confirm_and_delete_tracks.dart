@@ -1,1 +1,1 @@
-export 'package:spotiflac_android/controllers/confirm_and_delete_tracks.dart';
+export 'package:mornye/controllers/confirm_and_delete_tracks.dart';

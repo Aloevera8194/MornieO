@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/motion_artwork_proxy.dart';
+import 'package:mornye/services/motion_artwork_proxy.dart';
 
 void main() {
   late HttpClient reader;

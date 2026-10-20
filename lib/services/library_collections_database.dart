@@ -6,13 +6,13 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/models/library_collections.dart';
-import 'package:spotiflac_android/services/collection_restore_codec.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/collection_track_batch.dart';
-import 'package:spotiflac_android/services/sqlite_helpers.dart' as sqlite;
-import 'package:spotiflac_android/services/sqlite_native_snapshot.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/models/library_collections.dart';
+import 'package:mornye/services/collection_restore_codec.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/collection_track_batch.dart';
+import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
+import 'package:mornye/services/sqlite_native_snapshot.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('LibraryCollectionsDb');
 

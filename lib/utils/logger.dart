@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:spotiflac_android/constants/app_info.dart';
-import 'package:spotiflac_android/services/native_log_source.dart';
+import 'package:mornye/constants/app_info.dart';
+import 'package:mornye/services/native_log_source.dart';
 
 const int _maxLogMessageLength = 500;
 const int _maxBufferedLogMessageLength = 4000;
@@ -293,7 +293,7 @@ class LogBuffer extends ChangeNotifier {
 
   String export() {
     final buffer = StringBuffer();
-    buffer.writeln('SpotiFLAC Log Export');
+    buffer.writeln('${AppInfo.appName} Log Export');
     buffer.writeln('Generated: ${DateTime.now().toIso8601String()}');
     buffer.writeln('Entries: ${_entries.length}');
     buffer.writeln('=' * 60);
@@ -308,7 +308,7 @@ class LogBuffer extends ChangeNotifier {
     final buffer = StringBuffer();
 
     buffer.writeln('=' * 60);
-    buffer.writeln('SPOTIFLAC LOG EXPORT');
+    buffer.writeln('${AppInfo.appName.toUpperCase()} LOG EXPORT');
     buffer.writeln('=' * 60);
     buffer.writeln();
 

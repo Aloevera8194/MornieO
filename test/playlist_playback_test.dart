@@ -3,21 +3,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/library_collections_provider.dart';
-import 'package:spotiflac_android/providers/local_library_provider.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/providers/playback_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/library_tracks_folder_screen.dart';
-import 'package:spotiflac_android/services/music_player_service.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/track_card.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/library_collections_provider.dart';
+import 'package:mornye/providers/local_library_provider.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/providers/playback_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/library_tracks_folder_screen.dart';
+import 'package:mornye/services/music_player_service.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/track_card.dart';
 
 import 'support/app_icon_finder.dart';
 
@@ -477,7 +477,7 @@ void main() {
   test('external mode opens only the selected available file', () async {
     container.read(settingsProvider.notifier).setPlayerMode('external');
     final calls = <MethodCall>[];
-    const channel = MethodChannel('com.zarz.spotiflac/backend');
+    const channel = MethodChannel('com.zarz.mornye/backend');
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     messenger.setMockMethodCallHandler(channel, (call) async {
@@ -503,7 +503,7 @@ void main() {
   test('external mode skips unavailable and CUE candidates lazily', () async {
     container.read(settingsProvider.notifier).setPlayerMode('external');
     playback.paths['Selected'] = '/album.cue#track02';
-    const channel = MethodChannel('com.zarz.spotiflac/backend');
+    const channel = MethodChannel('com.zarz.mornye/backend');
     final messenger =
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
     final calls = <MethodCall>[];

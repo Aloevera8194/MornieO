@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/library_collections_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/weekly_releases.dart';
-import 'package:spotiflac_android/utils/provider_resource_ids.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/library_collections_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/weekly_releases.dart';
+import 'package:mornye/utils/provider_resource_ids.dart';
 
 final weeklyReleasesProvider = FutureProvider.autoDispose
     .family<WeeklyReleaseFeed, bool>((ref, refresh) async {

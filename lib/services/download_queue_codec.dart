@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
-import 'package:spotiflac_android/models/download_item.dart';
+import 'package:mornye/models/download_item.dart';
 
 typedef DownloadQueueSavedItem = ({DownloadItem? item, String? payload});
 

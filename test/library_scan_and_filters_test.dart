@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/library_collections_provider.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/library_collections_provider.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
 
 void main() {
   group('local library incremental scan', () {

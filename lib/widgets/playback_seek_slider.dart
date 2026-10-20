@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/playback_seek_preview.dart';
-import 'package:spotiflac_android/widgets/expressive_seek_track.dart';
-import 'package:spotiflac_android/widgets/mornye_player_slider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/playback_seek_preview.dart';
+import 'package:mornye/widgets/expressive_seek_track.dart';
+import 'package:mornye/widgets/mornye_player_slider.dart';
 
 /// Previews scrubbing locally and seeks once when the gesture ends.
 class PlaybackSeekSlider extends StatefulWidget {

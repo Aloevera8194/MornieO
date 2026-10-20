@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
-import 'package:spotiflac_android/models/automix_options.dart';
+import 'package:mornye/models/automix_options.dart';
 
 /// A local beat grid, measured in seconds within the decoded audio window.
 class AutoMixBeatGrid {

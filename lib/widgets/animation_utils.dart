@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
+import 'package:mornye/theme/app_motion.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
 
 /// Wraps a child in a staggered fade-in + slide-up animation.
 ///

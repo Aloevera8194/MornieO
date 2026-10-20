@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(spotiflac_audio LANGUAGES C CXX)
+project(mornye_audio LANGUAGES C CXX)
 
 include(FetchContent)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -17,30 +17,30 @@ set(ENABLE_MULTITHREADING OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(flac
     URL https://github.com/xiph/flac/archive/refs/tags/1.5.0.tar.gz
     URL_HASH SHA256=aea54ed186ad07a34750399cb27fc216a2b62d0ffcd6dc2e3064a3518c3146f8)
-function(spotiflac_add_flac)
+function(mornye_add_flac)
     if(ANDROID)
         # The NDK's legacy toolchain reports CMAKE_SYSTEM_VERSION=1. libFLAC
         # uses it to gate 64-bit file seeks, which Android supports from API 24.
         set(CMAKE_SYSTEM_VERSION ${ANDROID_NATIVE_API_LEVEL})
         include(CheckSymbolExists)
-        check_symbol_exists(fseeko "stdio.h" SPOTIFLAC_HAVE_FSEEKO)
-        set(HAVE_FSEEKO ${SPOTIFLAC_HAVE_FSEEKO} CACHE INTERNAL "fseeko is declared" FORCE)
+        check_symbol_exists(fseeko "stdio.h" MORNYE_HAVE_FSEEKO)
+        set(HAVE_FSEEKO ${MORNYE_HAVE_FSEEKO} CACHE INTERNAL "fseeko is declared" FORCE)
     endif()
     FetchContent_MakeAvailable(flac)
 endfunction()
-spotiflac_add_flac()
-add_library(spotiflac_flac STATIC flac_pcm_source.cpp)
-target_compile_features(spotiflac_flac PRIVATE cxx_std_17)
-target_compile_options(spotiflac_flac PRIVATE -Wall -Wextra -Werror -fvisibility=hidden)
-target_link_libraries(spotiflac_flac PUBLIC FLAC::FLAC)
+mornye_add_flac()
+add_library(mornye_flac STATIC flac_pcm_source.cpp)
+target_compile_features(mornye_flac PRIVATE cxx_std_17)
+target_compile_options(mornye_flac PRIVATE -Wall -Wextra -Werror -fvisibility=hidden)
+target_link_libraries(mornye_flac PUBLIC FLAC::FLAC)
 
-option(SPOTIFLAC_AUDIO_HOST_TESTS "Test the lossless decoder without Android" OFF)
-if(SPOTIFLAC_AUDIO_HOST_TESTS)
+option(MORNYE_AUDIO_HOST_TESTS "Test the lossless decoder without Android" OFF)
+if(MORNYE_AUDIO_HOST_TESTS)
     enable_testing()
     add_executable(flac_pcm_source_test tests/flac_pcm_source_test.cpp)
     target_compile_features(flac_pcm_source_test PRIVATE cxx_std_17)
     target_compile_options(flac_pcm_source_test PRIVATE -Wall -Wextra -Werror)
-    target_link_libraries(flac_pcm_source_test PRIVATE spotiflac_flac)
+    target_link_libraries(flac_pcm_source_test PRIVATE mornye_flac)
     add_test(NAME flac_pcm_source COMMAND flac_pcm_source_test)
     return()
 endif()
@@ -60,16 +60,16 @@ FetchContent_Declare(wavpack
     URL_HASH SHA256=2a53e50aefd8c9f04a0828a0e1ef77b6f4c17b0ef6964ad234ab295f313b7d6d)
 FetchContent_MakeAvailable(oboe wavpack)
 
-add_library(spotiflac_audio SHARED native_audio.cpp)
-target_compile_features(spotiflac_audio PRIVATE cxx_std_17)
-target_compile_options(spotiflac_audio PRIVATE -Wall -Wextra -Werror -fvisibility=hidden)
-target_link_libraries(spotiflac_audio PRIVATE oboe WavPack::WavPack spotiflac_flac log)
+add_library(mornye_audio SHARED native_audio.cpp)
+target_compile_features(mornye_audio PRIVATE cxx_std_17)
+target_compile_options(mornye_audio PRIVATE -Wall -Wextra -Werror -fvisibility=hidden)
+target_link_libraries(mornye_audio PRIVATE oboe WavPack::WavPack mornye_flac log)
 # Only JNI is public; static Oboe/WavPack/C++ implementation symbols must not
 # keep otherwise unused code alive. APS2 is supported by our minimum API 24.
-target_link_options(spotiflac_audio PRIVATE
+target_link_options(mornye_audio PRIVATE
     "-Wl,-z,max-page-size=16384"
     "-Wl,--version-script,${CMAKE_CURRENT_SOURCE_DIR}/native_audio.map"
     "-Wl,--icf=safe"
     "-Wl,--pack-dyn-relocs=android")
-set_property(TARGET spotiflac_audio APPEND PROPERTY LINK_DEPENDS
+set_property(TARGET mornye_audio APPEND PROPERTY LINK_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/native_audio.map")

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/providers/library_collections_provider.dart';
-import 'package:spotiflac_android/services/weekly_releases.dart';
+import 'package:mornye/providers/library_collections_provider.dart';
+import 'package:mornye/services/weekly_releases.dart';
 
 CollectionArtistEntry _artist(String id) => CollectionArtistEntry(
   key: 'provider-a:$id',

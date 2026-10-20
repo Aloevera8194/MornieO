@@ -1,1 +1,1 @@
-export 'package:spotiflac_android/controllers/mornye_glass_warmup.dart';
+export 'package:mornye/controllers/mornye_glass_warmup.dart';

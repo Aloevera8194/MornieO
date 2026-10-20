@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/listening_statistics.dart';
+import 'package:mornye/services/listening_statistics.dart';
 
 const _one = ListeningTrack(
   key: 'one',

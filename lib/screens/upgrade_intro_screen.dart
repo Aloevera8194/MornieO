@@ -11,17 +11,17 @@ import 'package:material_3_expressive/material_3_expressive.dart'
         Morph,
         MorphToPathExtension,
         RoundedPolygonToPathExtension;
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/theme_settings.dart';
-import 'package:spotiflac_android/providers/theme_provider.dart';
-import 'package:spotiflac_android/services/upgrade_intro_service.dart';
-import 'package:spotiflac_android/theme/app_theme.dart';
-import 'package:spotiflac_android/theme/mornye_icons.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_icon_button.dart';
-import 'package:spotiflac_android/widgets/app_shape.dart';
-import 'package:spotiflac_android/widgets/beta_badge.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/theme_settings.dart';
+import 'package:mornye/providers/theme_provider.dart';
+import 'package:mornye/services/upgrade_intro_service.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_icons.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/app_shape.dart';
+import 'package:mornye/widgets/beta_badge.dart';
+import 'package:mornye/widgets/expressive_button.dart';
 
 /// A local, replayable release tour. Theme changes require an explicit choice.
 class UpgradeIntroScreen extends StatefulWidget {

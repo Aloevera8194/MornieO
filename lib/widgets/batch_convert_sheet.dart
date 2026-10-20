@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_action_button.dart';
-import 'package:spotiflac_android/widgets/app_choice_chip.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/utils/audio_conversion_utils.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_action_button.dart';
+import 'package:mornye/widgets/app_choice_chip.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/app_switch.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/utils/audio_conversion_utils.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 /// Conversion options shared by the queue, album and single-track sheets.
 class BatchConvertSheet extends StatefulWidget {

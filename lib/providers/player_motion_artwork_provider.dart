@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/motion_artwork_store.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/motion_artwork_store.dart';
 
 typedef PlayerArtworkAlbum = ({String album, String artist});
 

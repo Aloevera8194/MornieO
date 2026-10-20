@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 /// Cupertino counterparts for the shared Settings and extension UI symbols.
 IconData mornyeIconFor(IconData icon) {

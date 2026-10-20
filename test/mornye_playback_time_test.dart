@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/widgets/mornye_playback_time.dart';
+import 'package:mornye/widgets/mornye_playback_time.dart';
 
 Widget _app(int seconds, {bool remaining = false, bool reduceMotion = false}) =>
     MaterialApp(

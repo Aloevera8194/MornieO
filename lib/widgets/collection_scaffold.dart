@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/utils/nav_bar_inset.dart';
-import 'package:spotiflac_android/widgets/album_detail_header.dart';
-import 'package:spotiflac_android/widgets/selection_bottom_bar.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
+import 'package:mornye/widgets/selection_bottom_bar.dart';
 
 /// Shared shell for every track-collection screen: album, playlist, local
 /// album, downloaded album and library folders.

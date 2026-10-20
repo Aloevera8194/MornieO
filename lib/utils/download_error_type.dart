@@ -1,4 +1,4 @@
-import 'package:spotiflac_android/models/download_item.dart';
+import 'package:mornye/models/download_item.dart';
 
 /// Null permits legacy message inference; unknown preserves a typed failure's
 /// original message without mistaking provider authentication for a challenge.

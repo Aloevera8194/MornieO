@@ -6,7 +6,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart' show compute;
 import 'package:flutter/widgets.dart'
     show AppLifecycleState, WidgetsBinding, WidgetsBindingObserver;
-import 'package:spotiflac_android/services/playback_notification.dart';
+import 'package:mornye/services/playback_notification.dart';
 import 'package:audio_session/audio_session.dart'
     show
         AudioDevice,
@@ -14,30 +14,28 @@ import 'package:audio_session/audio_session.dart'
         AudioSessionConfiguration,
         AudioInterruptionType;
 import 'package:audioplayers/audioplayers.dart';
-import 'package:spotiflac_android/services/listening_statistics.dart'
-    show ListeningTrack;
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/services/sqlite_helpers.dart'
-    show normalizeLookupText;
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/playback_normalization.dart';
-import 'package:spotiflac_android/services/playback_automation.dart';
-import 'package:spotiflac_android/services/playback_session_writer.dart';
-import 'package:spotiflac_android/services/content_uri_playback_cache.dart';
-import 'package:spotiflac_android/services/music_player_runtime.dart';
-import 'package:spotiflac_android/services/music_playback_deck.dart';
-import 'package:spotiflac_android/services/automix_analysis.dart';
-import 'package:spotiflac_android/services/autoplay_personalization.dart';
-import 'package:spotiflac_android/services/automix_analyzer.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/automix_effect_renderer.dart';
-import 'package:spotiflac_android/services/automix_status.dart';
-import 'package:spotiflac_android/services/music_haptics.dart';
-import 'package:spotiflac_android/utils/int_utils.dart';
-import 'package:spotiflac_android/utils/playback_artwork.dart';
-import 'package:spotiflac_android/services/downloaded_embedded_cover_resolver.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/services/playable_media.dart';
+import 'package:mornye/services/listening_statistics.dart' show ListeningTrack;
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/services/sqlite_helpers.dart' show normalizeLookupText;
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/playback_normalization.dart';
+import 'package:mornye/services/playback_automation.dart';
+import 'package:mornye/services/playback_session_writer.dart';
+import 'package:mornye/services/content_uri_playback_cache.dart';
+import 'package:mornye/services/music_player_runtime.dart';
+import 'package:mornye/services/music_playback_deck.dart';
+import 'package:mornye/services/automix_analysis.dart';
+import 'package:mornye/services/autoplay_personalization.dart';
+import 'package:mornye/services/automix_analyzer.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/automix_effect_renderer.dart';
+import 'package:mornye/services/automix_status.dart';
+import 'package:mornye/services/music_haptics.dart';
+import 'package:mornye/utils/int_utils.dart';
+import 'package:mornye/utils/playback_artwork.dart';
+import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/services/playable_media.dart';
 
 export 'music_player_runtime.dart';
 export 'playable_media.dart';

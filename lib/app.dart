@@ -3,21 +3,21 @@ import 'package:material_ui/material_ui.dart' as material_ui;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
-import 'package:spotiflac_android/constants/app_info.dart';
-import 'package:spotiflac_android/screens/main_shell.dart';
-import 'package:spotiflac_android/screens/setup_screen.dart';
-import 'package:spotiflac_android/screens/tutorial_screen.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/providers/equalizer_provider.dart';
-import 'package:spotiflac_android/services/app_navigation_service.dart';
-import 'package:spotiflac_android/services/app_orientation.dart';
-import 'package:spotiflac_android/theme/dynamic_color_wrapper.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/l10n/supported_locales.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/widgets/app_snack_bar.dart';
-import 'package:spotiflac_android/widgets/mornye_glass_preparation.dart';
-import 'package:spotiflac_android/widgets/playback_feedback.dart';
+import 'package:mornye/constants/app_info.dart';
+import 'package:mornye/screens/main_shell.dart';
+import 'package:mornye/screens/setup_screen.dart';
+import 'package:mornye/screens/tutorial_screen.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/providers/equalizer_provider.dart';
+import 'package:mornye/services/app_navigation_service.dart';
+import 'package:mornye/services/app_orientation.dart';
+import 'package:mornye/theme/dynamic_color_wrapper.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/l10n/supported_locales.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/widgets/app_snack_bar.dart';
+import 'package:mornye/widgets/mornye_glass_preparation.dart';
+import 'package:mornye/widgets/playback_feedback.dart';
 
 String initialLocationForAppState({
   required bool isFirstLaunch,
@@ -161,10 +161,10 @@ class _OrientationFadeState extends State<_OrientationFade>
   }
 }
 
-class SpotiFLACApp extends ConsumerWidget {
+class MornyeApp extends ConsumerWidget {
   final bool disableOverscrollEffects;
 
-  const SpotiFLACApp({super.key, this.disableOverscrollEffects = false});
+  const MornyeApp({super.key, this.disableOverscrollEffects = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

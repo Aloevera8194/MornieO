@@ -1,5 +1,5 @@
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/artist_utils.dart';
 
 class CrossExtensionShareResult {
   final String extensionId;

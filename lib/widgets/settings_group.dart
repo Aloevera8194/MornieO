@@ -3,15 +3,15 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/theme/mornye_icons.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
+import 'package:mornye/theme/app_motion.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_switch.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/mornye_icons.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
 
 /// Background fill for grouped cards, matching the Settings group look. Blends a
 /// translucent overlay over the surface so it stays visible on AMOLED (pure

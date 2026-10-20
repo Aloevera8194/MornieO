@@ -2,24 +2,24 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/music_playback_deck.dart';
-import 'package:spotiflac_android/services/music_player_service.dart'
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/music_playback_deck.dart';
+import 'package:mornye/services/music_player_service.dart'
     show resetAutoplayLearning;
-import 'package:spotiflac_android/screens/listening_statistics_screen.dart';
-import 'package:spotiflac_android/screens/equalizer_screen.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/widgets/beta_badge.dart';
-import 'package:spotiflac_android/widgets/player_volume_control.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
-import 'package:spotiflac_android/widgets/discord_presence_settings.dart';
-import 'package:spotiflac_android/widgets/automix_settings.dart';
-import 'package:spotiflac_android/widgets/music_haptics_settings.dart';
-import 'package:spotiflac_android/widgets/playback_normalization_settings.dart';
+import 'package:mornye/screens/listening_statistics_screen.dart';
+import 'package:mornye/screens/equalizer_screen.dart';
+import 'package:mornye/widgets/animation_utils.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/widgets/beta_badge.dart';
+import 'package:mornye/widgets/player_volume_control.dart';
+import 'package:mornye/widgets/settings_group.dart';
+import 'package:mornye/widgets/discord_presence_settings.dart';
+import 'package:mornye/widgets/automix_settings.dart';
+import 'package:mornye/widgets/music_haptics_settings.dart';
+import 'package:mornye/widgets/playback_normalization_settings.dart';
 
 class PlaybackSettingsPage extends ConsumerStatefulWidget {
   const PlaybackSettingsPage({super.key});

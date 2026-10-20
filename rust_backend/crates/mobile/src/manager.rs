@@ -3,9 +3,9 @@
 
 use crate::cancellation::RequestLease;
 use crate::extensions::ExtensionEnvironment;
-use spotiflac_extensions::RuntimeLimits;
-use spotiflac_extensions::backend::Backend as CoreManager;
-use spotiflac_extensions::manager::ManagerError;
+use mornye_extensions::RuntimeLimits;
+use mornye_extensions::backend::Backend as CoreManager;
+use mornye_extensions::manager::ManagerError;
 use std::path::Path;
 use std::sync::Arc;
 

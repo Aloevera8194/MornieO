@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
-import 'package:spotiflac_android/services/native_cache_maintenance.dart';
+import 'package:mornye/services/native_cache_maintenance.dart';
 
 /// Trims old cached payloads to a byte budget. Repository metadata, symlinks,
 /// and recently written files (possibly active downloads) are left alone.

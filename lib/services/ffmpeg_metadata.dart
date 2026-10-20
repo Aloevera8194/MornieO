@@ -4,13 +4,13 @@ import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
-import 'package:spotiflac_android/services/audio_metadata_mapper.dart';
-import 'package:spotiflac_android/services/ffmpeg_models.dart';
-import 'package:spotiflac_android/services/ffmpeg_support.dart';
-import 'package:spotiflac_android/services/id3v23_lyrics.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/audio_metadata_mapper.dart';
+import 'package:mornye/services/ffmpeg_models.dart';
+import 'package:mornye/services/ffmpeg_support.dart';
+import 'package:mornye/services/id3v23_lyrics.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/artist_utils.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('FFmpeg');
 

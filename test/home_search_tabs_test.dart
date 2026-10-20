@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/explore_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/providers/recent_access_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/providers/track_provider.dart';
-import 'package:spotiflac_android/screens/home_tab.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_search_field.dart';
-import 'package:spotiflac_android/widgets/lazy_tab_view.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/mornye_context_menu.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/explore_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/providers/recent_access_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/providers/track_provider.dart';
+import 'package:mornye/screens/home_tab.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_search_field.dart';
+import 'package:mornye/widgets/lazy_tab_view.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/mornye_context_menu.dart';
 
 void main() {
   for (final (size, layout) in [

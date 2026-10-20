@@ -6,7 +6,7 @@ use crate::{
     RuntimeLimits,
     backend::{LyricsRequest, MetadataOptions},
 };
-use spotiflac_network::{NetworkOptions, NetworkService};
+use mornye_network::{NetworkOptions, NetworkService};
 use std::io::{Read, Write};
 use std::net::TcpListener;
 use std::sync::atomic::{AtomicBool, Ordering};

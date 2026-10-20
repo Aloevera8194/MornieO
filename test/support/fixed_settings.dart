@@ -1,5 +1,5 @@
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/settings_provider.dart';
 
 /// Skips loading persisted settings and serves [initial] unchanged.
 class FixedSettingsNotifier extends SettingsNotifier {

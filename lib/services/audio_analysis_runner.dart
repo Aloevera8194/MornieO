@@ -9,11 +9,11 @@ import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/services/audio_analysis_ffmpeg.dart';
-import 'package:spotiflac_android/services/audio_analysis_jobs.dart';
-import 'package:spotiflac_android/services/audio_analysis_models.dart';
-import 'package:spotiflac_android/services/network_audio_analysis_input.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
+import 'package:mornye/services/audio_analysis_ffmpeg.dart';
+import 'package:mornye/services/audio_analysis_jobs.dart';
+import 'package:mornye/services/audio_analysis_models.dart';
+import 'package:mornye/services/network_audio_analysis_input.dart';
+import 'package:mornye/services/platform_bridge.dart';
 
 class GeneratedSpectrogram {
   final ui.Image image;

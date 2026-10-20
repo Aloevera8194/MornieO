@@ -3,12 +3,12 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/providers/runtime_profile_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/mini_player.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/providers/runtime_profile_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/mini_player.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
 
 /// Deliberate vertical drags minimize the chrome until the page returns to its
 /// top. Horizontal rows, programmatic scrolling and bounce must not minimize it.

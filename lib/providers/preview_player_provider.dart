@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/providers/music_player_provider.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('PreviewPlayer');
 

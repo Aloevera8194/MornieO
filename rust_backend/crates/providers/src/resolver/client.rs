@@ -5,10 +5,10 @@ use super::{
 };
 use super::{http::ResolverHttp, rate::RateLimiter};
 use html5ever::tendril::TendrilSink;
+use mornye_core::{lyrics, resolver as models};
+use mornye_network::{NetworkService, url::UrlParts};
 use scraper::{Html, HtmlTreeSink};
 use serde::de::DeserializeOwned;
-use spotiflac_core::{lyrics, resolver as models};
-use spotiflac_network::{NetworkService, url::UrlParts};
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::{Duration, Instant};

@@ -21,8 +21,8 @@ use crate::manifest::ExtensionManifest;
 use crate::package::{ExtensionPackage, is_package_path};
 use crate::runtime::{LoadMode, lifecycle_result};
 use crate::{ExtensionError, ExtensionRuntime, RuntimeLimits};
+use mornye_core::cancellation::RequestLease;
 use serde_json::{Map, Value, json};
-use spotiflac_core::cancellation::RequestLease;
 use std::cmp::Ordering as Comparison;
 use std::collections::BTreeMap;
 use std::fs::{self, File, OpenOptions};
@@ -299,7 +299,7 @@ impl ExtensionManager {
         id: &str,
         method: &str,
         arguments: &str,
-        lease: Option<Arc<spotiflac_core::cancellation::RequestLease>>,
+        lease: Option<Arc<mornye_core::cancellation::RequestLease>>,
         timeout_ms: u64,
     ) -> Result<String, ManagerError> {
         let entry = self.get(id)?;

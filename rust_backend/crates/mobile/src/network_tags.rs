@@ -1,13 +1,13 @@
 //! Bounded, seekable metadata reads through the app's authenticated loopback
 //! proxy. The native reader never receives NAS credentials or external URLs.
 use base64::Engine;
-use serde_json::{Value, json};
-use sha2::{Digest, Sha256};
-use spotiflac_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
-use spotiflac_core::{lower_hex, tags};
-use spotiflac_network::{
+use mornye_core::fs::{DEFAULT_TEMP_PREFIX, write_atomic};
+use mornye_core::{lower_hex, tags};
+use mornye_network::{
     HttpRequest, NetworkService, NetworkSession, policy::NetworkPermissions, url::UrlParts,
 };
+use serde_json::{Value, json};
+use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, VecDeque},
     fs::{self, File},
@@ -83,7 +83,7 @@ pub(crate) fn matches_upload(
             body: String::new(),
             headers: BTreeMap::from([("Accept-Encoding".into(), "identity".into())]),
             default_json: false,
-            user_agent: "SpotiFLAC/NetworkUploadRecovery".into(),
+            user_agent: "Mornye/NetworkUploadRecovery".into(),
         },
         Duration::from_secs(u32::MAX.into()),
         idle,
@@ -361,7 +361,7 @@ impl<'a> RangeReader<'a> {
                 ("Accept-Encoding".into(), "identity".into()),
             ]),
             default_json: false,
-            user_agent: "SpotiFLAC/NetworkMetadata".into(),
+            user_agent: "Mornye/NetworkMetadata".into(),
         };
         let mut stream = self
             .session

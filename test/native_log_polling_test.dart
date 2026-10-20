@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/utils/logger.dart';
 
 Map<String, dynamic> _batch(String? message, int nextIndex) => {
   'logs': [
@@ -14,7 +14,7 @@ Map<String, dynamic> _batch(String? message, int nextIndex) => {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   final buffer = LogBuffer();

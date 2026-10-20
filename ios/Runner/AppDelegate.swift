@@ -7,13 +7,13 @@ import UniformTypeIdentifiers
 @objc class AppDelegate: FlutterAppDelegate {
     // Widget playback intents can launch the process before any scene exists.
     // Keep one headless-capable engine and attach that same player to the UI.
-    lazy var playerEngine = FlutterEngine(name: "spotiflac-player", project: nil, allowHeadlessExecution: true)
-    private let CHANNEL = "com.zarz.spotiflac/backend"
-    private let DOWNLOAD_PROGRESS_STREAM_CHANNEL = "com.zarz.spotiflac/download_progress_stream"
-    private let LIBRARY_SCAN_PROGRESS_STREAM_CHANNEL = "com.zarz.spotiflac/library_scan_progress_stream"
+    lazy var playerEngine = FlutterEngine(name: "mornye-player", project: nil, allowHeadlessExecution: true)
+    private let CHANNEL = "com.zarz.mornye/backend"
+    private let DOWNLOAD_PROGRESS_STREAM_CHANNEL = "com.zarz.mornye/download_progress_stream"
+    private let LIBRARY_SCAN_PROGRESS_STREAM_CHANNEL = "com.zarz.mornye/library_scan_progress_stream"
     private let LARGE_JSON_RESULT_FILE_KEY = "__json_file"
     private let LARGE_JSON_RESULT_FILE_THRESHOLD_BYTES = 256 * 1024
-    private let streamQueue = DispatchQueue(label: "com.zarz.spotiflac.progress_stream", qos: .utility)
+    private let streamQueue = DispatchQueue(label: "com.zarz.mornye.progress_stream", qos: .utility)
     private lazy var downloadProgressSubscription = DownloadProgressSubscription(connect: { [weak self] in
         guard let self else { throw NSError(domain: "CoreBackend", code: 1) }
         return try self.coreBackend.openDownloadProgress()
@@ -121,7 +121,7 @@ import UniformTypeIdentifiers
         musicHaptics = MusicHapticsBridge(messenger: messenger)
         registry.registrar(forPlugin: "AudioOutputView")?.register(
             AudioOutputViewFactory(messenger: messenger),
-            withId: "com.zarz.spotiflac/audio_output"
+            withId: "com.zarz.mornye/audio_output"
         )
     }
 
@@ -134,11 +134,11 @@ import UniformTypeIdentifiers
     }
 
     /// Extension return URLs:
-    /// - OAuth: spotiflac://callback?code=...&state=<one_time_nonce>
-    /// - Signed session: spotiflac://session-grant?grant=...&state=<one_time_nonce>
+    /// - OAuth: mornye://callback?code=...&state=<one_time_nonce>
+    /// - Signed session: mornye://session-grant?grant=...&state=<one_time_nonce>
     @discardableResult
     func handleExtensionOAuthRedirect(url: URL) -> Bool {
-        if url.scheme == "spotiflac", url.host == "player" {
+        if url.scheme == "mornye", url.host == "player" {
             Task { _ = await PlayerWidgetBridge.shared.perform("open") }
             return true
         }
@@ -156,9 +156,9 @@ import UniformTypeIdentifiers
                 }
             } catch {
                 if extensionId.isEmpty {
-                    NSLog("SpotiFLAC Mobile: Rejected invalid or expired extension callback")
+                    NSLog("Mornye: Rejected invalid or expired extension callback")
                 } else {
-                    NSLog("SpotiFLAC Mobile: Extension callback failed (code \((error as NSError).code))")
+                    NSLog("Mornye: Extension callback failed (code \((error as NSError).code))")
                 }
             }
         }
@@ -257,7 +257,7 @@ import UniformTypeIdentifiers
             try payload.write(to: url, atomically: true, encoding: .utf8)
             return [LARGE_JSON_RESULT_FILE_KEY: url.path]
         } catch {
-            NSLog("SpotiFLAC: failed to spill large bridge JSON result to file: \(error.localizedDescription)")
+            NSLog("Mornye: failed to spill large bridge JSON result to file: \(error.localizedDescription)")
             return payload
         }
     }
@@ -338,7 +338,7 @@ import UniformTypeIdentifiers
         case "startWebAuthSession":
             let args = call.arguments as? [String: Any] ?? [:]
             let urlString = (args["url"] as? String) ?? ""
-            let callbackScheme = (args["callback_scheme"] as? String) ?? "spotiflac"
+            let callbackScheme = (args["callback_scheme"] as? String) ?? "mornye"
             startWebAuthSession(
                 urlString: urlString,
                 callbackScheme: callbackScheme,
@@ -379,7 +379,7 @@ import UniformTypeIdentifiers
             result(false)
             return
         }
-        let scheme = callbackScheme.isEmpty ? "spotiflac" : callbackScheme
+        let scheme = callbackScheme.isEmpty ? "mornye" : callbackScheme
         let session = ASWebAuthenticationSession(
             url: url,
             callbackURLScheme: scheme
@@ -387,7 +387,7 @@ import UniformTypeIdentifiers
             self?.activeWebAuthSession = nil
             guard let callbackURL = callbackURL else {
                 if let error = error {
-                    NSLog("SpotiFLAC: web auth session ended: \(error.localizedDescription)")
+                    NSLog("Mornye: web auth session ended: \(error.localizedDescription)")
                 }
                 return
             }
@@ -430,10 +430,10 @@ import UniformTypeIdentifiers
     private func beginBackgroundDownloadTask() {
         if downloadBackgroundTask != .invalid { return }
         downloadBackgroundTask = UIApplication.shared.beginBackgroundTask(
-            withName: "SpotiFLACDownloads"
+            withName: "MornyeDownloads"
         ) { [weak self] in
             if self?.downloadsActive == true {
-                NSLog("SpotiFLAC: download background task expired")
+                NSLog("Mornye: download background task expired")
                 // Flutter channel delivery is asynchronous and iOS may suspend
                 // us immediately after this callback. Cancel live requests
                 // synchronously first; Dart then persists/requeues the items.
@@ -460,9 +460,9 @@ import UniformTypeIdentifiers
     private func beginBackgroundWorkTask(kind: String) {
         guard !kind.isEmpty, backgroundWorkTasks[kind] == nil else { return }
         backgroundWorkTasks[kind] = UIApplication.shared.beginBackgroundTask(
-            withName: "SpotiFLAC-\(kind)"
+            withName: "Mornye-\(kind)"
         ) { [weak self] in
-            NSLog("SpotiFLAC: \(kind) background task expired")
+            NSLog("Mornye: \(kind) background task expired")
             if kind == "library_scan" {
                 try? self?.coreBackend.cancelLibraryScan()
             }
@@ -549,7 +549,7 @@ import UniformTypeIdentifiers
 
         case "releaseMemoryUnderPressure":
             try coreBackend.releaseMemoryUnderPressure()
-            NSLog("SpotiFLAC: Backend memory pressure release completed")
+            NSLog("Mornye: Backend memory pressure release completed")
             return nil
 
 
@@ -629,7 +629,7 @@ import UniformTypeIdentifiers
 
         default:
             throw NSError(
-                domain: "SpotiFLAC",
+                domain: "Mornye",
                 code: -1,
                 userInfo: [NSLocalizedDescriptionKey: "Method not implemented: \(call.method)"]
             )
@@ -672,7 +672,7 @@ import UniformTypeIdentifiers
 
     private func invalidArgumentsError(_ method: String) -> NSError {
         return NSError(
-            domain: "SpotiFLAC",
+            domain: "Mornye",
             code: -1,
             userInfo: [NSLocalizedDescriptionKey: "Invalid arguments for \(method)"]
         )
@@ -682,7 +682,7 @@ import UniformTypeIdentifiers
     private func startAccessingIosBookmark(_ bookmarkBase64: String) throws -> [String: String] {
         guard let bookmarkData = Data(base64Encoded: bookmarkBase64) else {
             throw NSError(
-                domain: "SpotiFLAC",
+                domain: "Mornye",
                 code: -1,
                 userInfo: [NSLocalizedDescriptionKey: "Invalid base64 bookmark data"]
             )
@@ -704,7 +704,7 @@ import UniformTypeIdentifiers
             )
         } catch {
             throw NSError(
-                domain: "SpotiFLAC",
+                domain: "Mornye",
                 code: -1,
                 userInfo: [NSLocalizedDescriptionKey: "Failed to resolve bookmark: \(error.localizedDescription)"]
             )
@@ -712,7 +712,7 @@ import UniformTypeIdentifiers
 
         guard url.startAccessingSecurityScopedResource() else {
             throw NSError(
-                domain: "SpotiFLAC",
+                domain: "Mornye",
                 code: -1,
                 userInfo: [NSLocalizedDescriptionKey: "Failed to start accessing security-scoped resource at \(url.path)"]
             )

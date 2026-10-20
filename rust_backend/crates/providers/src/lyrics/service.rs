@@ -3,8 +3,8 @@
 
 use super::{CallGraph, CallNode, Check, LyricsError, cache::LyricsCache};
 use crate::coalescer::{Coalescer, Flight, Waiter};
-use spotiflac_core::lyrics::{LyricsResponse, config, config::FetchOptions, matching};
-use spotiflac_core::matching::lowercase;
+use mornye_core::lyrics::{LyricsResponse, config, config::FetchOptions, matching};
+use mornye_core::matching::lowercase;
 use std::collections::BTreeMap;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::Path;

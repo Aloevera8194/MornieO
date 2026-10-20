@@ -1,30 +1,30 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/widgets/app_snack_bar.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
-import 'package:spotiflac_android/widgets/extension_row.dart';
+import 'package:mornye/widgets/app_snack_bar.dart';
+import 'package:mornye/widgets/app_switch.dart';
+import 'package:mornye/widgets/extension_row.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as p;
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/explore_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/settings/download_fallback_extensions_page.dart';
-import 'package:spotiflac_android/screens/settings/extension_detail_page.dart';
-import 'package:spotiflac_android/screens/settings/metadata_provider_priority_page.dart';
-import 'package:spotiflac_android/screens/settings/provider_priority_page.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_action_button.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
-import 'package:spotiflac_android/widgets/home_feed_region_setting.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/widgets/extension_health.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/explore_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/settings/download_fallback_extensions_page.dart';
+import 'package:mornye/screens/settings/extension_detail_page.dart';
+import 'package:mornye/screens/settings/metadata_provider_priority_page.dart';
+import 'package:mornye/screens/settings/provider_priority_page.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_action_button.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/settings_group.dart';
+import 'package:mornye/widgets/home_feed_region_setting.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/widgets/extension_health.dart';
 
 part 'extensions_page_widgets.dart';
 
@@ -248,7 +248,8 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
 
     final hasInvalidFile = selectedFiles.any((file) {
       final lowerName = file.name.toLowerCase();
-      return !lowerName.endsWith('.spotiflac-ext') &&
+      return !lowerName.endsWith('.mornye-ext') &&
+          !lowerName.endsWith('.spotiflac-ext') &&
           !lowerName.endsWith('.sflx');
     });
     if (hasInvalidFile) {
@@ -272,7 +273,7 @@ class _ExtensionsPageState extends ConsumerState<ExtensionsPage> {
         }
 
         materializedDir ??= await Directory.systemTemp.createTemp(
-          'spotiflac_extension_import_',
+          'mornye_extension_import_',
         );
         final safeName = p.basename(selectedFile.name);
         final materializedFile = File(

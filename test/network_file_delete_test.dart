@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/network_storage_service.dart';
-import 'package:spotiflac_android/services/source_deletion_events.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:mornye/services/network_storage_service.dart';
+import 'package:mornye/services/source_deletion_events.dart';
+import 'package:mornye/utils/file_access.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

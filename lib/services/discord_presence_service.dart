@@ -5,8 +5,8 @@ import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:spotiflac_android/services/discord_artwork_resolver.dart';
-import 'package:spotiflac_android/services/secure_storage_options.dart';
+import 'package:mornye/services/discord_artwork_resolver.dart';
+import 'package:mornye/services/secure_storage_options.dart';
 
 enum DiscordPresenceStatus {
   disabled,
@@ -60,7 +60,7 @@ Map<String, Object>? discordPresencePayload(
 /// All failures stay in this optional integration and cannot stop playback.
 class DiscordPresenceService {
   DiscordPresenceService({
-    MethodChannel channel = const MethodChannel('com.zarz.spotiflac/discord'),
+    MethodChannel channel = const MethodChannel('com.zarz.mornye/discord'),
     bool? requiresLink,
     Future<String?> Function()? readRefreshToken,
     Future<void> Function(String?)? writeRefreshToken,

@@ -37,7 +37,7 @@ pub(super) fn with_credits(raw: &str, lyrics: &mut Parsed) -> Result<(), String>
     }
     provider = provider.map(|value| EXTENSION_PREFIX.replace(&value, "").into());
     if looks_ttml(raw) {
-        spotiflac_core::xml::check_depth(raw)?;
+        mornye_core::xml::check_depth(raw)?;
         let normalized = xml_source(raw, false);
         match Document::parse_with_options(
             &normalized,

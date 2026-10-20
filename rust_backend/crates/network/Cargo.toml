@@ -1,5 +1,5 @@
 [package]
-name = "spotiflac-network"
+name = "mornye-network"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

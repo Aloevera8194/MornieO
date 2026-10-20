@@ -1,10 +1,10 @@
 use super::paths::{album_folder, filename};
 use crate::download::native_error_response;
 use crate::manifest::ExtensionManifest;
+use mornye_core::downloads::DownloadRequest;
+use mornye_core::metadata::reenrich::text;
+use mornye_providers::resolver::Check;
 use serde_json::{Value, json};
-use spotiflac_core::downloads::DownloadRequest;
-use spotiflac_core::metadata::reenrich::text;
-use spotiflac_providers::resolver::Check;
 use std::path::Path;
 
 pub(super) fn success(

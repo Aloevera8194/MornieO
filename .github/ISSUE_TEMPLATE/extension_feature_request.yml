@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve the SpotiFLAC Mobile Extension API!
+        Thanks for helping improve the Mornye Extension API!
         This form is for extension developers who need new features or capabilities that don't exist yet.
 
   - type: checkboxes

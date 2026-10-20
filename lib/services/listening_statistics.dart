@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:spotiflac_android/services/sqlite_helpers.dart' as sqlite;
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/string_utils.dart';
 import 'package:sqflite/sqflite.dart';
 
 final _log = AppLogger('ListeningStatistics');

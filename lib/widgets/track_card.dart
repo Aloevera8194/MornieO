@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
-import 'package:spotiflac_android/widgets/app_content_card.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/animation_utils.dart';
+import 'package:mornye/widgets/app_content_card.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 /// How a [TrackCard] paints its container.
 enum TrackCardStyle {

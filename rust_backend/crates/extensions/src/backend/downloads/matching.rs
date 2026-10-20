@@ -1,11 +1,11 @@
 use cap_std::fs::OpenOptions;
+use mornye_core::downloads::DownloadRequest;
+use mornye_core::lyrics::matching::normalize_loose_artist;
+use mornye_core::matching::lowercase;
+use mornye_core::metadata::reenrich::{self, text};
+use mornye_core::resolver::{artists_match, titles_match, track_identity_title};
+use mornye_providers::resolver::Check;
 use serde_json::{Value, json};
-use spotiflac_core::downloads::DownloadRequest;
-use spotiflac_core::lyrics::matching::normalize_loose_artist;
-use spotiflac_core::matching::lowercase;
-use spotiflac_core::metadata::reenrich::{self, text};
-use spotiflac_core::resolver::{artists_match, titles_match, track_identity_title};
-use spotiflac_providers::resolver::Check;
 use std::io::{Read, Seek, SeekFrom};
 
 pub(super) fn probe_result(
@@ -37,8 +37,7 @@ pub(super) fn probe_result(
         let album = album_pending && text(result, "album").trim().is_empty();
         if (quality || album)
             && file.seek(SeekFrom::Start(0)).is_ok()
-            && let Ok(metadata) =
-                spotiflac_core::tags::read_file_metadata(&mut file, &path, "", check)
+            && let Ok(metadata) = mornye_core::tags::read_file_metadata(&mut file, &path, "", check)
         {
             if quality {
                 for key in ["bit_depth", "sample_rate", "audio_codec"] {

@@ -1,5 +1,5 @@
-import 'package:spotiflac_android/services/sqlite_helpers.dart' as sqlite;
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
+import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
+import 'package:mornye/utils/audio_format_utils.dart';
 
 // Row models and query descriptors for the local library database.
 

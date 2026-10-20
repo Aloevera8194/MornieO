@@ -5,63 +5,63 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/services/network_download_staging.dart';
+import 'package:mornye/services/network_download_staging.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/download_result.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/player_motion_artwork_provider.dart';
-import 'package:spotiflac_android/providers/download_verification_retry_guard.dart';
-import 'package:spotiflac_android/providers/download_queue_state.dart';
-import 'package:spotiflac_android/providers/download_queue_policy.dart';
-import 'package:spotiflac_android/services/download_queue_persistence.dart';
-import 'package:spotiflac_android/providers/download_progress.dart';
-import 'package:spotiflac_android/services/download_file_finalizer.dart';
-import 'package:spotiflac_android/services/download_container_finalizer.dart';
-import 'package:spotiflac_android/services/download_completion_audio.dart';
-import 'package:spotiflac_android/services/download_metadata_resolver.dart';
-import 'package:spotiflac_android/services/download_metadata_embedding.dart';
-import 'package:spotiflac_android/services/download_saf_file_replacer.dart';
-import 'package:spotiflac_android/services/download_connectivity_policy.dart';
-import 'package:spotiflac_android/services/download_scheduler.dart';
-import 'package:spotiflac_android/services/source_deletion_events.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/download_request_payload.dart';
-import 'package:spotiflac_android/services/download_motion_artwork_source.dart';
-import 'package:spotiflac_android/services/ffmpeg_service.dart';
-import 'package:spotiflac_android/services/hires_check_service.dart';
-import 'package:spotiflac_android/services/replaygain_service.dart';
-import 'package:spotiflac_android/services/album_replaygain_readiness.dart';
-import 'package:spotiflac_android/services/notification_service.dart';
-import 'package:spotiflac_android/services/verification_notification.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
-import 'package:spotiflac_android/utils/int_utils.dart';
-import 'package:spotiflac_android/utils/path_match_keys.dart';
-import 'package:spotiflac_android/utils/extension_auth_launcher.dart';
-import 'package:spotiflac_android/utils/download_error_type.dart';
-import 'package:spotiflac_android/utils/lyrics_metadata_helper.dart';
-import 'package:spotiflac_android/utils/progress_stream_poller.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/download_result.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/player_motion_artwork_provider.dart';
+import 'package:mornye/providers/download_verification_retry_guard.dart';
+import 'package:mornye/providers/download_queue_state.dart';
+import 'package:mornye/providers/download_queue_policy.dart';
+import 'package:mornye/services/download_queue_persistence.dart';
+import 'package:mornye/providers/download_progress.dart';
+import 'package:mornye/services/download_file_finalizer.dart';
+import 'package:mornye/services/download_container_finalizer.dart';
+import 'package:mornye/services/download_completion_audio.dart';
+import 'package:mornye/services/download_metadata_resolver.dart';
+import 'package:mornye/services/download_metadata_embedding.dart';
+import 'package:mornye/services/download_saf_file_replacer.dart';
+import 'package:mornye/services/download_connectivity_policy.dart';
+import 'package:mornye/services/download_scheduler.dart';
+import 'package:mornye/services/source_deletion_events.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/download_request_payload.dart';
+import 'package:mornye/services/download_motion_artwork_source.dart';
+import 'package:mornye/services/ffmpeg_service.dart';
+import 'package:mornye/services/hires_check_service.dart';
+import 'package:mornye/services/replaygain_service.dart';
+import 'package:mornye/services/album_replaygain_readiness.dart';
+import 'package:mornye/services/notification_service.dart';
+import 'package:mornye/services/verification_notification.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/file_access.dart';
+import 'package:mornye/utils/string_utils.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
+import 'package:mornye/utils/int_utils.dart';
+import 'package:mornye/utils/path_match_keys.dart';
+import 'package:mornye/utils/extension_auth_launcher.dart';
+import 'package:mornye/utils/download_error_type.dart';
+import 'package:mornye/utils/lyrics_metadata_helper.dart';
+import 'package:mornye/utils/progress_stream_poller.dart';
 
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/services/native_download_history.dart';
-import 'package:spotiflac_android/services/native_download_worker_monitor.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/services/native_download_history.dart';
+import 'package:mornye/services/native_download_worker_monitor.dart';
 
-export 'package:spotiflac_android/providers/download_history_provider.dart';
-export 'package:spotiflac_android/providers/download_queue_policy.dart';
-export 'package:spotiflac_android/providers/download_queue_state.dart';
-export 'package:spotiflac_android/services/download_metadata_resolver.dart'
+export 'package:mornye/providers/download_history_provider.dart';
+export 'package:mornye/providers/download_queue_policy.dart';
+export 'package:mornye/providers/download_queue_state.dart';
+export 'package:mornye/services/download_metadata_resolver.dart'
     show copyTrackWithResolvedMetadata;
-export 'package:spotiflac_android/services/download_queue_persistence.dart'
+export 'package:mornye/services/download_queue_persistence.dart'
     show encodeDownloadQueueItemForPersistence, downloadQueuePersistenceStatus;
 
-export 'package:spotiflac_android/services/history_database.dart'
+export 'package:mornye/services/history_database.dart'
     show HistoryLookupRequest, HistoryBatchLookupRequest;
 
 part 'download_queue_provider_paths.dart';
@@ -86,7 +86,7 @@ final _multiUnderscoreRegex = RegExp(r'_+');
 /// log10 helper using dart:math's natural log.
 double _log10(num x) => log(x) / ln10;
 final _yearRegex = RegExp(r'^(\d{4})');
-const _defaultOutputFolderName = 'SpotiFLAC';
+const _defaultOutputFolderName = 'Mornye';
 const _defaultAndroidDownloadSubpath = 'Download/$_defaultOutputFolderName';
 const _maxSafFilenameUtf8Bytes = 180;
 const _maxSafDirSegmentUtf8Bytes = 120;
@@ -1428,7 +1428,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
       final buffer = StringBuffer();
 
       if (!fileExists) {
-        buffer.writeln('# SpotiFLAC Failed Downloads');
+        buffer.writeln('# Mornye Failed Downloads');
         buffer.writeln('# Date: $dateStr');
         buffer.writeln('#');
         buffer.writeln('# Format: [Time] Track - Artist | URL | Error');

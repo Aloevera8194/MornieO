@@ -1,5 +1,5 @@
 <resources>
-    <string name="download_widget_name">Unduhan SpotiFLAC</string>
+    <string name="download_widget_name">Unduhan Mornye</string>
     <string name="download_widget_description">Progres lagu yang sedang diunduh.</string>
     <string name="download_widget_downloading">Mengunduh…</string>
     <string name="download_widget_idle">Tidak ada unduhan aktif</string>

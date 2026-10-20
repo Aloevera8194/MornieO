@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/screens/settings/metadata_settings_page.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/settings/metadata_settings_page.dart';
+import 'package:mornye/utils/artist_utils.dart';
 
 import 'support/fixed_settings.dart';
 

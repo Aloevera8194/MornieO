@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/native_download_worker_monitor.dart';
+import 'package:mornye/services/native_download_worker_monitor.dart';
 
 void main() {
   Map<String, dynamic> snapshot({

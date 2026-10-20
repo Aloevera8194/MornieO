@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/models/artist_concert.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
-import 'package:spotiflac_android/utils/editorial_notes.dart';
-import 'package:spotiflac_android/utils/extension_auth_launcher.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/models/artist_concert.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/string_utils.dart';
+import 'package:mornye/utils/editorial_notes.dart';
+import 'package:mornye/utils/extension_auth_launcher.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/providers/extension_provider.dart';
 
 final _log = AppLogger('TrackProvider');
 const _extensionInitRetryTimeout = Duration(seconds: 30);

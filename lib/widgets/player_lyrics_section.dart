@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/controllers/player_metadata_controller.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/utils/lyrics_parser.dart';
-import 'package:spotiflac_android/utils/playback_seek_preview.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_loading_indicator.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/player_lyrics.dart';
-import 'package:spotiflac_android/widgets/lyrics_text_scale.dart';
+import 'package:mornye/controllers/player_metadata_controller.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/lyrics_parser.dart';
+import 'package:mornye/utils/playback_seek_preview.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_loading_indicator.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/player_lyrics.dart';
+import 'package:mornye/widgets/lyrics_text_scale.dart';
 
 class PlayerLyricsSection extends ConsumerWidget {
   const PlayerLyricsSection({

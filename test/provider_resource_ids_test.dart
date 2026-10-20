@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/constants/music_services.dart';
-import 'package:spotiflac_android/utils/provider_resource_ids.dart';
+import 'package:mornye/constants/music_services.dart';
+import 'package:mornye/utils/provider_resource_ids.dart';
 
 void main() {
   group('legacyProviderIdFromResourceId', () {

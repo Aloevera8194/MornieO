@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/services/ffmpeg_models.dart';
-import 'package:spotiflac_android/services/ffmpeg_probe.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/ffmpeg_models.dart';
+import 'package:mornye/services/ffmpeg_probe.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('FFmpeg');
 
@@ -115,7 +115,7 @@ abstract final class FFmpegOutput {
     if (samePath(requested, inputPath) && deleteOriginal) {
       return FFmpegOutputPlan(
         workingPath: await reserve(
-          '${file.parent.path}${Platform.pathSeparator}.$base.spotiflac-${DateTime.now().microsecondsSinceEpoch}$ext',
+          '${file.parent.path}${Platform.pathSeparator}.$base.mornye-${DateTime.now().microsecondsSinceEpoch}$ext',
         ),
         finalPath: inputPath,
       );
@@ -155,7 +155,7 @@ abstract final class FFmpegOutput {
     if (plan.workingPath != plan.finalPath) {
       final source = File(inputPath);
       final backupPath =
-          '$inputPath.spotiflac-backup-${DateTime.now().microsecondsSinceEpoch}';
+          '$inputPath.mornye-backup-${DateTime.now().microsecondsSinceEpoch}';
       final backup = File(backupPath);
       var backedUp = false;
       try {
@@ -207,7 +207,7 @@ abstract final class FFmpegOutput {
         return false;
       }
       staging = await reserve(
-        '$targetPath.spotiflac-staging-${DateTime.now().microsecondsSinceEpoch}',
+        '$targetPath.mornye-staging-${DateTime.now().microsecondsSinceEpoch}',
       );
       await temp.copy(staging);
       return await finalize(

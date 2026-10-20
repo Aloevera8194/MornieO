@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/services/secure_storage_options.dart';
+import 'package:mornye/services/secure_storage_options.dart';
 
 const _extensionMasterKeyName = 'extension_storage_master_key_v2';
 

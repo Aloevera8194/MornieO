@@ -4,7 +4,8 @@ use tempfile::TempDir;
 
 fn metadata(version: u64, data: Value) -> Vec<u8> {
     serde_json::to_vec(&json!({
-        "magic": "spotiflac-backup", "format_version": version,
+        "magic": if version == 2 { "spotiflac-backup" } else { "mornye-backup" },
+        "format_version": version,
         "app_version": "5.1.0", "history_count": 1, "data": data,
     }))
     .unwrap()

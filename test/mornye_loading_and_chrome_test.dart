@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/shell_navigation_service.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
-import 'package:spotiflac_android/widgets/mornye_artist_header.dart';
+import 'package:mornye/services/shell_navigation_service.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/animation_utils.dart';
+import 'package:mornye/widgets/mornye_artist_header.dart';
 
 void main() {
   for (final brightness in Brightness.values) {

@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:spotiflac_android/l10n/app_localizations.dart';
+import 'package:mornye/l10n/app_localizations.dart';
 
 /// Picked once per launch: the greeting holds still while browsing and
 /// changes the next time the app opens.

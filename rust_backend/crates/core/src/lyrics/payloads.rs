@@ -239,7 +239,7 @@ pub fn format_pax_content(
 /// The first-party service's exported eLRC flattens backing vocals into lead
 /// lines. Read its v1 JSON instead to preserve background groups and exact
 /// word boundaries, including adjacent syllables and line-only lyrics.
-pub fn format_spotiflac_apple(
+pub fn format_zarz_lrc_apple(
     raw: &str,
     multi_person: bool,
     word_timing: bool,

@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/library_schema.dart';
-import 'package:spotiflac_android/services/sqlite_helpers.dart' as sqlite;
-import 'package:spotiflac_android/services/sqlite_native_snapshot.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/library_schema.dart';
+import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
+import 'package:mornye/services/sqlite_native_snapshot.dart';
+import 'package:mornye/utils/logger.dart';
 
 typedef NativeLibraryJobRunner =
     Future<Map<String, dynamic>> Function(

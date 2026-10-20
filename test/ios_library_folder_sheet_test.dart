@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/ios_library_folder_sheet.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/ios_library_folder_sheet.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const backend = MethodChannel('com.zarz.spotiflac/backend');
+  const backend = MethodChannel('com.zarz.mornye/backend');
   const paths = MethodChannel('plugins.flutter.io/path_provider');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/unified_library_item.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/utils/audio_quality_badge_policy.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/unified_library_item.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/utils/audio_quality_badge_policy.dart';
 
 void main() {
   test(

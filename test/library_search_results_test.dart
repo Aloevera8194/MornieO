@@ -7,18 +7,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/app_localizations.dart';
-import 'package:spotiflac_android/models/unified_library_item.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/providers/library_search_provider.dart';
-import 'package:spotiflac_android/providers/playback_provider.dart';
-import 'package:spotiflac_android/screens/track_metadata_screen.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/services/library_search.dart';
-import 'package:spotiflac_android/services/music_player_service.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/library_search_results.dart';
-import 'package:spotiflac_android/widgets/track_card.dart';
+import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/models/unified_library_item.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/providers/library_search_provider.dart';
+import 'package:mornye/providers/playback_provider.dart';
+import 'package:mornye/screens/track_metadata_screen.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/services/library_search.dart';
+import 'package:mornye/services/music_player_service.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/library_search_results.dart';
+import 'package:mornye/widgets/track_card.dart';
 
 import 'support/app_icon_finder.dart';
 
@@ -53,7 +53,7 @@ void main() {
         (tester) async {
           SharedPreferences.setMockInitialValues({});
           FlutterSecureStorage.setMockInitialValues({});
-          const channel = MethodChannel('com.zarz.spotiflac/backend');
+          const channel = MethodChannel('com.zarz.mornye/backend');
           tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
             channel,
             (call) async => switch (call.method) {

@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/foundation.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/playback_metadata.dart';
-import 'package:spotiflac_android/utils/int_utils.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/utils/lyrics_parser.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/playback_metadata.dart';
+import 'package:mornye/utils/int_utils.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/lyrics_parser.dart';
 
 final _log = AppLogger('PlayerMetadata');
 

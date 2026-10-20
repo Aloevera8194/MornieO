@@ -11,11 +11,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:html/parser.dart' as html;
-import 'package:spotiflac_android/services/local_network_access.dart';
-import 'package:spotiflac_android/services/network_certificate.dart';
-import 'package:spotiflac_android/services/network_smb_client.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/secure_storage_options.dart';
+import 'package:mornye/services/local_network_access.dart';
+import 'package:mornye/services/network_certificate.dart';
+import 'package:mornye/services/network_smb_client.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/secure_storage_options.dart';
 import 'package:xml/xml.dart';
 
 part 'network_storage_upload.dart';

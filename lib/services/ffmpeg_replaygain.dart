@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:spotiflac_android/services/ffmpeg_models.dart';
-import 'package:spotiflac_android/services/ffmpeg_support.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/ffmpeg_models.dart';
+import 'package:mornye/services/ffmpeg_support.dart';
+import 'package:mornye/utils/logger.dart';
 
 final _log = AppLogger('FFmpeg');
 

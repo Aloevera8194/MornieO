@@ -3,8 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/models/equalizer_settings.dart';
-import 'package:spotiflac_android/services/playback_equalizer.dart';
+import 'package:mornye/models/equalizer_settings.dart';
+import 'package:mornye/services/playback_equalizer.dart';
 
 class EqualizerState {
   const EqualizerState({
@@ -116,7 +116,7 @@ class EqualizerController extends Notifier<EqualizerState> {
 
   String exportPreset(String name) =>
       const JsonEncoder.withIndent('  ').convert({
-        'format': 'spotiflac-equalizer',
+        'format': 'mornye-equalizer',
         'version': 1,
         ...EqualizerPreset(name, state.settings).toJson(),
       });
@@ -127,7 +127,8 @@ class EqualizerController extends Notifier<EqualizerState> {
     }
     final decoded = jsonDecode(source);
     if (decoded is! Map ||
-        decoded['format'] != 'spotiflac-equalizer' ||
+        (decoded['format'] != 'mornye-equalizer' &&
+            decoded['format'] != 'spotiflac-equalizer') ||
         decoded['version'] != 1) {
       throw const FormatException('Unsupported equalizer preset.');
     }

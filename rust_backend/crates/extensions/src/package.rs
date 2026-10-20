@@ -2,7 +2,7 @@
 
 use crate::host::decode_go_utf8;
 use crate::manifest::ExtensionManifest;
-use spotiflac_core::matching::lowercase;
+use mornye_core::matching::lowercase;
 use std::collections::HashSet;
 use std::ffi::OsString;
 use std::fs::{self, File, OpenOptions};
@@ -34,7 +34,7 @@ fn io_error(message: &str, cause: impl std::fmt::Display) -> PackageError {
 
 pub fn is_package_path(path: &Path) -> bool {
     let name = lowercase(&path.to_string_lossy());
-    name.ends_with(".spotiflac-ext") || name.ends_with(".sflx")
+    name.ends_with(".mornye-ext") || name.ends_with(".spotiflac-ext") || name.ends_with(".sflx")
 }
 
 struct Entry {
@@ -54,7 +54,7 @@ impl ExtensionPackage {
     pub fn open(path: &Path) -> Result<Self, PackageError> {
         if !is_package_path(path) {
             return Err(error(
-                "invalid file format: please select a .spotiflac-ext or .sflx file",
+                "invalid file format: please select a .mornye-ext or .sflx file",
             ));
         }
         let mut input = OpenOptions::new()
@@ -332,4 +332,22 @@ fn central_names(input: &mut File) -> Result<Vec<Vec<u8>>, PackageError> {
     }
     input.rewind().map_err(corrupt)?;
     Ok(names)
+}
+
+#[cfg(test)]
+mod branding_tests {
+    use super::*;
+
+    #[test]
+    fn current_and_legacy_package_extensions_remain_supported() {
+        for name in [
+            "example.mornye-ext",
+            "example.spotiflac-ext",
+            "example.sflx",
+        ] {
+            assert!(is_package_path(Path::new(name)), "{name}");
+            assert!(is_package_path(Path::new(&name.to_uppercase())), "{name}");
+        }
+        assert!(!is_package_path(Path::new("example.zip")));
+    }
 }

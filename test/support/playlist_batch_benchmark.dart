@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'dart:isolate';
 
-import 'package:spotiflac_android/models/library_collections.dart';
-import 'package:spotiflac_android/models/track.dart';
+import 'package:mornye/models/library_collections.dart';
+import 'package:mornye/models/track.dart';
 
 Future<List<Track>> playlistBatchFixture(int count) => Isolate.run(
   () => List.generate(

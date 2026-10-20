@@ -1,6 +1,6 @@
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 const highQualityBadgeBitrateThresholdKbps = 900;
 

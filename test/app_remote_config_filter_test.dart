@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/app_remote_config_service.dart';
+import 'package:mornye/services/app_remote_config_service.dart';
 
 void main() {
   group('AppRemoteConfig', () {
@@ -54,7 +54,7 @@ void main() {
         ),
         isTrue,
       );
-      expect(config.donate.title, 'Support SpotiFLAC-Mobile');
+      expect(config.donate.title, 'Support Mornye');
       expect(config.donate.methods, hasLength(2));
       expect(config.donate.methods.first.color, 0xFFFF5E5B);
       expect(config.donate.methods.last.isWallet, isTrue);

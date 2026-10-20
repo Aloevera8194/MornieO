@@ -8,15 +8,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/user_profile_provider.dart';
-import 'package:spotiflac_android/screens/settings/settings_tab.dart';
-import 'package:spotiflac_android/services/backup_service.dart';
-import 'package:spotiflac_android/services/shell_navigation_service.dart';
-import 'package:spotiflac_android/services/user_profile_store.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/profile_avatar.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/user_profile_provider.dart';
+import 'package:mornye/screens/settings/settings_tab.dart';
+import 'package:mornye/services/backup_service.dart';
+import 'package:mornye/services/shell_navigation_service.dart';
+import 'package:mornye/services/user_profile_store.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/profile_avatar.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

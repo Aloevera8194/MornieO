@@ -10,9 +10,9 @@ use super::{
     http::{LyricsHttp, Params, Request, pairs},
     lrclib::LrcLibClient,
 };
-use spotiflac_core::app_version::AppVersion;
-use spotiflac_core::lyrics::{LyricsResponse, errors, matching, models, text_from_bytes};
-use spotiflac_network::NetworkService;
+use mornye_core::app_version::AppVersion;
+use mornye_core::lyrics::{LyricsResponse, errors, matching, models, text_from_bytes};
+use mornye_network::NetworkService;
 use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex};
 
@@ -78,7 +78,7 @@ impl BuiltinLyricsClient {
             "netease" => self.netease(request, check),
             "musixmatch" => self.musixmatch(request, check),
             "apple_music" => self.apple(request, check),
-            "spotiflac_lyrics" => self.spotiflac_lyrics(request, check),
+            "mornye_lyrics" | "spotiflac_lyrics" => self.zarz_lrc_lyrics(request, check),
             "spotify" => self.spotify(request, check),
             "deezer" => self.deezer(request, check),
             "youtube" => self.youtube(request, check),

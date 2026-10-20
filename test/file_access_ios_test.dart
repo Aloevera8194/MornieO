@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
+import 'package:mornye/utils/file_access.dart';
 
 void main() {
   group('validateIosPath', () {
@@ -71,7 +71,7 @@ void main() {
         shouldValidateIosOutputDir(
           isIOS: false,
           isSafMode: false,
-          outputDir: '/data/user/0/com.zarz.spotiflac/files/SpotiFLAC',
+          outputDir: '/data/user/0/com.zarz.mornye/files/SpotiFLAC',
           downloadDirectoryBookmark: '',
         ),
         isFalse,

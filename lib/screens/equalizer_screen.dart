@@ -7,28 +7,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/models/equalizer_settings.dart';
-import 'package:spotiflac_android/providers/equalizer_provider.dart';
-import 'package:spotiflac_android/services/playback_equalizer.dart';
-import 'package:spotiflac_android/theme/app_tokens.dart';
-import 'package:spotiflac_android/theme/material_expressive.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/app_alert_dialog.dart';
-import 'package:spotiflac_android/widgets/app_bottom_sheet.dart';
-import 'package:spotiflac_android/widgets/app_choice_chip.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_menu_button.dart';
-import 'package:spotiflac_android/widgets/app_slider.dart';
-import 'package:spotiflac_android/widgets/app_sliver_header.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
-import 'package:spotiflac_android/widgets/app_text_field.dart';
-import 'package:spotiflac_android/widgets/beta_badge.dart';
-import 'package:spotiflac_android/widgets/expressive_button.dart';
-import 'package:spotiflac_android/widgets/expressive_icon_button.dart';
-import 'package:spotiflac_android/widgets/mornye_chrome.dart';
-import 'package:spotiflac_android/widgets/mornye_level_slider.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/equalizer_settings.dart';
+import 'package:mornye/providers/equalizer_provider.dart';
+import 'package:mornye/services/playback_equalizer.dart';
+import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/material_expressive.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_choice_chip.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_menu_button.dart';
+import 'package:mornye/widgets/app_slider.dart';
+import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/widgets/app_switch.dart';
+import 'package:mornye/widgets/app_text_field.dart';
+import 'package:mornye/widgets/beta_badge.dart';
+import 'package:mornye/widgets/expressive_button.dart';
+import 'package:mornye/widgets/expressive_icon_button.dart';
+import 'package:mornye/widgets/mornye_chrome.dart';
+import 'package:mornye/widgets/mornye_level_slider.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 part 'equalizer_widgets.dart';
 part 'equalizer_curve.dart';
@@ -97,7 +97,7 @@ class _EqualizerScreenState extends ConsumerState<EqualizerScreen> {
               mimeType: 'application/json',
             ),
           ],
-          fileNameOverrides: ['spotiflac-equalizer.json'],
+          fileNameOverrides: ['mornye-equalizer.json'],
           sharePositionOrigin: box == null
               ? null
               : box.localToGlobal(Offset.zero) & box.size,

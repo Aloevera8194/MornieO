@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/widgets/audio_output_button.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/widgets/audio_output_button.dart';
 
 /// Landscape opens on the player. Lyrics can hide their bottom actions until
 /// the user touches the player, while the cover and header stay in place.

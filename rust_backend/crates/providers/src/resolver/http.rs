@@ -1,5 +1,5 @@
 use super::{Check, ResolverError, check_active};
-use spotiflac_network::{HttpRequest, NetworkService, NetworkSession, url::UrlParts};
+use mornye_network::{HttpRequest, NetworkService, NetworkSession, url::UrlParts};
 use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Duration;
@@ -125,7 +125,7 @@ impl ResolverHttp {
                     user_agent: if language.is_some() {
                         "Go-http-client/1.1".into()
                     } else {
-                        spotiflac_network::random_user_agent()
+                        mornye_network::random_user_agent()
                     },
                 },
                 self.timeout,

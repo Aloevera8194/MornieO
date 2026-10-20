@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
 import 'package:video_player/video_player.dart';
-import 'package:spotiflac_android/utils/logger.dart';
-import 'package:spotiflac_android/services/music_player_service.dart';
+import 'package:mornye/utils/logger.dart';
+import 'package:mornye/services/music_player_service.dart';
 
 final _log = AppLogger('MotionHeaderBanner');
 

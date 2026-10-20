@@ -1,7 +1,7 @@
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/services/library_database_models.dart';
-import 'package:spotiflac_android/services/library_schema.dart';
-import 'package:spotiflac_android/utils/path_match_keys.dart';
+import 'package:mornye/services/library_database_models.dart';
+import 'package:mornye/services/library_schema.dart';
+import 'package:mornye/utils/path_match_keys.dart';
 
 /// Review physical copies, not index rows. History remains intact when a NAS
 /// source is disabled, but must not suggest deleting its replacement SAF copy.

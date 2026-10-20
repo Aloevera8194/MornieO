@@ -1,5 +1,5 @@
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/services/download_queue_codec.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/services/download_queue_codec.dart';
 
 /// Original snapshot/diff/encode pipeline for the device benchmark. Benchmark
 /// callers flush serially and do not invoke restore, scheduling or pause writes.

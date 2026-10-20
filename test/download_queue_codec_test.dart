@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:isolate';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/services/download_queue_codec.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/services/download_queue_codec.dart';
 
 DownloadItem _item(
   int index, {

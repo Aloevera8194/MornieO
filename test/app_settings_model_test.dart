@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/theme_settings.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/theme_settings.dart';
+import 'package:mornye/utils/artist_utils.dart';
 
 void main() {
   test(
@@ -41,7 +41,7 @@ void main() {
       expect(settings.lyricsProviders, [
         'apple_music',
         'lrcred',
-        'spotiflac_lyrics',
+        'mornye_lyrics',
         'lyricsplus',
         'lrclib',
       ]);
@@ -58,6 +58,22 @@ void main() {
         settings.libraryQualityLabelMode,
         AppSettings.libraryQualityLabelBitDepthOnly,
       );
+    });
+
+    test('normalizes the old lyrics provider without duplicating it', () {
+      final settings = AppSettings.fromJson({
+        'lyricsProviders': [
+          'lrclib',
+          'spotiflac_lyrics',
+          'apple_music',
+          'mornye_lyrics',
+        ],
+      });
+      expect(settings.lyricsProviders, [
+        'lrclib',
+        'mornye_lyrics',
+        'apple_music',
+      ]);
     });
 
     test('copyWith updates values and can clear nullable provider fields', () {

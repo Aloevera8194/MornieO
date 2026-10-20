@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'package:flutter/widgets.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
-import 'package:spotiflac_android/utils/string_utils.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/utils/artist_utils.dart';
+import 'package:mornye/utils/string_utils.dart';
 
 /// Prevents asynchronous queue startup checks from overlapping before
 /// [DownloadQueueState.isProcessing] can be published.

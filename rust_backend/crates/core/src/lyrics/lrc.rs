@@ -160,6 +160,7 @@ pub fn source_uses_proxy(source: &str) -> bool {
         && ![
             "lrclib",
             "zarz-lrc",
+            "mornye lyrics",
             // Retain credits embedded before the provider was renamed.
             "spotiflac-mobile lyrics",
             "kugou direct",
@@ -199,9 +200,9 @@ pub fn with_metadata(lyrics: &LyricsResponse, track: &str, artist: &str) -> Stri
         lyrics.source.trim()
     };
     let credit = if source_uses_proxy(source) {
-        "SpotiFLAC-Mobile via Paxsenix API"
+        "Mornye via Paxsenix API"
     } else {
-        "SpotiFLAC-Mobile"
+        "Mornye"
     };
     let mut output = format!("[ti:{track}]\n[ar:{artist}]\n[by:{credit}");
     if !source.is_empty() {
@@ -261,11 +262,14 @@ mod tests {
         for source in [
             "Zarz-LRC",
             "Zarz-LRC (cached)",
+            "Mornye Lyrics",
+            "Mornye Lyrics (cached)",
             "SpotiFLAC-Mobile Lyrics",
             "SpotiFLAC-Mobile Lyrics (cached)",
         ] {
             let lyrics = LyricsResponse::from_text("[00:01.00]Example", source, source);
             let saved = with_metadata(&lyrics, "Track", "Artist");
+            assert!(saved.contains("[by:Mornye (source: "));
             assert!(!saved.contains("Paxsenix"));
             assert_eq!(extract_source(&saved), source);
         }

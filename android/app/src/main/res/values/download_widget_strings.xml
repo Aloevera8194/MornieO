@@ -1,5 +1,5 @@
 <resources>
-    <string name="download_widget_name">SpotiFLAC Downloads</string>
+    <string name="download_widget_name">Mornye Downloads</string>
     <string name="download_widget_description">Progress of the track downloading now.</string>
     <string name="download_widget_downloading">Downloading…</string>
     <string name="download_widget_idle">No active downloads</string>

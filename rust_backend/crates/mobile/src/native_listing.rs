@@ -74,7 +74,7 @@ pub(crate) fn execute(request: &Value, bytes: Option<&[u8]>) -> Result<Value, St
         Ok(())
     };
     if request["protocol"] == "webdav" {
-        spotiflac_core::xml::check_depth(&body)?;
+        mornye_core::xml::check_depth(&body)?;
         let document = roxmltree::Document::parse(&body).map_err(|e| e.to_string())?;
         for response in document
             .descendants()

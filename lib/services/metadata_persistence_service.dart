@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:spotiflac_android/services/ffmpeg_service.dart';
-import 'package:spotiflac_android/services/metadata_cover_resources.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
+import 'package:mornye/services/ffmpeg_service.dart';
+import 'package:mornye/services/metadata_cover_resources.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/artist_utils.dart';
 
 enum MetadataSaveFailure {
   backend,

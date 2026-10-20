@@ -61,7 +61,7 @@ extension _DownloadQueuePaths on DownloadQueueNotifier {
       }
       probe = File(
         '${directory.path}${Platform.pathSeparator}'
-        '.spotiflac-write-${DateTime.now().microsecondsSinceEpoch}',
+        '.mornye-write-${DateTime.now().microsecondsSinceEpoch}',
       );
       await probe.writeAsBytes(const [0], flush: true);
       return await probe.exists();

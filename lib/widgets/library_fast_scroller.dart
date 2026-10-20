@@ -3,8 +3,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:spotiflac_android/theme/app_motion.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
+import 'package:mornye/theme/app_motion.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 
 /// A draggable scroll thumb for long library lists, with a bubble naming the
 /// section under the thumb (a letter or a month).

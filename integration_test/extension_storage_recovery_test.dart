@@ -6,10 +6,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/repo_provider.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/secure_storage_options.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/repo_provider.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/secure_storage_options.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();

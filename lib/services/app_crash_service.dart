@@ -1,5 +1,5 @@
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/utils/logger.dart';
 
 /// Saves context for a later confirmed process crash. A handled Flutter error
 /// alone must not produce a misleading "app crashed" message on the next launch.

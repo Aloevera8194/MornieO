@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:spotiflac_android/widgets/app_icon.dart';
-import 'package:spotiflac_android/widgets/app_switch.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_switch.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/utils/adaptive_layout.dart';
-import 'package:spotiflac_android/widgets/discard_changes_dialog.dart';
-import 'package:spotiflac_android/widgets/priority_settings_scaffold.dart';
-import 'package:spotiflac_android/widgets/reorderable_priority_item.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
-import 'package:spotiflac_android/constants/music_services.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/widgets/discard_changes_dialog.dart';
+import 'package:mornye/widgets/priority_settings_scaffold.dart';
+import 'package:mornye/widgets/reorderable_priority_item.dart';
+import 'package:mornye/widgets/settings_group.dart';
+import 'package:mornye/constants/music_services.dart';
 
 class LyricsProviderPriorityPage extends ConsumerStatefulWidget {
   const LyricsProviderPriorityPage({super.key});
@@ -27,7 +27,7 @@ class _LyricsProviderPriorityPageState
     'netease',
     'musixmatch',
     'apple_music',
-    'spotiflac_lyrics',
+    'mornye_lyrics',
     'qqmusic',
     'spotify',
     'deezer',
@@ -229,10 +229,10 @@ class _LyricsProviderPriorityPageState
           description: context.l10n.lyricsProviderAppleMusicDesc,
           icon: Icons.music_note,
         );
-      case 'spotiflac_lyrics':
+      case 'mornye_lyrics':
         return _LyricsProviderInfo(
           name: 'Zarz-LRC',
-          description: context.l10n.lyricsProviderSpotiflacLyricsDesc,
+          description: context.l10n.lyricsProviderZarzLrcDesc,
           icon: Icons.verified_outlined,
         );
       case 'qqmusic':

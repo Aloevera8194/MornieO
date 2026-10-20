@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.zarz.spotiflac">
+    package="com.zarz.mornye">
 
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
@@ -30,8 +30,8 @@
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
 
     <application
-        android:label="SpotiFLAC Mobile"
-        android:name=".SpotiFlacApplication"
+        android:label="Mornye"
+        android:name=".MornyeApplication"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules_legacy"
@@ -115,19 +115,19 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="spotiflac" android:host="callback" />
+                <data android:scheme="mornye" android:host="callback" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="spotiflac" android:host="spotify-callback" />
+                <data android:scheme="mornye" android:host="spotify-callback" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="spotiflac" android:host="session-grant" />
+                <data android:scheme="mornye" android:host="session-grant" />
             </intent-filter>
         </activity>
 

@@ -433,7 +433,7 @@ public class AudioService extends MediaBrowserServiceCompat {
 
     private Intent customActionActivity(MediaControl control) {
         Bundle extras = mapToBundle(control.customAction.extras);
-        String activityClass = extras == null ? null : extras.getString("spotiflac.activity");
+        String activityClass = extras == null ? null : extras.getString("mornye.activity");
         if (activityClass == null) return null;
         // setClassName keeps the component inside this application's package.
         return new Intent(control.customAction.name)

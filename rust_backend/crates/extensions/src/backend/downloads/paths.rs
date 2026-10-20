@@ -1,8 +1,8 @@
 use super::metadata::host_track;
+use mornye_core::downloads::DownloadRequest;
+use mornye_core::filename::{build_filename_checked, sanitize_filename_preserving_token};
+use mornye_providers::resolver::Check;
 use serde_json::json;
-use spotiflac_core::downloads::DownloadRequest;
-use spotiflac_core::filename::{build_filename_checked, sanitize_filename_preserving_token};
-use spotiflac_providers::resolver::Check;
 use std::path::{Path, PathBuf};
 
 pub(super) fn filename(

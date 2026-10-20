@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:spotiflac_android/services/network_storage_service.dart';
-import 'package:spotiflac_android/services/platform_bridge.dart';
-import 'package:spotiflac_android/services/source_deletion_events.dart';
-import 'package:spotiflac_android/utils/ios_container_paths.dart';
-import 'package:spotiflac_android/utils/mime_utils.dart';
+import 'package:mornye/services/network_storage_service.dart';
+import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/source_deletion_events.dart';
+import 'package:mornye/utils/ios_container_paths.dart';
+import 'package:mornye/utils/mime_utils.dart';
 
 /// Whether the queue should run its iOS output-directory path-shape check
 /// (which can replace [outputDir] with the default Documents folder when the
@@ -107,7 +107,7 @@ bool isValidIosWritablePath(String path) {
 /// Returns a valid Documents subdirectory path if the input is invalid.
 Future<String> validateOrFixIosPath(
   String path, {
-  String subfolder = 'SpotiFLAC',
+  String subfolder = 'Mornye',
 }) async {
   if (!Platform.isIOS) return path;
 

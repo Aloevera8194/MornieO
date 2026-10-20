@@ -2,8 +2,8 @@
 
 use super::*;
 use crate::files::clean;
+use mornye_core::matching::lowercase;
 use serde::{Deserialize, Serialize};
-use spotiflac_core::matching::lowercase;
 
 #[derive(Clone, Default, Deserialize, Serialize)]
 #[serde(default)]

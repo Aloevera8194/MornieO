@@ -531,7 +531,7 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
         final musicDir = Directory(
           '${externalDir.parent.parent.parent.parent.path}'
           '${Platform.pathSeparator}Music'
-          '${Platform.pathSeparator}SpotiFLAC',
+          '${Platform.pathSeparator}Mornye',
         );
         await musicDir.create(recursive: true);
         return musicDir;
@@ -540,7 +540,7 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
 
     final docsDir = await getApplicationDocumentsDirectory();
     final fallbackDir = Directory(
-      '${docsDir.path}${Platform.pathSeparator}SpotiFLAC',
+      '${docsDir.path}${Platform.pathSeparator}Mornye',
     );
     await fallbackDir.create(recursive: true);
     return fallbackDir;

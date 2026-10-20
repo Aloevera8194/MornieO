@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/services/download_request_payload.dart';
-import 'package:spotiflac_android/utils/audio_format_utils.dart';
-import 'package:spotiflac_android/utils/file_access.dart';
-import 'package:spotiflac_android/utils/hash_utils.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/services/download_request_payload.dart';
+import 'package:mornye/utils/audio_format_utils.dart';
+import 'package:mornye/utils/file_access.dart';
+import 'package:mornye/utils/hash_utils.dart';
+import 'package:mornye/utils/logger.dart';
 
 part 'platform_bridge/bridge_codec.dart';
 part 'platform_bridge/bridge_events.dart';
@@ -68,7 +68,7 @@ class PlatformBridge {
   /// that contain a percentage but no byte counts.
   static const int notificationPercentTotal = 10000;
 
-  static const _channel = MethodChannel('com.zarz.spotiflac/backend');
+  static const _channel = MethodChannel('com.zarz.mornye/backend');
 
   static int _nativeDataJobSerial = 0;
   static final _nativeDataJobs = <String, Set<_NativeDataJobState>>{};
@@ -150,10 +150,10 @@ class PlatformBridge {
       _defaultLookupCachePersistDebounce;
   static const _metadataPersistentCacheKey = 'bridge_metadata_lookup_cache_v1';
   static const _downloadProgressEvents = EventChannel(
-    'com.zarz.spotiflac/download_progress_stream',
+    'com.zarz.mornye/download_progress_stream',
   );
   static const _libraryScanProgressEvents = EventChannel(
-    'com.zarz.spotiflac/library_scan_progress_stream',
+    'com.zarz.mornye/library_scan_progress_stream',
   );
   static final Map<String, _BridgeCacheEntry<Map<String, dynamic>>>
   _metadataCache = {};
@@ -822,7 +822,7 @@ class PlatformBridge {
   /// exactly like an OS deep link.
   static Future<bool> startIosWebAuthSession(
     String url, {
-    String callbackScheme = 'spotiflac',
+    String callbackScheme = 'mornye',
   }) async {
     final result = await _channel.invokeMethod('startWebAuthSession', {
       'url': url,

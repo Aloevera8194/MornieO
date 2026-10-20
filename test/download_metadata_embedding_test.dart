@@ -4,13 +4,13 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/models/metadata_separators.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/extension_provider.dart';
-import 'package:spotiflac_android/services/download_metadata_embedding.dart';
-import 'package:spotiflac_android/services/ffmpeg_service.dart';
-import 'package:spotiflac_android/utils/artist_utils.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/models/metadata_separators.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/extension_provider.dart';
+import 'package:mornye/services/download_metadata_embedding.dart';
+import 'package:mornye/services/ffmpeg_service.dart';
+import 'package:mornye/utils/artist_utils.dart';
 
 class EmbeddingHarness {
   final events = <String>[];
@@ -126,7 +126,7 @@ void main() {
     },
   );
   TestWidgetsFlutterBinding.ensureInitialized();
-  const channel = MethodChannel('com.zarz.spotiflac/backend');
+  const channel = MethodChannel('com.zarz.mornye/backend');
   final messenger =
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
   late Directory directory;

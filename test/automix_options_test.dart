@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/automix_options.dart';
-import 'package:spotiflac_android/models/settings.dart';
-import 'package:spotiflac_android/services/automix_analysis.dart';
+import 'package:mornye/models/automix_options.dart';
+import 'package:mornye/models/settings.dart';
+import 'package:mornye/services/automix_analysis.dart';
 
 void main() {
   test(

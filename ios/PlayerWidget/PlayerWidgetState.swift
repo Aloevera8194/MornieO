@@ -13,10 +13,10 @@ struct PlayerWidgetState: Codable {
     var artworkKey = ""
     var artworkName = ""
 
-    static let kind = "SpotiFLACPlayer"
+    static let kind = "MornyePlayer"
     static var container: URL? {
         let group = Bundle.main.object(forInfoDictionaryKey: "PlayerWidgetAppGroup") as? String
-            ?? "group.com.zarz.spotiflac"
+            ?? "group.com.zarz.mornye"
         return FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group)
     }
 
@@ -35,7 +35,7 @@ struct PlayerWidgetState: Codable {
     static var preview: PlayerWidgetState {
         var value = Self()
         value.title = "Your favorite music"
-        value.artist = "SpotiFLAC"
+        value.artist = "Mornye"
         value.album = "Now Playing"
         value.canPlay = true
         value.canPrevious = true

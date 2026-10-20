@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/download_queue_provider.dart';
-import 'package:spotiflac_android/providers/local_library_provider.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/utils/clickable_metadata.dart';
-import 'package:spotiflac_android/controllers/local_playback.dart';
-import 'package:spotiflac_android/widgets/audio_quality_badges.dart';
-import 'package:spotiflac_android/widgets/track_card.dart';
-import 'package:spotiflac_android/widgets/in_library_badge.dart';
-import 'package:spotiflac_android/widgets/preview_button.dart';
-import 'package:spotiflac_android/widgets/track_collection_quick_actions.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/download_queue_provider.dart';
+import 'package:mornye/providers/local_library_provider.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/utils/clickable_metadata.dart';
+import 'package:mornye/controllers/local_playback.dart';
+import 'package:mornye/widgets/audio_quality_badges.dart';
+import 'package:mornye/widgets/track_card.dart';
+import 'package:mornye/widgets/in_library_badge.dart';
+import 'package:mornye/widgets/preview_button.dart';
+import 'package:mornye/widgets/track_collection_quick_actions.dart';
 
 /// Track row shared by the album and playlist screens. Tap offers another
 /// download when quality variants are enabled, otherwise it plays the local

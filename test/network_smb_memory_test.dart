@@ -7,9 +7,9 @@ import 'dart:io';
 // ignore: implementation_imports
 import 'package:dart_smb2/src/ffi/native_lib.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/services/network_library_scanner.dart';
-import 'package:spotiflac_android/services/network_smb_client.dart';
-import 'package:spotiflac_android/services/network_storage_service.dart';
+import 'package:mornye/services/network_library_scanner.dart';
+import 'package:mornye/services/network_smb_client.dart';
+import 'package:mornye/services/network_storage_service.dart';
 
 import 'support/vm_service_probe.dart';
 

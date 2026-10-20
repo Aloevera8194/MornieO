@@ -1581,6 +1581,137 @@ dependencies = [
 ]
 
 [[package]]
+name = "mornye-bindgen"
+version = "0.1.0"
+dependencies = [
+ "uniffi",
+]
+
+[[package]]
+name = "mornye-core"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "chrono",
+ "claxon",
+ "image",
+ "regex",
+ "roxmltree",
+ "rustix",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tz-rs",
+ "unicode-general-category",
+ "unicode-normalization",
+]
+
+[[package]]
+name = "mornye-extensions"
+version = "0.1.0"
+dependencies = [
+ "aes",
+ "aes-gcm",
+ "base64",
+ "blowfish",
+ "cap-std",
+ "chrono",
+ "getrandom 0.4.3",
+ "hmac",
+ "httpdate",
+ "libc",
+ "md-5",
+ "mornye-core",
+ "mornye-network",
+ "mornye-providers",
+ "rcgen",
+ "regex",
+ "rquickjs",
+ "rustix",
+ "rustls",
+ "serde",
+ "serde_json",
+ "sha1",
+ "sha2",
+ "tempfile",
+ "thiserror",
+ "time",
+ "zeroize",
+ "zip",
+]
+
+[[package]]
+name = "mornye-mobile"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "chrono",
+ "libc",
+ "libusb1-sys",
+ "mornye-core",
+ "mornye-extensions",
+ "mornye-network",
+ "regex",
+ "roxmltree",
+ "rusqlite",
+ "rustix",
+ "scraper",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+ "thiserror",
+ "uniffi",
+ "url",
+ "zeroize",
+ "zip",
+]
+
+[[package]]
+name = "mornye-network"
+version = "0.1.0"
+dependencies = [
+ "async-compression",
+ "bytes",
+ "cookie",
+ "futures-util",
+ "hickory-proto",
+ "http",
+ "http-body-util",
+ "hyper-rustls",
+ "hyper-util",
+ "rustls",
+ "rustls-native-certs",
+ "rustls-pemfile",
+ "rustls-platform-verifier",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-util",
+ "tower-service",
+ "url",
+]
+
+[[package]]
+name = "mornye-providers"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "html5ever",
+ "httpdate",
+ "mornye-core",
+ "mornye-network",
+ "regex",
+ "rustix",
+ "scraper",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "url",
+]
+
+[[package]]
 name = "moxcms"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2457,137 +2588,6 @@ checksum = "c3d1e2c7f27f8d4cb10542a02c49005dbd6e93095799d6f3be745fae9f8fedd4"
 dependencies = [
  "libc",
  "windows-sys 0.61.2",
-]
-
-[[package]]
-name = "spotiflac-bindgen"
-version = "0.1.0"
-dependencies = [
- "uniffi",
-]
-
-[[package]]
-name = "spotiflac-core"
-version = "0.1.0"
-dependencies = [
- "base64",
- "chrono",
- "claxon",
- "image",
- "regex",
- "roxmltree",
- "rustix",
- "serde",
- "serde_json",
- "tempfile",
- "tz-rs",
- "unicode-general-category",
- "unicode-normalization",
-]
-
-[[package]]
-name = "spotiflac-extensions"
-version = "0.1.0"
-dependencies = [
- "aes",
- "aes-gcm",
- "base64",
- "blowfish",
- "cap-std",
- "chrono",
- "getrandom 0.4.3",
- "hmac",
- "httpdate",
- "libc",
- "md-5",
- "rcgen",
- "regex",
- "rquickjs",
- "rustix",
- "rustls",
- "serde",
- "serde_json",
- "sha1",
- "sha2",
- "spotiflac-core",
- "spotiflac-network",
- "spotiflac-providers",
- "tempfile",
- "thiserror",
- "time",
- "zeroize",
- "zip",
-]
-
-[[package]]
-name = "spotiflac-mobile"
-version = "0.1.0"
-dependencies = [
- "base64",
- "chrono",
- "libc",
- "libusb1-sys",
- "regex",
- "roxmltree",
- "rusqlite",
- "rustix",
- "scraper",
- "serde",
- "serde_json",
- "sha2",
- "spotiflac-core",
- "spotiflac-extensions",
- "spotiflac-network",
- "tempfile",
- "thiserror",
- "uniffi",
- "url",
- "zeroize",
- "zip",
-]
-
-[[package]]
-name = "spotiflac-network"
-version = "0.1.0"
-dependencies = [
- "async-compression",
- "bytes",
- "cookie",
- "futures-util",
- "hickory-proto",
- "http",
- "http-body-util",
- "hyper-rustls",
- "hyper-util",
- "rustls",
- "rustls-native-certs",
- "rustls-pemfile",
- "rustls-platform-verifier",
- "serde",
- "serde_json",
- "tokio",
- "tokio-util",
- "tower-service",
- "url",
-]
-
-[[package]]
-name = "spotiflac-providers"
-version = "0.1.0"
-dependencies = [
- "base64",
- "html5ever",
- "httpdate",
- "regex",
- "rustix",
- "scraper",
- "serde",
- "serde_json",
- "spotiflac-core",
- "spotiflac-network",
- "tempfile",
- "thiserror",
- "url",
 ]
 
 [[package]]

@@ -4,17 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/providers/download_history_provider.dart';
-import 'package:spotiflac_android/services/history_database.dart';
-import 'package:spotiflac_android/services/history_maintenance.dart';
-import 'package:spotiflac_android/services/history_row_mapper.dart';
-import 'package:spotiflac_android/services/history_schema.dart';
-import 'package:spotiflac_android/services/library_database_models.dart';
-import 'package:spotiflac_android/services/library_queue_store.dart';
-import 'package:spotiflac_android/services/library_row_mapper.dart';
-import 'package:spotiflac_android/services/library_schema.dart';
-import 'package:spotiflac_android/services/sqlite_helpers.dart' as sqlite;
-import 'package:spotiflac_android/utils/path_match_keys.dart';
+import 'package:mornye/providers/download_history_provider.dart';
+import 'package:mornye/services/history_database.dart';
+import 'package:mornye/services/history_maintenance.dart';
+import 'package:mornye/services/history_row_mapper.dart';
+import 'package:mornye/services/history_schema.dart';
+import 'package:mornye/services/library_database_models.dart';
+import 'package:mornye/services/library_queue_store.dart';
+import 'package:mornye/services/library_row_mapper.dart';
+import 'package:mornye/services/library_schema.dart';
+import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
+import 'package:mornye/utils/path_match_keys.dart';
 
 import 'support/sqlite_process_database.dart';
 

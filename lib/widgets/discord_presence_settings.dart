@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/providers/settings_provider.dart';
-import 'package:spotiflac_android/services/discord_presence_service.dart';
-import 'package:spotiflac_android/widgets/settings_group.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/services/discord_presence_service.dart';
+import 'package:mornye/widgets/settings_group.dart';
 
 class DiscordPresenceSettings extends ConsumerWidget {
   const DiscordPresenceSettings({super.key});

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:sqflite/sqflite.dart';
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/utils/logger.dart';
 
 var _snapshotSequence = 0;
 const _coverReferences =

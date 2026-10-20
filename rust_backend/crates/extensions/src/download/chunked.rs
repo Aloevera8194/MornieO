@@ -6,7 +6,7 @@ use super::{
     status_failure, validator,
 };
 use crate::files::FilePath;
-use spotiflac_network::{HttpRequest, HttpResponse, HttpStream, NetworkSession};
+use mornye_network::{HttpRequest, HttpResponse, HttpStream, NetworkSession};
 use std::io::Write;
 use std::time::Duration;
 

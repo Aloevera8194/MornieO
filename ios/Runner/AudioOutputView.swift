@@ -10,7 +10,7 @@ final class PlaybackNotificationBridge {
     private var target: Any?
 
     init(messenger: FlutterBinaryMessenger) {
-        channel = FlutterMethodChannel(name: "com.zarz.spotiflac/playback_notification", binaryMessenger: messenger)
+        channel = FlutterMethodChannel(name: "com.zarz.mornye/playback_notification", binaryMessenger: messenger)
         let command = MPRemoteCommandCenter.shared().likeCommand
         target = command.addTarget { [weak self] _ in
             guard let self else { return .commandFailed }
@@ -41,7 +41,7 @@ final class AudioRouteInfoBridge {
     private let channel: FlutterMethodChannel
 
     init(messenger: FlutterBinaryMessenger) {
-        channel = FlutterMethodChannel(name: "com.zarz.spotiflac/audio_route", binaryMessenger: messenger)
+        channel = FlutterMethodChannel(name: "com.zarz.mornye/audio_route", binaryMessenger: messenger)
         channel.setMethodCallHandler { call, result in
             guard call.method == "read" else {
                 result(FlutterMethodNotImplemented)
@@ -147,7 +147,7 @@ private final class AudioOutputView: NSObject, FlutterPlatformView, AVRoutePicke
 
     init(frame: CGRect, id: Int64, messenger: FlutterBinaryMessenger, arguments: Any?) {
         picker = AVRoutePickerView(frame: frame)
-        channel = FlutterMethodChannel(name: "com.zarz.spotiflac/audio_output/\(id)", binaryMessenger: messenger)
+        channel = FlutterMethodChannel(name: "com.zarz.mornye/audio_output/\(id)", binaryMessenger: messenger)
         super.init()
         picker.backgroundColor = .clear
         picker.prioritizesVideoDevices = false

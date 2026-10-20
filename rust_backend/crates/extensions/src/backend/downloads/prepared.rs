@@ -1,6 +1,6 @@
 use super::{Prepared, PreparedDownloads};
 use crate::backend::Backend;
-use spotiflac_core::downloads::DownloadRequest;
+use mornye_core::downloads::DownloadRequest;
 use std::time::{Duration, Instant};
 
 impl Backend {

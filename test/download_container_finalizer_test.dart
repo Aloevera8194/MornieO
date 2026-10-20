@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/models/download_result.dart';
-import 'package:spotiflac_android/services/download_container_finalizer.dart';
-import 'package:spotiflac_android/services/download_saf_file_replacer.dart';
-import 'package:spotiflac_android/services/ffmpeg_probe.dart';
+import 'package:mornye/models/download_result.dart';
+import 'package:mornye/services/download_container_finalizer.dart';
+import 'package:mornye/services/download_saf_file_replacer.dart';
+import 'package:mornye/services/ffmpeg_probe.dart';
 
 void main() {
   late Directory directory;

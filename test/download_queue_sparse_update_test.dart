@@ -1,9 +1,9 @@
 import 'dart:collection';
 import 'dart:math';
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/models/track.dart';
-import 'package:spotiflac_android/providers/download_queue_state.dart';
-import 'package:spotiflac_android/utils/chunked_list.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/download_queue_state.dart';
+import 'package:mornye/utils/chunked_list.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _CountingList<T> extends ListBase<T> {

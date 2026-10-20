@@ -1,7 +1,7 @@
 import 'dart:collection';
 
-import 'package:spotiflac_android/models/download_item.dart';
-import 'package:spotiflac_android/utils/chunked_list.dart';
+import 'package:mornye/models/download_item.dart';
+import 'package:mornye/utils/chunked_list.dart';
 
 /// Shares the stable key-to-position index across progress snapshots. Values
 /// come from the current immutable items, so old lookups keep their old values.

@@ -1,4 +1,5 @@
-import 'package:spotiflac_android/utils/logger.dart';
+import 'package:mornye/constants/app_info.dart';
+import 'package:mornye/utils/logger.dart';
 
 class AppCrashReport {
   AppCrashReport.fromMap(Map<String, dynamic> values)
@@ -22,7 +23,7 @@ class AppCrashReport {
   final String report;
 
   static String _formatReport(Map<String, dynamic> values) {
-    final report = StringBuffer('SpotiFLAC Mobile crash report\n');
+    final report = StringBuffer('${AppInfo.appName} crash report\n');
     report.writeln(
       'Crash time: ${DateTime.fromMillisecondsSinceEpoch((values['timestamp'] as num).toInt()).toUtc().toIso8601String()}',
     );

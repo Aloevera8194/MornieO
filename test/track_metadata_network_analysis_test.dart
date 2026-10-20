@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/screens/track_metadata_screen.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/services/network_storage_service.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/audio_analysis_widget.dart';
-import 'package:spotiflac_android/widgets/hires_check_card.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/screens/track_metadata_screen.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/services/network_storage_service.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/audio_analysis_widget.dart';
+import 'package:mornye/widgets/hires_check_card.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

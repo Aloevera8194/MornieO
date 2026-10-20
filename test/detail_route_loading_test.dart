@@ -6,12 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:spotiflac_android/l10n/l10n.dart';
-import 'package:spotiflac_android/screens/local_album_screen.dart';
-import 'package:spotiflac_android/screens/track_metadata_screen.dart';
-import 'package:spotiflac_android/services/library_database.dart';
-import 'package:spotiflac_android/theme/mornye_theme.dart';
-import 'package:spotiflac_android/widgets/animation_utils.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/screens/local_album_screen.dart';
+import 'package:mornye/screens/track_metadata_screen.dart';
+import 'package:mornye/services/library_database.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/animation_utils.dart';
 
 LocalLibraryItem _track(int number) => LocalLibraryItem(
   id: 'track-$number',
@@ -66,7 +66,7 @@ void main() {
         var statCalls = 0;
         var followUpCalls = 0;
         final delayedStat = Completer<String>();
-        const channel = MethodChannel('com.zarz.spotiflac/backend');
+        const channel = MethodChannel('com.zarz.mornye/backend');
         final messenger =
             TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
         messenger.setMockMethodCallHandler(channel, (call) async {
