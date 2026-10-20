@@ -1,17 +1,34 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/ffprobe_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/media_information.dart';
 import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:mornye/services/ffmpeg_desktop.dart';
 import 'package:mornye/services/ffmpeg_models.dart';
 import 'package:mornye/services/ffmpeg_probe.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/logger.dart';
+
+export 'package:mornye/services/ffmpeg_desktop.dart'
+    show FFmpegUnavailableException;
 
 final _log = AppLogger('FFmpeg');
 
 /// Shared native execution boundary; feature modules supply their own commands.
+/// Mobile runs FFmpegKit in process; desktop runs the bundled `ffmpeg` and
+/// `ffprobe` executables through [DesktopFFmpegRunner].
 abstract final class FFmpegExecution {
   static Future<FFmpegResult> command(String command) async {
+    if (isDesktopPlatform) {
+      // FFmpegKit's own quoting rules, so commands behave as on mobile.
+      return DesktopFFmpegRunner.shared.run(
+        FFmpegKitConfig.parseArguments(command),
+      );
+    }
     try {
       final session = await FFmpegKit.execute(command);
       final code = await session.getReturnCode();
@@ -27,6 +44,7 @@ abstract final class FFmpegExecution {
   }
 
   static Future<FFmpegResult> arguments(List<String> arguments) async {
+    if (isDesktopPlatform) return DesktopFFmpegRunner.shared.run(arguments);
     try {
       final session = await FFmpegKit.executeWithArguments(arguments);
       final code = await session.getReturnCode();
@@ -39,6 +57,50 @@ abstract final class FFmpegExecution {
       _log.e('FFmpeg executeWithArguments error: $e');
       return FFmpegResult(success: false, returnCode: -1, output: e.toString());
     }
+  }
+
+  /// Starts a cancellable session; [cancel] takes its id. Throws when the
+  /// session cannot start, including [FFmpegUnavailableException] on desktop.
+  static Future<({int id, Future<FFmpegSessionResult> completed})> start(
+    List<String> arguments,
+  ) async {
+    if (isDesktopPlatform) return DesktopFFmpegRunner.shared.start(arguments);
+    final completed = Completer<FFmpegSessionResult>();
+    final session = await FFmpegKit.executeWithArgumentsAsync(arguments, (
+      session,
+    ) async {
+      int? code;
+      try {
+        code = (await session.getReturnCode())?.getValue();
+      } catch (e) {
+        _log.w('FFmpeg return code unavailable: $e');
+      }
+      if (completed.isCompleted) return;
+      completed.complete(
+        FFmpegSessionResult(
+          returnCode: code,
+          logs: () async => await session.getAllLogsAsString() ?? '',
+        ),
+      );
+    });
+    final id = session.getSessionId();
+    if (id == null) {
+      // Never pass null to cancel: FFmpegKit interprets it as cancel-all.
+      await completed.future;
+      throw StateError('FFmpeg session has no ID');
+    }
+    return (id: id, completed: completed.future);
+  }
+
+  static Future<void> cancel(int id) => isDesktopPlatform
+      ? DesktopFFmpegRunner.shared.cancel(id)
+      : FFmpegKit.cancel(id);
+
+  /// FFprobe media information, or null when the file cannot be probed.
+  /// Throws [FFmpegUnavailableException] when desktop ffprobe is missing.
+  static Future<MediaInformation?> mediaInformation(String path) async {
+    if (isDesktopPlatform) return DesktopFFmpegRunner.shared.probe(path);
+    return (await FFprobeKit.getMediaInformation(path)).getMediaInformation();
   }
 
   static String preview(String command) {

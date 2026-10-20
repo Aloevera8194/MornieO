@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:mornye/services/backend/backend_channel.dart';
 import 'package:mornye/services/backend/ffi_backend_transport.dart';
 import 'package:mornye/services/backend/native_backend_transport.dart';
+import 'package:mornye/services/ffmpeg_desktop.dart';
 import 'package:path_provider/path_provider.dart';
 
 /// Error code of calls made while the desktop library cannot be loaded.
@@ -43,23 +44,27 @@ class DesktopBackendConfig {
   final String? ffmpegPath;
   final String? ffprobePath;
 
-  /// Directories from path_provider. Desktop packaging passes the bundled
-  /// FFmpeg tool locations through [ffmpegPath] and [ffprobePath].
+  /// Directories from path_provider. The FFmpeg tool locations default to
+  /// those [DesktopFFmpegTools] resolves, so Rust and Dart run one binary.
   static Future<DesktopBackendConfig> resolve({
     String? ffmpegPath,
     String? ffprobePath,
+    Future<DesktopFFmpegTools> Function()? locateTools,
   }) async {
     final directories = await Future.wait([
       getApplicationSupportDirectory(),
       getApplicationDocumentsDirectory(),
       getTemporaryDirectory(),
     ]);
+    final tools = ffmpegPath != null && ffprobePath != null
+        ? null
+        : await (locateTools ?? () => DesktopFFmpegTools.shared)();
     return DesktopBackendConfig(
       appSupportDir: directories[0].path,
       documentsDir: directories[1].path,
       tempDir: directories[2].path,
-      ffmpegPath: ffmpegPath,
-      ffprobePath: ffprobePath,
+      ffmpegPath: ffmpegPath ?? tools?.ffmpegPath,
+      ffprobePath: ffprobePath ?? tools?.ffprobePath,
     );
   }
 
