@@ -27,6 +27,7 @@ import 'package:mornye/services/download_metadata_resolver.dart';
 import 'package:mornye/services/download_metadata_embedding.dart';
 import 'package:mornye/services/download_saf_file_replacer.dart';
 import 'package:mornye/services/download_connectivity_policy.dart';
+import 'package:mornye/services/download_keep_awake.dart';
 import 'package:mornye/services/download_scheduler.dart';
 import 'package:mornye/services/source_deletion_events.dart';
 import 'package:mornye/services/platform_bridge.dart';
@@ -1525,6 +1526,7 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
         } else if (Platform.isIOS) {
           await PlatformBridge.endBackgroundDownloadTask();
         }
+        await downloadKeepAwake.end();
       } catch (cleanupError, cleanupStack) {
         _log.e(
           'Failed to release download execution window: $cleanupError',
@@ -1687,6 +1689,9 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
       await PlatformBridge.beginBackgroundDownloadTask();
     }
 
+    // Desktop: keep the computer from idle sleeping until the queue stops.
+    if (_totalQueuedAtStart > 0) await downloadKeepAwake.begin();
+
     if (!isSafMode && state.outputDir.isEmpty) {
       _log.d('Output dir empty, initializing...');
       await _initOutputDir();
@@ -1792,6 +1797,8 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
     if (Platform.isIOS) {
       await PlatformBridge.endBackgroundDownloadTask();
     }
+
+    await downloadKeepAwake.end();
 
     if (stoppedWhilePaused && _downloadCount > 0) {
       try {

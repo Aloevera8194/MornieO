@@ -2,18 +2,24 @@
 //! `dart:ffi`. The contract lives in `docs/internal/desktop/FFI_CONTRACT.md`:
 //! one callback, JSON method dispatch with the MethodChannel method names and
 //! argument shapes, a worker pool per call, pushed event streams, and an
-//! FFmpeg command pump that runs the bundled `ffmpeg` executable.
+//! FFmpeg command pump that runs the bundled `ffmpeg` executable. Desktop OS
+//! services live here too: keep-awake during downloads, Discord Rich
+//! Presence over local IPC, library folder watching, and a panic log.
 
 mod backend;
 mod call;
 mod callback_url;
+mod crash_log;
+mod discord;
 mod dispatch;
 mod events;
 mod ffi;
 mod ffmpeg;
+mod keep_awake;
 mod paths;
 mod pool;
 mod runtime;
+mod watcher;
 
 pub use call::{Args, BYTES_KEY, CallError, Reply};
 pub use ffi::{

@@ -96,14 +96,20 @@ fn next_id() -> u64 {
 }
 
 fn wait_for(id: u64, timeout: Duration) -> Event {
+    wait_matching(id, timeout, |_| true)
+}
+
+/// Takes the first event for `id` that `matches`, leaving the others; pushed
+/// events (id 0) from tests running in parallel share one list.
+fn wait_matching(id: u64, timeout: Duration, matches: impl Fn(&Event) -> bool) -> Event {
     let inbox = inbox();
     let deadline = Instant::now() + timeout;
     let mut events = inbox.events.lock().unwrap();
     loop {
         if let Some(list) = events.get_mut(&id)
-            && !list.is_empty()
+            && let Some(index) = list.iter().position(&matches)
         {
-            return list.remove(0);
+            return list.remove(index);
         }
         let remaining = deadline.saturating_duration_since(Instant::now());
         assert!(!remaining.is_zero(), "no callback for id {id}");
@@ -250,7 +256,9 @@ fn library_scan_progress_is_pushed_while_subscribed() {
     fixture();
     mornye_subscribe(kind::LIBRARY_SCAN_PROGRESS);
     mornye_subscribe(kind::LIBRARY_SCAN_PROGRESS);
-    let (event_kind, data) = wait_for(0, Duration::from_secs(10));
+    let (event_kind, data) = wait_matching(0, Duration::from_secs(10), |(event_kind, _)| {
+        *event_kind == kind::LIBRARY_SCAN_PROGRESS
+    });
     mornye_unsubscribe(kind::LIBRARY_SCAN_PROGRESS);
     mornye_unsubscribe(kind::LIBRARY_SCAN_PROGRESS);
     assert_eq!(event_kind, kind::LIBRARY_SCAN_PROGRESS);
@@ -308,4 +316,69 @@ fn method_table_covers_the_host_contract() {
     ] {
         assert!(unique.contains(&method), "missing {method}");
     }
+}
+
+fn wait_inbound(method: &str, timeout: Duration) -> Value {
+    let (_, data) = wait_matching(0, timeout, |(event_kind, data)| {
+        *event_kind == kind::INBOUND_CALL
+            && serde_json::from_slice::<Value>(data).is_ok_and(|value| value["method"] == method)
+    });
+    serde_json::from_slice::<Value>(&data).unwrap()["arguments"].clone()
+}
+
+#[test]
+fn keep_awake_begins_and_ends_idempotently() {
+    fixture();
+    assert_eq!(call("endKeepAwake", Value::Null).unwrap(), json!(false));
+    let begun = call("beginKeepAwake", json!({"reason": "Mornye test"})).unwrap();
+    // macOS and Windows always hold; Linux needs systemd-inhibit.
+    if cfg!(any(target_os = "macos", windows)) {
+        assert_eq!(begun, json!(true));
+    }
+    assert_eq!(
+        call("beginKeepAwake", json!({"reason": "Mornye test"})).unwrap(),
+        begun
+    );
+    assert_eq!(call("endKeepAwake", Value::Null).unwrap(), begun);
+    assert_eq!(call("endKeepAwake", Value::Null).unwrap(), json!(false));
+}
+
+#[test]
+fn library_watcher_reports_changed_roots() {
+    let root = fixture().root.join("music");
+    let folder = root.to_string_lossy().into_owned();
+    let watched = call(
+        "watchLibraryFolders",
+        json!({"paths": [folder, "/definitely/missing/folder"]}),
+    )
+    .unwrap();
+    assert_eq!(watched, json!([folder]));
+    std::thread::sleep(Duration::from_millis(800));
+    std::fs::write(root.join("watched.flac"), b"x").unwrap();
+    let arguments = wait_inbound("libraryFolderChanged", Duration::from_secs(10));
+    assert_eq!(arguments["root"], json!(folder));
+    assert_eq!(
+        call("unwatchLibraryFolders", Value::Null).unwrap(),
+        Value::Null
+    );
+    assert!(call("watchLibraryFolders", json!({"paths": "x"})).is_err());
+}
+
+#[test]
+fn discord_presence_reports_a_status() {
+    fixture();
+    assert_eq!(
+        call("discordPresenceInitialize", Value::Null).unwrap(),
+        json!(true)
+    );
+    call(
+        "discordPresenceUpdate",
+        json!({"title": "Song", "artist": "Artist", "state": "Artist", "artwork": ""}),
+    )
+    .unwrap();
+    // "active" when a Discord client runs on this machine.
+    let status = wait_inbound("discordPresenceStatus", Duration::from_secs(15));
+    assert!(status == "active" || status == "unavailable", "{status}");
+    call("discordPresenceClear", Value::Null).unwrap();
+    call("discordPresenceShutdown", Value::Null).unwrap();
 }

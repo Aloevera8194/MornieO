@@ -318,7 +318,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
               ],
             ),
           ),
-          if (Platform.isAndroid || Platform.isIOS) ...[
+          if (Platform.isAndroid || Platform.isIOS || isDesktopPlatform) ...[
             const SliverToBoxAdapter(
               child: SettingsSectionHeader(title: 'Discord'),
             ),

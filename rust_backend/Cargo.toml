@@ -76,6 +76,8 @@ roxmltree = "=0.21.1"
 rusqlite = { version = "=0.40.2", features = ["bundled", "modern_sqlite", "hooks"] }
 libc = "=0.2.190"
 windows-sys = "0.61"
+# Desktop library folder watching (crates/desktop).
+notify = "=8.2.0"
 
 [workspace.lints.rust]
 unsafe_code = "deny"

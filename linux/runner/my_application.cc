@@ -22,6 +22,14 @@ static void first_frame_cb(MyApplication* self, FlView* view) {
 // Implements GApplication::activate.
 static void my_application_activate(GApplication* application) {
   MyApplication* self = MY_APPLICATION(application);
+
+  // Single instance: a second launch activates the running window.
+  GList* windows = gtk_application_get_windows(GTK_APPLICATION(application));
+  if (windows != nullptr) {
+    gtk_window_present(GTK_WINDOW(windows->data));
+    return;
+  }
+
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
@@ -106,10 +114,25 @@ static gboolean my_application_local_command_line(GApplication* application,
     return TRUE;
   }
 
-  g_application_activate(application);
+  // The primary instance creates its window (and registers the plugins)
+  // before GLib emits "command-line", so app_links sees the launch URL.
+  if (!g_application_get_is_remote(application)) {
+    g_application_activate(application);
+  }
   *exit_status = 0;
 
-  return TRUE;
+  // Not handled here: GLib sends the command line to the primary instance,
+  // which emits "command-line" there. app_links reads a forwarded
+  // mornye:// URL from it; the handler below raises the window.
+  return FALSE;
+}
+
+// Implements GApplication::command_line, in the primary instance for its own
+// launch and for every later launch.
+static gint my_application_command_line(GApplication* application,
+                                        GApplicationCommandLine* command_line) {
+  g_application_activate(application);
+  return 0;
 }
 
 // Implements GApplication::startup.
@@ -141,6 +164,7 @@ static void my_application_class_init(MyApplicationClass* klass) {
   G_APPLICATION_CLASS(klass)->activate = my_application_activate;
   G_APPLICATION_CLASS(klass)->local_command_line =
       my_application_local_command_line;
+  G_APPLICATION_CLASS(klass)->command_line = my_application_command_line;
   G_APPLICATION_CLASS(klass)->startup = my_application_startup;
   G_APPLICATION_CLASS(klass)->shutdown = my_application_shutdown;
   G_OBJECT_CLASS(klass)->dispose = my_application_dispose;
@@ -155,7 +179,10 @@ MyApplication* my_application_new() {
   // the application to be recognized beyond its binary name.
   g_set_prgname(APPLICATION_ID);
 
-  return MY_APPLICATION(g_object_new(my_application_get_type(),
-                                     "application-id", APPLICATION_ID, "flags",
-                                     G_APPLICATION_NON_UNIQUE, nullptr));
+  // Unique on the session bus: later launches (for example a mornye://
+  // callback from the browser, `Exec=mornye %u`) forward their whole command
+  // line to this process. URLs arrive as arguments, so "open" is not used.
+  return MY_APPLICATION(g_object_new(
+      my_application_get_type(), "application-id", APPLICATION_ID, "flags",
+      G_APPLICATION_HANDLES_COMMAND_LINE, nullptr));
 }
