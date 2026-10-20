@@ -907,8 +907,14 @@ class _CategoryRow extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final radius = BorderRadius.circular(mornye ? 8 : 28);
-    final foreground = selected
-        ? (mornye ? colorScheme.onPrimary : colorScheme.onSecondaryContainer)
+    // Mornye selects with the app sidebar's quiet gray fill, so the colored
+    // category tiles keep their own color.
+    final dark = colorScheme.brightness == Brightness.dark;
+    final mornyeFill = colorScheme.onSurface.withValues(
+      alpha: dark ? 0.12 : 0.08,
+    );
+    final foreground = selected && !mornye
+        ? colorScheme.onSecondaryContainer
         : colorScheme.onSurface;
     final secondary = selected
         ? foreground.withValues(alpha: 0.8)
@@ -920,11 +926,14 @@ class _CategoryRow extends StatelessWidget {
         selected: selected,
         child: Material(
           color: selected
-              ? (mornye ? colorScheme.primary : colorScheme.secondaryContainer)
+              ? (mornye ? mornyeFill : colorScheme.secondaryContainer)
               : Colors.transparent,
           borderRadius: radius,
           child: InkWell(
             borderRadius: radius,
+            hoverColor: mornye
+                ? colorScheme.onSurface.withValues(alpha: 0.05)
+                : null,
             onTap: onTap,
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: mornye ? 36 : 56),
@@ -953,8 +962,10 @@ class _CategoryRow extends StatelessWidget {
                                         : textTheme.labelLarge)
                                     ?.copyWith(
                                       color: foreground,
-                                      fontWeight: selected && !mornye
-                                          ? FontWeight.w700
+                                      fontWeight: selected
+                                          ? (mornye
+                                                ? FontWeight.w600
+                                                : FontWeight.w700)
                                           : null,
                                     ),
                             maxLines: 1,
