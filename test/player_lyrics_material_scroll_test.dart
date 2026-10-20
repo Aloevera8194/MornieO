@@ -11,6 +11,73 @@ import 'package:mornye/utils/lyrics_parser.dart';
 import 'package:mornye/widgets/player_lyrics.dart';
 
 void main() {
+  testWidgets('Material opens on a far line taller than the estimate', (
+    tester,
+  ) async {
+    // A narrow desktop panel: each line wraps and carries a romanization,
+    // several times the estimated row height.
+    tester.view.physicalSize = const Size(340, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    final playback = StreamController<PlaybackState>.broadcast();
+    final seek = ValueNotifier<Duration?>(null);
+    addTearDown(playback.close);
+    addTearDown(seek.dispose);
+    final theme = AppTheme.dark();
+    final lyrics = ParsedLyrics(
+      synced: true,
+      wordSynced: false,
+      plainText: '',
+      lines: List.generate(
+        80,
+        (index) => LyricLine(
+          time: Duration(seconds: index * 3),
+          end: Duration(seconds: (index + 1) * 3),
+          text: 'Fixture line $index wraps across the narrow panel twice',
+          romanization: 'Romanized line $index also wraps across the panel',
+        ),
+      ),
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          playbackStateProvider.overrideWith((ref) => playback.stream),
+          musicPlayerControllerProvider.overrideWith(
+            (ref) => throw StateError('Unexpected audio access'),
+          ),
+        ],
+        child: MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: SyncedLyricsView(
+              lyrics: lyrics,
+              seekPreview: seek,
+              colorScheme: theme.colorScheme,
+              isActive: true,
+              showPronunciation: true,
+              showTranslation: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    // Halfway through the song, as when the panel opens mid-track.
+    playback.add(
+      PlaybackState(
+        processingState: AudioProcessingState.ready,
+        updatePosition: const Duration(seconds: 181),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // The romanization sits in the lower half of the centered row.
+    final line = find.textContaining('Romanized line 60 ', findRichText: true);
+    expect(line, findsOneWidget);
+    expect(tester.getCenter(line).dy, inInclusiveRange(400, 560));
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('Material offscreen seek resumes line progression', (
     tester,
   ) async {

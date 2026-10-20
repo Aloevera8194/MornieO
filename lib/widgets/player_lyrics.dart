@@ -634,6 +634,39 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
   int _rowAtScrollOffset(_LyricExtentSnapshot extents, double offset) =>
       extents.rowAtOffset((offset - _focusInset).clamp(0.0, double.infinity));
 
+  /// Jumps a viewport at a time toward the line at [index] until the list
+  /// builds it. Rows taller than the estimate, such as lines with
+  /// pronunciation or translation, leave an estimated jump short of a far
+  /// line, which would otherwise stay off screen. Returns whether it is
+  /// built.
+  Future<bool> _scrollUntilBuilt(int index) async {
+    final target = _displayLayout.rowForLine[index];
+    for (var step = 0; step < 32; step++) {
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted || _userScrolling || !_scroll.hasClients) return false;
+      if (_lineKeys[index].currentContext != null) return true;
+      int? first;
+      int? last;
+      for (var line = 0; line < _lineKeys.length; line++) {
+        if (_lineKeys[line].currentContext == null) continue;
+        final row = _displayLayout.rowForLine[line];
+        if (first == null || row < first) first = row;
+        if (last == null || row > last) last = row;
+      }
+      if (first == null || last == null) return false;
+      final position = _scroll.position;
+      final next =
+          (position.pixels +
+                  (target > last
+                      ? position.viewportDimension
+                      : -position.viewportDimension))
+              .clamp(position.minScrollExtent, position.maxScrollExtent);
+      if (next == position.pixels) return false;
+      _scroll.jumpTo(next);
+    }
+    return false;
+  }
+
   Future<void> _maybeAutoScroll(int index, {bool immediate = false}) async {
     // A short intro may have no countdown row. Still return to the first
     // upcoming lyric when the user scrubs back before any vocals.
@@ -720,7 +753,8 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     if (!mounted ||
         _userScrolling ||
         (_active >= 0 && index != _focus) ||
-        index >= _lineKeys.length) {
+        index >= _lineKeys.length ||
+        !await _scrollUntilBuilt(index)) {
       return;
     }
     final lineContext = _lineKeys[index].currentContext;
