@@ -19,6 +19,7 @@ import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/material_expressive.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/screens/now_playing_screen.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/string_utils.dart';
 import 'package:mornye/widgets/audio_quality_badges.dart';
 import 'package:mornye/widgets/overflow_marquee.dart';
@@ -126,192 +127,196 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
       }
     }
 
-    final player = Dismissible(
-      key: ValueKey('mini-player-${mediaItem.id}'),
-      direction: DismissDirection.horizontal,
-      onDismissed: (_) {
-        setState(() => _dismissedItemId = mediaItem.id);
-        controller.stop();
-      },
-      child: DecoratedBox(
-        key: _surfaceKey,
-        position: DecorationPosition.foreground,
-        decoration: BoxDecoration(
-          border: mornye
-              ? null
-              : Border(
-                  top: BorderSide(
-                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-                  ),
+    final surface = DecoratedBox(
+      key: _surfaceKey,
+      position: DecorationPosition.foreground,
+      decoration: BoxDecoration(
+        border: mornye
+            ? null
+            : Border(
+                top: BorderSide(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
                 ),
-        ),
-        child: Material(
-          color: mornye
-              ? Colors.transparent
-              : settingsGroupColor(context).withValues(alpha: 0.72),
-          child: InkWell(
-            onTap: _openNowPlaying,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!mornye)
-                  _MiniPlayerProgress(
-                    duration: mediaItem.duration ?? Duration.zero,
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    playing: isPlaying,
-                  ),
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: compact ? 8 : 12,
-                    vertical: mornye ? 0 : 8,
-                  ),
-                  child: Row(
-                    children: [
-                      Hero(
-                        tag: kNowPlayingArtworkHeroTag,
-                        child: ClipRRect(
-                          key: _artworkKey,
-                          borderRadius: BorderRadius.circular(mornye ? 6 : 12),
-                          child: SizedBox(
-                            width: context.tokens.coverMini,
-                            height: context.tokens.coverMini,
-                            child: PlayerArtwork(
-                              artUri: mediaItem.artUri?.toString(),
-                              colorScheme: colorScheme,
-                              cacheWidth: 132,
-                              iconSize: 22,
-                            ),
+              ),
+      ),
+      child: Material(
+        color: mornye
+            ? Colors.transparent
+            : settingsGroupColor(context).withValues(alpha: 0.72),
+        child: InkWell(
+          onTap: _openNowPlaying,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (!mornye)
+                _MiniPlayerProgress(
+                  duration: mediaItem.duration ?? Duration.zero,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  playing: isPlaying,
+                ),
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: compact ? 8 : 12,
+                  vertical: mornye ? 0 : 8,
+                ),
+                child: Row(
+                  children: [
+                    Hero(
+                      tag: kNowPlayingArtworkHeroTag,
+                      child: ClipRRect(
+                        key: _artworkKey,
+                        borderRadius: BorderRadius.circular(mornye ? 6 : 12),
+                        child: SizedBox(
+                          width: context.tokens.coverMini,
+                          height: context.tokens.coverMini,
+                          child: PlayerArtwork(
+                            artUri: mediaItem.artUri?.toString(),
+                            colorScheme: colorScheme,
+                            cacheWidth: 132,
+                            iconSize: 22,
                           ),
                         ),
                       ),
-                      SizedBox(width: compact ? 8 : 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            OverflowMarquee(
-                              resetKey: (mediaItem.id, mediaItem.title),
-                              maxCycles: marqueeCycles,
-                              child: ExplicitTrackTitle(
-                                title: mediaItem.title,
-                                explicit:
-                                    parseExplicitFlag(
-                                      mediaItem.extras?['explicit'],
-                                    ) ==
-                                    true,
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(fontWeight: FontWeight.w600),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                    ),
+                    SizedBox(width: compact ? 8 : 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          OverflowMarquee(
+                            resetKey: (mediaItem.id, mediaItem.title),
+                            maxCycles: marqueeCycles,
+                            child: ExplicitTrackTitle(
+                              title: mediaItem.title,
+                              explicit:
+                                  parseExplicitFlag(
+                                    mediaItem.extras?['explicit'],
+                                  ) ==
+                                  true,
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            OverflowMarquee(
-                              resetKey: (mediaItem.id, mediaItem.artist),
-                              maxCycles: marqueeCycles,
-                              child: Text(
-                                mediaItem.artist ?? '',
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: mornye
-                                          ? Color.lerp(
-                                              colorScheme.onSurfaceVariant,
-                                              colorScheme.onSurface,
-                                              colorScheme.brightness ==
-                                                      Brightness.dark
-                                                  ? 0.7
-                                                  : 0.6,
-                                            )
-                                          : colorScheme.onSurfaceVariant,
-                                    ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                          ),
+                          OverflowMarquee(
+                            resetKey: (mediaItem.id, mediaItem.artist),
+                            maxCycles: marqueeCycles,
+                            child: Text(
+                              mediaItem.artist ?? '',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: mornye
+                                        ? Color.lerp(
+                                            colorScheme.onSurfaceVariant,
+                                            colorScheme.onSurface,
+                                            colorScheme.brightness ==
+                                                    Brightness.dark
+                                                ? 0.7
+                                                : 0.6,
+                                          )
+                                        : colorScheme.onSurfaceVariant,
+                                  ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      if (expressive)
-                        // Round while paused, square while playing, like the
-                        // full player's play-pause.
-                        AppIconButton.filled(
-                          tooltip: isPlaying
-                              ? context.l10n.actionPause
-                              : context.l10n.tooltipPlay,
-                          isSelected: isPlaying,
-                          style: IconButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: colorScheme.onPrimary,
-                          ),
-                          icon: isLoading
-                              ? AppLoadingIndicator(
-                                  size: 20,
-                                  color: colorScheme.onPrimary,
-                                )
-                              : const AppIcon(Icons.play_arrow),
-                          selectedIcon: isLoading
-                              ? AppLoadingIndicator(
-                                  size: 20,
-                                  color: colorScheme.onPrimary,
-                                )
-                              : const AppIcon(Icons.pause),
-                          onPressed: isLoading
-                              ? null
-                              : () => controller.togglePlayPause(isPlaying),
-                        )
-                      else
-                        AppIconButton(
-                          color: mornye ? colorScheme.onSurface : null,
-                          tooltip: isPlaying
-                              ? context.l10n.actionPause
-                              : context.l10n.tooltipPlay,
-                          icon: isLoading
-                              ? const AppLoadingIndicator(
-                                  size: 20,
-                                  strokeWidth: 2.5,
-                                )
-                              : AppIcon(
-                                  mornye
-                                      ? (isPlaying
-                                            ? CupertinoIcons.pause_fill
-                                            : CupertinoIcons.play_fill)
-                                      : (isPlaying
-                                            ? Icons.pause
-                                            : Icons.play_arrow),
-                                ),
-                          onPressed: isLoading
-                              ? null
-                              : () => controller.togglePlayPause(isPlaying),
+                    ),
+                    if (expressive)
+                      // Round while paused, square while playing, like the
+                      // full player's play-pause.
+                      AppIconButton.filled(
+                        tooltip: isPlaying
+                            ? context.l10n.actionPause
+                            : context.l10n.tooltipPlay,
+                        isSelected: isPlaying,
+                        style: IconButton.styleFrom(
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
                         ),
-                      if (!compact)
-                        AppIconButton(
-                          color: mornye ? colorScheme.onSurface : null,
-                          tooltip: context.l10n.nowPlayingNextTrack,
-                          icon: AppIcon(
-                            mornye
-                                ? CupertinoIcons.forward_fill
-                                : Icons.skip_next,
-                          ),
-                          onPressed: controller.next,
+                        icon: isLoading
+                            ? AppLoadingIndicator(
+                                size: 20,
+                                color: colorScheme.onPrimary,
+                              )
+                            : const AppIcon(Icons.play_arrow),
+                        selectedIcon: isLoading
+                            ? AppLoadingIndicator(
+                                size: 20,
+                                color: colorScheme.onPrimary,
+                              )
+                            : const AppIcon(Icons.pause),
+                        onPressed: isLoading
+                            ? null
+                            : () => controller.togglePlayPause(isPlaying),
+                      )
+                    else
+                      AppIconButton(
+                        color: mornye ? colorScheme.onSurface : null,
+                        tooltip: isPlaying
+                            ? context.l10n.actionPause
+                            : context.l10n.tooltipPlay,
+                        icon: isLoading
+                            ? const AppLoadingIndicator(
+                                size: 20,
+                                strokeWidth: 2.5,
+                              )
+                            : AppIcon(
+                                mornye
+                                    ? (isPlaying
+                                          ? CupertinoIcons.pause_fill
+                                          : CupertinoIcons.play_fill)
+                                    : (isPlaying
+                                          ? Icons.pause
+                                          : Icons.play_arrow),
+                              ),
+                        onPressed: isLoading
+                            ? null
+                            : () => controller.togglePlayPause(isPlaying),
+                      ),
+                    if (!compact)
+                      AppIconButton(
+                        color: mornye ? colorScheme.onSurface : null,
+                        tooltip: context.l10n.nowPlayingNextTrack,
+                        icon: AppIcon(
+                          mornye
+                              ? CupertinoIcons.forward_fill
+                              : Icons.skip_next,
                         ),
-                    ],
-                  ),
+                        onPressed: controller.next,
+                      ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
     // Swiping up opens the full player; sideways swipes still dismiss.
-    final swipeable = GestureDetector(
-      // Measure from touch-down so the slop counts toward the swipe.
-      dragStartBehavior: DragStartBehavior.down,
-      onVerticalDragStart: (_) => _dragUp = 0,
-      onVerticalDragUpdate: (details) => _dragUp -= details.primaryDelta ?? 0,
-      onVerticalDragEnd: _onVerticalDragEnd,
-      child: player,
-    );
+    // Desktop has no touch gestures: a click opens the player instead.
+    final swipeable = isDesktopPlatform
+        ? surface
+        : GestureDetector(
+            // Measure from touch-down so the slop counts toward the swipe.
+            dragStartBehavior: DragStartBehavior.down,
+            onVerticalDragStart: (_) => _dragUp = 0,
+            onVerticalDragUpdate: (details) =>
+                _dragUp -= details.primaryDelta ?? 0,
+            onVerticalDragEnd: _onVerticalDragEnd,
+            child: Dismissible(
+              key: ValueKey('mini-player-${mediaItem.id}'),
+              direction: DismissDirection.horizontal,
+              onDismissed: (_) {
+                setState(() => _dismissedItemId = mediaItem.id);
+                controller.stop();
+              },
+              child: surface,
+            ),
+          );
     return mornye
         ? Padding(
             padding: EdgeInsets.only(bottom: widget.bottomPadding),

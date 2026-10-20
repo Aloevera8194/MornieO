@@ -49,8 +49,11 @@ import 'package:mornye/widgets/app_loading_indicator.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/selection_bottom_bar.dart';
+import 'package:mornye/widgets/desktop/desktop_commands.dart';
+import 'package:mornye/widgets/desktop/desktop_navigation.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/saf_download_tree.dart';
 
 part 'main_shell_startup_prompts.dart';
@@ -491,6 +494,72 @@ class _MainShellState extends ConsumerState<MainShell>
     }
   }
 
+  ShellTab _tabForIndex(int index, bool showStore) {
+    if (index == 0) return ShellTab.home;
+    if (index == 1) return ShellTab.library;
+    if (showStore && index == 2) return ShellTab.repository;
+    return context.isMornye ? ShellTab.search : ShellTab.settings;
+  }
+
+  List<DesktopDestination> _desktopDestinations({
+    required bool showStore,
+    required int queueCount,
+    required int repoUpdatesCount,
+  }) {
+    final l10n = context.l10n;
+    final mornye = context.isMornye;
+    return [
+      for (final tab in desktopDestinationTabs(
+        mornye: mornye,
+        showStore: showStore,
+      ))
+        switch (tab) {
+          ShellTab.home => DesktopDestination(
+            tab: tab,
+            icon: mornye ? CupertinoIcons.house : Icons.home_outlined,
+            selectedIcon: mornye ? CupertinoIcons.house_fill : Icons.home,
+            label: l10n.navHome,
+          ),
+          ShellTab.library => DesktopDestination(
+            tab: tab,
+            icon: mornye
+                ? CupertinoIcons.square_stack
+                : Icons.library_music_outlined,
+            selectedIcon: mornye
+                ? CupertinoIcons.square_stack_fill
+                : Icons.library_music,
+            label: l10n.navLibrary,
+            badgeCount: queueCount,
+          ),
+          ShellTab.repository => DesktopDestination(
+            tab: tab,
+            icon: mornye
+                ? CupertinoIcons.square_grid_2x2
+                : Icons.extension_outlined,
+            selectedIcon: mornye
+                ? CupertinoIcons.square_grid_2x2_fill
+                : Icons.extension,
+            label: l10n.navStore,
+            badgeCount: repoUpdatesCount,
+          ),
+          ShellTab.search => DesktopDestination(
+            tab: tab,
+            icon: CupertinoIcons.search,
+            selectedIcon: CupertinoIcons.search,
+            label: l10n.mornyeSearch,
+          ),
+          ShellTab.settings => DesktopDestination(
+            tab: tab,
+            icon: mornye ? CupertinoIcons.gear_alt : Icons.settings_outlined,
+            selectedIcon: mornye
+                ? CupertinoIcons.gear_alt_fill
+                : Icons.settings,
+            label: l10n.navSettings,
+          ),
+        },
+    ];
+  }
+
   NavigatorState? _navigatorForTab(int index, bool showStore) {
     if (index == 0) return _homeTabNavigatorKey.currentState;
     if (index == 1) return _libraryTabNavigatorKey.currentState;
@@ -680,6 +749,7 @@ class _MainShellState extends ConsumerState<MainShell>
     final compactMornyeChrome =
         context.isMornye && screenSize.width >= expandedLayoutBreakpoint;
     final canMinimizeChrome =
+        !isDesktopPlatform &&
         context.isMornye &&
         !useNavigationRail &&
         MediaQuery.viewInsetsOf(context).bottom == 0 &&
@@ -733,6 +803,27 @@ class _MainShellState extends ConsumerState<MainShell>
               ),
             ),
     );
+
+    if (isDesktopPlatform) {
+      // Desktop windows: a rail (Material) or source-list sidebar (Mornye)
+      // with a persistent player bar; no bottom tabs or touch gestures.
+      return DownloadQueueFeedback(
+        child: SelectionOverlayHost(
+          child: Scaffold(
+            body: DesktopShellLayout(
+              destinations: _desktopDestinations(
+                showStore: showStore,
+                queueCount: queueState,
+                repoUpdatesCount: repoUpdatesCount,
+              ),
+              selected: _tabForIndex(selectedDestination, showStore),
+              onSelected: _onShellTabRequested,
+              body: pageView,
+            ),
+          ),
+        ),
+      );
+    }
 
     final shell = SelectionOverlayHost(
       child: BackButtonListener(

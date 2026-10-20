@@ -69,9 +69,17 @@ class _FadingAppBar extends StatelessWidget implements PreferredSizeWidget {
 }
 
 class NowPlayingScreen extends ConsumerStatefulWidget {
-  const NowPlayingScreen({super.key, this.metadataControllerFactory});
+  const NowPlayingScreen({
+    super.key,
+    this.metadataControllerFactory,
+    this.initialPage = 0,
+  });
 
   final PlayerMetadataController Function()? metadataControllerFactory;
+
+  /// The page shown first: 0 is the player, 1 the lyrics and 2 Up Next
+  /// (Mornye only). The desktop player bar opens lyrics and Up Next directly.
+  final int initialPage;
 
   @override
   ConsumerState<NowPlayingScreen> createState() => _NowPlayingScreenState();
@@ -82,7 +90,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   ProviderSubscription<bool>? _lyricsPlayingSub;
   late final _trackMetadata =
       widget.metadataControllerFactory?.call() ?? PlayerMetadataController();
-  int _currentPage = 0;
+  late int _currentPage = widget.initialPage;
   bool _landscape = false;
   bool _queueSheetShowing = false;
   String? _measuredMotionSource;
@@ -132,7 +140,12 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      unawaited(_trackMetadata.load(ref.read(currentMediaItemProvider).value));
+      unawaited(
+        _trackMetadata.load(
+          ref.read(currentMediaItemProvider).value,
+          inspectUnresolvedContentUri: _currentPage == 1,
+        ),
+      );
     });
   }
 

@@ -18,6 +18,7 @@ import 'package:mornye/l10n/supported_locales.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_snack_bar.dart';
+import 'package:mornye/widgets/desktop/desktop_shortcuts.dart';
 import 'package:mornye/widgets/mornye_glass_preparation.dart';
 import 'package:mornye/widgets/playback_feedback.dart';
 
@@ -222,13 +223,18 @@ class MornyeApp extends ConsumerWidget {
           // dialogs stay centered on large/foldable devices.
           builder: (context, child) {
             final mediaQuery = MediaQuery.of(context);
-            final appContent = _OrientationFade(
+            Widget appContent = _OrientationFade(
               child: AppScaffoldMessenger(
                 child: PlaybackFeedback(
                   child: child ?? const SizedBox.shrink(),
                 ),
               ),
             );
+            // Above the root navigator, so shortcuts and the macOS menu bar
+            // also reach Now Playing, dialogs and pushed pages.
+            if (isDesktopPlatform) {
+              appContent = DesktopShortcuts(child: appContent);
+            }
             return MediaQuery(
               data: mediaQuery.copyWith(displayFeatures: const []),
               // HeroMode only affects heroes below a *route* subtree. At this
