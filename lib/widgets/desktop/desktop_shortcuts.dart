@@ -15,6 +15,7 @@ import 'package:mornye/services/music_playback_deck.dart'
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
+import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Keyboard shortcuts for desktop builds, plus the macOS menu bar that
@@ -79,8 +80,8 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
     DesktopCommand.previous ||
     DesktopCommand.volumeUp ||
     DesktopCommand.volumeDown => !_editingText,
-    DesktopCommand.back => _closableNavigator() != null,
-    DesktopCommand.dismiss => _editingText || _closableNavigator() != null,
+    DesktopCommand.back => _canCloseTopLayer,
+    DesktopCommand.dismiss => _editingText || _canCloseTopLayer,
     _ => true,
   };
 
@@ -106,28 +107,20 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
         _closePages();
         ShellNavigationService.requestTab(ShellTab.settings);
       case DesktopCommand.back:
-        unawaited(_closableNavigator()?.maybePop());
+        _closeTopLayer();
       case DesktopCommand.dismiss:
         if (_editingText) {
           FocusManager.instance.primaryFocus?.unfocus();
         } else {
-          unawaited(_closableNavigator()?.maybePop());
+          _closeTopLayer();
         }
       case DesktopCommand.lyrics:
-        _openNowPlaying(DesktopNowPlayingPanel.lyrics);
+        toggleDesktopInspector(DesktopInspectorPanel.lyrics);
       case DesktopCommand.upNext:
-        _openNowPlaying(DesktopNowPlayingPanel.upNext);
+        toggleDesktopInspector(DesktopInspectorPanel.upNext);
       case DesktopCommand.toggleSidebar:
         desktopSidebarCollapsed.value = !desktopSidebarCollapsed.value;
     }
-  }
-
-  void _openNowPlaying(DesktopNowPlayingPanel panel) {
-    final navigator = _rootNavigator;
-    if (navigator == null || ref.read(currentMediaItemProvider).value == null) {
-      return;
-    }
-    unawaited(openDesktopNowPlaying(navigator, panel: panel));
   }
 
   void _selectDestination(int position) {
@@ -154,14 +147,25 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
     );
   }
 
-  /// The navigator whose top route Escape or Back closes: pages and dialogs
-  /// over the shell first, then the active destination's own pages.
-  NavigatorState? _closableNavigator() {
+  double get _windowWidth => MediaQuery.sizeOf(context).width;
+
+  bool get _canCloseTopLayer =>
+      _rootNavigator?.canPop() == true ||
+      canDismissDesktopPlayerLayer(_windowWidth) ||
+      ShellNavigationService.activeBackNavigator()?.canPop() == true;
+
+  /// Closes what Escape or Back closes: a dialog or page over the shell
+  /// first, then the floating inspector or Now Playing, then the active
+  /// destination's own pages.
+  void _closeTopLayer() {
     final root = _rootNavigator;
-    if (root != null && root.canPop()) return root;
-    final tab = ShellNavigationService.activeTabNavigator();
-    if (tab != null && tab.canPop()) return tab;
-    return null;
+    if (root != null && root.canPop()) {
+      unawaited(root.maybePop());
+      return;
+    }
+    if (dismissDesktopPlayerLayer(_windowWidth)) return;
+    final tab = ShellNavigationService.activeBackNavigator();
+    if (tab != null && tab.canPop()) unawaited(tab.maybePop());
   }
 
   void _nudgeVolume(double delta) {

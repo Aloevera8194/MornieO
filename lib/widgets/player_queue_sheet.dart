@@ -37,10 +37,16 @@ class PlayerQueueSheet extends ConsumerWidget {
     super.key,
     required this.colorScheme,
     required this.scrollController,
+    this.embedded = false,
   });
 
   final ColorScheme colorScheme;
   final ScrollController scrollController;
+
+  /// Shown in a panel that has its own title, such as the desktop
+  /// inspector, rather than in a sheet: no title, and shuffling the library
+  /// keeps the panel open.
+  final bool embedded;
 
   static const _rowRadius = 16.0;
   static final _liftSpring = SpringCurve(M3EMotion.expressiveSpatialFast);
@@ -63,13 +69,15 @@ class PlayerQueueSheet extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  context.l10n.nowPlayingUpNext,
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
+                child: embedded
+                    ? const SizedBox.shrink()
+                    : Text(
+                        context.l10n.nowPlayingUpNext,
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
               ),
               PlayerPlaybackModeButton(
                 mode: PlayerPlaybackMode.autoplay,
@@ -243,7 +251,7 @@ class PlayerQueueSheet extends ConsumerWidget {
         );
         return;
       }
-      if (context.mounted) Navigator.of(context).maybePop();
+      if (context.mounted && !embedded) Navigator.of(context).maybePop();
     } catch (e) {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

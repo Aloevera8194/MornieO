@@ -29,6 +29,9 @@ import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
 import 'package:mornye/widgets/expressive_icon_button.dart';
 import 'package:mornye/widgets/audio_output_button.dart';
+import 'package:mornye/widgets/desktop/desktop_commands.dart'
+    show DesktopCommand, desktopTooltip;
+import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:mornye/widgets/lyrics_screen_awake.dart';
 import 'package:mornye/widgets/player_artwork.dart';
 import 'package:mornye/widgets/player_gesture_regions.dart';
@@ -73,13 +76,19 @@ class NowPlayingScreen extends ConsumerStatefulWidget {
     super.key,
     this.metadataControllerFactory,
     this.initialPage = 0,
+    this.embedded = false,
   });
 
   final PlayerMetadataController Function()? metadataControllerFactory;
 
   /// The page shown first: 0 is the player, 1 the lyrics and 2 Up Next
-  /// (Mornye only). The desktop player bar opens lyrics and Up Next directly.
+  /// (Mornye only).
   final int initialPage;
+
+  /// Shown in the desktop content pane rather than as a route. Minimizing
+  /// returns to the content, and lyrics and Up Next open in the desktop
+  /// inspector beside the player instead of replacing it.
+  final bool embedded;
 
   @override
   ConsumerState<NowPlayingScreen> createState() => _NowPlayingScreenState();
@@ -117,6 +126,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.embedded) desktopInspectorPanel.addListener(_onInspectorChanged);
     _mediaItemSub = ref.listenManual<AsyncValue<MediaItem?>>(
       currentMediaItemProvider,
       (previous, next) {
@@ -160,8 +170,50 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     _scheduleLyricsControlsHide();
   }
 
+  void _onInspectorChanged() {
+    if (mounted) setState(() {});
+  }
+
+  /// Whether the lyrics (1) or Up Next (2) toggle shows as selected. The
+  /// embedded player shows them in the desktop inspector instead.
+  bool _showsPage(int page) => widget.embedded
+      ? desktopInspectorPanel.value ==
+            (page == 1
+                ? DesktopInspectorPanel.lyrics
+                : DesktopInspectorPanel.upNext)
+      : _currentPage == page;
+
+  /// Opens lyrics (1) or Up Next (2) in the desktop inspector when embedded.
+  /// Returns false when the player should switch pages itself.
+  bool _toggleInspector(int page) {
+    if (!widget.embedded) return false;
+    if (page == 1 || page == 2) {
+      toggleDesktopInspector(
+        page == 1 ? DesktopInspectorPanel.lyrics : DesktopInspectorPanel.upNext,
+      );
+    }
+    return true;
+  }
+
+  String _minimizeTooltip(BuildContext context) => desktopTooltip(
+    context,
+    context.l10n.nowPlayingMinimize,
+    DesktopCommand.dismiss,
+  );
+
+  void _minimize() {
+    if (widget.embedded) {
+      desktopNowPlayingOpen.value = false;
+    } else {
+      unawaited(Navigator.of(context).maybePop());
+    }
+  }
+
   @override
   void dispose() {
+    if (widget.embedded) {
+      desktopInspectorPanel.removeListener(_onInspectorChanged);
+    }
     _artworkRoute?.readArtwork = null;
     _lyricsIdleTimer?.cancel();
     _mediaItemSub?.close();
@@ -196,9 +248,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
       return Scaffold(
         appBar: AppBar(
           leading: AppIconButton(
-            tooltip: context.l10n.nowPlayingMinimize,
+            tooltip: _minimizeTooltip(context),
             icon: const AppIcon(Icons.keyboard_arrow_down),
-            onPressed: () => Navigator.of(context).maybePop(),
+            onPressed: _minimize,
           ),
         ),
         body: Center(child: Text(context.l10n.nowPlayingNothingPlaying)),
@@ -320,6 +372,15 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             CurveTween(curve: const Interval(0.4, 1.0, curve: Curves.easeOut)),
           );
 
+    // The embedded desktop player keeps a toolbar for its minimize button,
+    // which a route reaches by swiping down instead.
+    final double? mornyeToolbarHeight = !mornye
+        ? null
+        : widget.embedded
+        ? 48
+        : MediaQuery.orientationOf(context) == Orientation.landscape
+        ? 0
+        : 36;
     final player = Scaffold(
       backgroundColor: mornye || materialFullScreen
           ? Colors.transparent
@@ -335,18 +396,15 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
           systemOverlayStyle: mornye || overCover
               ? SystemUiOverlayStyle.light
               : null,
-          toolbarHeight: mornye
-              ? (MediaQuery.orientationOf(context) == Orientation.landscape
-                    ? 0
-                    : 36)
-              : kToolbarHeight,
+          toolbarHeight: mornyeToolbarHeight ?? kToolbarHeight,
           automaticallyImplyLeading: false,
           title: mornye
-              ? MediaQuery.orientationOf(context) == Orientation.landscape
+              ? MediaQuery.orientationOf(context) == Orientation.landscape ||
+                        widget.embedded
                     ? null
                     : IconButton(
                         tooltip: context.l10n.nowPlayingMinimize,
-                        onPressed: () => Navigator.of(context).maybePop(),
+                        onPressed: _minimize,
                         icon: Container(
                           width: 36,
                           height: 5,
@@ -364,13 +422,14 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                       : null,
                 ),
           centerTitle: true,
-          leading: mornye
+          leading: mornye && !widget.embedded
               ? null
               : AppIconButton(
-                  tooltip: context.l10n.nowPlayingMinimize,
-                  color: overCover ? Colors.white : null,
+                  key: const ValueKey('now-playing-minimize'),
+                  tooltip: _minimizeTooltip(context),
+                  color: overCover || mornye ? Colors.white : null,
                   icon: const AppIcon(Icons.keyboard_arrow_down),
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  onPressed: _minimize,
                 ),
           actions: mornye
               ? null
@@ -416,7 +475,8 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                           artworkAspectRatio: artworkRatio,
                           insetArtwork: !fullBleed,
                           artworkTopInset:
-                              MediaQuery.paddingOf(context).top + 36,
+                              MediaQuery.paddingOf(context).top +
+                              (widget.embedded ? mornyeToolbarHeight! : 36),
                           artworkKeys: (
                             header: _artworkHeaderKey,
                             controls: _artworkControlsKey,
@@ -474,10 +534,10 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                                 tooltip: _currentPage == 1
                                     ? context.l10n.nowPlayingTabPlayer
                                     : context.l10n.nowPlayingTabLyrics,
-                                isSelected: _currentPage == 1,
+                                isSelected: _showsPage(1),
                                 color: Colors.white,
                                 style: IconButton.styleFrom(
-                                  backgroundColor: _currentPage == 1
+                                  backgroundColor: _showsPage(1)
                                       ? Colors.white.withValues(alpha: 0.16)
                                       : Colors.transparent,
                                 ),
@@ -497,9 +557,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                               IconButton(
                                 tooltip: context.l10n.nowPlayingUpNext,
                                 color: Colors.white,
-                                isSelected: _currentPage == 2,
+                                isSelected: _showsPage(2),
                                 style: IconButton.styleFrom(
-                                  backgroundColor: _currentPage == 2
+                                  backgroundColor: _showsPage(2)
                                       ? Colors.white.withValues(alpha: 0.16)
                                       : Colors.transparent,
                                 ),
@@ -521,11 +581,11 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                                 tooltip: _currentPage == 1
                                     ? context.l10n.nowPlayingTabPlayer
                                     : context.l10n.nowPlayingTabLyrics,
-                                selected: _currentPage == 1,
-                                foregroundColor: _currentPage == 1
+                                selected: _showsPage(1),
+                                foregroundColor: _showsPage(1)
                                     ? colorScheme.onPrimaryContainer
                                     : colorScheme.onSurfaceVariant,
-                                backgroundColor: _currentPage == 1
+                                backgroundColor: _showsPage(1)
                                     ? colorScheme.primaryContainer
                                     : null,
                                 icon: const AppIcon(Icons.lyrics_outlined),
@@ -624,6 +684,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   }
 
   void _toggleMaterialLyrics() {
+    if (_toggleInspector(1)) return;
     setState(() => _currentPage = _currentPage == 1 ? 0 : 1);
     if (_currentPage == 1) {
       unawaited(
@@ -640,6 +701,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   }
 
   void _setMornyePage(int page) {
+    if (_toggleInspector(page)) return;
     setState(() {
       _currentPage = page;
       _lyricsControlsHidden = false;
@@ -1252,6 +1314,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
   }
 
   void _showQueueSheet(ColorScheme colorScheme) {
+    if (_toggleInspector(2)) return;
     if (context.isMornye) {
       _setMornyePage(2);
       return;

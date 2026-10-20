@@ -7617,5 +7617,17 @@
   "desktopMenuProjectPage": "Project page",
   "@desktopMenuProjectPage": {
     "description": "Help menu item that opens the app's source repository"
+  },
+  "desktopDownloadsShowAll": "Show all",
+  "@desktopDownloadsShowAll": {
+    "description": "Button in the desktop downloads popover that opens the full download queue"
+  },
+  "desktopDownloadsQueued": "Waiting",
+  "@desktopDownloadsQueued": {
+    "description": "Status of a download in the desktop downloads popover that has not started yet"
+  },
+  "desktopDownloadsCancel": "Cancel download",
+  "@desktopDownloadsCancel": {
+    "description": "Tooltip of the button that cancels one download in the desktop downloads popover"
   }
 }

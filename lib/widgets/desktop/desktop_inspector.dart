@@ -1,0 +1,303 @@
+import 'dart:async';
+
+import 'package:audio_service/audio_service.dart';
+import 'package:flutter/cupertino.dart' show CupertinoIcons;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mornye/controllers/player_metadata_controller.dart';
+import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/playback_seek_preview.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/app_icon_button.dart';
+import 'package:mornye/widgets/mornye_player_background.dart';
+import 'package:mornye/widgets/mornye_player_queue.dart';
+import 'package:mornye/widgets/player_lyrics_section.dart';
+import 'package:mornye/widgets/player_queue_sheet.dart';
+
+/// A panel of the desktop trailing inspector.
+enum DesktopInspectorPanel { lyrics, upNext }
+
+/// Width of the trailing inspector.
+const double desktopInspectorWidth = 340;
+
+/// Window width from which the inspector sits beside the content pane.
+/// Narrower windows show it as a panel over the content.
+const double desktopInspectorBesideBreakpoint = 1200;
+
+/// Whether Now Playing fills the desktop content pane.
+final desktopNowPlayingOpen = ValueNotifier<bool>(false);
+
+/// The panel shown in the trailing inspector, or null while it is closed.
+final desktopInspectorPanel = ValueNotifier<DesktopInspectorPanel?>(null);
+
+/// Shows [panel] in the inspector, or closes the inspector when it already
+/// shows [panel].
+void toggleDesktopInspector(DesktopInspectorPanel panel) {
+  desktopInspectorPanel.value = desktopInspectorPanel.value == panel
+      ? null
+      : panel;
+}
+
+/// Whether the inspector floats over the content in a window [windowWidth]
+/// wide.
+bool desktopInspectorOverlays(double windowWidth) =>
+    windowWidth < desktopInspectorBesideBreakpoint;
+
+/// Whether Escape or Back has a player layer to close in a window
+/// [windowWidth] wide.
+bool canDismissDesktopPlayerLayer(double windowWidth) =>
+    (desktopInspectorPanel.value != null &&
+        desktopInspectorOverlays(windowWidth)) ||
+    desktopNowPlayingOpen.value;
+
+/// Closes the top player layer: the inspector while it floats over the
+/// content, then Now Playing. Returns whether a layer closed.
+bool dismissDesktopPlayerLayer(double windowWidth) {
+  if (desktopInspectorPanel.value != null &&
+      desktopInspectorOverlays(windowWidth)) {
+    desktopInspectorPanel.value = null;
+    return true;
+  }
+  if (desktopNowPlayingOpen.value) {
+    desktopNowPlayingOpen.value = false;
+    return true;
+  }
+  return false;
+}
+
+/// Returns from Now Playing to the content pane when a destination opens a
+/// page, such as an album or artist opened from the player, so the page is
+/// not hidden behind it.
+class DesktopNowPlayingCloser extends NavigatorObserver {
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    if (previousRoute == null || route is! PageRoute<dynamic>) return;
+    if (!desktopNowPlayingOpen.value) return;
+    // A push can run during a build; close on the next frame instead.
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => desktopNowPlayingOpen.value = false,
+    );
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+}
+
+/// Lyrics or Up Next beside the content pane. [overlay] adds the elevation
+/// of a panel that floats over the content in narrow windows.
+class DesktopInspector extends ConsumerWidget {
+  const DesktopInspector({
+    super.key,
+    required this.panel,
+    this.overlay = false,
+  });
+
+  final DesktopInspectorPanel panel;
+  final bool overlay;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mornye = context.isMornye;
+    final l10n = context.l10n;
+    final mediaItem = ref.watch(currentMediaItemProvider).value;
+    final title = switch (panel) {
+      DesktopInspectorPanel.lyrics => l10n.nowPlayingTabLyrics,
+      DesktopInspectorPanel.upNext => l10n.nowPlayingUpNext,
+    };
+
+    Widget content(BuildContext context) {
+      final colorScheme = Theme.of(context).colorScheme;
+      final header = Padding(
+        padding: const EdgeInsetsDirectional.fromSTEB(20, 8, 8, 4),
+        child: Row(
+          children: [
+            Expanded(
+              child: Semantics(
+                header: true,
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            AppIconButton(
+              key: const ValueKey('desktop-inspector-close'),
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              color: colorScheme.onSurfaceVariant,
+              icon: AppIcon(mornye ? CupertinoIcons.xmark : Icons.close),
+              onPressed: () => desktopInspectorPanel.value = null,
+            ),
+          ],
+        ),
+      );
+      final Widget body;
+      if (mediaItem == null) {
+        body = Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              l10n.nowPlayingNothingPlaying,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        );
+      } else {
+        body = switch (panel) {
+          DesktopInspectorPanel.lyrics => _InspectorLyrics(
+            colorScheme: colorScheme,
+          ),
+          DesktopInspectorPanel.upNext =>
+            mornye
+                ? MornyePlayerQueue(colorScheme: colorScheme)
+                : _MaterialQueue(colorScheme: colorScheme),
+        };
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          header,
+          Expanded(child: body),
+        ],
+      );
+    }
+
+    final Widget panelSurface;
+    if (mornye) {
+      // Lyrics and Up Next keep the player's dark artwork backdrop, as the
+      // full player draws them in white over it.
+      final theme = MornyeTheme.fromContext(
+        context,
+        brightness: Brightness.dark,
+      );
+      panelSurface = Theme(
+        data: theme,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            MornyePlayerBackground(artUri: mediaItem?.artUri),
+            Material(
+              type: MaterialType.transparency,
+              child: Builder(builder: content),
+            ),
+          ],
+        ),
+      );
+    } else {
+      final colorScheme = Theme.of(context).colorScheme;
+      panelSurface = Material(
+        color: colorScheme.surfaceContainerLow,
+        child: Builder(builder: content),
+      );
+    }
+
+    final divider = BorderSide(
+      color: mornye
+          ? MornyeTheme.metadataDividerColor(context)
+          : Theme.of(context).colorScheme.outlineVariant,
+    );
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: title,
+      child: Container(
+        key: ValueKey('desktop-inspector-${panel.name}'),
+        width: desktopInspectorWidth,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          border: overlay ? null : Border(left: divider),
+          boxShadow: overlay
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.18),
+                    blurRadius: 24,
+                    offset: const Offset(-4, 0),
+                  ),
+                ]
+              : null,
+        ),
+        child: panelSurface,
+      ),
+    );
+  }
+}
+
+/// The current track's lyrics, loaded on their own so the inspector works
+/// without the full player.
+class _InspectorLyrics extends ConsumerStatefulWidget {
+  const _InspectorLyrics({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  ConsumerState<_InspectorLyrics> createState() => _InspectorLyricsState();
+}
+
+class _InspectorLyricsState extends ConsumerState<_InspectorLyrics> {
+  final _metadata = PlayerMetadataController();
+  final _seekPreview = PlaybackSeekPreview();
+  ProviderSubscription<AsyncValue<MediaItem?>>? _mediaItemSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _mediaItemSub = ref.listenManual<AsyncValue<MediaItem?>>(
+      currentMediaItemProvider,
+      (previous, next) {
+        if (previous?.value?.id == next.value?.id) return;
+        unawaited(
+          _metadata.load(next.value, inspectUnresolvedContentUri: true),
+        );
+      },
+      fireImmediately: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    _mediaItemSub?.close();
+    _metadata.dispose();
+    _seekPreview.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => PlayerLyricsSection(
+    metadata: _metadata,
+    seekPreview: _seekPreview,
+    colorScheme: widget.colorScheme,
+    isActive: true,
+  );
+}
+
+class _MaterialQueue extends StatefulWidget {
+  const _MaterialQueue({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  State<_MaterialQueue> createState() => _MaterialQueueState();
+}
+
+class _MaterialQueueState extends State<_MaterialQueue> {
+  final _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => PlayerQueueSheet(
+    colorScheme: widget.colorScheme,
+    scrollController: _scrollController,
+    embedded: true,
+  );
+}

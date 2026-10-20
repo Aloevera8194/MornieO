@@ -7324,5 +7324,8 @@
   "desktopMenuWindow": "Jendela",
   "desktopMenuHelp": "Bantuan",
   "desktopMenuPlayPause": "Putar/Jeda",
-  "desktopMenuProjectPage": "Halaman proyek"
+  "desktopMenuProjectPage": "Halaman proyek",
+  "desktopDownloadsShowAll": "Tampilkan semua",
+  "desktopDownloadsQueued": "Menunggu",
+  "desktopDownloadsCancel": "Batalkan download"
 }

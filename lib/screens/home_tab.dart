@@ -57,7 +57,10 @@ import 'package:mornye/services/cover_download_service.dart';
 import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/nav_bar_inset.dart';
+import 'package:mornye/widgets/desktop/desktop_commands.dart'
+    show openDesktopNowPlaying;
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/utils/home_greeting.dart';
 import 'package:mornye/screens/playlist_screen.dart';

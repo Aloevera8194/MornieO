@@ -2,11 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mornye/l10n/l10n.dart';
-import 'package:mornye/screens/now_playing_screen.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
-import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
-import 'package:mornye/widgets/player_queue_sheet.dart';
+import 'package:mornye/widgets/desktop/desktop_inspector.dart';
+
+export 'package:mornye/widgets/desktop/desktop_inspector.dart'
+    show DesktopInspectorPanel, toggleDesktopInspector;
 
 /// App-wide desktop commands. Each one has one keyboard shortcut, mirrored in
 /// the macOS menu bar and named in the tooltip of the control that runs it.
@@ -195,38 +196,6 @@ List<ShellTab> desktopDestinationTabs({
 /// app session so the menu bar, shortcut and toolbar button share it.
 final desktopSidebarCollapsed = ValueNotifier<bool>(false);
 
-/// The page Now Playing opens on from the desktop player bar or shortcuts.
-enum DesktopNowPlayingPanel { player, lyrics, upNext }
-
-bool _nowPlayingOpen = false;
-
-/// Opens Now Playing on the root [navigator] at [panel]. Material shows Up
-/// Next as its queue sheet, as the Now Playing queue button does.
-Future<void> openDesktopNowPlaying(
-  NavigatorState navigator, {
-  DesktopNowPlayingPanel panel = DesktopNowPlayingPanel.player,
-}) async {
-  final context = navigator.context;
-  final mornye = context.isMornye;
-  if (!mornye && panel == DesktopNowPlayingPanel.upNext) {
-    await showPlayerQueueSheet(context, Theme.of(context).colorScheme);
-    return;
-  }
-  if (_nowPlayingOpen) return;
-  _nowPlayingOpen = true;
-  try {
-    await navigator.push(
-      NowPlayingRoute(
-        child: NowPlayingScreen(
-          initialPage: switch (panel) {
-            DesktopNowPlayingPanel.player => 0,
-            DesktopNowPlayingPanel.lyrics => 1,
-            DesktopNowPlayingPanel.upNext => 2,
-          },
-        ),
-      ),
-    );
-  } finally {
-    _nowPlayingOpen = false;
-  }
-}
+/// Opens Now Playing in the content pane. Lyrics and Up Next live in the
+/// trailing inspector, toggled with [toggleDesktopInspector].
+void openDesktopNowPlaying() => desktopNowPlayingOpen.value = true;
