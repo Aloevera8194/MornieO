@@ -104,16 +104,17 @@ extension _SetupScreenSteps on _SetupScreenState {
         final titleGap = (shortestSide * 0.06).clamp(16.0, 32.0);
         final descriptionGap = (shortestSide * 0.04).clamp(8.0, 16.0);
         final actionGap = (shortestSide * 0.09).clamp(20.0, 48.0);
+        // Desktop already centers setup in a narrow column, so the inset
+        // follows this step's width rather than the window's.
+        final inset = wideInsetForWidth(
+          constraints.maxWidth,
+          contentMaxWidth: 560,
+        );
 
         return Column(
           children: [
             Padding(
-              padding: EdgeInsets.fromLTRB(
-                24 + wideListInset(context, contentMaxWidth: 560),
-                24,
-                24 + wideListInset(context, contentMaxWidth: 560),
-                0,
-              ),
+              padding: EdgeInsets.fromLTRB(24 + inset, 24, 24 + inset, 0),
               child: Column(
                 children: [
                   Container(
@@ -155,7 +156,7 @@ extension _SetupScreenSteps on _SetupScreenState {
                 child: Scrollbar(
                   controller: _languageScrollController,
                   thumbVisibility: true,
-                  child: _buildLanguageList(languages, colorScheme),
+                  child: _buildLanguageList(languages, colorScheme, inset),
                 ),
               ),
             ),
@@ -168,15 +169,11 @@ extension _SetupScreenSteps on _SetupScreenState {
   Widget _buildLanguageList(
     List<(String, String, IconData)> languages,
     ColorScheme colorScheme,
+    double inset,
   ) {
     return ListView.builder(
       controller: _languageScrollController,
-      padding: EdgeInsets.fromLTRB(
-        24 + wideListInset(context, contentMaxWidth: 560),
-        0,
-        24 + wideListInset(context, contentMaxWidth: 560),
-        80,
-      ),
+      padding: EdgeInsets.fromLTRB(24 + inset, 0, 24 + inset, 80),
       itemCount: languages.length,
       itemBuilder: (context, index) {
         final lang = languages[index];

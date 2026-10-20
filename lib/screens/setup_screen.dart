@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show LogicalKeyboardKey;
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/material_expressive.dart';
@@ -726,117 +727,154 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
       const AppMotionSpec(Duration.zero, Curves.linear),
     );
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                children: [
-                  if (_currentStep > 0)
-                    AppIconButton.filledTonal(
-                      onPressed: _prevPage,
-                      tooltip: MaterialLocalizations.of(
-                        context,
-                      ).backButtonTooltip,
-                      icon: const Icon(Icons.arrow_back),
-                      style: IconButton.styleFrom(
-                        backgroundColor: colorScheme.surfaceContainerHighest,
-                        foregroundColor: colorScheme.onSurfaceVariant,
-                      ),
-                    )
-                  else
-                    const SizedBox(width: 48),
-                  const Spacer(),
-                  SizedBox(
-                    width: 48,
-                    height: 48,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // Expressive steps fill on a spring around a wavy
-                        // ring; the fallback jumps straight to the step.
-                        TweenAnimationBuilder<double>(
-                          tween: Tween(end: progress),
-                          duration: stepMotion.duration,
-                          curve: stepMotion.curve,
-                          builder: (context, value, _) =>
-                              AppProgressIndicator.circular(
-                                wavy: false,
-                                value: value,
-                                strokeWidth: 4,
-                                trackColor: colorScheme.surfaceContainerHighest,
-                                color: colorScheme.primary,
-                                strokeCap: StrokeCap.round,
-                              ),
-                        ),
-                        Center(
-                          child: Text(
-                            '${_currentStep + 1}/$_totalSteps',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ),
-                      ],
+    final isLastStep = _currentStep >= _totalSteps - 1;
+    final nextButton = materialExpressiveEnabled(context)
+        ? _buildExpressiveFab(colorScheme)
+        : !isLastStep
+        ? FloatingActionButton.extended(
+            onPressed: !_isLoading && _isStepCompleted(_currentStep)
+                ? _nextPage
+                : null,
+            label: Row(
+              children: [
+                Text(context.l10n.setupNext),
+                const SizedBox(width: 8),
+                const Icon(Icons.arrow_forward),
+              ],
+            ),
+            icon: const SizedBox.shrink(), // Custom layout
+          )
+        : FloatingActionButton.extended(
+            onPressed: _isLoading ? null : _completeSetup,
+            label: _isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: colorScheme.onPrimary,
                     ),
-                  ),
-                ],
-              ),
-            ),
+                  )
+                : Text(context.l10n.setupGetStarted),
+            icon: const Icon(Icons.check),
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+          );
 
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildWelcomeStep(colorScheme),
-                  _buildLanguageStep(colorScheme),
-                  if (!_isDesktop) _buildStorageStep(colorScheme),
-                  if (_androidSdkVersion >= 33)
-                    _buildNotificationStep(colorScheme),
-                  _buildDirectoryStep(colorScheme),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: materialExpressiveEnabled(context)
-          ? _buildExpressiveFab(colorScheme)
-          : _currentStep < _totalSteps - 1
-          ? FloatingActionButton.extended(
-              onPressed: !_isLoading && _isStepCompleted(_currentStep)
-                  ? _nextPage
-                  : null,
-              label: Row(
-                children: [
-                  Text(context.l10n.setupNext),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward),
-                ],
-              ),
-              icon: const SizedBox.shrink(), // Custom layout
-            )
-          : FloatingActionButton.extended(
-              onPressed: _isLoading ? null : _completeSetup,
-              label: _isLoading
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: colorScheme.onPrimary,
+    Widget content = Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Row(
+            children: [
+              if (_currentStep > 0)
+                AppIconButton.filledTonal(
+                  onPressed: _prevPage,
+                  tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+                  icon: const Icon(Icons.arrow_back),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    foregroundColor: colorScheme.onSurfaceVariant,
+                  ),
+                )
+              else
+                const SizedBox(width: 48),
+              const Spacer(),
+              SizedBox(
+                width: 48,
+                height: 48,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Expressive steps fill on a spring around a wavy
+                    // ring; the fallback jumps straight to the step.
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(end: progress),
+                      duration: stepMotion.duration,
+                      curve: stepMotion.curve,
+                      builder: (context, value, _) =>
+                          AppProgressIndicator.circular(
+                            wavy: false,
+                            value: value,
+                            strokeWidth: 4,
+                            trackColor: colorScheme.surfaceContainerHighest,
+                            color: colorScheme.primary,
+                            strokeCap: StrokeCap.round,
+                          ),
+                    ),
+                    Center(
+                      child: Text(
+                        '${_currentStep + 1}/$_totalSteps',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    )
-                  : Text(context.l10n.setupGetStarted),
-              icon: const Icon(Icons.check),
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Expanded(
+          child: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [
+              _buildWelcomeStep(colorScheme),
+              _buildLanguageStep(colorScheme),
+              if (!_isDesktop) _buildStorageStep(colorScheme),
+              if (_androidSdkVersion >= 33) _buildNotificationStep(colorScheme),
+              _buildDirectoryStep(colorScheme),
+            ],
+          ),
+        ),
+        // Desktop windows keep the button in the centered column, beside the
+        // content, rather than in the far corner of a wide window.
+        if (_isDesktop)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: nextButton,
             ),
+          ),
+      ],
     );
+    if (_isDesktop) {
+      content = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560),
+          child: content,
+        ),
+      );
+    }
+
+    final scaffold = Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(child: content),
+      floatingActionButton: _isDesktop ? null : nextButton,
+    );
+    if (!_isDesktop) return scaffold;
+    // Enter moves on, as the default button of a desktop window would.
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter): _advanceFromKeyboard,
+        const SingleActivator(LogicalKeyboardKey.numpadEnter):
+            _advanceFromKeyboard,
+      },
+      child: Focus(autofocus: true, child: scaffold),
+    );
+  }
+
+  void _advanceFromKeyboard() {
+    if (_isLoading) return;
+    if (_currentStep >= _totalSteps - 1) {
+      unawaited(_completeSetup());
+    } else if (_isStepCompleted(_currentStep)) {
+      _nextPage();
+    }
   }
 }
