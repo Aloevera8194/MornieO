@@ -19,10 +19,14 @@ import 'package:mornye/providers/playback_notification_provider.dart';
 import 'package:mornye/providers/repo_provider.dart';
 import 'package:mornye/providers/runtime_profile_provider.dart';
 import 'package:mornye/providers/track_provider.dart';
+import 'package:mornye/providers/user_profile_provider.dart';
 import 'package:mornye/providers/preview_player_provider.dart';
 import 'package:mornye/screens/home_tab.dart';
+import 'package:mornye/screens/library_tracks_folder_screen.dart';
+import 'package:mornye/screens/mornye_library_screen.dart';
 import 'package:mornye/screens/repo_tab.dart';
 import 'package:mornye/screens/queue_tab.dart';
+import 'package:mornye/screens/settings/profile_settings_page.dart';
 import 'package:mornye/screens/settings/settings_tab.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
@@ -107,6 +111,14 @@ class _MainShellState extends ConsumerState<MainShell>
   late final _PreviewStopNavigatorObserver _libraryPreviewStopObserver;
   late final _PreviewStopNavigatorObserver _repoPreviewStopObserver;
   late final _PreviewStopNavigatorObserver _searchPreviewStopObserver;
+
+  /// Desktop: whether Home and Library show their root page. Material's top
+  /// bar steps aside on the Home root, which has its own search field, and
+  /// the Mornye sidebar returns to the Library root's link.
+  final _homeDepthObserver = _PageDepthObserver();
+  late final _libraryDepthObserver = _PageDepthObserver(
+    onRoot: () => desktopSidebarLink.value = null,
+  );
 
   @override
   void didChangeDependencies() {
@@ -291,6 +303,8 @@ class _MainShellState extends ConsumerState<MainShell>
     _tabJumpOpacity.dispose();
     _tabJumpTransitionController.dispose();
     _mornyeChrome.dispose();
+    _homeDepthObserver.dispose();
+    _libraryDepthObserver.dispose();
     super.dispose();
   }
 
@@ -573,6 +587,120 @@ class _MainShellState extends ConsumerState<MainShell>
     ];
   }
 
+  /// The Library pages under the Mornye desktop sidebar's Library heading,
+  /// as in Music. Recently Added is the Library root.
+  List<DesktopSidebarLink> _desktopLibraryLinks({required int queueCount}) {
+    final l10n = context.l10n;
+    return [
+      DesktopSidebarLink(
+        id: 'recent',
+        icon: CupertinoIcons.clock,
+        label: l10n.libraryRecentlyAdded,
+      ),
+      DesktopSidebarLink(
+        id: 'artists',
+        icon: CupertinoIcons.music_mic,
+        label: l10n.searchArtists,
+      ),
+      DesktopSidebarLink(
+        id: 'albums',
+        icon: CupertinoIcons.square_stack,
+        label: l10n.searchAlbums,
+      ),
+      DesktopSidebarLink(
+        id: 'songs',
+        icon: CupertinoIcons.music_note,
+        label: l10n.searchSongs,
+      ),
+      DesktopSidebarLink(
+        id: 'downloads',
+        icon: CupertinoIcons.arrow_down_circle,
+        label: l10n.libraryDownloads,
+        badgeCount: queueCount,
+      ),
+    ];
+  }
+
+  /// The page a Mornye desktop sidebar link opens in the Library tab, or
+  /// null for the Library root.
+  Widget? _desktopLibraryPage(String id) {
+    const playlistPrefix = 'playlist:';
+    if (id.startsWith(playlistPrefix)) {
+      return LibraryTracksFolderScreen(
+        mode: LibraryTracksFolderMode.playlist,
+        playlistId: id.substring(playlistPrefix.length),
+      );
+    }
+    // Only the Library root links to sections from its own page.
+    return switch (id) {
+      'artists' => Scaffold(
+        body: MornyeLibraryScreen(
+          page: MornyeLibraryPage.artists,
+          onOpenSection: (_) {},
+        ),
+      ),
+      'albums' => Scaffold(
+        body: MornyeLibraryScreen(
+          page: MornyeLibraryPage.albums,
+          onOpenSection: (_) {},
+        ),
+      ),
+      'songs' => const Scaffold(body: QueueTab(librarySection: 'all')),
+      'downloads' => const Scaffold(
+        body: QueueTab(librarySection: 'downloads'),
+      ),
+      DesktopSidebarLink.allPlaylistsId => const Scaffold(
+        body: QueueTab(librarySection: 'playlists'),
+      ),
+      _ => null,
+    };
+  }
+
+  /// Shows a Library page or playlist picked in the Mornye desktop sidebar
+  /// in the Library tab, in place of the page it showed.
+  void _openDesktopLibraryLink(String id) {
+    _onShellTabRequested(ShellTab.library);
+    final page = _desktopLibraryPage(id);
+    // The Library navigator mounts with the tab on its first visit.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final navigator = _libraryTabNavigatorKey.currentState;
+      if (!mounted || navigator == null) return;
+      navigator.popUntil((route) => route.isFirst);
+      if (page != null) {
+        unawaited(
+          navigator.push(MaterialPageRoute<void>(builder: (_) => page)),
+        );
+      }
+      desktopSidebarLink.value = page == null ? null : id;
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  /// Opens the profile from the Mornye desktop sidebar's account row: in
+  /// the Settings detail pane, or as a page when Settings shows only its
+  /// list.
+  void _openDesktopProfile() {
+    final profile = ref.read(userProfileProvider).value;
+    _onShellTabRequested(ShellTab.settings);
+    if (profile == null) return;
+    // Settings registers its detail pane once it has built.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final navigator =
+          ShellNavigationService.activeBackNavigator() ?? Navigator.of(context);
+      unawaited(
+        navigator.push(
+          MaterialPageRoute<void>(
+            builder: (_) => MornyeSettingsTheme(
+              child: ProfileSettingsPage(profile: profile),
+            ),
+          ),
+        ),
+      );
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
   NavigatorState? _navigatorForTab(int index, bool showStore) {
     if (index == 0) return _homeTabNavigatorKey.currentState;
     if (index == 1) return _libraryTabNavigatorKey.currentState;
@@ -628,7 +756,10 @@ class _MainShellState extends ConsumerState<MainShell>
       _TabNavigator(
         key: const ValueKey('tab-home'),
         navigatorKey: _homeTabNavigatorKey,
-        observers: [_homePreviewStopObserver],
+        observers: [
+          _homePreviewStopObserver,
+          if (isDesktopPlatform) _homeDepthObserver,
+        ],
         heroAnimationsEnabled: heroAnimationsEnabled,
         child: Builder(
           builder: (context) => HomeTab(
@@ -639,7 +770,10 @@ class _MainShellState extends ConsumerState<MainShell>
       _TabNavigator(
         key: const ValueKey('tab-library'),
         navigatorKey: _libraryTabNavigatorKey,
-        observers: [_libraryPreviewStopObserver],
+        observers: [
+          _libraryPreviewStopObserver,
+          if (isDesktopPlatform) _libraryDepthObserver,
+        ],
         heroAnimationsEnabled: heroAnimationsEnabled,
         child: _LibraryTabRoot(isTabActive: _currentIndex == 1),
       ),
@@ -820,19 +954,35 @@ class _MainShellState extends ConsumerState<MainShell>
 
     if (isDesktopPlatform) {
       // Desktop windows: a rail (Material) or source-list sidebar (Mornye)
-      // with a persistent player bar; no bottom tabs or touch gestures.
+      // with a persistent player; no bottom tabs or touch gestures.
+      final mornye = context.isMornye;
+      final selectedTab = _tabForIndex(selectedDestination, showStore);
+      final destinations = _desktopDestinations(
+        showStore: showStore,
+        // Mornye shows the queue on its Downloads link instead.
+        queueCount: mornye ? 0 : queueState,
+        repoUpdatesCount: repoUpdatesCount,
+      );
       return DownloadQueueFeedback(
         child: SelectionOverlayHost(
           child: Scaffold(
-            body: DesktopShellLayout(
-              destinations: _desktopDestinations(
-                showStore: showStore,
-                queueCount: queueState,
-                repoUpdatesCount: repoUpdatesCount,
+            // Material's Home has its own search field; its top bar steps
+            // aside while Home shows its root page.
+            body: ValueListenableBuilder<int>(
+              valueListenable: _homeDepthObserver.depth,
+              builder: (context, homeDepth, _) => DesktopShellLayout(
+                destinations: destinations,
+                selected: selectedTab,
+                onSelected: _onShellTabRequested,
+                libraryLinks: mornye
+                    ? _desktopLibraryLinks(queueCount: queueState)
+                    : const [],
+                onOpenLibraryLink: mornye ? _openDesktopLibraryLink : null,
+                onOpenProfile: mornye ? _openDesktopProfile : null,
+                searchInContent:
+                    !mornye && selectedTab == ShellTab.home && homeDepth <= 1,
+                body: pageView,
               ),
-              selected: _tabForIndex(selectedDestination, showStore),
-              onSelected: _onShellTabRequested,
-              body: pageView,
             ),
           ),
         ),
@@ -1054,6 +1204,56 @@ class _PreviewStopNavigatorObserver extends NavigatorObserver {
   void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPop(route, previousRoute);
     _onNavigate();
+  }
+}
+
+/// Counts the pages in a tab navigator for the desktop shell. Navigators
+/// push their first page while building, so [depth] and [onRoot] follow
+/// after the frame rather than marking the shell dirty mid-build.
+class _PageDepthObserver extends NavigatorObserver {
+  _PageDepthObserver({this.onRoot});
+
+  final VoidCallback? onRoot;
+  final depth = ValueNotifier<int>(0);
+  int _pages = 0;
+  bool _scheduled = false;
+  bool _disposed = false;
+
+  void _change(int delta) {
+    _pages += delta;
+    if (_scheduled) return;
+    _scheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scheduled = false;
+      if (_disposed) return;
+      depth.value = _pages;
+      if (_pages <= 1) onRoot?.call();
+    });
+    WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  static int _pageCount(Route<dynamic>? route) =>
+      route is PageRoute<dynamic> ? 1 : 0;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _change(_pageCount(route));
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _change(-_pageCount(route));
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) =>
+      _change(-_pageCount(route));
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) =>
+      _change(_pageCount(newRoute) - _pageCount(oldRoute));
+
+  void dispose() {
+    _disposed = true;
+    depth.dispose();
   }
 }
 

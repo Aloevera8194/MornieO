@@ -8,16 +8,20 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mornye/l10n/app_localizations.dart';
+import 'package:mornye/models/library_collections.dart';
 import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/providers/system_volume_provider.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
+import 'package:mornye/services/user_profile_store.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
+import 'package:mornye/widgets/desktop/desktop_downloads_button.dart';
 import 'package:mornye/widgets/desktop/desktop_navigation.dart';
 import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_shortcuts.dart';
+import 'package:mornye/widgets/desktop/desktop_window.dart';
 import 'package:mornye/widgets/expressive_navigation_bar.dart';
 import 'package:mornye/widgets/mini_player.dart';
 import 'package:mornye/widgets/mornye_bottom_bar.dart';
@@ -49,6 +53,23 @@ const _track = MediaItem(
   duration: Duration(minutes: 3),
 );
 
+final _playlist = UserPlaylistCollection(
+  id: 'mix',
+  name: 'Road trip',
+  createdAt: DateTime(2026),
+  updatedAt: DateTime(2026),
+  tracks: const [],
+);
+
+const _libraryLinks = [
+  DesktopSidebarLink(
+    id: 'recent',
+    icon: Icons.schedule,
+    label: 'Recently Added',
+  ),
+  DesktopSidebarLink(id: 'albums', icon: Icons.album, label: 'Albums'),
+];
+
 List<DesktopDestination> _destinations({required bool mornye}) => [
   for (final tab in desktopDestinationTabs(mornye: mornye, showStore: true))
     DesktopDestination(
@@ -67,7 +88,9 @@ void main() {
 
   setUp(() {
     debugDesktopPlatformOverride = true;
+    debugDesktopTitleBarInContentOverride = false;
     desktopSidebarCollapsed.value = false;
+    desktopSidebarLink.value = null;
     controller = _FakeController();
     volumeWrites = [];
     selections = [];
@@ -75,7 +98,9 @@ void main() {
 
   tearDown(() {
     debugDesktopPlatformOverride = null;
+    debugDesktopTitleBarInContentOverride = null;
     desktopSidebarCollapsed.value = false;
+    desktopSidebarLink.value = null;
   });
 
   List<Override> overrides({MediaItem? item = _track, bool playing = false}) =>
@@ -91,6 +116,10 @@ void main() {
         systemVolumeWriterProvider.overrideWithValue((value) async {
           volumeWrites.add(value);
         }),
+        desktopSidebarPlaylistsProvider.overrideWithValue([_playlist]),
+        desktopSidebarProfileProvider.overrideWithValue(
+          const UserProfile(name: 'Ada Lovelace'),
+        ),
       ];
 
   Future<void> pumpShell(
@@ -98,6 +127,10 @@ void main() {
     required bool mornye,
     required double width,
     MediaItem? item = _track,
+    bool searchInContent = false,
+    List<DesktopSidebarLink> libraryLinks = const [],
+    ValueChanged<String>? onOpenLibraryLink,
+    VoidCallback? onOpenProfile,
   }) async {
     tester.view.physicalSize = Size(width, 800);
     tester.view.devicePixelRatio = 1;
@@ -117,6 +150,10 @@ void main() {
               destinations: _destinations(mornye: mornye),
               selected: ShellTab.home,
               onSelected: selections.add,
+              libraryLinks: libraryLinks,
+              onOpenLibraryLink: onOpenLibraryLink,
+              onOpenProfile: onOpenProfile,
+              searchInContent: searchInContent,
               body: const Center(child: Text('content')),
             ),
           ),
@@ -125,6 +162,11 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  /// The page shown in the content pane.
+  Finder contentPage() => find
+      .ancestor(of: find.text('content'), matching: find.byType(Center))
+      .first;
 
   void expectNoTouchNavigation() {
     expect(find.byType(NavigationBar), findsNothing);
@@ -200,6 +242,57 @@ void main() {
       await tester.tap(find.byTooltip('Next track (Ctrl+Right)'));
       expect(controller.calls, isEmpty);
     });
+
+    testWidgets('top bar search opens Search on pages without their own', (
+      tester,
+    ) async {
+      final searches = <ShellTab>[];
+      final owner = Object();
+      ShellNavigationService.registerTabSelectionHandler(
+        owner: owner,
+        handler: searches.add,
+      );
+      addTearDown(
+        () => ShellNavigationService.unregisterTabSelectionHandler(owner),
+      );
+      await pumpShell(tester, mornye: false, width: 1400);
+
+      expect(find.byType(DesktopTopBar), findsOneWidget);
+      expect(tester.getRect(contentPage()).top, DesktopTopBar.height);
+      await tester.tap(find.byKey(const ValueKey('desktop-top-bar-search')));
+      expect(searches, [ShellTab.search]);
+      // Downloads live in the player bar on every page.
+      expect(find.byType(DesktopDownloadsButton), findsOneWidget);
+    });
+
+    testWidgets('top bar steps aside for a page with its own search', (
+      tester,
+    ) async {
+      await pumpShell(
+        tester,
+        mornye: false,
+        width: 1400,
+        searchInContent: true,
+      );
+
+      expect(find.byType(DesktopTopBar), findsNothing);
+      expect(
+        find.byKey(const ValueKey('desktop-top-bar-search')),
+        findsNothing,
+      );
+      // No empty strip is left: the page starts at the top of the pane.
+      expect(tester.getRect(contentPage()).top, 0);
+      expect(find.byType(DesktopDownloadsButton), findsOneWidget);
+    });
+
+    testWidgets('expanded rail keeps a gap between indicators', (tester) async {
+      await pumpShell(tester, mornye: false, width: 1400);
+
+      final home = tester.getRect(find.text('home'));
+      final library = tester.getRect(find.text('library'));
+      // 56dp indicators with an 8dp gap: label centers 64dp apart.
+      expect(library.center.dy - home.center.dy, closeTo(56 + 8, 0.5));
+    });
   });
 
   group('Mornye shell', () {
@@ -210,7 +303,7 @@ void main() {
         expect(find.byType(DesktopSidebar), findsOneWidget);
         expect(
           tester.getSize(find.byType(DesktopSidebar)).width,
-          desktopSidebarWidth,
+          DesktopSidebar.footprint,
         );
         // The Material rail must not appear in the Mornye style.
         expect(find.byType(DesktopNavigationRail), findsNothing);
@@ -218,14 +311,58 @@ void main() {
         expect(find.byType(NavigationRail), findsNothing);
         expectNoTouchNavigation();
         expect(find.byType(DesktopPlayerBar), findsOneWidget);
-        expect(
-          tester.getSize(find.byType(DesktopPlayerBar)).height,
-          DesktopPlayerBar.mornyeHeight,
-        );
         expect(find.text('A song'), findsOneWidget);
         expect(find.byKey(const ValueKey('desktop-sidebar-search')), findsOne);
       });
     }
+
+    testWidgets('player capsule floats centered over the content pane', (
+      tester,
+    ) async {
+      await pumpShell(tester, mornye: true, width: 1235);
+
+      final player = tester.getRect(find.byType(DesktopPlayerBar));
+      final pane = tester.getRect(
+        find.byKey(const ValueKey('desktop-content')),
+      );
+      expect(player.height, DesktopPlayerBar.mornyeHeight);
+      expect(player.bottom, 800 - DesktopPlayerBar.floatingMargin);
+      expect(player.center.dx, closeTo(pane.center.dx, 0.5));
+      expect(
+        player.width,
+        closeTo(DesktopPlayerBar.floatingWidth(pane.width), 0.01),
+      );
+      expect(player.width, inInclusiveRange(650, 750));
+      // Pages scroll under it, so the pane reaches the window bottom.
+      expect(pane.bottom, 800);
+      expect(DesktopPlayerBar.floatingWidth(700), 520);
+      expect(DesktopPlayerBar.floatingWidth(500), 476);
+      expect(DesktopPlayerBar.floatingWidth(2000), 900);
+    });
+
+    testWidgets('player capsule keeps volume in a popover', (tester) async {
+      await pumpShell(tester, mornye: true, width: 1400);
+
+      expect(find.byType(Slider), findsOneWidget, reason: 'seek bar only');
+      await tester.tap(find.byKey(const ValueKey('desktop-player-volume')));
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('desktop-player-volume-popover')),
+        findsOneWidget,
+      );
+      expect(find.byType(Slider), findsNWidgets(2));
+    });
+
+    testWidgets('idle capsule shows the glyph and dims its controls', (
+      tester,
+    ) async {
+      await pumpShell(tester, mornye: true, width: 1400, item: null);
+
+      expect(find.bySemanticsLabel('Not playing'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('desktop-player-shuffle')));
+      await tester.tap(find.byTooltip('Next track (Ctrl+Right)'));
+      expect(controller.calls, isEmpty);
+    });
 
     testWidgets('sidebar rows select destinations and name shortcuts', (
       tester,
@@ -235,27 +372,105 @@ void main() {
       expect(find.byTooltip('library (Ctrl+2)'), findsOneWidget);
       expect(find.byTooltip('settings (Ctrl+5)'), findsOneWidget);
       await tester.tap(find.text('library'));
-      await tester.tap(find.text('settings'));
+      await tester.tap(find.byKey(const ValueKey('desktop-sidebar-settings')));
       expect(selections, [ShellTab.library, ShellTab.settings]);
+
+      final home = tester.getRect(
+        find.ancestor(of: find.text('home'), matching: find.byType(InkWell)),
+      );
+      expect(home.height, 32);
+      // Music's measurements: rows inset 6pt in a panel inset 8pt.
+      expect(home.left, DesktopSidebar.margin + 6);
     });
 
-    testWidgets('sidebar collapses to icons and back', (tester) async {
-      await pumpShell(tester, mornye: true, width: 900);
+    testWidgets('sidebar lists Library pages and playlists', (tester) async {
+      final opened = <String>[];
+      await pumpShell(
+        tester,
+        mornye: true,
+        width: 1400,
+        libraryLinks: _libraryLinks,
+        onOpenLibraryLink: opened.add,
+      );
+
+      expect(find.text('Library'), findsOneWidget);
+      expect(find.text('Playlists'), findsOneWidget);
+      expect(find.text('library'), findsNothing);
+      // The first Library page stands for Library and takes its shortcut.
+      expect(find.byTooltip('Recently Added (Ctrl+2)'), findsOneWidget);
+      await tester.tap(find.text('Albums'));
+      await tester.tap(find.text('All Playlists'));
+      await tester.tap(find.text('Road trip'));
+      expect(opened, [
+        'albums',
+        DesktopSidebarLink.allPlaylistsId,
+        DesktopSidebarLink.playlistId('mix'),
+      ]);
+    });
+
+    testWidgets('account row opens the profile', (tester) async {
+      var profileOpened = 0;
+      await pumpShell(
+        tester,
+        mornye: true,
+        width: 1400,
+        onOpenProfile: () => profileOpened++,
+      );
+
+      expect(find.text('Ada Lovelace'), findsOneWidget);
+      await tester.tap(find.byKey(const ValueKey('desktop-sidebar-account')));
+      expect(profileOpened, 1);
+      expect(selections, isEmpty);
+    });
+
+    testWidgets('sidebar hides completely and comes back', (tester) async {
+      await pumpShell(tester, mornye: true, width: 1400);
 
       await tester.tap(find.byKey(const ValueKey('desktop-sidebar-toggle')));
       await tester.pumpAndSettle();
+      expect(tester.getSize(find.byType(DesktopSidebar)).width, 0);
+      expect(find.text('library').hitTestable(), findsNothing);
       expect(
-        tester.getSize(find.byType(DesktopSidebar)).width,
-        DesktopSidebar.collapsedWidth,
+        tester.getRect(find.byKey(const ValueKey('desktop-content'))).left,
+        0,
       );
-      expect(find.text('library'), findsNothing);
-      expect(find.byTooltip('library (Ctrl+2)'), findsOneWidget);
 
-      desktopSidebarCollapsed.value = false;
+      await tester.tap(find.byKey(const ValueKey('desktop-sidebar-show')));
       await tester.pumpAndSettle();
       expect(
         tester.getSize(find.byType(DesktopSidebar)).width,
-        desktopSidebarWidth,
+        DesktopSidebar.footprint,
+      );
+    });
+
+    testWidgets('sidebar hides below the auto-hide width', (tester) async {
+      await pumpShell(tester, mornye: true, width: 1400);
+      expect(desktopSidebarCollapsed.value, isFalse);
+
+      tester.view.physicalSize = const Size(860, 800);
+      await tester.pumpAndSettle();
+      expect(desktopSidebarCollapsed.value, isTrue);
+      expect(tester.getSize(find.byType(DesktopSidebar)).width, 0);
+
+      tester.view.physicalSize = const Size(1400, 800);
+      await tester.pumpAndSettle();
+      expect(desktopSidebarCollapsed.value, isFalse);
+    });
+
+    testWidgets('hidden sidebar leaves room for the macOS window controls', (
+      tester,
+    ) async {
+      debugDesktopTitleBarInContentOverride = true;
+      desktopSidebarCollapsed.value = true;
+      await pumpShell(tester, mornye: true, width: 1400);
+
+      final show = tester.getRect(
+        find.byKey(const ValueKey('desktop-sidebar-show')),
+      );
+      expect(show.left, greaterThanOrEqualTo(desktopWindowControlsWidth));
+      expect(
+        tester.getRect(find.byKey(const ValueKey('desktop-content'))).top,
+        desktopTitleBarHeight,
       );
     });
   });

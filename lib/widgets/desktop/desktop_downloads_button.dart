@@ -90,8 +90,9 @@ class _DesktopDownloadsButtonState
           tooltip: label,
           color: mornye ? colorScheme.onSurface : null,
           onPressed: _toggle,
+          // Mornye sizes it with the other glyphs in the player capsule.
           icon: SizedBox.square(
-            dimension: 24,
+            dimension: mornye ? 20 : 24,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -101,13 +102,22 @@ class _DesktopDownloadsButtonState
                       key: const ValueKey('desktop-downloads-progress'),
                       wavy: false,
                       value: desktopDownloadsProgress(active),
-                      strokeWidth: 2.5,
+                      strokeWidth: mornye ? 2 : 2.5,
                       strokeCap: StrokeCap.round,
                     ),
                   ),
                 AppIcon(
-                  mornye ? CupertinoIcons.arrow_down : Icons.download_rounded,
-                  size: active.isEmpty ? 24 : 14,
+                  mornye
+                      ? (active.isEmpty
+                            ? CupertinoIcons.arrow_down_circle
+                            : CupertinoIcons.arrow_down)
+                      : Icons.download_rounded,
+                  size: switch ((mornye, active.isEmpty)) {
+                    (true, true) => 18,
+                    (true, false) => 11,
+                    (false, true) => 24,
+                    (false, false) => 14,
+                  },
                 ),
               ],
             ),
