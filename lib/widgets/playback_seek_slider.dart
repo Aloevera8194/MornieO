@@ -12,6 +12,10 @@ class PlaybackSeekSlider extends StatefulWidget {
   final PlaybackSeekPreview? preview;
   final bool playing;
 
+  /// Mornye only: a hairline track with no side inset, for the desktop
+  /// player capsule.
+  final bool hairline;
+
   const PlaybackSeekSlider({
     super.key,
     required this.position,
@@ -19,6 +23,7 @@ class PlaybackSeekSlider extends StatefulWidget {
     required this.onSeek,
     this.preview,
     this.playing = false,
+    this.hairline = false,
   });
 
   @override
@@ -113,6 +118,9 @@ class _PlaybackSeekSliderState extends State<PlaybackSeekSlider> {
                   SliderTheme.of(context).inactiveTrackColor ?? Colors.white12,
               value: enabled ? currentMs : 0,
               max: maxMs,
+              trackHeight: widget.hairline ? 2 : 6,
+              height: widget.hairline ? 10 : 44,
+              inset: widget.hairline ? 0 : MornyePlayerSlider.horizontalInset,
               onChangeStart: _start,
               onChanged: _preview,
               onChangeEnd: _commit,

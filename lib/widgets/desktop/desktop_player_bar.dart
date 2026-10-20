@@ -283,45 +283,29 @@ class _TrackSummary extends StatelessWidget {
 }
 
 class _TitleAndArtist extends StatelessWidget {
-  const _TitleAndArtist({
-    required this.mediaItem,
-    this.textAlign = TextAlign.start,
-    this.dense = false,
-  });
+  const _TitleAndArtist({required this.mediaItem});
 
   final MediaItem mediaItem;
-  final TextAlign textAlign;
-
-  /// The Mornye LCD's smaller lines, sized like Music's.
-  final bool dense;
 
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    final centered = textAlign == TextAlign.center;
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: centered
-          ? CrossAxisAlignment.center
-          : CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ExplicitTrackTitle(
           title: mediaItem.title,
           explicit: parseExplicitFlag(mediaItem.extras?['explicit']) == true,
-          style: textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: dense ? 13 : null,
-          ),
+          style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         Text(
           mediaItem.artist ?? '',
-          textAlign: textAlign,
           style: textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
-            fontSize: dense ? 12 : null,
           ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -508,6 +492,7 @@ class _SeekRow extends ConsumerWidget {
         position: position,
         duration: duration,
         playing: playing,
+        hairline: dense,
         onSeek: ref.read(musicPlayerControllerProvider).seek,
       ),
     );
@@ -558,55 +543,88 @@ class _MornyeLcd extends StatelessWidget {
         ),
       );
     }
-    return Row(
+    // As in Music: artwork and left-aligned lines, with a hairline progress
+    // track along the bottom from the artwork's edge.
+    return Column(
       children: [
-        MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: GestureDetector(
-            onTap: _toggleNowPlaying,
-            child: _Artwork(
-              mediaItem: item,
-              size: _artworkSize,
-              radius: context.tokens.radiusThumb - 2,
-            ),
-          ),
-        ),
-        const SizedBox(width: 10),
         Expanded(
-          child: LayoutBuilder(
-            builder: (context, constraints) => Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Larger text sizes shrink the lines to the capsule rather
-                // than clip them.
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: SizedBox(
-                      width: constraints.maxWidth,
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.click,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: _toggleNowPlaying,
-                          child: _TitleAndArtist(
-                            mediaItem: item,
-                            textAlign: TextAlign.center,
-                            dense: true,
-                          ),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: _toggleNowPlaying,
+              child: Row(
+                children: [
+                  _Artwork(
+                    mediaItem: item,
+                    size: _artworkSize,
+                    radius: context.tokens.radiusThumb - 4,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    // Larger text sizes shrink the lines to the capsule
+                    // rather than clip them.
+                    child: LayoutBuilder(
+                      builder: (context, constraints) => FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: AlignmentDirectional.centerStart,
+                        child: SizedBox(
+                          width: constraints.maxWidth,
+                          child: _MornyeLcdLines(mediaItem: item),
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 8,
-                  child: _SeekRow(mediaItem: item, dense: true),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
+        SizedBox(
+          height: 6,
+          child: OverflowBox(
+            maxHeight: 10,
+            child: _SeekRow(mediaItem: item, dense: true),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The LCD's title and "artist · album" line, left-aligned like Music's.
+class _MornyeLcdLines extends StatelessWidget {
+  const _MornyeLcdLines({required this.mediaItem});
+
+  final MediaItem mediaItem;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final subtitle = [
+      mediaItem.artist,
+      mediaItem.album,
+    ].where((part) => part != null && part.trim().isNotEmpty).join(' · ');
+    final style = textTheme.bodyMedium?.copyWith(fontSize: 13, height: 1.25);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ExplicitTrackTitle(
+          title: mediaItem.title,
+          explicit: parseExplicitFlag(mediaItem.extras?['explicit']) == true,
+          style: style?.copyWith(fontWeight: FontWeight.w600),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (subtitle.isNotEmpty)
+          Text(
+            subtitle,
+            style: style?.copyWith(color: colorScheme.onSurfaceVariant),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
       ],
     );
   }
