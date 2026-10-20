@@ -145,7 +145,7 @@ enum ReleaseMode: String {
     guard let currentItem = player.currentItem else {
       return
     }
-    await currentItem.seek(to: time)
+    await currentItem.seek(to: time, toleranceBefore: .zero, toleranceAfter: .zero)
     if !self.isPlaying {
       self.player.pause()
     }
@@ -193,22 +193,17 @@ enum ReleaseMode: String {
       throw AudioPlayerError.error("Url not valid: \(url)")
     }
 
-    let playerItem: AVPlayerItem
-
+    // FLAC can otherwise seek to different audio while reporting the requested
+    // time. Exact seek tolerances alone do not fix an approximate asset index.
+    var options: [String: Any] = [AVURLAssetPreferPreciseDurationAndTimingKey: true]
     if let unwrappedMimeType = mimeType {
       if #available(iOS 17, macOS 14.0, *) {
-        let asset = AVURLAsset(
-          url: parsedUrl, options: [AVURLAssetOverrideMIMETypeKey: unwrappedMimeType])
-        playerItem = AVPlayerItem(asset: asset)
+        options[AVURLAssetOverrideMIMETypeKey] = unwrappedMimeType
       } else {
-        let asset = AVURLAsset(
-          url: parsedUrl, options: ["AVURLAssetOutOfBandMIMETypeKey": unwrappedMimeType])
-        playerItem = AVPlayerItem(asset: asset)
+        options["AVURLAssetOutOfBandMIMETypeKey"] = unwrappedMimeType
       }
-    } else {
-      playerItem = AVPlayerItem(url: parsedUrl)
     }
-
+    let playerItem = AVPlayerItem(asset: AVURLAsset(url: parsedUrl, options: options))
     playerItem.audioTimePitchAlgorithm = AVAudioTimePitchAlgorithm.timeDomain
     return playerItem
   }

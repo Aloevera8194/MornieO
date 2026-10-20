@@ -37,6 +37,16 @@ follows the system route (AirPlay audio) through the tap, instead of handing
 the item to the receiver as an external video session that bypasses the
 equalizer.
 
+### Accurate audio seeking
+
+`WrappedMediaPlayer` creates every asset with
+`AVURLAssetPreferPreciseDurationAndTimingKey: true`, preserving any MIME
+override, and seeks with zero tolerances. Without the precise asset index,
+AVFoundation can report the requested FLAC position while decoding audio
+from tens of seconds earlier or later. This affects both macOS and iOS,
+including lyric taps and timeline scrubbing. Preparing a variable-bitrate
+network asset can take longer because its timing must be indexed.
+
 ### Packaging
 
 - `darwin/audioplayers_darwin.podspec` adds
@@ -59,6 +69,22 @@ swiftc darwin/audioplayers_darwin/Sources/audioplayers_darwin/EqualizerDSP.swift
 Build without `-O` so its `assert` checks stay active. It prints a `PASS`
 line on success.
 
+`tests/AccurateSeekTests.swift` exercises the production wrapper against the
+real AVFoundation decoder, with only Flutter channel delivery stubbed. Pass
+a variable-bitrate FLAC longer than 10 seconds. No music fixture is bundled.
+The test compares decoded PCM after forward and backward seeks against a
+precisely indexed reference, with and without a MIME override:
+
+```bash
+cd third_party/audioplayers_darwin
+swiftc darwin/audioplayers_darwin/Sources/audioplayers_darwin/{WrappedMediaPlayer,Utils,AudioPlayerError,EqualizerAudioTap,EqualizerDSP}.swift \
+  tests/AccurateSeekTests.swift -o /tmp/accurate_seek_tests
+/tmp/accurate_seek_tests /path/to/variable-bitrate.flac
+```
+
+The same sources can be compiled with the iOS simulator SDK and run with
+`simctl spawn` to check the shared iOS implementation.
+
 ## Changed Files
 
 Compared against the pub.dev 6.5.0 package in the local pub cache:
@@ -69,6 +95,7 @@ Compared against the pub.dev 6.5.0 package in the local pub cache:
 - `darwin/audioplayers_darwin/Sources/audioplayers_darwin/EqualizerAudioTap.swift` (new)
 - `darwin/audioplayers_darwin/Sources/audioplayers_darwin/EqualizerDSP.swift` (new)
 - `tests/EqualizerDSPTests.swift` (new)
+- `tests/AccurateSeekTests.swift` (new)
 - `pubspec.yaml`, `README.md`, `pubspec.lock` (new)
 
 ## Upgrading
