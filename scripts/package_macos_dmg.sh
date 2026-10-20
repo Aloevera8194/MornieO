@@ -4,13 +4,16 @@
 # Usage: bash scripts/package_macos_dmg.sh <Mornye.app> <output.dmg>
 #
 # The image holds the app and an Applications symlink (no background or
-# window layout). The app is ad hoc signed, inside out, because releases are
-# not notarized yet (docs: users open it once through System Settings >
+# window layout). The app is re-signed inside out with the stable self-signed
+# identity from scripts/setup_macos_signing.sh when one is given (it keeps
+# keychain access across updates), otherwise ad hoc. Releases are not
+# notarized yet (docs: users open it once through System Settings >
 # Privacy & Security > "Open Anyway"). The script mounts the result read-only
 # and checks its contents, the universal binaries and the signature.
 #
 # Environment:
-#   MORNYE_DMG_VOLUME_NAME  volume name (default: Mornye)
+#   MORNYE_DMG_VOLUME_NAME     volume name (default: Mornye)
+#   MORNYE_CODE_SIGN_IDENTITY  signing identity (default: - for ad hoc)
 
 set -euo pipefail
 
@@ -26,6 +29,7 @@ fi
 APP_SOURCE="${1%/}"
 OUTPUT="$2"
 VOLUME_NAME="${MORNYE_DMG_VOLUME_NAME:-Mornye}"
+SIGN_IDENTITY="${MORNYE_CODE_SIGN_IDENTITY:--}"
 APP_NAME="$(basename "$APP_SOURCE")"
 
 if [[ ! -f "$APP_SOURCE/Contents/Info.plist" ]]; then
@@ -67,29 +71,29 @@ is_macho() {
 # Sign nested code first (helper executables such as a bundled ffmpeg,
 # loose dylibs, then frameworks), and the app itself last with the
 # entitlements it was built with.
-echo "Ad hoc signing $APP_NAME"
+echo "Signing $APP_NAME with identity $SIGN_IDENTITY"
 while IFS= read -r -d '' candidate; do
   if is_macho "$candidate"; then
-    codesign --force --sign - --timestamp=none "$candidate"
+    codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$candidate"
   fi
 done < <(find "$STAGED_APP/Contents/MacOS" "$STAGED_APP/Contents/Resources" \
   -type f -perm -u+x ! -path "$STAGED_APP/Contents/MacOS/$EXECUTABLE" -print0)
 
 if [[ -d "$STAGED_APP/Contents/Frameworks" ]]; then
   while IFS= read -r -d '' library; do
-    codesign --force --sign - --timestamp=none "$library"
+    codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$library"
   done < <(find "$STAGED_APP/Contents/Frameworks" -maxdepth 1 -type f -name '*.dylib' -print0)
   while IFS= read -r -d '' framework; do
-    codesign --force --sign - --timestamp=none "$framework"
+    codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$framework"
   done < <(find "$STAGED_APP/Contents/Frameworks" -maxdepth 1 -type d -name '*.framework' -print0)
 fi
 
 ENTITLEMENTS="$WORK_DIR/entitlements.plist"
 codesign -d --entitlements - --xml "$APP_SOURCE" > "$ENTITLEMENTS" 2>/dev/null || true
 if [[ -s "$ENTITLEMENTS" ]]; then
-  codesign --force --sign - --timestamp=none --entitlements "$ENTITLEMENTS" "$STAGED_APP"
+  codesign --force --sign "$SIGN_IDENTITY" --timestamp=none --entitlements "$ENTITLEMENTS" "$STAGED_APP"
 else
-  codesign --force --sign - --timestamp=none "$STAGED_APP"
+  codesign --force --sign "$SIGN_IDENTITY" --timestamp=none "$STAGED_APP"
 fi
 codesign --verify --deep --strict "$STAGED_APP"
 

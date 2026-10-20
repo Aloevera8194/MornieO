@@ -450,6 +450,16 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      # A stable self-signed identity keeps keychain access across updates.
+      # Without the secrets the build stays ad hoc signed.
+      - name: Set up the signing identity
+        env:
+          MACOS_SIGNING_P12_BASE64: ${{ secrets.MACOS_SIGNING_P12_BASE64 }}
+          MACOS_SIGNING_P12_PASSWORD: ${{ secrets.MACOS_SIGNING_P12_PASSWORD }}
+        run: |
+          identity="$(bash scripts/setup_macos_signing.sh)"
+          echo "MORNYE_CODE_SIGN_IDENTITY=$identity" >> "$GITHUB_ENV"
+
       # The Xcode "Embed Rust Backend" and "Embed FFmpeg" phases embed the
       # library and the FFmpeg tools built above.
       - name: Build macOS app
