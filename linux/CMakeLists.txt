@@ -124,6 +124,31 @@ endif()
 install(FILES "${MORNYE_DESKTOP_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
   COMPONENT Runtime)
 
+# LGPL ffmpeg and ffprobe, found by lib/services/ffmpeg_desktop.dart in the
+# bundle's lib/ffmpeg/ directory. They are staged by
+# `bash scripts/fetch_desktop_ffmpeg.sh linux-<arch>`; without them the app
+# falls back to an ffmpeg on PATH, so a missing stage is only a warning.
+if(DEFINED FLUTTER_TARGET_PLATFORM)
+  set(MORNYE_FFMPEG_TARGET "${FLUTTER_TARGET_PLATFORM}")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+  set(MORNYE_FFMPEG_TARGET "linux-arm64")
+else()
+  set(MORNYE_FFMPEG_TARGET "linux-x64")
+endif()
+set(MORNYE_FFMPEG_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}/../build/ffmpeg/${MORNYE_FFMPEG_TARGET}")
+if(EXISTS "${MORNYE_FFMPEG_DIR}/ffmpeg" AND EXISTS "${MORNYE_FFMPEG_DIR}/ffprobe")
+  install(PROGRAMS "${MORNYE_FFMPEG_DIR}/ffmpeg" "${MORNYE_FFMPEG_DIR}/ffprobe"
+    DESTINATION "${INSTALL_BUNDLE_LIB_DIR}/ffmpeg" COMPONENT Runtime)
+  install(FILES "${MORNYE_FFMPEG_DIR}/LICENSE.txt" "${MORNYE_FFMPEG_DIR}/SOURCE.txt"
+    DESTINATION "${INSTALL_BUNDLE_LIB_DIR}/ffmpeg" COMPONENT Runtime)
+else()
+  message(WARNING
+    "No LGPL FFmpeg is staged in ${MORNYE_FFMPEG_DIR}; the bundle will use "
+    "ffmpeg from PATH. Run `bash scripts/fetch_desktop_ffmpeg.sh "
+    "${MORNYE_FFMPEG_TARGET}` from the repository root to bundle it.")
+endif()
+
 # Copy the native assets provided by the build.dart from all packages.
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/linux/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"

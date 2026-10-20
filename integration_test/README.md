@@ -102,6 +102,7 @@ Suites:
 | `automix_analysis_test.dart` | Native decoding for AutoMix beats; Auto and crossfade playback |
 | `automix_effects_test.dart` | Bundled FFmpeg supports every AutoMix transition effect |
 | `collection_remove_batch_test.dart` | Removing 2000 tracks from a collection; rollback and retry |
+| `desktop_ffmpeg_bundle_test.dart` | macOS only (`-d macos`, after `bash scripts/fetch_desktop_ffmpeg.sh`): the app finds ffmpeg and ffprobe in its bundle, converts a generated tone to FLAC through soxr and to MP3, Opus, AAC and ALAC, and probes the FLAC |
 | `desktop_playback_deck_test.dart` | macOS only (`-d macos`): the default deck plays a generated tone, applies an EQ preset and in-app volume, pauses |
 | `discord_sdk_test.dart` | Native Discord SDK initialize, stop and restart |
 | `download_cancel_dispatch_test.dart` | Native cancel and clear of queued IDs; invalid batches |
