@@ -1,10 +1,10 @@
-import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:material_3_expressive/material_3_expressive.dart'
     show
         M3EShapeKind,
@@ -14,16 +14,15 @@ import 'package:material_3_expressive/material_3_expressive.dart'
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/models/theme_settings.dart';
 import 'package:mornye/providers/theme_provider.dart';
-import 'package:mornye/services/upgrade_intro_service.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_icons.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
 import 'package:mornye/widgets/app_shape.dart';
-import 'package:mornye/widgets/beta_badge.dart';
 import 'package:mornye/widgets/expressive_button.dart';
 
-/// A local, replayable release tour. Theme changes require an explicit choice.
+/// A local, replayable tour of the SpotiFLAC to Mornye rebrand. Theme changes
+/// require an explicit choice.
 class UpgradeIntroScreen extends StatefulWidget {
   const UpgradeIntroScreen({super.key});
 
@@ -32,7 +31,7 @@ class UpgradeIntroScreen extends StatefulWidget {
 }
 
 class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
-  static const _pageCount = 6;
+  static const _pageCount = 4;
 
   final _pages = PageController();
   int _page = 0;
@@ -120,25 +119,23 @@ class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
                             accent: M3EShapeKind.sunny,
                             logo: true,
                           ),
-                          title: l10n.whatsNewWelcomeTitle(
-                            UpgradeIntroService.tourVersion,
-                          ),
-                          description: l10n.whatsNewWelcomeBody,
+                          title: l10n.rebrandWelcomeTitle,
+                          description: l10n.rebrandWelcomeBody,
                           features: [
                             _TourFeature(
-                              icon: Icons.interests_outlined,
-                              title: 'Material 3 Expressive',
-                              body: l10n.whatsNewSummaryExpressiveBody,
+                              icon: Icons.wb_twilight,
+                              title: l10n.rebrandNameTitle,
+                              body: l10n.rebrandNameBody,
                             ),
                             _TourFeature(
-                              icon: Icons.play_circle_outline,
-                              title: l10n.whatsNewSummaryPlayerTitle,
-                              body: l10n.whatsNewSummaryPlayerBody,
+                              icon: Icons.auto_awesome_outlined,
+                              title: l10n.rebrandLogoTitle,
+                              body: l10n.rebrandLogoBody,
                             ),
                             _TourFeature(
-                              icon: Icons.format_quote_outlined,
-                              title: l10n.lyricsShareTitle,
-                              body: l10n.whatsNewSummaryLyricsBody,
+                              icon: Icons.favorite_border,
+                              title: l10n.rebrandSameAppTitle,
+                              body: l10n.rebrandSameAppBody,
                             ),
                           ],
                         ),
@@ -154,119 +151,57 @@ class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
                         ),
                         _TourPage(
                           hero: const _TourHero(
-                            icon: Icons.interests_outlined,
+                            icon: Icons.swap_horiz,
                             shape: M3EShapeKind.softBurst,
                             accent: M3EShapeKind.clover4Leaf,
                           ),
-                          title: l10n.whatsNewExpressiveTitle,
-                          description: l10n.whatsNewExpressiveBody,
+                          title: l10n.rebrandMoveTitle,
+                          description: l10n.rebrandMoveBody,
                           features: [
                             _TourFeature(
-                              icon: Icons.category_outlined,
-                              title: l10n.whatsNewSymbolsTitle,
-                              body: l10n.whatsNewSymbolsBody,
+                              icon: Icons.save_alt,
+                              title: l10n.rebrandMoveBackupTitle,
+                              body: l10n.rebrandMoveBackupBody,
                             ),
                             _TourFeature(
-                              icon: Icons.animation_outlined,
-                              title: l10n.whatsNewMotionTitle,
-                              body: l10n.whatsNewMotionBody,
-                            ),
-                            _TourFeature(
-                              icon: Icons.tablet_outlined,
-                              title: l10n.whatsNewLargeScreenTitle,
-                              body: l10n.whatsNewLargeScreenBody,
-                            ),
-                          ],
-                        ),
-                        _TourPage(
-                          hero: const _TourHero(
-                            icon: Icons.graphic_eq,
-                            shape: M3EShapeKind.cookie9Sided,
-                            accent: M3EShapeKind.burst,
-                          ),
-                          title: l10n.whatsNewPlayerTitle,
-                          description: l10n.whatsNewPlayerBody,
-                          features: [
-                            _TourFeature(
-                              icon: Icons.equalizer,
-                              title: l10n.equalizerTitle,
-                              beta: true,
-                              body: l10n.whatsNewEqualizerBody,
-                            ),
-                            _TourFeature(
-                              icon: Icons.fullscreen,
-                              title: l10n.whatsNewCoverTitle,
-                              body: l10n.whatsNewCoverBody,
-                            ),
-                            _TourFeature(
-                              icon: Icons.info_outline,
-                              title: l10n.whatsNewAudioInfoTitle,
-                              body: l10n.whatsNewAudioInfoBody,
-                            ),
-                            _TourFeature(
-                              icon: Icons.vibration,
-                              title: l10n.musicHaptics,
-                              body: l10n.whatsNewHapticsBody,
-                            ),
-                          ],
-                        ),
-                        _TourPage(
-                          hero: const _TourHero(
-                            icon: Icons.format_quote_outlined,
-                            shape: M3EShapeKind.puffy,
-                            accent: M3EShapeKind.cookie4Sided,
-                          ),
-                          title: l10n.whatsNewLyricsTitle,
-                          description: l10n.whatsNewLyricsBody,
-                          features: [
-                            _TourFeature(
-                              icon: Icons.ios_share,
-                              title: l10n.whatsNewLyricCardsTitle,
-                              body: l10n.whatsNewLyricCardsBody,
-                            ),
-                            _TourFeature(
-                              icon: Icons.lyrics_outlined,
-                              title: l10n.whatsNewLyricSyncTitle,
-                              body: l10n.whatsNewLyricSyncBody,
-                            ),
-                            _TourFeature(
-                              icon: Icons.cloud_done_outlined,
-                              title: l10n.whatsNewLyricFallbackTitle,
-                              body: l10n.whatsNewLyricFallbackBody,
-                            ),
-                          ],
-                        ),
-                        _TourPage(
-                          hero: const _TourHero(
-                            icon: Icons.library_music_outlined,
-                            shape: M3EShapeKind.clover8Leaf,
-                            accent: M3EShapeKind.gem,
-                          ),
-                          title: l10n.whatsNewLibraryTitle,
-                          description: l10n.whatsNewLibraryBody,
-                          features: [
-                            _TourFeature(
-                              icon: Icons.view_agenda_outlined,
-                              title: l10n.whatsNewBrowseTitle,
-                              body: l10n.whatsNewBrowseBody,
-                            ),
-                            _TourFeature(
-                              icon: Icons.history,
-                              title: l10n.listeningRewind,
-                              body: l10n.whatsNewRewindBody,
+                              icon: Icons.restore,
+                              title: l10n.rebrandMoveRestoreTitle,
+                              body: l10n.rebrandMoveRestoreBody,
                             ),
                             _TourFeature(
                               icon: Icons.waving_hand_outlined,
-                              title: l10n.whatsNewGreetingTitle,
-                              body: l10n.whatsNewGreetingBody,
+                              title: l10n.rebrandMoveGoodbyeTitle,
+                              body: l10n.rebrandMoveGoodbyeBody,
                             ),
-                            // The redesigned launcher widgets are Android's.
-                            if (Platform.isAndroid)
-                              _TourFeature(
-                                icon: Icons.widgets_outlined,
-                                title: l10n.whatsNewWidgetsTitle,
-                                body: l10n.whatsNewWidgetsBody,
-                              ),
+                          ],
+                        ),
+                        _TourPage(
+                          hero: const _TourHero(
+                            icon: Icons.forum_outlined,
+                            shape: M3EShapeKind.clover8Leaf,
+                            accent: M3EShapeKind.gem,
+                          ),
+                          title: l10n.rebrandCommunityTitle,
+                          description: l10n.rebrandCommunityBody,
+                          features: [
+                            _TourFeature(
+                              icon: Icons.language,
+                              title: 'mornye.com',
+                              body: l10n.rebrandWebsiteBody,
+                              url: 'https://mornye.com',
+                            ),
+                            _TourFeature(
+                              icon: Icons.campaign_outlined,
+                              title: l10n.rebrandUpdatesTitle,
+                              body: l10n.rebrandUpdatesBody,
+                              url: 'https://t.me/mornyeupdates',
+                            ),
+                            _TourFeature(
+                              icon: Icons.groups_outlined,
+                              title: l10n.rebrandCommunityChatTitle,
+                              body: l10n.rebrandCommunityChatBody,
+                              url: 'https://t.me/mornyecommunity',
+                            ),
                           ],
                         ),
                       ],
@@ -501,28 +436,13 @@ class _TourHeroState extends State<_TourHero> with TickerProviderStateMixin {
     final scheme = Theme.of(context).colorScheme;
     final mornye = context.isMornye;
     final accent = widget.accent;
-    // The logo asset is a disc with the glyph cut out. Tinting the disc like
-    // the shape and backing it with a smaller dark circle leaves only the
-    // glyph visible on the expressive shape.
+    // The logo asset is the bare white mark, tinted like the icons.
     final glyph = widget.logo
-        ? Stack(
-            alignment: Alignment.center,
-            children: [
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: scheme.onPrimaryContainer,
-                ),
-                child: const SizedBox.square(dimension: 92),
-              ),
-              Image.asset(
-                'assets/images/logo-transparent.png',
-                width: 96,
-                height: 96,
-                color: scheme.primaryContainer,
-                errorBuilder: (_, _, _) => const SizedBox.shrink(),
-              ),
-            ],
+        ? Image.asset(
+            'assets/images/logo-transparent.png',
+            height: 64,
+            color: scheme.onPrimaryContainer,
+            errorBuilder: (_, _, _) => const SizedBox.shrink(),
           )
         : Icon(
             context.adaptiveIcon(widget.icon!),
@@ -672,13 +592,15 @@ class _TourFeature {
     required this.icon,
     required this.title,
     required this.body,
-    this.beta = false,
+    this.url,
   });
 
   final IconData icon;
   final String title;
   final String body;
-  final bool beta;
+
+  /// Opens in the in-app browser when the row is tapped, like About links.
+  final String? url;
 }
 
 /// One row of a connected list: large outer corners, small inner ones.
@@ -699,64 +621,81 @@ class _FeatureRow extends StatelessWidget {
     final scheme = theme.colorScheme;
     final outer = Radius.circular(context.isMornye ? 18 : 24);
     const inner = Radius.circular(6);
+    final url = feature.url;
+    final row = Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 20, 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon containers in one list share the plain circle; abstract
+          // shapes are reserved for the decorative hero above.
+          AppShapeBadge(
+            kind: M3EShapeKind.circle,
+            size: 44,
+            color: scheme.secondaryContainer,
+            child: Icon(
+              context.adaptiveIcon(feature.icon),
+              size: 22,
+              color: scheme.onSecondaryContainer,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  feature.title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  feature.body,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    height: 1.35,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (url != null) ...[
+            const SizedBox(width: 12),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Icon(
+                context.adaptiveIcon(Icons.open_in_new),
+                size: 20,
+                color: scheme.primary,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
     return Padding(
       padding: EdgeInsets.only(bottom: last ? 0 : 2),
       child: MergeSemantics(
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 20, 16),
-          decoration: BoxDecoration(
+        child: Semantics(
+          link: url != null,
+          child: Material(
             color: scheme.surfaceContainer,
             borderRadius: BorderRadius.vertical(
               top: first ? outer : inner,
               bottom: last ? outer : inner,
             ),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Icon containers in one list share the plain circle; abstract
-              // shapes are reserved for the decorative hero above.
-              AppShapeBadge(
-                kind: M3EShapeKind.circle,
-                size: 44,
-                color: scheme.secondaryContainer,
-                child: Icon(
-                  context.adaptiveIcon(feature.icon),
-                  size: 22,
-                  color: scheme.onSecondaryContainer,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(
-                          feature.title,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (feature.beta) const BetaBadge(),
-                      ],
+            clipBehavior: Clip.antiAlias,
+            child: url == null
+                ? row
+                : InkWell(
+                    onTap: () => launchUrl(
+                      Uri.parse(url),
+                      mode: LaunchMode.inAppBrowserView,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      feature.body,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        height: 1.35,
-                        color: scheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                    child: row,
+                  ),
           ),
         ),
       ),

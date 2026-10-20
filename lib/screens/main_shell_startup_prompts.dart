@@ -94,26 +94,14 @@ extension _MainShellStartupPrompts on _MainShellState {
   Future<void> _checkUpgradeIntro() async {
     try {
       final preferences = await SharedPreferences.getInstance();
-      if (!mounted) return;
-      final existingInstallation = !ref
-          .read(initialSettingsProvider)
-          .isFirstLaunch;
-      if (UpgradeIntroService.shouldShow(
-        preferences,
-        version: AppInfo.version,
-        existingInstallation: existingInstallation,
-      )) {
-        await Navigator.of(context, rootNavigator: true).push<void>(
-          MaterialPageRoute(
-            builder: (_) => const UpgradeIntroScreen(),
-            fullscreenDialog: true,
-          ),
-        );
-        await UpgradeIntroService.markSeen(preferences);
-      } else if (!existingInstallation) {
-        // Fresh installs already have their own setup tutorial.
-        await UpgradeIntroService.markSeen(preferences);
-      }
+      if (!mounted || !UpgradeIntroService.shouldShow(preferences)) return;
+      await Navigator.of(context, rootNavigator: true).push<void>(
+        MaterialPageRoute(
+          builder: (_) => const UpgradeIntroScreen(),
+          fullscreenDialog: true,
+        ),
+      );
+      await UpgradeIntroService.markSeen(preferences);
     } catch (error) {
       _log.w('Could not present upgrade introduction: $error');
     }

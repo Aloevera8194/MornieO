@@ -767,8 +767,8 @@ class LyricsShareCard extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // The asset is already a disc with the glyph cut
-                          // out, so it only needs the card's text color.
+                          // The asset is the bare mark, so it only needs the
+                          // card's text color.
                           Image.asset(
                             'assets/images/logo-transparent.png',
                             width: 26,

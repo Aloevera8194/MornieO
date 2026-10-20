@@ -43,27 +43,18 @@ void main() {
   });
 
   test(
-    'upgrade tour is acknowledged separately from settings migrations',
+    'rebrand tour is acknowledged separately from settings migrations',
     () async {
+      // Having seen the 5.2 release tour does not hide the rebrand tour.
       SharedPreferences.setMockInitialValues({
         'settings_migration_version': 11,
+        'upgrade_intro_5_2_seen': true,
       });
       var prefs = await SharedPreferences.getInstance();
-      bool pending(String version, {bool existing = true}) =>
-          UpgradeIntroService.shouldShow(
-            prefs,
-            version: version,
-            existingInstallation: existing,
-          );
-      expect(pending('5.2.0'), isTrue);
-      expect(pending('5.3.1'), isTrue);
-      expect(pending('5.1.1'), isFalse);
-      expect(pending('4.9.0'), isFalse);
-      expect(pending('6.0.0'), isFalse);
-      expect(pending('5.2.0', existing: false), isFalse);
+      expect(UpgradeIntroService.shouldShow(prefs), isTrue);
       await UpgradeIntroService.markSeen(prefs);
       prefs = await SharedPreferences.getInstance();
-      expect(pending('5.2.0'), isFalse);
+      expect(UpgradeIntroService.shouldShow(prefs), isFalse);
       expect(prefs.getInt('settings_migration_version'), 11);
     },
   );
@@ -146,8 +137,8 @@ void main() {
       tester,
     ) async {
       await openTour(tester, brightness: brightness);
-      expect(find.text('Welcome to\nMornye 5.2'), findsOneWidget);
-      expect(find.bySemanticsLabel('1 / 6'), findsOneWidget);
+      expect(find.text('Goodbye SpotiFLAC,\nhello Mornye.'), findsOneWidget);
+      expect(find.bySemanticsLabel('1 / 4'), findsOneWidget);
       await capturePage(tester, '${brightness.name}-welcome');
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
@@ -155,13 +146,11 @@ void main() {
       await capturePage(tester, '${brightness.name}-themes');
       await tester.binding.handlePopRoute();
       await tester.pumpAndSettle();
-      expect(find.text('Welcome to\nMornye 5.2'), findsOneWidget);
+      expect(find.text('Goodbye SpotiFLAC,\nhello Mornye.'), findsOneWidget);
       const titles = [
         'Make it\nyour own.',
-        'Material,\nmade expressive.',
-        'A player that\ndoes more.',
-        'Lyrics worth\nsharing.',
-        'Your library,\nrevisited.',
+        'Bring your\nlibrary along.',
+        'Same community,\nnew address.',
       ];
       for (var i = 0; i < titles.length; i++) {
         await tester.tap(find.text('Continue'));
@@ -169,7 +158,7 @@ void main() {
         expect(find.text(titles[i]), findsOneWidget);
         await capturePage(tester, '${brightness.name}-page${i + 2}');
       }
-      expect(find.bySemanticsLabel('6 / 6'), findsOneWidget);
+      expect(find.bySemanticsLabel('4 / 4'), findsOneWidget);
       expect(find.text('Continue'), findsNothing);
       await tester.tap(find.text('Start listening'));
       await tester.pumpAndSettle();
@@ -194,11 +183,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(prefs.getString(kThemeStyleKey), 'mornye');
     expect(tester.element(find.byType(UpgradeIntroScreen)).isMornye, isTrue);
-    // Both styles walk through the same release pages.
+    // Both styles walk through the same rebrand pages.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
-    expect(find.text('Material,\nmade expressive.'), findsOneWidget);
-    expect(find.bySemanticsLabel('3 / 6'), findsOneWidget);
+    expect(find.text('Bring your\nlibrary along.'), findsOneWidget);
+    expect(find.bySemanticsLabel('3 / 4'), findsOneWidget);
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
     final material = find.byKey(const ValueKey('intro-theme-material'));
@@ -210,8 +199,8 @@ void main() {
     await capturePage(tester, 'material-themes');
     await tester.drag(find.byType(PageView), const Offset(-500, 0));
     await tester.pumpAndSettle();
-    expect(find.text('Material,\nmade expressive.'), findsOneWidget);
-    expect(find.bySemanticsLabel('3 / 6'), findsOneWidget);
+    expect(find.text('Bring your\nlibrary along.'), findsOneWidget);
+    expect(find.bySemanticsLabel('3 / 4'), findsOneWidget);
     await tester.tap(find.text('Skip'));
     await tester.pumpAndSettle();
     expect(prefs.getString(kThemeStyleKey), 'material');

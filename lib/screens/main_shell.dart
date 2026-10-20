@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mornye/l10n/l10n.dart';
-import 'package:mornye/constants/app_info.dart';
 import 'package:mornye/screens/upgrade_intro_screen.dart';
 import 'package:mornye/services/saf_migration_prompt_store.dart';
 import 'package:mornye/services/upgrade_intro_service.dart';
