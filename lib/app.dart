@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:material_ui/material_ui.dart' as material_ui;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,7 @@ import 'package:mornye/theme/dynamic_color_wrapper.dart';
 import 'package:mornye/l10n/app_localizations.dart';
 import 'package:mornye/l10n/supported_locales.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_snack_bar.dart';
 import 'package:mornye/widgets/mornye_glass_preparation.dart';
 import 'package:mornye/widgets/playback_feedback.dart';
@@ -94,8 +96,8 @@ Locale _resolveSupportedLocale(
   return _fallbackLocale(supportedLocales);
 }
 
-/// iOS-style fluid scroll everywhere: momentum glide + bounce instead of the
-/// Android clamping stop. Widgets that set explicit physics (queue filter
+/// iOS-style fluid scroll on mobile and macOS: momentum glide + bounce instead
+/// of the Android clamping stop. Widgets that set explicit physics (queue filter
 /// PageView, bottom sheets) are unaffected.
 class _FluidScrollBehavior extends MaterialScrollBehavior {
   const _FluidScrollBehavior();
@@ -103,6 +105,19 @@ class _FluidScrollBehavior extends MaterialScrollBehavior {
   @override
   ScrollPhysics getScrollPhysics(BuildContext context) =>
       const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
+}
+
+/// Mobile and macOS use the fluid bounce. Windows and Linux keep Material's
+/// desktop behavior: clamping physics with scrollbars.
+@visibleForTesting
+ScrollBehavior appScrollBehavior({required bool disableOverscrollEffects}) {
+  if (disableOverscrollEffects) {
+    return const MaterialScrollBehavior().copyWith(overscroll: false);
+  }
+  if (isDesktopPlatform && defaultTargetPlatform != TargetPlatform.macOS) {
+    return const MaterialScrollBehavior();
+  }
+  return const _FluidScrollBehavior();
 }
 
 /// Fades the app content in after an orientation change or a width change
@@ -174,9 +189,9 @@ class MornyeApp extends ConsumerWidget {
     final heroAnimationsEnabled = ref.watch(
       settingsProvider.select((s) => s.heroAnimationsEnabled),
     );
-    final scrollBehavior = disableOverscrollEffects
-        ? const MaterialScrollBehavior().copyWith(overscroll: false)
-        : const _FluidScrollBehavior();
+    final scrollBehavior = appScrollBehavior(
+      disableOverscrollEffects: disableOverscrollEffects,
+    );
 
     Locale? locale;
     if (localeString != 'system' && localeString.isNotEmpty) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 
 /// Keeps touch-first tablets on the bottom navigation used by phones. A rail
 /// is reserved for genuinely desktop-width windows; the old 600dp threshold
@@ -31,9 +32,12 @@ double detailHeaderEdgeInset(BuildContext context) {
 
 /// Visual scale for touch-first tablet surfaces. Large iPads have enough
 /// pixels to make an unscaled phone density feel miniature, especially when
-/// Simulator shrinks the whole device to fit a desktop display.
+/// Simulator shrinks the whole device to fit a desktop display. Desktop
+/// windows keep native density at every size.
 double adaptiveUiScaleForSize(Size size) {
-  if (size.shortestSide < 600 || size.width >= navigationRailBreakpoint) {
+  if (isDesktopPlatform ||
+      size.shortestSide < 600 ||
+      size.width >= navigationRailBreakpoint) {
     return 1;
   }
   return size.shortestSide >= 800 ? 1.2 : 1.1;

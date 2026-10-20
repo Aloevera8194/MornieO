@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mornye/models/theme_settings.dart';
 
 final initialThemeSettingsProvider = Provider<ThemeSettings>(
-  (ref) => const ThemeSettings(),
+  (ref) => ThemeSettings(style: defaultAppThemeStyle()),
 );
 
 ThemeSettings loadBootstrapThemeSettings(SharedPreferences prefs) {
