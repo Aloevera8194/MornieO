@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   audioplayers_windows
   connectivity_plus
+  desktop_drop
   dynamic_color
   ffmpeg_kit_flutter_new_audio
   flutter_secure_storage_windows

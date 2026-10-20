@@ -67,6 +67,9 @@ dependencies:
 
   # File Picker
   file_picker: ^13.1.0
+  # Desktop: drop music files and folders onto the window to add them.
+  # Pinned below 0.9, which moves to cross_file 0.4 (the tree resolves 0.3).
+  desktop_drop: 0.8.4
 
   # JSON Serialization
   json_annotation: ^4.12.0

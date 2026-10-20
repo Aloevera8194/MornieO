@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +13,8 @@ import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/desktop/context_menu.dart';
 import 'package:mornye/widgets/desktop/desktop_selection.dart';
+import 'package:mornye/widgets/desktop/hover_play_button.dart';
+import 'package:mornye/widgets/desktop/library_drop_target.dart';
 import 'package:mornye/widgets/desktop/track_table.dart';
 import 'package:mornye/widgets/mornye_context_menu.dart';
 import 'package:mornye/widgets/track_card.dart';
@@ -326,6 +330,51 @@ void main() {
       expect(state.isSelectionMode, isFalse);
     });
 
+    testWidgets('a source-sorted table asks its source to sort', (
+      tester,
+    ) async {
+      final requests = <TrackTableSort?>[];
+      Widget table(TrackTableSort? sort) => _app(
+        CustomScrollView(
+          slivers: [
+            SliverTrackTable(
+              rows: _rows,
+              columns: const [
+                TrackTableColumn.title,
+                TrackTableColumn.artist,
+                TrackTableColumn.duration,
+              ],
+              selectedIds: const {},
+              onSelect: (_, _, _) {},
+              onActivate: (_) {},
+              sort: sort,
+              onSort: requests.add,
+              sortableColumns: const {
+                TrackTableColumn.title,
+                TrackTableColumn.artist,
+              },
+            ),
+          ],
+        ),
+      );
+      await tester.pumpWidget(table(null));
+
+      await tester.tap(find.text('Title'));
+      await tester.pump();
+      // The rows keep the source's order until the source re-sorts them.
+      expect(_shownTitles(tester), ['Bravo', 'Alpha', 'Charlie']);
+      expect(requests, [(column: TrackTableColumn.title, ascending: true)]);
+
+      await tester.pumpWidget(
+        table((column: TrackTableColumn.title, ascending: true)),
+      );
+      await tester.tap(find.text('Title'));
+      await tester.tap(find.text('Duration'));
+      await tester.pump();
+      expect(requests.last, (column: TrackTableColumn.title, ascending: false));
+      expect(requests, hasLength(2));
+    });
+
     testWidgets('select all and Delete act on the whole selection', (
       tester,
     ) async {
@@ -349,6 +398,78 @@ void main() {
       expect(deleted, [
         {'a', 'b', 'c'},
       ]);
+    });
+  });
+
+  group('hover play button', () {
+    Widget tile(VoidCallback onPlay) => _app(
+      Center(
+        child: SizedBox.square(
+          dimension: 160,
+          child: Stack(
+            children: [
+              const Positioned.fill(child: ColoredBox(color: Colors.grey)),
+              DesktopHoverPlayButton(tooltip: 'Play', onPlay: onPlay),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    testWidgets('appears while the pointer is on the artwork', (tester) async {
+      var played = 0;
+      await tester.pumpWidget(tile(() => played++));
+      final opacity = find.descendant(
+        of: find.byType(DesktopHoverPlayButton),
+        matching: find.byType(AnimatedOpacity),
+      );
+      expect(tester.widget<AnimatedOpacity>(opacity).opacity, 0);
+
+      final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await mouse.addPointer(
+        location: tester.getCenter(find.byType(ColoredBox).last),
+      );
+      await tester.pumpAndSettle();
+      expect(tester.widget<AnimatedOpacity>(opacity).opacity, 1);
+
+      await tester.tap(find.byTooltip('Play'));
+      expect(played, 1);
+      await mouse.removePointer();
+    });
+
+    testWidgets('phones show no hover button', (tester) async {
+      debugDesktopPlatformOverride = false;
+      await tester.pumpWidget(tile(() {}));
+      expect(find.byTooltip('Play'), findsNothing);
+    });
+  });
+
+  group('drop to import', () {
+    final sep = Platform.pathSeparator;
+    String path(List<String> parts) => '$sep${parts.join(sep)}';
+
+    test('adds dropped folders and the folders of music files', () {
+      final music = path(['Users', 'me', 'Music']);
+      final album = path(['Users', 'me', 'Music', 'Album']);
+      final downloads = path(['Users', 'me', 'Downloads']);
+      final folders = libraryFoldersForDrop([
+        album,
+        music,
+        '$downloads${sep}song.flac',
+        '$downloads${sep}other.MP3',
+        path(['Users', 'me', 'Desktop', 'notes.txt']),
+      ], isDirectory: (path) => path == music || path == album);
+      // Album sits inside Music, so scanning Music covers it.
+      expect(folders, unorderedEquals([music, downloads]));
+    });
+
+    test('ignores drops without music', () {
+      expect(
+        libraryFoldersForDrop([
+          path(['tmp', 'cover.jpg']),
+        ], isDirectory: (_) => false),
+        isEmpty,
+      );
     });
   });
 }
