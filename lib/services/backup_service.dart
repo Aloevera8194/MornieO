@@ -14,6 +14,7 @@ import 'package:mornye/services/sqlite_native_snapshot.dart';
 import 'package:mornye/services/user_profile_store.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/utils/logger.dart';
+import 'package:mornye/utils/native_platform_name.dart';
 
 typedef BackupHistoryPageLoader =
     Future<List<Map<String, dynamic>>> Function(int limit, int offset);
@@ -440,7 +441,7 @@ class BackupService {
         'operation': 'backup_history_export',
         'history_path': snapshotPath,
         'ndjson_path': path,
-        'platform': Platform.isAndroid ? 'android' : 'ios',
+        'platform': nativePlatformName(),
         if (Platform.isIOS)
           'documents_path': (await getApplicationDocumentsDirectory()).path,
       });
@@ -485,7 +486,7 @@ class BackupService {
         'ndjson_path': bundle._historyNdjsonPath,
         if (bundle._historyCount != null)
           'expected_count': bundle._historyCount,
-        'platform': Platform.isAndroid ? 'android' : 'ios',
+        'platform': nativePlatformName(),
         'mode': 'replace',
       });
       if (result['committed'] != true) {
