@@ -120,13 +120,13 @@ flutter_launcher_icons:
   ios: true
   image_path: "icon.png"
   image_path_android: "icon_android.png"
-  adaptive_icon_background: "#000000"
+  adaptive_icon_background: "#1E4E4F"
   adaptive_icon_foreground: "icon_foreground_android.png"
-  adaptive_icon_foreground_inset: 16
-  adaptive_icon_monochrome: "icon_foreground_android.png"
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: "icon_monochrome_android.png"
   ios_content_mode: scaleAspectFill
   remove_alpha_ios: true
-  background_color_ios: "#000000"
+  background_color_ios: "#1E4E4F"
 
 flutter:
   uses-material-design: true
