@@ -469,7 +469,9 @@ class DownloadMetadataEmbedding {
       final path = '${tempDir.path}/cover_embed_$uniqueId.jpg';
       final result = await PlatformBridge.downloadCoverToFile(
         url,
-        Platform.isAndroid || Platform.isIOS ? '' : path,
+        // The backend may only write inside the folders it owns, so it
+        // creates the file and returns its path.
+        PlatformBridge.supportsCoreBackend ? '' : path,
         maxDimension: maxDimension,
       );
       if (result['error'] != null) {

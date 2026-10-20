@@ -192,10 +192,12 @@ class PlatformBridge {
       StreamController<String>.broadcast();
   static bool _backendEventHandlerInstalled = false;
 
-  static bool get supportsCoreBackend => Platform.isAndroid || Platform.isIOS;
+  /// The Rust backend answers on Android and iOS through the MethodChannel
+  /// and on desktop through dart:ffi, with plain filesystem paths.
+  static bool get supportsCoreBackend =>
+      Platform.isAndroid || Platform.isIOS || isDesktopPlatform;
 
-  static bool get supportsExtensionSystem =>
-      Platform.isAndroid || Platform.isIOS;
+  static bool get supportsExtensionSystem => supportsCoreBackend;
 
   static Stream<ExtensionSessionGrantEvent> extensionSessionGrantEvents() {
     _ensureBackendEventHandler();

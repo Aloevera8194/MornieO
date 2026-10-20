@@ -80,24 +80,27 @@ extension _HomeTabExploreUI on _HomeTabState {
         ),
         SizedBox(
           height: sectionHeight,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 12 + inset),
-            itemCount: section.items.length,
-            itemBuilder: (context, index) {
-              final item = section.items[index];
-              return StaggeredListItem(
-                key: ValueKey(
-                  'explore-item-${item.type}-${item.id}-${item.uri}',
-                ),
-                index: index,
-                staggerDelay: const Duration(milliseconds: 50),
-                child: Builder(
-                  builder: (itemContext) =>
-                      _buildExploreItem(itemContext, item, colorScheme),
-                ),
-              );
-            },
+          child: DesktopScrollArrows(
+            builder: (context, controller) => ListView.builder(
+              controller: controller,
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.symmetric(horizontal: 12 + inset),
+              itemCount: section.items.length,
+              itemBuilder: (context, index) {
+                final item = section.items[index];
+                return StaggeredListItem(
+                  key: ValueKey(
+                    'explore-item-${item.type}-${item.id}-${item.uri}',
+                  ),
+                  index: index,
+                  staggerDelay: const Duration(milliseconds: 50),
+                  child: Builder(
+                    builder: (itemContext) =>
+                        _buildExploreItem(itemContext, item, colorScheme),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ],

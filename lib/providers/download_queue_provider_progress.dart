@@ -4,7 +4,7 @@ part of 'download_queue_provider.dart';
 extension _DownloadQueueProgress on DownloadQueueNotifier {
   void _startMultiProgressPolling() {
     _progressTracker.resetPolling();
-    _progressPoller.start(useStream: Platform.isAndroid || Platform.isIOS);
+    _progressPoller.start(useStream: PlatformBridge.supportsCoreBackend);
   }
 
   void _processAllDownloadProgress(Map<String, dynamic> allProgress) {

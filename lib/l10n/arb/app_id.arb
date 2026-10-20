@@ -7334,5 +7334,7 @@
   "desktopMenuProjectPage": "Halaman proyek",
   "desktopDownloadsShowAll": "Tampilkan semua",
   "desktopDownloadsQueued": "Menunggu",
-  "desktopDownloadsCancel": "Batalkan download"
+  "desktopDownloadsCancel": "Batalkan download",
+  "desktopScrollBack": "Gulir ke belakang",
+  "desktopScrollForward": "Gulir ke depan"
 }

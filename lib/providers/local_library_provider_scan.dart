@@ -623,7 +623,7 @@ extension _LocalLibraryScan on LocalLibraryNotifier {
   }
 
   void _startProgressPolling() {
-    final useStream = Platform.isAndroid || Platform.isIOS;
+    final useStream = PlatformBridge.supportsCoreBackend;
     _progressPoller.start(useStream: useStream);
     if (useStream) {
       Future<void>.microtask(

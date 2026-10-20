@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mornye/constants/app_info.dart';
 import 'package:mornye/services/backend/ffi_backend_transport.dart';
 import 'package:mornye/services/backend/native_backend_transport.dart';
 import 'package:mornye/services/backend/rust_ffi_backend.dart';
@@ -91,6 +92,7 @@ void main() {
         'temp_dir': '/tmp',
         'ffmpeg_path': null,
         'ffprobe_path': null,
+        'app_version': AppInfo.version,
       },
     ]);
     expect(transport.calls.map((call) => call.id).toSet(), hasLength(2));

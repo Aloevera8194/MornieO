@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:mornye/constants/app_info.dart';
 import 'package:mornye/services/backend/backend_channel.dart';
 import 'package:mornye/services/backend/ffi_backend_transport.dart';
 import 'package:mornye/services/backend/native_backend_transport.dart';
@@ -34,11 +35,16 @@ class DesktopBackendConfig {
     required this.tempDir,
     this.ffmpegPath,
     this.ffprobePath,
+    this.appVersion = AppInfo.version,
   });
 
   final String appSupportDir;
   final String documentsDir;
   final String tempDir;
+
+  /// Host version extensions check `minAppVersion` against, as the mobile
+  /// hosts pass their bundle version.
+  final String appVersion;
 
   /// Bundled FFmpeg tools; null leaves FFmpeg work unavailable on desktop.
   final String? ffmpegPath;
@@ -74,6 +80,7 @@ class DesktopBackendConfig {
     'temp_dir': tempDir,
     'ffmpeg_path': ffmpegPath,
     'ffprobe_path': ffprobePath,
+    'app_version': appVersion,
   };
 }
 
