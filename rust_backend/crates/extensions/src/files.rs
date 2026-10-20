@@ -31,6 +31,14 @@ impl Root {
     }
 }
 
+/// Windows: check the part of a path below its granted root.
+#[cfg(not(unix))]
+fn check_windows_relative(relative: &Path) -> Result<(), String> {
+    let relative = relative.to_str().ok_or("invalid UTF-8 path")?;
+    crate::windows_path::check_relative(relative)
+        .map_err(|error| format!("file access denied: {error}"))
+}
+
 #[derive(Default)]
 pub struct FileRegistry {
     allowed: RwLock<Vec<Arc<Root>>>,
@@ -130,6 +138,8 @@ impl FileRegistry {
         {
             let base = clean(&std::path::absolute(base).map_err(|error| error.to_string())?);
             if let Ok(relative) = target.strip_prefix(&base) {
+                #[cfg(not(unix))]
+                check_windows_relative(relative)?;
                 let directory = match Dir::open_ambient_dir(&base, ambient_authority()) {
                     Ok(directory) => directory,
                     // Go accepts a future output path; validation must not create it.
@@ -239,8 +249,14 @@ impl ExtensionFiles {
             let root = root.or_else(|| self.registry.temporary.read().expect("temporary file grants lock")
                 .iter().filter_map(Weak::upgrade).find(|root| input.starts_with(&root.path)))
                 .ok_or("file access denied: absolute paths are not allowed. Use relative paths within extension sandbox")?;
+            #[cfg(not(unix))]
+            check_windows_relative(input.strip_prefix(&root.path).expect("granted file root"))?;
             (root, input)
         } else {
+            // Check the raw text: cleaning would hide `..` and Win32 aliases.
+            #[cfg(not(unix))]
+            crate::windows_path::check_relative(path)
+                .map_err(|error| format!("file access denied: {error}"))?;
             let absolute = clean(&self.root.path.join(input));
             if !absolute.starts_with(&self.root.path) {
                 return Err(format!(
@@ -465,7 +481,104 @@ impl FilePath {
         ))
     }
 
-    #[cfg(not(unix))]
+    /// Windows twin of the Unix walk: open each component below its parent
+    /// handle with `FILE_FLAG_OPEN_REPARSE_POINT`, so a symlink, junction or
+    /// mount point opens as itself and is rejected instead of followed. The
+    /// next component is opened through the verified handle, never by path.
+    #[cfg(windows)]
+    pub(crate) fn open_native_read(&self) -> io::Result<File> {
+        use cap_std::fs::OpenOptionsExt;
+        use std::os::windows::fs::MetadataExt;
+        use windows_sys::Win32::Storage::FileSystem::{
+            FILE_ATTRIBUTE_REPARSE_POINT, FILE_FLAG_BACKUP_SEMANTICS, FILE_FLAG_OPEN_REPARSE_POINT,
+        };
+
+        let special =
+            || io::Error::other("native media path must not contain symlinks or special files");
+        let not_regular = || io::Error::new(io::ErrorKind::InvalidInput, "not a regular file");
+        let mut directory: Option<Dir> = None;
+        let mut components = self.relative.components().peekable();
+        while let Some(component) = components.next() {
+            let last = components.peek().is_none();
+            let name = match component {
+                Component::Normal(name) => name,
+                Component::CurDir if last => return Err(not_regular()),
+                Component::CurDir => continue,
+                _ => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidInput,
+                        "invalid native path",
+                    ));
+                }
+            };
+            let parent = directory.as_ref().unwrap_or(&self.root.directory);
+            let mut options = OpenOptions::new();
+            // Backup semantics are required to open a directory handle.
+            options.read(true).custom_flags(if last {
+                FILE_FLAG_OPEN_REPARSE_POINT
+            } else {
+                FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS
+            });
+            let file = match parent.open_with(name, &options) {
+                Ok(file) => file,
+                Err(error) => {
+                    // Match the Unix errors for a final directory, links and
+                    // special files that refuse a plain read open.
+                    if error.kind() != io::ErrorKind::NotFound
+                        && let Ok(info) = parent.symlink_metadata(name)
+                    {
+                        if last && info.is_dir() {
+                            return Err(not_regular());
+                        }
+                        if !info.is_file() && !info.is_dir() {
+                            return Err(special());
+                        }
+                    }
+                    return Err(error);
+                }
+            };
+            // Metadata comes from the opened handle, so it describes the
+            // object this walk continues from. A link reports neither a
+            // file nor a directory.
+            let metadata = file.metadata()?;
+            if last {
+                if metadata.is_dir() {
+                    return Err(not_regular());
+                }
+                if !metadata.is_file() {
+                    return Err(special());
+                }
+                let file = file.into_std();
+                if file.metadata()?.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT == 0 {
+                    return Ok(File::from_std(file));
+                }
+                // A reparse point that is not a link (a cloud placeholder or
+                // deduplicated file) needs its filter driver to supply data,
+                // which the flag bypasses. Reopen it through the verified
+                // parent; cap-std keeps a racing replacement inside the root.
+                let reopened = parent.open_with(name, OpenOptions::new().read(true))?;
+                return if reopened.metadata()?.is_file() {
+                    Ok(reopened)
+                } else {
+                    Err(special())
+                };
+            }
+            if !metadata.is_dir() {
+                return Err(if metadata.is_file() {
+                    io::Error::new(io::ErrorKind::NotADirectory, "not a directory")
+                } else {
+                    special()
+                });
+            }
+            directory = Some(Dir::from_std_file(file.into_std()));
+        }
+        Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "empty native path",
+        ))
+    }
+
+    #[cfg(not(any(unix, windows)))]
     pub(crate) fn open_native_read(&self) -> io::Result<File> {
         self.native_display().map_err(io::Error::other)?;
         self.open(OpenOptions::new().read(true))

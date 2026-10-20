@@ -1,5 +1,7 @@
 use super::*;
-use std::io::{Seek, SeekFrom, Write};
+use std::io::Write;
+#[cfg(unix)]
+use std::io::{Seek, SeekFrom};
 
 #[cfg(unix)]
 #[test]
@@ -237,4 +239,166 @@ fn stage_from_preserves_existing_destination_and_cleans_cancelled_stage() {
     assert_eq!(error.to_string(), "cancelled");
     assert!(!destination.absolute.exists());
     assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 1);
+}
+
+/// Create a directory junction, which needs no privilege unlike symlinks.
+#[cfg(windows)]
+fn junction(link: &Path, target: &Path) {
+    let status = std::process::Command::new("cmd")
+        .arg("/C")
+        .arg("mklink")
+        .arg("/J")
+        .arg(link)
+        .arg(target)
+        .stdout(std::process::Stdio::null())
+        .status()
+        .unwrap();
+    assert!(status.success(), "mklink /J {}", link.display());
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_resolve_rejects_escape_and_alias_paths() {
+    let root = tempfile::tempdir().unwrap();
+    let grant = tempfile::tempdir().unwrap();
+    let registry = Arc::new(FileRegistry::default());
+    registry
+        .set_allowed_directories(&[grant.path().to_owned()])
+        .unwrap();
+    let files = registry.extension(root.path()).unwrap();
+    for path in [
+        "..\\outside.flac",
+        "../outside.flac",
+        "album\\..\\..\\outside.flac",
+        "album/../song.flac",
+        "\\outside.flac",
+        "/outside.flac",
+        "\\\\server\\share\\outside.flac",
+        "//server/share/outside.flac",
+        "\\\\?\\C:\\Windows\\win.ini",
+        "\\\\.\\PhysicalDrive0",
+        "C:outside.flac",
+        "C:\\Windows\\win.ini",
+        "song.flac:hidden",
+        "song.flac::$DATA",
+        "NUL",
+        "album\\con.txt",
+        "COM1.flac",
+        "song.",
+        "song ",
+        "so*ng.flac",
+    ] {
+        assert!(
+            files
+                .resolve(path)
+                .err()
+                .is_some_and(|error| error.starts_with("file access denied")),
+            "{path:?} was not denied"
+        );
+    }
+    // Granted absolute paths still reject aliases below the grant.
+    let granted = grant.path().join("song.flac");
+    assert!(files.resolve(granted.to_str().unwrap()).is_ok());
+    for suffix in [":hidden", "::$DATA"] {
+        let path = format!("{}{suffix}", granted.display());
+        assert!(files.resolve(&path).is_err(), "{path:?} was accepted");
+    }
+    let device = grant.path().join("NUL");
+    assert!(files.resolve(device.to_str().unwrap()).is_err());
+    // Nothing above created files outside the sandbox or a stream inside it.
+    assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 0);
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_native_reads_reject_junctions_and_links_at_every_component() {
+    use std::io::Read;
+
+    let root = tempfile::tempdir().unwrap();
+    let outside = tempfile::tempdir().unwrap();
+    std::fs::write(outside.path().join("secret.wav"), b"secret").unwrap();
+    let files = Arc::new(FileRegistry::default())
+        .extension(root.path())
+        .unwrap();
+    std::fs::create_dir_all(root.path().join("album/disc")).unwrap();
+    std::fs::write(root.path().join("album/disc/song.wav"), b"original").unwrap();
+
+    let mut file = files
+        .resolve("album\\disc\\song.wav")
+        .unwrap()
+        .open_native_read()
+        .unwrap();
+    let mut data = Vec::new();
+    file.read_to_end(&mut data).unwrap();
+    assert_eq!(data, b"original");
+    assert!(file.write_all(b"changed").is_err());
+
+    junction(
+        &root.path().join("album-junction"),
+        &root.path().join("album"),
+    );
+    junction(&root.path().join("outside-junction"), outside.path());
+    for path in [
+        "album-junction/disc/song.wav",
+        "outside-junction/secret.wav",
+    ] {
+        let resolved = files.resolve(path).unwrap();
+        assert!(
+            resolved
+                .open_native_read()
+                .unwrap_err()
+                .to_string()
+                .contains("symlinks"),
+            "{path}"
+        );
+        assert!(resolved.native_display().is_err(), "{path}");
+    }
+    // The capability open never leaves the root through a junction either.
+    assert!(
+        files
+            .resolve("outside-junction/secret.wav")
+            .unwrap()
+            .open(OpenOptions::new().read(true))
+            .is_err()
+    );
+    // File symlinks need Developer Mode or a privilege; test them when
+    // available.
+    if std::os::windows::fs::symlink_file(
+        outside.path().join("secret.wav"),
+        root.path().join("link.wav"),
+    )
+    .is_ok()
+    {
+        let resolved = files.resolve("link.wav").unwrap();
+        assert!(
+            resolved
+                .open_native_read()
+                .unwrap_err()
+                .to_string()
+                .contains("symlinks")
+        );
+        assert!(resolved.open(OpenOptions::new().read(true)).is_err());
+    }
+    assert_eq!(
+        files
+            .resolve("album")
+            .unwrap()
+            .open_native_read()
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::InvalidInput
+    );
+    assert_eq!(
+        files
+            .resolve("missing.wav")
+            .unwrap()
+            .open_native_read()
+            .unwrap_err()
+            .kind(),
+        io::ErrorKind::NotFound
+    );
+    assert_eq!(
+        std::fs::read(outside.path().join("secret.wav")).unwrap(),
+        b"secret"
+    );
 }
