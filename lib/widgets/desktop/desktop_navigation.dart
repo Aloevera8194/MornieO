@@ -587,20 +587,24 @@ class DesktopNavigationRail extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (onExtendedChanged != null)
+                    // Centered over the collapsed rail, where it stays, on
+                    // the same axis as the destination icons whatever size
+                    // the desktop visual density gives the button.
                     Padding(
-                      // Centered over the collapsed rail, where it stays.
-                      padding: const EdgeInsetsDirectional.fromSTEB(
-                        24,
-                        4,
-                        0,
-                        4,
-                      ),
-                      child: IconButton(
-                        tooltip: extended
-                            ? material.expandedIconTapHint
-                            : material.collapsedIconTapHint,
-                        icon: AppIcon(extended ? Icons.menu_open : Icons.menu),
-                        onPressed: () => onExtendedChanged(!extended),
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: SizedBox(
+                        width: desktopCollapsedRailWidth,
+                        child: Center(
+                          child: IconButton(
+                            tooltip: extended
+                                ? material.expandedIconTapHint
+                                : material.collapsedIconTapHint,
+                            icon: AppIcon(
+                              extended ? Icons.menu_open : Icons.menu,
+                            ),
+                            onPressed: () => onExtendedChanged(!extended),
+                          ),
+                        ),
                       ),
                     ),
                   Expanded(

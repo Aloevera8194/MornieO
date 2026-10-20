@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,7 @@ import 'package:mornye/services/user_profile_store.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_downloads_button.dart';
 import 'package:mornye/widgets/desktop/desktop_navigation.dart';
@@ -264,6 +266,28 @@ void main() {
       // 56dp indicators with an 8dp gap: label centers 64dp apart.
       expect(library.center.dy - home.center.dy, closeTo(56 + 8, 0.5));
     });
+
+    for (final width in [900.0, 1400.0]) {
+      testWidgets('rail menu icon lines up with the destinations at $width', (
+        tester,
+      ) async {
+        // Desktop platforms get a compact visual density, which shrinks
+        // the menu button.
+        debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+        await pumpShell(tester, mornye: false, width: width);
+
+        Offset iconCenter(IconData icon) => tester.getCenter(
+          find.byWidgetPredicate((w) => w is AppIcon && w.icon == icon).first,
+        );
+        final menu = iconCenter(width < 1200 ? Icons.menu : Icons.menu_open);
+        // Home is selected; Library is not.
+        final home = iconCenter(Icons.circle);
+        final library = iconCenter(Icons.circle_outlined);
+        debugDefaultTargetPlatformOverride = null;
+        expect(menu.dx, closeTo(home.dx, 0.5));
+        expect(library.dx, closeTo(home.dx, 0.5));
+      });
+    }
 
     testWidgets('rail menu button collapses and expands the rail', (
       tester,
