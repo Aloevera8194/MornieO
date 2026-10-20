@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart' show OverflowBoxFit;
 import 'package:material_3_expressive/components/navigation_rail/components/m3e_rail_item.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/screens/now_playing_screen.dart';
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/material_expressive.dart';
@@ -13,6 +14,8 @@ import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
+import 'package:mornye/widgets/desktop/desktop_downloads_button.dart';
+import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
 
 /// Window width at which the Material rail shows labels beside its icons.
@@ -38,9 +41,15 @@ class DesktopDestination {
   final int badgeCount;
 }
 
-/// The desktop shell: navigation on the leading edge, the content pane, and
-/// the persistent player bar across the bottom. Material uses
-/// [DesktopNavigationRail]; Mornye uses [DesktopSidebar].
+/// The desktop shell: navigation on the leading edge, the content pane, the
+/// trailing inspector, and the persistent player bar across the bottom.
+/// Material uses [DesktopNavigationRail] and a top bar with search and
+/// downloads; Mornye uses [DesktopSidebar], with downloads in its player
+/// toolbar.
+///
+/// Now Playing replaces the content pane while [desktopNowPlayingOpen] is
+/// set. Lyrics and Up Next ([desktopInspectorPanel]) sit beside the content
+/// from [desktopInspectorBesideBreakpoint] and float over it below that.
 class DesktopShellLayout extends StatelessWidget {
   const DesktopShellLayout({
     super.key,
@@ -49,6 +58,7 @@ class DesktopShellLayout extends StatelessWidget {
     required this.onSelected,
     required this.body,
     this.playerBar = const DesktopPlayerBar(),
+    this.nowPlaying = const DesktopNowPlayingPane(),
   });
 
   /// Destinations in [desktopDestinationTabs] order; Cmd/Ctrl+1..5 follow it.
@@ -57,6 +67,7 @@ class DesktopShellLayout extends StatelessWidget {
   final ValueChanged<ShellTab> onSelected;
   final Widget body;
   final Widget playerBar;
+  final Widget nowPlaying;
 
   @override
   Widget build(BuildContext context) {
@@ -87,24 +98,11 @@ class DesktopShellLayout extends StatelessWidget {
                   thickness: 1,
                   color: MornyeTheme.metadataDividerColor(context),
                 ),
-              // Width-based layout (centered columns, grids) measures the
-              // content pane rather than the whole window.
               Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final mediaQuery = MediaQuery.of(context);
-                    return MediaQuery(
-                      data: mediaQuery
-                          .copyWith(
-                            size: Size(
-                              constraints.maxWidth,
-                              constraints.maxHeight,
-                            ),
-                          )
-                          .removePadding(removeLeft: true, removeBottom: true),
-                      child: body,
-                    );
-                  },
+                child: _DesktopContentArea(
+                  overlayInspector: desktopInspectorOverlays(width),
+                  body: body,
+                  nowPlaying: nowPlaying,
                 ),
               ),
             ],
@@ -112,6 +110,195 @@ class DesktopShellLayout extends StatelessWidget {
         ),
         playerBar,
       ],
+    );
+  }
+}
+
+/// Gives [child] the size of the space it lays out in, so width-based layout
+/// (centered columns, grids) measures the pane rather than the whole window.
+class _PaneMediaQuery extends StatelessWidget {
+  const _PaneMediaQuery({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final mediaQuery = MediaQuery.of(context);
+      return MediaQuery(
+        data: mediaQuery
+            .copyWith(size: Size(constraints.maxWidth, constraints.maxHeight))
+            .removePadding(removeLeft: true, removeBottom: true),
+        child: child,
+      );
+    },
+  );
+}
+
+/// The content pane (with the Material top bar), Now Playing over it while
+/// open, and the trailing inspector.
+class _DesktopContentArea extends StatelessWidget {
+  const _DesktopContentArea({
+    required this.overlayInspector,
+    required this.body,
+    required this.nowPlaying,
+  });
+
+  final bool overlayInspector;
+  final Widget body;
+  final Widget nowPlaying;
+
+  @override
+  Widget build(BuildContext context) {
+    final mornye = context.isMornye;
+    return ValueListenableBuilder<bool>(
+      valueListenable: desktopNowPlayingOpen,
+      builder: (context, nowPlayingOpen, _) =>
+          ValueListenableBuilder<DesktopInspectorPanel?>(
+            valueListenable: desktopInspectorPanel,
+            builder: (context, panel, _) {
+              final content = Stack(
+                fit: StackFit.expand,
+                children: [
+                  // The destinations keep their state, but stop painting and
+                  // ticking while Now Playing covers them.
+                  Visibility(
+                    visible: !nowPlayingOpen,
+                    maintainState: true,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!mornye) const DesktopTopBar(),
+                        // A semantics container keeps the tab navigators'
+                        // modal barriers from hiding the sidebar and top bar.
+                        Expanded(
+                          child: Semantics(
+                            container: true,
+                            child: _PaneMediaQuery(child: body),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (nowPlayingOpen) _PaneMediaQuery(child: nowPlaying),
+                  if (panel != null && overlayInspector)
+                    PositionedDirectional(
+                      top: 0,
+                      bottom: 0,
+                      end: 0,
+                      width: desktopInspectorWidth,
+                      child: DesktopInspector(panel: panel, overlay: true),
+                    ),
+                ],
+              );
+              // One structure for every state, so opening the inspector never
+              // remounts the destinations.
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: content),
+                  if (panel != null && !overlayInspector)
+                    DesktopInspector(panel: panel),
+                ],
+              );
+            },
+          ),
+    );
+  }
+}
+
+/// Now Playing filling the content pane. Escape, Back or its minimize button
+/// return to the content.
+class DesktopNowPlayingPane extends StatelessWidget {
+  const DesktopNowPlayingPane({super.key});
+
+  @override
+  Widget build(BuildContext context) => const HeroMode(
+    // The pane is no route: there is nothing for a Hero to fly between.
+    enabled: false,
+    child: NowPlayingScreen(embedded: true),
+  );
+}
+
+/// The Material top bar of the content pane: a persistent search field and
+/// the downloads button. The field opens Search and focuses its input.
+class DesktopTopBar extends StatelessWidget {
+  const DesktopTopBar({super.key});
+
+  static const double height = 64;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final hint = context.l10n.homeSearchHintDefault;
+    final radius = BorderRadius.circular(context.tokens.radiusSheet);
+    return Material(
+      color: colorScheme.surface,
+      child: SizedBox(
+        height: height,
+        child: Padding(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 12, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 560),
+                    child: Tooltip(
+                      message: desktopTooltip(
+                        context,
+                        context.l10n.mornyeSearch,
+                        DesktopCommand.search,
+                      ),
+                      child: Semantics(
+                        button: true,
+                        label: hint,
+                        excludeSemantics: true,
+                        child: InkWell(
+                          key: const ValueKey('desktop-top-bar-search'),
+                          borderRadius: radius,
+                          onTap: ShellNavigationService.requestSearch,
+                          child: Ink(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerHigh,
+                              borderRadius: radius,
+                            ),
+                            child: Row(
+                              children: [
+                                const SizedBox(width: 16),
+                                AppIcon(
+                                  Icons.search,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    hint,
+                                    style: textTheme.bodyLarge?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const DesktopDownloadsButton(),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -247,10 +247,12 @@ class _HomeContinueListeningCard extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => Navigator.of(
-          context,
-          rootNavigator: true,
-        ).push(NowPlayingRoute(child: const NowPlayingScreen())),
+        onTap: isDesktopPlatform
+            ? openDesktopNowPlaying
+            : () => Navigator.of(
+                context,
+                rootNavigator: true,
+              ).push(NowPlayingRoute(child: const NowPlayingScreen())),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
           child: Row(

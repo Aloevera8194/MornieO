@@ -25,9 +25,11 @@ import 'package:mornye/screens/settings/metadata_settings_page.dart';
 import 'package:mornye/screens/settings/playback_settings_page.dart';
 import 'package:mornye/utils/settings_search_catalog.dart';
 import 'package:mornye/services/app_remote_config_service.dart';
+import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/widgets/app_icon.dart';
@@ -103,6 +105,28 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
   late final AppRemoteConfigService _remoteConfigService =
       widget.remoteConfigService ?? AppRemoteConfigService();
 
+  /// Desktop list-detail: the selected category ([_profileSelection] for the
+  /// profile), the setting a search result points at, and the detail pane's
+  /// navigator. Each selection gets a fresh navigator, so the pages pushed
+  /// for the previous category close.
+  int _selected = 0;
+  String? _selectedTarget;
+  var _detailNavigatorKey = GlobalKey<NavigatorState>();
+  static const int _profileSelection = -1;
+
+  bool get _supportsListDetail => isDesktopPlatform && !widget.asPage;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_supportsListDetail) {
+      ShellNavigationService.registerSettingsDetailNavigator(
+        owner: this,
+        navigator: () => _detailNavigatorKey.currentState,
+      );
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -134,6 +158,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
 
   @override
   void dispose() {
+    ShellNavigationService.unregisterSettingsDetailNavigator(this);
     _searchController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
@@ -422,8 +447,256 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     );
   }
 
+  /// Content pane width from which desktop Settings shows its categories
+  /// beside the selected page.
+  static const double listDetailMinWidth = 720;
+
   @override
   Widget build(BuildContext context) {
+    if (!_supportsListDetail) return _buildList(context);
+    return LayoutBuilder(
+      builder: (context, constraints) =>
+          constraints.maxWidth >= listDetailMinWidth
+          ? _buildListDetail(context)
+          : _buildList(context),
+    );
+  }
+
+  /// Selects the category at [index] (or [_profileSelection]) for the
+  /// detail pane. Selecting the open category again returns its pane to the
+  /// top page.
+  void _select(int index, {String? target}) {
+    _searchFocusNode.unfocus();
+    if (index == _selected && target == null && _selectedTarget == null) {
+      _detailNavigatorKey.currentState?.popUntil((route) => route.isFirst);
+      return;
+    }
+    setState(() {
+      _selected = index;
+      _selectedTarget = target;
+      _detailNavigatorKey = GlobalKey<NavigatorState>();
+    });
+  }
+
+  Widget _detailPage() {
+    final Widget page;
+    if (_selected == _profileSelection) {
+      final profile = ref.read(userProfileProvider).value;
+      page = profile == null
+          ? const SizedBox.shrink()
+          : ProfileSettingsPage(profile: profile);
+    } else {
+      final destinations = [
+        for (final group in _groups(context)) ...group.destinations,
+      ];
+      page = destinations[_selected.clamp(0, destinations.length - 1)]
+          .pageBuilder();
+    }
+    final target = _selectedTarget;
+    return MornyeSettingsTheme(
+      child: target == null
+          ? page
+          : SettingsSearchHighlightScope(targetLabel: target, child: page),
+    );
+  }
+
+  /// Desktop Settings: categories on the leading side and the selected page
+  /// beside them, whose own links open inside the detail pane. Material
+  /// follows the M3 list-detail layout; Mornye follows the System Settings
+  /// sidebar.
+  Widget _buildListDetail(BuildContext context) {
+    final mornye = context.isMornye;
+    return MornyeSettingsTheme(
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context);
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                key: const ValueKey('settings-category-list'),
+                width: mornye ? 260 : 320,
+                child: Material(
+                  color: mornye
+                      ? theme.scaffoldBackgroundColor
+                      : theme.colorScheme.surfaceContainerLow,
+                  child: _buildCategoryList(context),
+                ),
+              ),
+              if (mornye)
+                VerticalDivider(
+                  width: 1,
+                  thickness: 1,
+                  color: MornyeTheme.metadataDividerColor(context),
+                ),
+              Expanded(
+                child: ClipRect(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final mediaQuery = MediaQuery.of(context);
+                      // Pages measure the detail pane, not the window.
+                      return MediaQuery(
+                        data: mediaQuery.copyWith(
+                          size: Size(
+                            constraints.maxWidth,
+                            constraints.maxHeight,
+                          ),
+                        ),
+                        // A semantics container keeps the detail routes'
+                        // modal barriers from hiding the category list.
+                        child: Semantics(
+                          container: true,
+                          child: HeroControllerScope.none(
+                            child: Navigator(
+                              key: _detailNavigatorKey,
+                              onGenerateInitialRoutes: (_, _) => [
+                                PageRouteBuilder<void>(
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero,
+                                  pageBuilder: (_, _, _) => _detailPage(),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategoryList(BuildContext context) {
+    final mornye = context.isMornye;
+    final theme = Theme.of(context);
+    final query = SettingsSearchQuery(_query);
+    final groups = _groups(context);
+    final destinations = [for (final group in groups) ...group.destinations];
+
+    Widget categoryRow(_Destination destination) {
+      final index = destinations.indexOf(destination);
+      return _CategoryRow(
+        key: ValueKey('settings-category:${destination.title}'),
+        leading: _CategoryIcon(
+          icon: destination.icon,
+          color: destination.iconColor,
+          selected: index == _selected,
+        ),
+        title: destination.title,
+        selected: index == _selected,
+        onTap: () => _select(index),
+      );
+    }
+
+    final children = <Widget>[
+      if (!mornye)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(12, 20, 12, 12),
+          child: Semantics(
+            header: true,
+            child: Text(
+              context.l10n.settingsTitle,
+              style: theme.textTheme.headlineSmall,
+            ),
+          ),
+        ),
+      Padding(
+        padding: EdgeInsets.only(top: mornye ? 12 : 0, bottom: 12),
+        child: AppSearchField(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          hintText: context.l10n.settingsSearchHint,
+          clearTooltip: context.l10n.dialogClear,
+          samplesBackdrop: false,
+          onChanged: (value) => setState(() => _query = value),
+          onClear: () => setState(() => _query = ''),
+        ),
+      ),
+      Consumer(
+        builder: (context, ref, _) {
+          final profile = ref.watch(userProfileProvider).value;
+          final named = profile?.name.isNotEmpty == true;
+          return _CategoryRow(
+            key: const ValueKey('settings-category:profile'),
+            leading: ProfileAvatar(
+              name: profile?.name ?? '',
+              photoPath: profile?.photoPath,
+              size: mornye ? 36 : 40,
+            ),
+            title: named ? profile!.name : context.l10n.profileSetUp,
+            subtitle: context.l10n.profileEdit,
+            selected: _selected == _profileSelection,
+            onTap: profile == null ? null : () => _select(_profileSelection),
+          );
+        },
+      ),
+    ];
+
+    if (query.isEmpty) {
+      for (final group in groups) {
+        children.add(SizedBox(height: mornye ? 16 : 12));
+        children.addAll(group.destinations.map(categoryRow));
+      }
+    } else {
+      final matches = <_SearchResult>[
+        for (final destination in destinations) ...[
+          if (destination.matches(query)) _SearchResult(destination),
+          for (final entry in destination.searchEntries)
+            if (entry.matches(query)) _SearchResult(destination, entry),
+        ],
+      ];
+      children.add(const SizedBox(height: 12));
+      if (matches.isEmpty) {
+        children.add(
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Text(
+              context.l10n.settingsSearchNoResults(_query.trim()),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        );
+      }
+      for (final result in matches) {
+        final entry = result.entry;
+        if (entry == null) {
+          children.add(categoryRow(result.destination));
+          continue;
+        }
+        final index = destinations.indexOf(result.destination);
+        children.add(
+          _CategoryRow(
+            key: ValueKey(
+              'settings-search:${result.destination.title}:${entry.title}',
+            ),
+            leading: _CategoryIcon(
+              icon: entry.icon,
+              color: result.destination.iconColor,
+              selected: false,
+            ),
+            title: entry.title,
+            subtitle: result.destination.title,
+            selected: false,
+            onTap: () => _select(index, target: entry.targetLabel),
+          ),
+        );
+      }
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+      children: children,
+    );
+  }
+
+  Widget _buildList(BuildContext context) {
     final tokens = context.tokens;
     final wideInset = wideListInset(context);
     final query = SettingsSearchQuery(_query);
@@ -605,6 +878,145 @@ class _DonationGoalProgress extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// A category in the desktop settings list. Material marks the selected
+/// row with a `secondaryContainer` pill, as M3 lists and navigation do;
+/// Mornye fills it with the accent color like the System Settings sidebar.
+class _CategoryRow extends StatelessWidget {
+  const _CategoryRow({
+    super.key,
+    required this.leading,
+    required this.title,
+    required this.selected,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  final Widget leading;
+  final String title;
+  final String? subtitle;
+  final bool selected;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final mornye = context.isMornye;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final radius = BorderRadius.circular(mornye ? 8 : 28);
+    final foreground = selected
+        ? (mornye ? colorScheme.onPrimary : colorScheme.onSecondaryContainer)
+        : colorScheme.onSurface;
+    final secondary = selected
+        ? foreground.withValues(alpha: 0.8)
+        : colorScheme.onSurfaceVariant;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Semantics(
+        button: true,
+        selected: selected,
+        child: Material(
+          color: selected
+              ? (mornye ? colorScheme.primary : colorScheme.secondaryContainer)
+              : Colors.transparent,
+          borderRadius: radius,
+          child: InkWell(
+            borderRadius: radius,
+            onTap: onTap,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: mornye ? 36 : 56),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: mornye ? 8 : 16,
+                  vertical: 4,
+                ),
+                child: Row(
+                  children: [
+                    IconTheme.merge(
+                      data: IconThemeData(color: foreground),
+                      child: leading,
+                    ),
+                    SizedBox(width: mornye ? 10 : 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            title,
+                            style:
+                                (mornye
+                                        ? textTheme.bodyMedium
+                                        : textTheme.labelLarge)
+                                    ?.copyWith(
+                                      color: foreground,
+                                      fontWeight: selected && !mornye
+                                          ? FontWeight.w700
+                                          : null,
+                                    ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (subtitle != null)
+                            Text(
+                              subtitle!,
+                              style: textTheme.bodySmall?.copyWith(
+                                color: secondary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A category glyph: Material's plain icon, or Mornye's white symbol on a
+/// tile in the category's color, as in System Settings.
+class _CategoryIcon extends StatelessWidget {
+  const _CategoryIcon({
+    required this.icon,
+    required this.color,
+    required this.selected,
+  });
+
+  final IconData icon;
+  final MaterialColor color;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    if (!context.isMornye) {
+      return AppIcon.adaptive(
+        icon,
+        size: 24,
+        color: selected
+            ? colorScheme.onSecondaryContainer
+            : colorScheme.onSurfaceVariant,
+      );
+    }
+    return Container(
+      width: 24,
+      height: 24,
+      decoration: BoxDecoration(
+        color: color[600],
+        borderRadius: BorderRadius.circular(6),
+      ),
+      alignment: Alignment.center,
+      child: AppIcon.adaptive(icon, size: 15, color: Colors.white),
     );
   }
 }

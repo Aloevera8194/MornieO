@@ -50,6 +50,13 @@ class AppSliverHeader extends StatelessWidget {
   /// Content margin the expanded title aligns to.
   static const double _contentMargin = 24;
 
+  static bool _isNestedNavigatorRoot(BuildContext context) {
+    if (ModalRoute.of(context)?.canPop ?? true) return false;
+    final navigator = Navigator.maybeOf(context);
+    return navigator != null &&
+        !identical(navigator, Navigator.maybeOf(context, rootNavigator: true));
+  }
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
@@ -64,6 +71,10 @@ class AppSliverHeader extends StatelessWidget {
         : tokens.headerExpandedHeight;
     final maxHeight = expandedHeight + topPadding;
     final edgeInset = detailHeaderEdgeInset(context);
+    // A page at the root of a nested navigator, such as the desktop settings
+    // detail pane, has nothing to go back to.
+    final showLeading =
+        _showLeading && (leading != null || !_isNestedNavigatorRoot(context));
 
     return SliverAppBar(
       expandedHeight: maxHeight,
@@ -73,8 +84,8 @@ class AppSliverHeader extends StatelessWidget {
       backgroundColor: colorScheme.surface,
       surfaceTintColor: Colors.transparent,
       automaticallyImplyLeading: false,
-      leadingWidth: _showLeading ? kToolbarHeight + edgeInset : null,
-      leading: _showLeading
+      leadingWidth: showLeading ? kToolbarHeight + edgeInset : null,
+      leading: showLeading
           ? Padding(
               padding: EdgeInsets.only(left: edgeInset),
               child:
@@ -126,7 +137,7 @@ class AppSliverHeader extends StatelessWidget {
               : 0.0;
           final contentMargin =
               _contentMargin + (alignToContent ? wideListInset(context) : 0);
-          final leftPadding = _showLeading
+          final leftPadding = showLeading
               ? (_leadingClearance + edgeInset) -
                     (((_leadingClearance + edgeInset) - contentMargin) *
                         expandRatio)

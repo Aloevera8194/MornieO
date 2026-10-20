@@ -50,6 +50,7 @@ import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/selection_bottom_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
+import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:mornye/widgets/desktop/desktop_navigation.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
@@ -306,8 +307,17 @@ class _MainShellState extends ConsumerState<MainShell>
     if (!context.isMornye) ref.read(trackProvider.notifier).clear();
   }
 
+  /// Mornye desktop windows show Settings as a destination after Search, in
+  /// the content pane. Phones and tablets open it as a page instead.
+  bool get _mornyeSettingsTab => context.isMornye && isDesktopPlatform;
+
+  int _settingsIndex(bool showStore) =>
+      context.isMornye ? (showStore ? 4 : 3) : (showStore ? 3 : 2);
+
   void _onShellTabRequested(ShellTab tab) {
-    if (tab == ShellTab.settings && context.isMornye) {
+    // Picking a destination returns from Now Playing to the content pane.
+    if (isDesktopPlatform) desktopNowPlayingOpen.value = false;
+    if (tab == ShellTab.settings && context.isMornye && !_mornyeSettingsTab) {
       unawaited(_openProfileSettings());
       return;
     }
@@ -319,7 +329,7 @@ class _MainShellState extends ConsumerState<MainShell>
       ShellTab.search => context.isMornye ? (showStore ? 3 : 2) : 0,
       ShellTab.library => 1,
       ShellTab.repository => showStore ? 2 : null,
-      ShellTab.settings => showStore ? 3 : 2,
+      ShellTab.settings => _settingsIndex(showStore),
     };
     if (index != null) _onNavTap(index, resetHome: tab != ShellTab.search);
   }
@@ -498,6 +508,9 @@ class _MainShellState extends ConsumerState<MainShell>
     if (index == 0) return ShellTab.home;
     if (index == 1) return ShellTab.library;
     if (showStore && index == 2) return ShellTab.repository;
+    if (_mornyeSettingsTab && index == _settingsIndex(showStore)) {
+      return ShellTab.settings;
+    }
     return context.isMornye ? ShellTab.search : ShellTab.settings;
   }
 
@@ -647,6 +660,7 @@ class _MainShellState extends ConsumerState<MainShell>
           heroAnimationsEnabled: heroAnimationsEnabled,
           child: const HomeTab(mode: HomeTabMode.search),
         ),
+      if (_mornyeSettingsTab) const SettingsTab(key: ValueKey('tab-settings')),
     ];
 
     final l10n = context.l10n;
@@ -997,6 +1011,7 @@ class _TabNavigatorState extends State<_TabNavigator> {
   // Hero widgets on routes pushed inside a tab never fly.
   final HeroController _heroController =
       MaterialApp.createMaterialHeroController();
+  final _nowPlayingCloser = DesktopNowPlayingCloser();
 
   @override
   void dispose() {
@@ -1012,6 +1027,7 @@ class _TabNavigatorState extends State<_TabNavigator> {
       observers: [
         _chromeObserver,
         if (widget.heroAnimationsEnabled) _heroController,
+        if (isDesktopPlatform) _nowPlayingCloser,
         ...widget.observers,
       ],
       onGenerateInitialRoutes: (_, _) => [

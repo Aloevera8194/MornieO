@@ -1,12 +1,9 @@
-import 'dart:async';
-
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/music_player_provider.dart';
-import 'package:mornye/routes/now_playing_route.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/string_utils.dart';
@@ -15,6 +12,8 @@ import 'package:mornye/widgets/app_icon_button.dart';
 import 'package:mornye/widgets/app_loading_indicator.dart';
 import 'package:mornye/widgets/audio_quality_badges.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
+import 'package:mornye/widgets/desktop/desktop_downloads_button.dart';
+import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:mornye/widgets/mornye_playback_button.dart';
 import 'package:mornye/widgets/player_artwork.dart';
 import 'package:mornye/widgets/player_volume_control.dart';
@@ -22,12 +21,14 @@ import 'package:mornye/widgets/playback_seek_slider.dart';
 
 /// The persistent desktop player along the bottom of the window. It replaces
 /// the mobile mini player: no swipe gestures, with transport, seek, volume,
-/// lyrics and Up Next always in reach. Clicking the artwork or title opens
-/// Now Playing.
+/// lyrics and Up Next always in reach. Clicking the artwork or title shows
+/// Now Playing in the content pane; lyrics and Up Next toggle the trailing
+/// inspector.
 ///
 /// Material draws an 80dp bar on a `surfaceContainer` fill. Mornye draws a
 /// 72pt bar laid out like the macOS Music toolbar: transport, a center
-/// "LCD" with the track and its progress, then lyrics, Up Next and volume.
+/// "LCD" with the track and its progress, then lyrics, Up Next, downloads
+/// and volume.
 class DesktopPlayerBar extends ConsumerWidget {
   const DesktopPlayerBar({super.key});
 
@@ -43,17 +44,10 @@ class DesktopPlayerBar extends ConsumerWidget {
   }
 }
 
-void _openNowPlaying(
-  BuildContext context, [
-  DesktopNowPlayingPanel panel = DesktopNowPlayingPanel.player,
-]) {
-  unawaited(
-    openDesktopNowPlaying(
-      Navigator.of(context, rootNavigator: true),
-      panel: panel,
-    ),
-  );
-}
+/// Shows Now Playing in the content pane, or returns to the content when it
+/// is already showing.
+void _toggleNowPlaying() =>
+    desktopNowPlayingOpen.value = !desktopNowPlayingOpen.value;
 
 class _MaterialPlayerBar extends StatelessWidget {
   const _MaterialPlayerBar({required this.mediaItem});
@@ -137,8 +131,10 @@ class _MornyePlayerBar extends StatelessWidget {
                     child: _Transport(enabled: loaded),
                   ),
                 ),
+                // The trailing group also holds downloads, so it keeps room
+                // for the volume slider in narrow windows.
                 Expanded(
-                  flex: 5,
+                  flex: 4,
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 560),
@@ -146,7 +142,7 @@ class _MornyePlayerBar extends StatelessWidget {
                     ),
                   ),
                 ),
-                Expanded(flex: 3, child: _TrailingControls(enabled: loaded)),
+                Expanded(flex: 4, child: _TrailingControls(enabled: loaded)),
               ],
             ),
           ),
@@ -191,7 +187,7 @@ class _TrackSummary extends StatelessWidget {
     if (item == null) return content;
     return InkWell(
       borderRadius: BorderRadius.circular(12),
-      onTap: () => _openNowPlaying(context),
+      onTap: _toggleNowPlaying,
       child: Padding(padding: const EdgeInsets.all(4), child: content),
     );
   }
@@ -253,7 +249,9 @@ class _Artwork extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final artwork = ClipRRect(
+    // Now Playing opens in the content pane rather than as a route, so the
+    // artwork has no route transition to fly in.
+    return ClipRRect(
       borderRadius: borderRadius ?? BorderRadius.circular(radius),
       child: SizedBox.square(
         dimension: size,
@@ -265,11 +263,6 @@ class _Artwork extends StatelessWidget {
         ),
       ),
     );
-    // The bar is the only player surface on desktop, so its artwork flies
-    // into Now Playing like the mini player's does on phones.
-    return mediaItem == null
-        ? artwork
-        : Hero(tag: kNowPlayingArtworkHeroTag, child: artwork);
   }
 }
 
@@ -468,7 +461,7 @@ class _MornyeLcd extends StatelessWidget {
                 cursor: SystemMouseCursors.click,
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
-                  onTap: () => _openNowPlaying(context),
+                  onTap: _toggleNowPlaying,
                   child: _TitleAndArtist(
                     mediaItem: item,
                     textAlign: TextAlign.center,
@@ -490,7 +483,7 @@ class _MornyeLcd extends StatelessWidget {
           MouseRegion(
             cursor: item == null ? MouseCursor.defer : SystemMouseCursors.click,
             child: GestureDetector(
-              onTap: item == null ? null : () => _openNowPlaying(context),
+              onTap: item == null ? null : _toggleNowPlaying,
               child: _Artwork(
                 mediaItem: item,
                 size: _height,
@@ -511,7 +504,8 @@ class _MornyeLcd extends StatelessWidget {
   }
 }
 
-/// Lyrics, Up Next and the volume slider.
+/// Lyrics and Up Next, which toggle the trailing inspector, then downloads
+/// (Mornye, whose bar is its toolbar) and the volume slider.
 class _TrailingControls extends StatelessWidget {
   const _TrailingControls({required this.enabled});
 
@@ -525,34 +519,41 @@ class _TrailingControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        AppIconButton(
-          tooltip: desktopTooltip(
-            context,
-            l10n.nowPlayingTabLyrics,
-            DesktopCommand.lyrics,
+        ValueListenableBuilder<DesktopInspectorPanel?>(
+          valueListenable: desktopInspectorPanel,
+          builder: (context, panel, _) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _InspectorToggle(
+                key: const ValueKey('desktop-player-lyrics'),
+                panel: DesktopInspectorPanel.lyrics,
+                selected: panel == DesktopInspectorPanel.lyrics,
+                enabled: enabled,
+                tooltip: desktopTooltip(
+                  context,
+                  l10n.nowPlayingTabLyrics,
+                  DesktopCommand.lyrics,
+                ),
+                icon: mornye
+                    ? CupertinoIcons.quote_bubble
+                    : Icons.lyrics_outlined,
+              ),
+              _InspectorToggle(
+                key: const ValueKey('desktop-player-up-next'),
+                panel: DesktopInspectorPanel.upNext,
+                selected: panel == DesktopInspectorPanel.upNext,
+                enabled: enabled,
+                tooltip: desktopTooltip(
+                  context,
+                  l10n.nowPlayingUpNext,
+                  DesktopCommand.upNext,
+                ),
+                icon: mornye ? CupertinoIcons.list_bullet : Icons.queue_music,
+              ),
+            ],
           ),
-          color: mornye ? colorScheme.onSurface : null,
-          icon: AppIcon(
-            mornye ? CupertinoIcons.quote_bubble : Icons.lyrics_outlined,
-          ),
-          onPressed: enabled
-              ? () => _openNowPlaying(context, DesktopNowPlayingPanel.lyrics)
-              : null,
         ),
-        AppIconButton(
-          tooltip: desktopTooltip(
-            context,
-            l10n.nowPlayingUpNext,
-            DesktopCommand.upNext,
-          ),
-          color: mornye ? colorScheme.onSurface : null,
-          icon: AppIcon(
-            mornye ? CupertinoIcons.list_bullet : Icons.queue_music,
-          ),
-          onPressed: enabled
-              ? () => _openNowPlaying(context, DesktopNowPlayingPanel.upNext)
-              : null,
-        ),
+        if (mornye) const DesktopDownloadsButton(),
         Flexible(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 220),
@@ -560,6 +561,49 @@ class _TrailingControls extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// A toggle for one inspector panel. Mornye marks the open panel with a
+/// fill as well as the accent color, so the state differs by more than
+/// color; Material uses the selected standard icon button.
+class _InspectorToggle extends StatelessWidget {
+  const _InspectorToggle({
+    super.key,
+    required this.panel,
+    required this.selected,
+    required this.enabled,
+    required this.tooltip,
+    required this.icon,
+  });
+
+  final DesktopInspectorPanel panel;
+  final bool selected;
+  final bool enabled;
+  final String tooltip;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final mornye = context.isMornye;
+    final colorScheme = Theme.of(context).colorScheme;
+    return AppIconButton(
+      tooltip: tooltip,
+      isSelected: selected,
+      color: mornye
+          ? (selected ? colorScheme.primary : colorScheme.onSurface)
+          : null,
+      style: mornye && selected
+          ? IconButton.styleFrom(
+              backgroundColor: MornyeTheme.controlFill(context),
+            )
+          : null,
+      icon: AppIcon(icon),
+      // An open panel can always close, even after playback stops.
+      onPressed: enabled || selected
+          ? () => toggleDesktopInspector(panel)
+          : null,
     );
   }
 }

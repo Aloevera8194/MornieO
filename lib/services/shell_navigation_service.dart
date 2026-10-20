@@ -140,8 +140,35 @@ class ShellNavigationService {
     return null;
   }
 
+  static Object? _settingsDetailOwner;
+  static ValueGetter<NavigatorState?>? _settingsDetailNavigator;
+
+  /// Registers the desktop Settings detail pane, whose pages Escape and Back
+  /// close while Settings is the active destination.
+  static void registerSettingsDetailNavigator({
+    required Object owner,
+    required ValueGetter<NavigatorState?> navigator,
+  }) {
+    _settingsDetailOwner = owner;
+    _settingsDetailNavigator = navigator;
+  }
+
+  static void unregisterSettingsDetailNavigator(Object owner) {
+    if (!identical(_settingsDetailOwner, owner)) return;
+    _settingsDetailOwner = null;
+    _settingsDetailNavigator = null;
+  }
+
   static NavigatorState? activeTabNavigator() =>
       _activeTabNavigatorKey()?.currentState;
+
+  /// The navigator whose pages Back closes in the active destination.
+  /// Settings has no tab navigator; on desktop its detail pane stands in.
+  static NavigatorState? activeBackNavigator() {
+    final key = _activeTabNavigatorKey();
+    if (key != null) return key.currentState;
+    return _settingsDetailNavigator?.call();
+  }
 }
 
 /// Track the top page in each tab. Dialogs keep the underlying page's contrast;
