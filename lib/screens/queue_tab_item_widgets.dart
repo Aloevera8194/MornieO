@@ -549,7 +549,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
               children: [
                 if (fileExists)
                   _LibraryPlaybackButton(
-                    mediaId: _cleanFilePath(item.filePath!),
+                    playbackKey: (id: '', path: _cleanFilePath(item.filePath!)),
                     playTooltip: context.l10n.a11yPlayTrackByArtist(
                       item.track.name,
                       item.track.artistName,
@@ -931,7 +931,9 @@ extension _QueueTabItemWidgets on _QueueTabState {
                     _ => null,
                   },
                   leading: _buildUnifiedCoverImage(item, colorScheme, 32),
-                  mediaId: _libraryPlaybackMediaId(item),
+                  playback: mediaItemPlaybackUiProvider(
+                    _libraryPlaybackKey(item),
+                  ),
                 ),
             ],
             columns: const [
@@ -1026,7 +1028,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
       localNavigationIndex: localNavigationIndex,
     );
 
-    final mediaId = _libraryPlaybackMediaId(item);
+    final playbackKey = _libraryPlaybackKey(item);
     final leading = Hero(
       tag: 'cover_lib_${item.id}',
       child: _buildUnifiedCoverImage(
@@ -1097,7 +1099,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
       builder: (context, fileExists, child) {
         if (fileExists) {
           return _LibraryPlaybackButton(
-            mediaId: mediaId,
+            playbackKey: playbackKey,
             playTooltip: context.l10n.a11yPlayTrackByArtist(
               item.trackName,
               item.artistName,
@@ -1147,14 +1149,14 @@ extension _QueueTabItemWidgets on _QueueTabState {
     return Semantics(
       label: context.l10n.a11yTrackByArtist(item.trackName, item.artistName),
       selected: isSelected,
-      // Material rows follow their own media id, so a track change rebuilds
-      // only the rows involved. Mornye rows show no current-track state.
+      // Material rows follow their own file, so a track change rebuilds only
+      // the rows involved. Mornye rows show no current-track state.
       child: context.isMornye
           ? card()
           : Consumer(
               builder: (context, ref, _) {
                 final playback = ref.watch(
-                  mediaItemPlaybackUiProvider(mediaId),
+                  mediaItemPlaybackUiProvider(playbackKey),
                 );
                 return card(
                   current: playback.isCurrent,
@@ -1255,7 +1257,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
               builder: (context, fileExists, child) {
                 if (fileExists) {
                   return _LibraryPlaybackButton(
-                    mediaId: _libraryPlaybackMediaId(item),
+                    playbackKey: _libraryPlaybackKey(item),
                     playTooltip: context.l10n.a11yPlayTrackByArtist(
                       item.trackName,
                       item.artistName,
@@ -1323,20 +1325,20 @@ extension _QueueTabItemWidgets on _QueueTabState {
 
 class _LibraryPlaybackButton extends ConsumerWidget {
   const _LibraryPlaybackButton({
-    required this.mediaId,
+    required this.playbackKey,
     required this.playTooltip,
     required this.onPlay,
     this.grid = false,
   });
 
-  final String mediaId;
+  final PlaybackRowKey playbackKey;
   final String playTooltip;
   final VoidCallback onPlay;
   final bool grid;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playback = ref.watch(mediaItemPlaybackUiProvider(mediaId));
+    final playback = ref.watch(mediaItemPlaybackUiProvider(playbackKey));
     final icon = playback.isPlaying ? Icons.pause : Icons.play_arrow;
     final tooltip = playback.isPlaying ? context.l10n.actionPause : playTooltip;
     final onPressed = playback.isLoading

@@ -169,6 +169,10 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
     }
   }
 
+  /// A row matches the player by its file, whichever queue played it.
+  PlaybackRowKey _playbackKey(DownloadHistoryItem track) =>
+      (id: track.id, path: track.filePath);
+
   void _onEmbeddedCoverChanged() {
     if (!mounted || _embeddedCoverRefreshScheduled) return;
     _embeddedCoverRefreshScheduled = true;
@@ -690,9 +694,9 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
               duration: track.duration == null
                   ? null
                   : Duration(seconds: track.duration!),
-              mediaId: track.id,
+              playback: mediaItemPlaybackUiProvider(_playbackKey(track)),
               trailing: _TrackPlaybackBuilder(
-                mediaId: track.id,
+                playbackKey: _playbackKey(track),
                 builder: (context, playback, toggle) => AlbumTrackPlayButton(
                   isPlaying: playback.isPlaying,
                   onPlay: playback.isCurrent
@@ -767,7 +771,7 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
       style: TextStyle(color: colorScheme.onSurfaceVariant),
     );
     return _TrackPlaybackBuilder(
-      mediaId: track.id,
+      playbackKey: _playbackKey(track),
       builder: (context, playback, toggle) => AlbumTrackTile(
         trackNumber: track.trackNumber,
         trackName: track.trackName,
@@ -906,19 +910,22 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
 /// rebuilds only the rows involved. [builder] gets a callback that pauses or
 /// resumes the current track.
 class _TrackPlaybackBuilder extends ConsumerWidget {
-  const _TrackPlaybackBuilder({required this.mediaId, required this.builder});
+  const _TrackPlaybackBuilder({
+    required this.playbackKey,
+    required this.builder,
+  });
 
-  final String mediaId;
+  final PlaybackRowKey playbackKey;
   final Widget Function(
     BuildContext context,
-    ({bool isCurrent, bool isPlaying, bool isLoading}) playback,
+    MediaPlaybackUi playback,
     VoidCallback toggle,
   )
   builder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final playback = ref.watch(mediaItemPlaybackUiProvider(mediaId));
+    final playback = ref.watch(mediaItemPlaybackUiProvider(playbackKey));
     return builder(
       context,
       playback,

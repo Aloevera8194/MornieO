@@ -1114,11 +1114,21 @@ class _CollectionTrackTile extends ConsumerWidget {
     final heroTag = inMemoryHistoryItem != null
         ? 'cover_${inMemoryHistoryItem.id}'
         : null;
+    // Material rows mark the current track; Mornye rows show no
+    // current-track state.
+    final playback = context.isMornye
+        ? null
+        : ref.watch(catalogTrackPlaybackUiProvider(catalogTrackKey(track)));
+    final isCurrent = playback?.isCurrent ?? false;
+    final isPlaying = playback?.isPlaying ?? false;
 
     return TrackCard(
       style: TrackCardStyle.flat,
       isSelectionMode: isSelectionMode,
       isSelected: isSelected,
+      isCurrent: isCurrent,
+      isPlaying: isPlaying,
+      leadingArtwork: true,
       leading: HeroMode(
         enabled: heroTag != null,
         child: Builder(
@@ -1153,9 +1163,19 @@ class _CollectionTrackTile extends ConsumerWidget {
       ),
       trailing: isInHistory || isInLocalLibrary
           ? AppIconButton(
-              tooltip: context.l10n.tooltipPlay,
-              onPressed: () => _playFromHere(context, ref),
-              icon: Icon(Icons.play_arrow, color: colorScheme.primary),
+              tooltip: isPlaying
+                  ? context.l10n.actionPause
+                  : context.l10n.tooltipPlay,
+              // The current track pauses and resumes in place.
+              onPressed: isCurrent
+                  ? () => ref
+                        .read(musicPlayerControllerProvider)
+                        .togglePlayPause(isPlaying)
+                  : () => _playFromHere(context, ref),
+              icon: Icon(
+                isPlaying ? Icons.pause : Icons.play_arrow,
+                color: colorScheme.primary,
+              ),
               style: IconButton.styleFrom(
                 minimumSize: Size.square(context.tokens.minTouchTarget),
                 backgroundColor: colorScheme.primaryContainer.withValues(

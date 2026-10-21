@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/theme/app_motion.dart';
@@ -30,7 +31,7 @@ class TrackTableRow {
     this.leading,
     this.titleTrailing,
     this.trailing,
-    this.mediaId,
+    this.playback,
   });
 
   /// Selection id, unique within the table.
@@ -54,9 +55,11 @@ class TrackTableRow {
   /// on hover, selection, keyboard focus or while the row is current.
   final Widget? trailing;
 
-  /// The player's media id for this song. With one, a Material row follows
-  /// playback and marks itself while it is the current track.
-  final String? mediaId;
+  /// How this song follows the player, such as
+  /// [mediaItemPlaybackUiProvider] for a Library file or
+  /// [catalogTrackPlaybackUiProvider] for a catalog track. With one, a
+  /// Material row marks itself while it is the current track.
+  final ProviderListenable<MediaPlaybackUi>? playback;
 }
 
 /// Desktop song list: a header of sortable columns over one row per song.
@@ -241,18 +244,16 @@ class _SliverTrackTableState extends State<SliverTrackTable> {
                   ? null
                   : (position) => widget.onContextMenu!(row.id, position),
             );
-            final mediaId = row.mediaId;
-            if (mediaId == null || context.isMornye) {
+            final rowPlayback = row.playback;
+            if (rowPlayback == null || context.isMornye) {
               return rowView(key: ValueKey(row.id));
             }
-            // Each row follows only its own media id, so a track change
+            // Each row follows only its own track, so a track change
             // rebuilds the two rows involved rather than the whole table.
             return Consumer(
               key: ValueKey(row.id),
               builder: (context, ref, _) {
-                final playback = ref.watch(
-                  mediaItemPlaybackUiProvider(mediaId),
-                );
+                final playback = ref.watch(rowPlayback);
                 return rowView(
                   current: playback.isCurrent,
                   playing: playback.isPlaying,

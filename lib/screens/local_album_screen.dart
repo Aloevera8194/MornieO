@@ -210,14 +210,13 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
     );
   }
 
-  bool _isCurrentTrack(MediaItem? item, LocalLibraryItem track) {
-    if (item == null) return false;
-    // Playlist playback can use the file path rather than the Library row ID.
-    final source = item.extras?['source'];
-    return source is String && source.isNotEmpty
-        ? source == track.filePath
-        : item.id == track.id || item.id == track.filePath;
-  }
+  /// A row matches the player by its file, so playlist playback, which uses
+  /// the file path rather than the Library row ID, marks it too.
+  PlaybackRowKey _playbackKey(LocalLibraryItem track) =>
+      (id: track.id, path: track.filePath);
+
+  bool _isCurrentTrack(MediaItem? item, LocalLibraryItem track) =>
+      mediaItemPlaysRow(item, _playbackKey(track));
 
   @override
   Widget build(BuildContext context) {
@@ -595,7 +594,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
               duration: track.duration == null
                   ? null
                   : Duration(seconds: track.duration!),
-              mediaId: track.id,
+              playback: mediaItemPlaybackUiProvider(_playbackKey(track)),
               trailing: Consumer(
                 builder: (context, ref, _) {
                   final isCurrent = ref.watch(

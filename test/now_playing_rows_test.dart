@@ -76,7 +76,7 @@ List<TrackTableRow> _rows({Widget? leading}) => [
   for (final (index, title) in ['Bravo', 'Alpha', 'Charlie'].indexed)
     TrackTableRow(
       id: 'row-$index',
-      mediaId: 'media-$index',
+      playback: mediaItemPlaybackUiProvider((id: 'media-$index', path: '')),
       number: index + 1,
       title: title,
       artist: 'Artist',

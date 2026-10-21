@@ -406,8 +406,9 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
       child: Center(child: Icon(icon)),
     );
     final song = hit.kind == LibrarySearchKind.songs;
-    return TrackCard(
-      key: ValueKey('${hit.kind.name}:${hit.source}:${hit.id}'),
+    final key = ValueKey('${hit.kind.name}:${hit.source}:${hit.id}');
+    Widget card({MediaPlaybackUi? playback}) => TrackCard(
+      key: playback == null ? key : null,
       style: hit.kind == LibrarySearchKind.songs && !context.isMornye
           ? TrackCardStyle.filled
           : TrackCardStyle.flat,
@@ -424,11 +425,25 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
       ),
       title: hit.title,
       subtitle: Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+      isCurrent: playback?.isCurrent ?? false,
+      isPlaying: playback?.isPlaying ?? false,
+      leadingArtwork: song,
       trailing: song
           ? AppIconButton(
-              tooltip: context.l10n.tooltipPlay,
-              icon: const Icon(Icons.play_arrow_rounded),
-              onPressed: () => _open(hit, play: true),
+              tooltip: playback?.isPlaying ?? false
+                  ? context.l10n.actionPause
+                  : context.l10n.tooltipPlay,
+              icon: Icon(
+                playback?.isPlaying ?? false
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+              ),
+              // The current track pauses and resumes in place.
+              onPressed: playback?.isCurrent ?? false
+                  ? () => ref
+                        .read(musicPlayerControllerProvider)
+                        .togglePlayPause(playback!.isPlaying)
+                  : () => _open(hit, play: true),
             )
           : const Icon(Icons.chevron_right),
       // Long-press selects songs for the Library batch actions; while
@@ -442,6 +457,18 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
           : null,
       onLongPress: song ? () => _toggleSelection(hit) : null,
       onContextMenu: (position) => _showHitMenu(hit, position),
+    );
+    if (!song || context.isMornye) return card();
+    // Material song rows follow the file they play, so a track change
+    // rebuilds only the rows involved. Mornye rows show no current-track
+    // state.
+    return Consumer(
+      key: key,
+      builder: (context, ref, _) => card(
+        playback: ref.watch(
+          mediaItemPlaybackUiProvider((id: hit.id, path: hit.samplePath)),
+        ),
+      ),
     );
   }
 
