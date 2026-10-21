@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/l10n/l10n.dart';
-import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/models/track.dart';
 import 'package:mornye/providers/library_collections_provider.dart';
 import 'package:mornye/theme/mornye_theme.dart';
@@ -39,13 +38,13 @@ Future<void> showAddTracksToPlaylistSheet(
 
   if (!context.mounted) return;
 
-  await showModalBottomSheet<void>(
+  await showAppModalBottomSheet<void>(
     context: context,
-    sheetAnimationStyle: AppMotion.surfaceEntrance(context),
     useRootNavigator: true,
     showDragHandle: !context.isMornye,
-    backgroundColor: context.isMornye ? Colors.transparent : null,
     isScrollControlled: true,
+    // The picker keeps its lighter glass tint.
+    mornyeGlass: false,
     builder: (sheetContext) {
       final content = _PlaylistPickerSheetContent(
         tracks: tracks,

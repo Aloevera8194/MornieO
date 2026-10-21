@@ -105,12 +105,12 @@ extension _ArtistScreenDiscography on _ArtistScreenState {
       ),
     );
 
-    showModalBottomSheet<void>(
+    showAppModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: context.isMornye ? Colors.transparent : null,
+      // The sheet forces the dark theme on its own glass.
+      mornyeGlass: false,
       builder: (sheetContext) => sheetContext.isMornye
           ? Theme(
               data: MornyeTheme.fromContext(

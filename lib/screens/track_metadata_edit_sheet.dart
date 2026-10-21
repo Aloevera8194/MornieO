@@ -9,7 +9,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:mornye/controllers/metadata_editor_controller.dart';
 import 'package:mornye/l10n/l10n.dart';
-import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/providers/extension_provider.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/services/metadata_cover_resources.dart';
@@ -100,16 +99,11 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
     bool checkInSheetTheme = false,
   }) {
     FocusScope.of(context).unfocus();
-    return showModalBottomSheet<T>(
+    return showAppModalBottomSheet<T>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      showDragHandle: true,
-      // Material sheets share the theme's sheet surface.
-      backgroundColor: context.isMornye
-          ? Theme.of(context).colorScheme.surfaceContainerHigh
-          : null,
+      showDragHandle: !context.isMornye,
       builder: (sheetContext) {
         final cs = Theme.of(sheetContext).colorScheme;
         final items = options(sheetContext);
@@ -124,6 +118,8 @@ class _EditMetadataSheetState extends State<EditMetadataSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // The glass carries the handle that Material's sheet draws.
+                if (sheetContext.isMornye) const AppSheetHandle(),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                   child: Text(

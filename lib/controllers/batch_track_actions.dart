@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:mornye/l10n/l10n.dart';
-import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/models/unified_library_item.dart';
 import 'package:mornye/providers/download_history_provider.dart';
 import 'package:mornye/providers/local_library_provider.dart';
@@ -14,7 +13,6 @@ import 'package:mornye/services/ffmpeg_service.dart';
 import 'package:mornye/services/library_database.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/replaygain_service.dart';
-import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/audio_conversion_utils.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/utils/int_utils.dart';
@@ -22,6 +20,7 @@ import 'package:mornye/utils/lyrics_metadata_helper.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/widgets/batch_convert_sheet.dart';
 import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/batch_progress_dialog.dart';
 import 'package:mornye/utils/saf_display_path.dart';
 
@@ -122,13 +121,12 @@ Future<void> showBatchConvertSheet(
 
   onSheetOpen?.call();
 
-  await showModalBottomSheet<void>(
+  await showAppModalBottomSheet<void>(
     context: modalContext,
-    sheetAnimationStyle: AppMotion.surfaceEntrance(modalContext),
     useRootNavigator: true,
     isScrollControlled: true,
-    backgroundColor: modalContext.isMornye ? Colors.transparent : null,
-    elevation: modalContext.isMornye ? 0 : null,
+    // The sheet draws its own glass.
+    mornyeGlass: false,
     builder: (sheetContext) => BatchConvertSheet(
       formats: formats,
       title: sheetTitle,

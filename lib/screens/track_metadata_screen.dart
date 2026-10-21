@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
-import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/widgets/app_alert_dialog.dart';
 import 'package:flutter/cupertino.dart' show CupertinoButton, CupertinoIcons;
@@ -59,6 +58,7 @@ import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/theme/mornye_icons.dart';
 import 'package:mornye/widgets/album_detail_header.dart'
     show HeaderMetaRow, HeaderMetaItem, HeaderCircleButton, HeaderFilledButton;
+import 'package:mornye/widgets/desktop/context_menu.dart';
 import 'package:mornye/widgets/mornye_context_menu.dart';
 import 'package:mornye/widgets/mornye_metadata_row.dart';
 import 'package:mornye/widgets/player_artwork.dart';
@@ -772,10 +772,17 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
               ),
               actionsPadding: EdgeInsetsDirectional.only(end: edgeInset),
               actions: [
-                HeaderCircleButton(
-                  icon: Icons.more_vert,
-                  tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-                  onPressed: () => _showOptionsMenu(context, ref, colorScheme),
+                Builder(
+                  builder: (buttonContext) => HeaderCircleButton(
+                    icon: Icons.more_vert,
+                    tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+                    onPressed: () => _showOptionsMenu(
+                      context,
+                      ref,
+                      colorScheme,
+                      anchor: mornyeMenuAnchor(buttonContext),
+                    ),
+                  ),
                 ),
               ],
             ),

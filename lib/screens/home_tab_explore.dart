@@ -431,12 +431,9 @@ extension _HomeTabExploreUI on _HomeTabState {
 
     final colorScheme = Theme.of(context).colorScheme;
 
-    showModalBottomSheet<void>(
+    showAppModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
-      // Material sheets share the theme's sheet surface.
-      backgroundColor: context.isMornye ? colorScheme.surface : null,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
