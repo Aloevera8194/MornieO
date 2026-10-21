@@ -184,6 +184,21 @@ void main() {
       playback.add(pausedAt(playingLine * 3 + 1));
       await followPlayback();
     }
+    // Another app's window takes focus: the lyrics stay on screen and keep
+    // following playback.
+    desktopInspectorPanel.value = DesktopInspectorPanel.lyrics;
+    await followPlayback();
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    addTearDown(
+      () => tester.binding.handleAppLifecycleStateChanged(
+        AppLifecycleState.resumed,
+      ),
+    );
+    playingLine += 5;
+    playback.add(pausedAt(playingLine * 3 + 1));
+    await followPlayback();
+    checkFrame('unfocused window');
+
     // The cover column resizes with the panel but decodes its cover once.
     expect(coverWidths, hasLength(1));
     expect(tester.takeException(), isNull);

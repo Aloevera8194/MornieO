@@ -117,11 +117,15 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
   /// estimated offset, before settling on the line.
   bool _awaitingFirstScroll = false;
   bool _tickerEnabled = true;
+  // An inactive app is still on screen: a desktop window behind another
+  // app's window, or a phone under a system overlay.
   bool get _visible =>
       widget.isActive &&
       _tickerEnabled &&
-      (WidgetsBinding.instance.lifecycleState == null ||
-          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed);
+      switch (WidgetsBinding.instance.lifecycleState) {
+        null || AppLifecycleState.resumed || AppLifecycleState.inactive => true,
+        _ => false,
+      };
   static const double _estimatedLyricExtent = 64;
   _LyricExtentSnapshot? _lineExtents;
   List<(double, double, double)> _lineMeasurements = [];
@@ -231,7 +235,10 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _syncPositionSubscription(resetUserScroll: false);
+    // Focus moving between windows keeps the lyrics running as they are.
+    if ((_positionSubscription != null) != _visible) {
+      _syncPositionSubscription(resetUserScroll: false);
+    }
     if (mounted) setState(() {});
   }
 
