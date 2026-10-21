@@ -646,9 +646,13 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
       return {'registry_url': '', 'items': const <Map<String, dynamic>>[]};
     }
 
-    String registryUrl = '';
+    final prefs = await SharedPreferences.getInstance();
+    // The native repository is initialized lazily when Repo is opened. Keep
+    // its persisted URL in backups made before that first visit.
+    var registryUrl = (prefs.getString(_storeRegistryUrlPrefKey) ?? '').trim();
     try {
-      registryUrl = await PlatformBridge.getRepoRegistryUrl();
+      final activeUrl = (await PlatformBridge.getRepoRegistryUrl()).trim();
+      if (activeUrl.isNotEmpty) registryUrl = activeUrl;
     } catch (_) {}
 
     List<Map<String, dynamic>> installed;
@@ -712,7 +716,12 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
 
     await ensureInitialized();
 
-    final registryUrl = (data['registry_url'] as String?)?.trim() ?? '';
+    final prefs = await SharedPreferences.getInstance();
+    final backupUrl = (data['registry_url'] as String?)?.trim() ?? '';
+    // Older backups may have omitted the URL when Repo had not been opened.
+    final registryUrl = backupUrl.isNotEmpty
+        ? backupUrl
+        : (prefs.getString(_storeRegistryUrlPrefKey) ?? '').trim();
     final itemsRaw = data['items'];
     final items = itemsRaw is List
         ? itemsRaw
@@ -730,7 +739,6 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
       await PlatformBridge.initExtensionRepo(destDir.path);
       if (registryUrl.isNotEmpty) {
         await PlatformBridge.setRepoRegistryUrl(registryUrl);
-        final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_storeRegistryUrlPrefKey, registryUrl);
       }
     } catch (e) {
