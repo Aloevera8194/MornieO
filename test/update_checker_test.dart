@@ -20,7 +20,7 @@ Map<String, Object?> release(String version) => {
   'body': '- Release notes',
   'published_at': '2026-09-26T06:32:33Z',
   'html_url':
-      'https://github.com/spotiflacapp/SpotiFLAC-Mobile/releases/tag/v$version',
+      'https://github.com/mornyeapp/Mornye/releases/tag/v$version',
   'assets': [
     for (final abi in ['arm32', 'arm64'])
       {

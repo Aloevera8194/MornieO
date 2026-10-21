@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: README
-    url: https://github.com/spotiflacapp/SpotiFLAC-Mobile#readme
+    url: https://github.com/mornyeapp/Mornye#readme
     about: Check the README for setup instructions and FAQ
   - name: Extension Development Guide
     url: https://mornye.com/docs

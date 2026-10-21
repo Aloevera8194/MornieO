@@ -25,9 +25,9 @@
   <provides>
     <binary>mornye</binary>
   </provides>
-  <url type="homepage">https://github.com/spotiflacapp/SpotiFLAC-Mobile</url>
-  <url type="bugtracker">https://github.com/spotiflacapp/SpotiFLAC-Mobile/issues</url>
-  <url type="translate">https://crowdin.com/project/spotiflac-mobile</url>
+  <url type="homepage">https://github.com/mornyeapp/Mornye</url>
+  <url type="bugtracker">https://github.com/mornyeapp/Mornye/issues</url>
+  <url type="translate">https://crowdin.com/project/mornye</url>
   <categories>
     <category>AudioVideo</category>
     <category>Audio</category>

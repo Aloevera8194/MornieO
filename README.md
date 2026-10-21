@@ -18,13 +18,13 @@
 </div>
 
 <p align="center">
-  <a href="https://github.com/spotiflacapp/SpotiFLAC-Mobile/releases/latest">
+  <a href="https://github.com/mornyeapp/Mornye/releases/latest">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/readme/badges/badge-release-dark.svg">
       <img alt="Download the latest release" src="assets/readme/badges/badge-release-light.svg" height="56">
     </picture>
   </a>
-  <a href="https://crowdin.com/project/spotiflac-mobile">
+  <a href="https://crowdin.com/project/mornye">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="assets/readme/badges/badge-crowdin-dark.svg">
       <img alt="Help translate on Crowdin" src="assets/readme/badges/badge-crowdin-light.svg" height="56">
@@ -385,7 +385,7 @@ another country's recommendations without a VPN.
 Yes! Add the official source to receive updates directly within the app. Copy this link:
 
 ```
-https://raw.githubusercontent.com/spotiflacapp/SpotiFLAC-Mobile/refs/heads/main/apps.json
+https://raw.githubusercontent.com/mornyeapp/Mornye/refs/heads/main/apps.json
 ```
 
 In AltStore/SideStore, go to **Browse > Sources**, tap **+**, and paste the link.
@@ -403,11 +403,11 @@ In AltStore/SideStore, go to **Browse > Sources**, tap **+**, and paste the link
 
 Thanks to everyone who has contributed to Mornye!
 
-<a href="https://github.com/spotiflacapp/SpotiFLAC-Mobile/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=spotiflacapp/SpotiFLAC-Mobile" />
+<a href="https://github.com/mornyeapp/Mornye/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=mornyeapp/Mornye" />
 </a>
 
-We also appreciate everyone who helped with [translations on Crowdin](https://crowdin.com/project/spotiflac-mobile), reported bugs, suggested features, and spread the word.
+We also appreciate everyone who helped with [translations on Crowdin](https://crowdin.com/project/mornye), reported bugs, suggested features, and spread the word.
 
 Interested in contributing? Check out the [Contributing Guide](CONTRIBUTING.md) to get started!
 

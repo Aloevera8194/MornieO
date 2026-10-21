@@ -15,8 +15,9 @@ class AppInfo {
 
   static const String mobileAuthor = 'zarzet';
 
-  static const String githubRepo = 'spotiflacapp/SpotiFLAC-Mobile';
+  static const String githubRepo = 'mornyeapp/Mornye';
   static const String githubUrl = 'https://github.com/$githubRepo';
+  // The server keeps the endpoint name from before the rename.
   static const String remoteConfigApiUrl =
       'https://api.zarz.moe/v1/spotiflac-mobile/config';
 

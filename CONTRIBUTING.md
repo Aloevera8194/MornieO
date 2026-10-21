@@ -8,7 +8,7 @@ the project.
 
 ## Before You Start
 
-- Search the [existing issues](https://github.com/spotiflacapp/SpotiFLAC-Mobile/issues)
+- Search the [existing issues](https://github.com/mornyeapp/Mornye/issues)
   before opening a new one.
 - Use the issue template that best matches the problem.
 - Keep pull requests focused. Separate unrelated fixes into separate PRs.
@@ -16,7 +16,7 @@ the project.
   artifacts.
 
 Translations are managed through the
-[Mornye Crowdin project](https://crowdin.com/project/spotiflac-mobile).
+[Mornye Crowdin project](https://crowdin.com/project/mornye).
 The English source strings live in `lib/l10n/arb/app_en.arb`.
 
 ## Toolchain
@@ -38,9 +38,9 @@ exact Flutter version declared in `.fvmrc` and replace `fvm flutter` with
 1. Fork and clone the repository:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/SpotiFLAC-Mobile.git
-   cd SpotiFLAC-Mobile
-   git remote add upstream https://github.com/spotiflacapp/SpotiFLAC-Mobile.git
+   git clone https://github.com/YOUR_USERNAME/Mornye.git
+   cd Mornye
+   git remote add upstream https://github.com/mornyeapp/Mornye.git
    ```
 
 2. Install the pinned Flutter SDK and Dart dependencies:

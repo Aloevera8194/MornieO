@@ -221,7 +221,7 @@ Depends: $depends
 Recommends: gstreamer1.0-plugins-base, gstreamer1.0-plugins-good, xdg-utils, xdg-desktop-portal
 Section: sound
 Priority: optional
-Homepage: https://github.com/spotiflacapp/SpotiFLAC-Mobile
+Homepage: https://github.com/mornyeapp/Mornye
 Description: Music player and library manager
  Mornye plays local and network music, edits metadata, and fetches tracks
  and lyrics through extensions you install.

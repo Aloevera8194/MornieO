@@ -20,7 +20,7 @@ void main() {
         },
         'donate': {
           'enabled': true,
-          'title': 'Support SpotiFLAC Mobile',
+          'title': 'Support Mornye',
           'message': 'Help cover infrastructure.',
           'methods': [
             {
