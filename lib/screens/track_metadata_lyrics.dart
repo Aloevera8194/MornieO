@@ -108,8 +108,11 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // A visible scrollbar and a fade at the cut show that the
-                  // box scrolls, instead of a line clipped in half.
+                  // box scrolls, instead of a line clipped in half. Full
+                  // width keeps the scrollbar at the card's edge rather than
+                  // after the longest line.
                   Container(
+                    width: double.infinity,
                     constraints: const BoxConstraints(maxHeight: 300),
                     child: ScrollEdgeFade(
                       size: 48,

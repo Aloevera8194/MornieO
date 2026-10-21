@@ -125,6 +125,13 @@ void main() {
           await tester.tap(find.text('Fetch from Online'));
           await tester.pumpAndSettle();
           expect(find.text('Fresh online lyrics'), findsOneWidget);
+          // The box spans the card, not just the longest line, so its
+          // scrollbar sits at the card's edge.
+          final lyricsBox = find.ancestor(
+            of: find.text('Fresh online lyrics'),
+            matching: find.byType(Scrollbar),
+          );
+          expect(tester.getSize(lyricsBox).width, greaterThan(600));
           await tester.ensureVisible(find.text('Embed Lyrics'));
           await tester.tap(find.text('Embed Lyrics'));
           // Allow real filesystem cleanup after the mocked native boundary.
