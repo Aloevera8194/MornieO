@@ -194,6 +194,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
       context,
       title: widget.artistName,
       circularArtwork: true,
+      paletteSource: imageUrl,
       artwork: (context, size) => imageUrl == null
           ? placeholder
           : DownloadableCover(
@@ -208,46 +209,60 @@ extension _ArtistScreenSections on _ArtistScreenState {
                 errorWidget: (_, _, _) => placeholder,
               ),
             ),
+      // Subtitle and actions are built inside the header, so they read the
+      // artist image's scheme.
       subtitle: listenersText == null
           ? null
-          : Text(
-              listenersText,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+          : Builder(
+              builder: (header) => Text(
+                listenersText,
+                style: Theme.of(header).textTheme.bodyMedium?.copyWith(
+                  color: HeaderPalette.of(header).onSurfaceVariant,
+                ),
               ),
             ),
       meta: _concerts.isEmpty || isSelectionMode ? null : _concertsButton(),
       actions: isSelectionMode
           ? null
-          : Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 10,
-              children: [
-                HeaderCircleButton(
-                  tonal: true,
-                  icon: isFavoriteArtist
-                      ? (mornye ? CupertinoIcons.star_fill : Icons.favorite)
-                      : (mornye ? CupertinoIcons.star : Icons.favorite_border),
-                  iconColor: isFavoriteArtist && !mornye
-                      ? colorScheme.error
-                      : colorScheme.primary,
-                  tooltip: isFavoriteArtist
-                      ? context.l10n.artistOptionRemoveFromFavorites
-                      : context.l10n.artistOptionAddToFavorites,
-                  onPressed: () => _toggleFavoriteArtist(context),
-                ),
-                if (hasDiscography && !_isLoadingDiscography)
-                  HeaderCircleButton(
-                    tonal: true,
-                    icon: mornye
-                        ? CupertinoIcons.arrow_down
-                        : Icons.download_rounded,
-                    iconColor: colorScheme.primary,
-                    tooltip: context.l10n.discographyDownload,
-                    onPressed: () =>
-                        _showDiscographyOptions(context, colorScheme, albums),
-                  ),
-              ],
+          : Builder(
+              builder: (header) {
+                final headerScheme = HeaderPalette.of(header);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 10,
+                  children: [
+                    HeaderCircleButton(
+                      tonal: true,
+                      icon: isFavoriteArtist
+                          ? (mornye ? CupertinoIcons.star_fill : Icons.favorite)
+                          : (mornye
+                                ? CupertinoIcons.star
+                                : Icons.favorite_border),
+                      iconColor: isFavoriteArtist && !mornye
+                          ? headerScheme.error
+                          : headerScheme.primary,
+                      tooltip: isFavoriteArtist
+                          ? context.l10n.artistOptionRemoveFromFavorites
+                          : context.l10n.artistOptionAddToFavorites,
+                      onPressed: () => _toggleFavoriteArtist(context),
+                    ),
+                    if (hasDiscography && !_isLoadingDiscography)
+                      HeaderCircleButton(
+                        tonal: true,
+                        icon: mornye
+                            ? CupertinoIcons.arrow_down
+                            : Icons.download_rounded,
+                        iconColor: headerScheme.primary,
+                        tooltip: context.l10n.discographyDownload,
+                        onPressed: () => _showDiscographyOptions(
+                          context,
+                          colorScheme,
+                          albums,
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
       appBarActions: isSelectionMode
           ? const []
