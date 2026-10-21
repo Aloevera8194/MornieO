@@ -96,18 +96,23 @@ extension _QueueTabSelectionActions on _QueueTabState {
   }
 
   /// Opens the desktop menu of a library song. A song outside the selection
-  /// becomes the selection first, so the menu acts on the song clicked.
-  void _showLibraryItemMenu(
+  /// becomes the selection for this menu only, so the menu acts on the song
+  /// clicked: the selection toolbar does not open under the menu, and the
+  /// selection ends if the menu closes without a choice.
+  Future<void> _showLibraryItemMenu(
     BuildContext context,
     UnifiedLibraryItem item,
     List<UnifiedLibraryItem> libraryItems,
     Offset position, {
     VoidCallback? onOpenDetails,
-  }) {
-    if (!_selectedIds.contains(item.id)) {
+  }) async {
+    final forMenu = !_selectedIds.contains(item.id);
+    if (forMenu) {
+      _contextMenuSelection = true;
       _applyDesktopClick(item.id, DesktopClick.replace, const []);
+      _hideSelectionOverlay();
     }
-    showContextMenu(
+    final chosen = await showContextMenu(
       context,
       position: position,
       groups: libraryTrackMenuGroups(
@@ -122,6 +127,11 @@ extension _QueueTabSelectionActions on _QueueTabState {
         onDelete: () => _deleteSelected(libraryItems),
       ),
     );
+    if (!forMenu || !mounted) return;
+    // A bulk action (re-enrich, convert, delete) kept the selection and
+    // shows the toolbar again.
+    _setState(() => _contextMenuSelection = false);
+    if (!chosen) _exitSelectionMode();
   }
 
   void _selectRangeTo(String itemId, List<UnifiedLibraryItem> visibleItems) {
@@ -149,6 +159,7 @@ extension _QueueTabSelectionActions on _QueueTabState {
   }) {
     if (!mounted) return;
     if (_suppressSelectionOverlay ||
+        _contextMenuSelection ||
         _isDraggingLibraryTrack ||
         !_isSelectionMode ||
         _isPlaylistSelectionMode) {

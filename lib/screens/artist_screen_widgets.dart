@@ -1041,7 +1041,10 @@ extension _ArtistScreenSections on _ArtistScreenState {
     final isSelected = selectedIds.contains(album.id);
 
     return DesktopContextMenuRegion(
-      onContextMenu: (position) => _showAlbumMenu(context, album, position),
+      onContextMenu: (position) => showSelectionMenu(
+        album.id,
+        () => _showAlbumMenu(context, album, position),
+      ),
       child: _buildAlbumCardBody(
         context,
         album,
@@ -1056,19 +1059,18 @@ extension _ArtistScreenSections on _ArtistScreenState {
 
   /// The desktop menu of an album card: open it, or act on the selection
   /// the album joins, as the selection bar does.
-  void _showAlbumMenu(
+  Future<bool> _showAlbumMenu(
     BuildContext context,
     ArtistAlbum album,
     Offset position,
   ) {
-    selectForContextMenu(album.id);
     final l10n = context.l10n;
     final selected = [
       for (final candidate in _albums ?? const <ArtistAlbum>[])
         if (selectedIds.contains(candidate.id)) candidate,
     ];
     if (selected.isEmpty) selected.add(album);
-    showContextMenu(
+    return showContextMenu(
       context,
       position: position,
       groups: [

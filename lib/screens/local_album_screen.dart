@@ -269,7 +269,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
 
     final scaffold = CollectionScaffold(
       scrollController: scrollController,
-      isSelectionMode: isSelectionMode,
+      isSelectionMode: showsSelectionBar,
       onExitSelectionMode: exitSelectionMode,
       appBar: _buildAppBar(context, colorScheme, qualityLabelMode, coverPath),
       slivers: [
@@ -633,21 +633,23 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
         onContextMenu: (id, position) {
           final track = byId[id];
           if (track == null) return;
-          selectForContextMenu(id);
-          _showDesktopMenu(context, tracks, track, position);
+          showSelectionMenu(
+            id,
+            () => _showDesktopMenu(context, tracks, track, position),
+          );
         },
       ),
     );
   }
 
-  void _showDesktopMenu(
+  Future<bool> _showDesktopMenu(
     BuildContext context,
     List<LocalLibraryItem> tracks,
     LocalLibraryItem track,
     Offset position,
   ) {
     final items = _selectedUnifiedItems(tracks);
-    showContextMenu(
+    return showContextMenu(
       context,
       position: position,
       groups: libraryTrackMenuGroups(

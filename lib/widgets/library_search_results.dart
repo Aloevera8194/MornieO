@@ -63,6 +63,8 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
       SelectionOverlayController();
   // Hidden while a sheet or dialog opened from the bar is on screen.
   bool _suppressSelectionBar = false;
+  // Hidden while a right-click selection exists only for its open menu.
+  bool _menuSelection = false;
   List<LibrarySearchHit> _visibleSongs = const [];
 
   bool get _selecting => _selected.isNotEmpty;
@@ -149,7 +151,7 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
 
   void _syncSelectionBar() {
     if (!mounted) return;
-    if (!_selecting || _suppressSelectionBar) {
+    if (!_selecting || _suppressSelectionBar || _menuSelection) {
       _selectionOverlay.hide();
       return;
     }
@@ -224,7 +226,9 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
   }
 
   /// The desktop menu of a result. A song outside the selection becomes the
-  /// selection, so the menu acts on the song clicked.
+  /// selection for this menu only, so the menu acts on the song clicked: the
+  /// selection bar stays hidden under the menu, and the selection ends if
+  /// the menu closes without a choice.
   Future<void> _showHitMenu(LibrarySearchHit hit, Offset position) async {
     final l10n = context.l10n;
     if (hit.kind != LibrarySearchKind.songs) {
@@ -243,10 +247,12 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
       );
       return;
     }
-    if (!_selected.containsKey(_itemId(hit))) {
+    final forMenu = !_selected.containsKey(_itemId(hit));
+    if (forMenu) {
       final item = await _resolve(hit);
       if (!mounted || item == null) return;
       setState(() {
+        _menuSelection = true;
         _selected
           ..clear()
           ..[item.id] = item;
@@ -254,7 +260,7 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
     }
     if (!mounted) return;
     final items = _selected.values.toList(growable: false);
-    await showContextMenu(
+    final chosen = await showContextMenu(
       context,
       position: position,
       groups: libraryTrackMenuGroups(
@@ -288,6 +294,10 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
         ),
       ),
     );
+    if (!forMenu || !mounted) return;
+    // An action that kept the selection shows the bar again.
+    setState(() => _menuSelection = false);
+    if (!chosen) _exitSelection();
   }
 
   String _label(LibrarySearchKind kind) => switch (kind) {

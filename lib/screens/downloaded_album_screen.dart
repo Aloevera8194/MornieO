@@ -295,7 +295,7 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
       },
       child: CollectionScaffold(
         scrollController: scrollController,
-        isSelectionMode: isSelectionMode,
+        isSelectionMode: showsSelectionBar,
         onExitSelectionMode: exitSelectionMode,
         appBar: _buildAppBar(context, colorScheme, tracks, qualityLabelMode),
         slivers: [_buildTrackList(context, colorScheme, order)],
@@ -718,32 +718,33 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
         onContextMenu: (id, position) {
           final index = indexById[id];
           if (index == null) return;
-          selectForContextMenu(id);
-          final items = _selectedUnifiedItems(tracks);
-          showContextMenu(
-            context,
-            position: position,
-            groups: libraryTrackMenuGroups(
+          showSelectionMenu(id, () {
+            final items = _selectedUnifiedItems(tracks);
+            return showContextMenu(
               context,
-              ref,
-              items: items,
-              onPlay: () => _openFile(tracks[index], queueItems: tracks),
-              onOpenDetails: () => _navigateToMetadataScreen(
-                tracks[index],
-                navigationItems: tracks,
-                navigationIndex: index,
-              ),
-              onDone: exitSelectionMode,
-              onReEnrich: () => _reEnrichSelected(tracks),
-              onConvert: () => showBatchConvertSheet(
-                this.context,
+              position: position,
+              groups: libraryTrackMenuGroups(
+                context,
                 ref,
-                items,
-                onExitSelectionMode: exitSelectionMode,
+                items: items,
+                onPlay: () => _openFile(tracks[index], queueItems: tracks),
+                onOpenDetails: () => _navigateToMetadataScreen(
+                  tracks[index],
+                  navigationItems: tracks,
+                  navigationIndex: index,
+                ),
+                onDone: exitSelectionMode,
+                onReEnrich: () => _reEnrichSelected(tracks),
+                onConvert: () => showBatchConvertSheet(
+                  this.context,
+                  ref,
+                  items,
+                  onExitSelectionMode: exitSelectionMode,
+                ),
+                onDelete: () => _deleteSelected(tracks),
               ),
-              onDelete: () => _deleteSelected(tracks),
-            ),
-          );
+            );
+          });
         },
       ),
     );

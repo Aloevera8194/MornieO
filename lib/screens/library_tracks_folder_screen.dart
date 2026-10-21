@@ -326,7 +326,7 @@ class _LibraryTracksFolderScreenState
     ];
     final scaffold = CollectionScaffold(
       scrollController: scrollController,
-      isSelectionMode: isSelectionMode,
+      isSelectionMode: showsSelectionBar,
       onExitSelectionMode: exitSelectionMode,
       selectionBar: _buildSelectionBottomBar(
         context,
@@ -353,13 +353,16 @@ class _LibraryTracksFolderScreenState
             onSelect: applyDesktopClick,
             onActivate: (index) =>
                 _activateEntry(entries, folderTracks, inHistory, index),
-            onContextMenu: (index, position) => _showEntryMenu(
-              context,
-              entries,
-              folderTracks,
-              inHistory,
-              index,
-              position,
+            onContextMenu: (index, position) => showSelectionMenu(
+              entries[index].key,
+              () => _showEntryMenu(
+                context,
+                entries,
+                folderTracks,
+                inHistory,
+                index,
+                position,
+              ),
             ),
             showArtwork: true,
             showAlbum: true,
@@ -448,8 +451,9 @@ class _LibraryTracksFolderScreenState
   }
 
   /// The right-click menu of a desktop row: the selection bar's actions for
-  /// the selection the row joins, after the row's own Play and details.
-  void _showEntryMenu(
+  /// the selection the row joins, after the row's own Play and details, which
+  /// end the selection.
+  Future<bool> _showEntryMenu(
     BuildContext context,
     List<CollectionTrackEntry> entries,
     List<Track> tracks,
@@ -458,10 +462,9 @@ class _LibraryTracksFolderScreenState
     Offset position,
   ) {
     final l10n = context.l10n;
-    selectForContextMenu(entries[index].key);
     final count = selectedIds.length;
     final isPlaylist = widget.mode == LibraryTracksFolderMode.playlist;
-    showContextMenu(
+    return showContextMenu(
       context,
       position: position,
       groups: [
@@ -470,14 +473,19 @@ class _LibraryTracksFolderScreenState
             ContextMenuAction(
               icon: Icons.play_arrow,
               label: l10n.tooltipPlay,
-              onSelected: () => _playFrom(tracks, index),
+              onSelected: () {
+                exitSelectionMode();
+                _playFrom(tracks, index);
+              },
             ),
           if (count == 1)
             ContextMenuAction(
               icon: Icons.info_outline,
               label: l10n.desktopMenuShowDetails,
-              onSelected: () =>
-                  _openCollectionTrack(this.context, ref, tracks[index]),
+              onSelected: () {
+                exitSelectionMode();
+                _openCollectionTrack(this.context, ref, tracks[index]);
+              },
             ),
         ],
         [

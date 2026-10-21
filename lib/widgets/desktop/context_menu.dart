@@ -43,8 +43,9 @@ const double _mornyeMenuWidth = 280;
 /// Material opens a [MenuAnchor] with the M3 Expressive menu container;
 /// Mornye opens the dense [MornyeContextMenu]. Empty groups are dropped and
 /// the remaining ones are separated by dividers. The chosen action runs after
-/// the menu closes, so it can open its own dialog or sheet.
-Future<void> showContextMenu(
+/// the menu closes, so it can open its own dialog or sheet. The future
+/// completes after that action has started, with whether a row was chosen.
+Future<bool> showContextMenu(
   BuildContext context, {
   required Offset position,
   required List<List<ContextMenuAction>> groups,
@@ -53,7 +54,7 @@ Future<void> showContextMenu(
     for (final group in groups)
       if (group.isNotEmpty) group,
   ];
-  if (visible.isEmpty) return;
+  if (visible.isEmpty) return false;
   final navigator = Navigator.of(context, rootNavigator: true);
   final themes = InheritedTheme.capture(from: context, to: navigator.context);
   if (context.isMornye) {
@@ -83,16 +84,21 @@ Future<void> showContextMenu(
       ),
     );
     chosen?.onSelected?.call();
-    return;
+    return chosen != null;
   }
+  var chosen = false;
   await navigator.push(
     _MaterialContextMenuRoute(
       position: position,
       groups: visible,
       themes: themes,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      onChosen: () => chosen = true,
     ),
   );
+  // The menu pops first and runs the chosen row after that frame.
+  await SchedulerBinding.instance.endOfFrame;
+  return chosen;
 }
 
 /// The center of [context]'s render box, where keyboard-opened menus appear.
@@ -178,11 +184,13 @@ class _MaterialContextMenuRoute extends PopupRoute<void> {
     required this.groups,
     required this.themes,
     required this.barrierLabel,
+    required this.onChosen,
   });
 
   final Offset position;
   final List<List<ContextMenuAction>> groups;
   final CapturedThemes themes;
+  final VoidCallback onChosen;
 
   @override
   final String barrierLabel;
@@ -202,14 +210,25 @@ class _MaterialContextMenuRoute extends PopupRoute<void> {
     BuildContext context,
     Animation<double> animation,
     Animation<double> secondaryAnimation,
-  ) => themes.wrap(_MaterialContextMenu(position: position, groups: groups));
+  ) => themes.wrap(
+    _MaterialContextMenu(
+      position: position,
+      groups: groups,
+      onChosen: onChosen,
+    ),
+  );
 }
 
 class _MaterialContextMenu extends StatefulWidget {
-  const _MaterialContextMenu({required this.position, required this.groups});
+  const _MaterialContextMenu({
+    required this.position,
+    required this.groups,
+    required this.onChosen,
+  });
 
   final Offset position;
   final List<List<ContextMenuAction>> groups;
+  final VoidCallback onChosen;
 
   @override
   State<_MaterialContextMenu> createState() => _MaterialContextMenuState();
@@ -296,7 +315,12 @@ class _MaterialContextMenuState extends State<_MaterialContextMenu> {
               trailingIcon: action.checked
                   ? const AppIcon(Icons.check, size: 20)
                   : null,
-              onPressed: action.onSelected,
+              onPressed: action.onSelected == null
+                  ? null
+                  : () {
+                      widget.onChosen();
+                      action.onSelected!();
+                    },
               child: Text(
                 action.label,
                 style: action.destructive

@@ -156,6 +156,10 @@ class _QueueTabState extends ConsumerState<QueueTab> {
   /// selection toolbar is open, so they don't reappear over its animation.
   bool _suppressSelectionOverlay = false;
 
+  /// A right-click selected a song for its menu only. The selection toolbar
+  /// stays hidden until the menu and its chosen action have run.
+  bool _contextMenuSelection = false;
+
   bool _isPlaylistSelectionMode = false;
   final Set<String> _selectedPlaylistIds = {};
   final SelectionOverlayController _playlistSelectionOverlay =

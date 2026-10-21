@@ -11,7 +11,9 @@ import 'package:mornye/widgets/playlist_picker_sheet.dart';
 ///
 /// The playback and playlist actions match [LibrarySelectionPlaybackActions];
 /// the screen passes its own selection-bar callbacks for the rest, and omits
-/// those it does not offer.
+/// those it does not offer. Actions that finish with the menu (play, queue,
+/// playlist, details) call [onDone] to end the selection; the bulk actions
+/// keep it and end it themselves.
 List<List<ContextMenuAction>> libraryTrackMenuGroups(
   BuildContext context,
   WidgetRef ref, {
@@ -41,7 +43,10 @@ List<List<ContextMenuAction>> libraryTrackMenuGroups(
         ContextMenuAction(
           icon: Icons.play_arrow_rounded,
           label: l10n.trackMetadataPlay,
-          onSelected: onPlay,
+          onSelected: () {
+            onDone?.call();
+            onPlay();
+          },
         ),
       ContextMenuAction(
         icon: Icons.playlist_play,
@@ -70,7 +75,10 @@ List<List<ContextMenuAction>> libraryTrackMenuGroups(
         ContextMenuAction(
           icon: Icons.info_outline,
           label: l10n.desktopMenuShowDetails,
-          onSelected: onOpenDetails,
+          onSelected: () {
+            onDone?.call();
+            onOpenDetails();
+          },
         ),
       if (onReEnrich != null)
         ContextMenuAction(

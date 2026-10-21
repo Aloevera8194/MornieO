@@ -794,7 +794,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
     required List<ArtistAlbum> albums,
     required double bottomPadding,
   }) {
-    if (!isSelectionMode) {
+    if (!showsSelectionBar) {
       _selectionOverlay.hide();
       return;
     }

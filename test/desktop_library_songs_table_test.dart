@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,14 +10,18 @@ import 'package:mornye/models/track.dart';
 import 'package:mornye/providers/download_queue_provider.dart';
 import 'package:mornye/providers/library_collections_provider.dart';
 import 'package:mornye/providers/local_library_provider.dart';
+import 'package:mornye/providers/playback_provider.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/screens/queue_tab.dart';
 import 'package:mornye/services/history_database.dart';
 import 'package:mornye/services/library_database.dart';
+import 'package:mornye/services/playable_media.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/desktop/track_table.dart';
+import 'package:mornye/widgets/library_track_selection_bar.dart';
+import 'package:mornye/widgets/mornye_context_menu.dart';
 import 'package:mornye/widgets/track_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
@@ -72,6 +77,37 @@ class _Queue extends DownloadQueueNotifier {
   DownloadQueueState build() => DownloadQueueState();
 }
 
+class _Playback extends PlaybackController {
+  final started = <String>[];
+
+  @override
+  Future<void> playMediaQueue(
+    Iterable<PlayableMedia> queue, {
+    required int startIndex,
+    required String externalPath,
+  }) async {
+    started.add(externalPath);
+  }
+}
+
+/// The Library's database page keeps a loading indicator spinning, so this
+/// settles with bounded pumps.
+Future<void> _settle(WidgetTester tester) async {
+  for (var i = 0; i < 20; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
+Future<void> _rightClick(WidgetTester tester, Finder finder) async {
+  final gesture = await tester.startGesture(
+    tester.getCenter(finder),
+    kind: PointerDeviceKind.mouse,
+    buttons: kSecondaryMouseButton,
+  );
+  await gesture.up();
+  await _settle(tester);
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -121,6 +157,7 @@ void main() {
     required bool desktop,
     bool mornye = false,
     String viewMode = 'list',
+    PlaybackController? playback,
   }) async {
     debugDesktopPlatformOverride = desktop;
     tester.view.physicalSize = const Size(1280, 900);
@@ -150,6 +187,7 @@ void main() {
           libraryCollectionsProvider.overrideWith(_Collections.new),
           downloadQueueProvider.overrideWith(_Queue.new),
           downloadQueueLookupProvider.overrideWithValue(queue),
+          if (playback != null) playbackProvider.overrideWith(() => playback),
         ],
         child: MaterialApp(
           theme: mornye
@@ -162,11 +200,7 @@ void main() {
         ),
       ),
     );
-    // A loading indicator spins while the database page is pending, so the
-    // page never settles; pump for a bounded time instead.
-    for (var i = 0; i < 20; i++) {
-      await tester.pump(const Duration(milliseconds: 50));
-    }
+    await _settle(tester);
   }
 
   for (final mornye in [false, true]) {
@@ -180,6 +214,48 @@ void main() {
       expect(find.text('Bravo'), findsOneWidget);
       // No month sections: the table sorts through its header instead.
       expect(find.text('January 2026'), findsNothing);
+    });
+
+    testWidgets('a right-click menu leaves the selection toolbar closed '
+        '(mornye: $mornye)', (tester) async {
+      final playback = _Playback();
+      await pumpLibrary(
+        tester,
+        desktop: true,
+        mornye: mornye,
+        playback: playback,
+      );
+      final toolbar = find.byType(LibraryTrackSelectionBar);
+      Finder menuRow(String label) => find.descendant(
+        of: find.byType(mornye ? MornyeContextMenu : MenuItemButton),
+        matching: find.text(label),
+      );
+
+      // The menu acts on the song without opening the toolbar under it,
+      // and closing the menu ends that selection.
+      await _rightClick(tester, find.text('Alpha'));
+      expect(menuRow('Play next'), findsOneWidget);
+      expect(toolbar, findsNothing);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _settle(tester);
+      expect(menuRow('Play next'), findsNothing);
+      expect(toolbar, findsNothing);
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await _settle(tester);
+      expect(toolbar, findsNothing);
+
+      // Play ends it too.
+      await _rightClick(tester, find.text('Alpha'));
+      await tester.tap(menuRow('Play'));
+      await _settle(tester);
+      expect(playback.started, ['/music/Alpha.flac']);
+      expect(toolbar, findsNothing);
+
+      // A bulk action keeps the selection, so the toolbar returns.
+      await _rightClick(tester, find.text('Bravo'));
+      await tester.tap(menuRow('Delete 1 track'));
+      await _settle(tester);
+      expect(toolbar, findsOneWidget);
     });
   }
 

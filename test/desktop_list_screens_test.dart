@@ -120,8 +120,8 @@ void main() {
       expect(find.byType(AlbumTrackTile), findsNothing);
       expect(find.byType(SliverTrackTable), findsOneWidget);
 
-      // A right-click selects the row and opens the long-press actions, the
-      // selection bar's, as a menu.
+      // A right-click opens the long-press actions, the selection bar's, as
+      // a menu on the row, without the bar under it.
       await _click(tester, find.text('Charlie'), buttons: kSecondaryButton);
       await tester.pumpAndSettle();
       final menu = mornye
@@ -139,16 +139,16 @@ void main() {
         find.descendant(of: menu, matching: find.textContaining('Delete')),
         findsOneWidget,
       );
+      expect(find.byType(SelectionBottomBar), findsNothing);
 
-      // Escape closes the menu, then clears the selection.
+      // Escape closes the menu and ends the selection it made.
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(
         find.byType(mornye ? MornyeContextMenu : MenuItemButton),
         findsNothing,
       );
-      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
-      await tester.pumpAndSettle();
+      expect(find.byType(SelectionBottomBar), findsNothing);
       expect(find.text('Play next'), findsNothing);
 
       // A click plays the row, as a tap does on a phone, and the second
@@ -159,6 +159,19 @@ void main() {
       await tester.pumpAndSettle();
       expect(playback.started, ['2']);
       expect(find.text('Play next'), findsNothing);
+
+      // Play from the menu ends the selection as well.
+      await _click(tester, find.text('Charlie'), buttons: kSecondaryButton);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: find.byType(mornye ? MornyeContextMenu : MenuItemButton),
+          matching: find.text('Play'),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(playback.started, ['2', '3']);
+      expect(find.byType(SelectionBottomBar), findsNothing);
     });
 
     testWidgets('desktop selection bar stays bounded (mornye: $mornye)', (
