@@ -41,6 +41,7 @@ import 'package:mornye/utils/audio_conversion_utils.dart';
 import 'package:mornye/utils/audio_format_utils.dart';
 import 'package:mornye/utils/artist_utils.dart';
 import 'package:mornye/utils/cover_art_utils.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/logger.dart';
 import 'package:mornye/utils/lyrics_metadata_helper.dart';
 import 'package:mornye/utils/mime_utils.dart';
@@ -68,6 +69,7 @@ import 'package:mornye/widgets/batch_convert_sheet.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
 import 'package:mornye/widgets/open_on_platform_sheet.dart';
 import 'package:mornye/widgets/metadata_barcode.dart';
+import 'package:mornye/widgets/scroll_edge_fade.dart';
 import 'package:mornye/widgets/settings_group.dart';
 import 'package:mornye/constants/music_services.dart';
 import 'package:mornye/controllers/batch_track_actions.dart'
@@ -204,6 +206,9 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
   static final RegExp _leadingOrTrailingDots = RegExp(r'^\.+|\.+$');
   String get _coverCacheKey => _itemId;
 
+  /// Shared by the lyrics box and its scrollbar.
+  final _lyricsScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -216,6 +221,7 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
   @override
   void dispose() {
     unawaited(_cleanupTempFileAndParentIfNotCached(_embeddedCoverPreviewPath));
+    _lyricsScrollController.dispose();
     super.dispose();
   }
 
@@ -226,6 +232,11 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
   @override
   double calculateExpandedHeight(BuildContext context) {
     final mediaSize = MediaQuery.sizeOf(context);
+    // Desktop windows are wide and short, so the header takes more of the
+    // height to leave the cover room (see _buildHeaderBackground).
+    if (isDesktopPlatform) {
+      return (mediaSize.height * 0.62).clamp(440.0, 640.0);
+    }
     return (mediaSize.height * 0.55).clamp(360.0, 520.0);
   }
 

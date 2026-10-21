@@ -107,14 +107,26 @@ extension _TrackMetadataLyricsAndSaving on _TrackMetadataScreenState {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // A visible scrollbar and a fade at the cut show that the
+                  // box scrolls, instead of a line clipped in half.
                   Container(
                     constraints: const BoxConstraints(maxHeight: 300),
-                    child: SingleChildScrollView(
-                      child: Text(
-                        _lyrics!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                          height: 1.6,
+                    child: ScrollEdgeFade(
+                      size: 48,
+                      fadeContent: true,
+                      child: Scrollbar(
+                        controller: _lyricsScrollController,
+                        thumbVisibility: isDesktopPlatform,
+                        child: SingleChildScrollView(
+                          controller: _lyricsScrollController,
+                          child: Text(
+                            _lyrics!,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: colorScheme.onSurface,
+                                  height: 1.6,
+                                ),
+                          ),
                         ),
                       ),
                     ),

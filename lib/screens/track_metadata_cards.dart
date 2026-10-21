@@ -192,8 +192,12 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
     // below the toolbar after the title block, so nothing rises into it.
     final toolbarBottom = MediaQuery.paddingOf(context).top + kToolbarHeight;
     const textBlockHeight = 190.0;
+    // Desktop allows up to 260, close to the desktop album header's cover.
     final coverSize = math.min(
-      (MediaQuery.sizeOf(context).width * 0.5).clamp(150.0, 210.0),
+      (MediaQuery.sizeOf(context).width * 0.5).clamp(
+        150.0,
+        isDesktopPlatform ? 260.0 : 210.0,
+      ),
       math.max(96.0, expandedHeight - toolbarBottom - textBlockHeight),
     );
 
