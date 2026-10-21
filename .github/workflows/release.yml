@@ -520,6 +520,9 @@ jobs:
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
+          # The image's libunwind-14-dev blocks GStreamer's libunwind-dev
+          # dependency; asking for it first lets apt replace the LLVM one.
+          sudo apt-get install -y libunwind-dev
           sudo apt-get install -y \
             clang cmake ninja-build pkg-config zip file \
             libgtk-3-dev liblzma-dev libsecret-1-dev libstdc++-12-dev \
@@ -622,7 +625,9 @@ jobs:
 
   build-windows:
     name: Build Windows (x64)
-    runs-on: windows-latest
+    # Visual Studio 2026 dropped <experimental/coroutine>, which
+    # permission_handler_windows still includes; keep the 2022 toolset.
+    runs-on: windows-2022
     needs: get-version
     # The release goes out without Windows assets if this job fails. Remove
     # once a release run of this job is green.
