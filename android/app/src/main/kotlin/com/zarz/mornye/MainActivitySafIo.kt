@@ -12,6 +12,7 @@ import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.time.Instant
 import java.util.Locale
 
 // SAF/MediaStore URI IO helpers: temp copies, writes, sidecars, and the
@@ -281,6 +282,9 @@ internal fun Context.readAudioMetadataFromUri(
                 put("artistName", "Unknown Artist")
                 put("albumName", "Unknown Album")
                 put("filePath", uri.toString())
+                // The Rust readers stamp their rows; the library import
+                // requires the same scan time on this platform row.
+                put("scannedAt", Instant.now().toString())
                 put("format", name.substringAfterLast('.').lowercase(Locale.ROOT))
                 put("sampleRate", source.rate)
                 put("bitDepth", 1)

@@ -17,6 +17,8 @@ class _NativeHarness {
   final Database live;
   List<Map<String, dynamic>> incremental = [];
   List<String> removed = [];
+  // Scan rows the native staging reports as invalid instead of staging.
+  List<String> invalidPaths = [];
   Future<void> Function()? afterStage;
   final stagedPaths = <String>[];
 
@@ -38,6 +40,7 @@ class _NativeHarness {
     );
     final snapshot = request['operation'] == 'library_snapshot';
     var count = 0;
+    var invalid = <Map<String, dynamic>>[];
     try {
       if (snapshot) {
         final indexes = await private.rawQuery('PRAGMA index_list(library)');
@@ -87,10 +90,14 @@ class _NativeHarness {
                   )
                   .toList()
             : incremental;
+        invalid = rows
+            .where((row) => invalidPaths.contains(row['filePath']))
+            .toList();
         for (final row in rows) {
+          if (invalid.contains(row)) continue;
           await addNativeLibraryTrack(private, row);
         }
-        count = rows.length;
+        count = rows.length - invalid.length;
         if (!full) {
           expect(request['retain_removed_paths'], isTrue);
           await private.execute(
@@ -112,7 +119,13 @@ class _NativeHarness {
       'committed': true,
       'inserted': count,
       'skipped': 0,
-      'scanned_count': count,
+      'scanned_count': count + invalid.length,
+      'invalid_rows': invalid.length,
+      'invalid_row_paths': invalid.map((row) => row['filePath']).toList(),
+      if (invalid.isNotEmpty)
+        'invalid_row_error':
+            '${invalid.first['filePath']}: '
+            'Library scan row requires string trackName',
       'totalFiles': count + 3,
       'skippedCount': 3,
       if (snapshot) 'path': request['snapshot_path'],
@@ -364,6 +377,32 @@ void main() {
     );
     await cleaned();
   });
+
+  test(
+    'invalid native rows are skipped and keep their previous entries',
+    () async {
+      await addNativeLibraryTrack(live, nativeLibraryTrack('broken'));
+      await addNativeLibraryTrack(live, nativeLibraryTrack('gone'));
+      native.invalidPaths = ['/music/broken.flac'];
+      final result = await adapter.importScanFile(
+        'source',
+        await scan([
+          nativeLibraryTrack('new'),
+          nativeLibraryTrack('broken-2', path: '/music/broken.flac'),
+        ]),
+        requestId: 'invalid-rows',
+        isCancelled: () => false,
+      );
+      expect(result['invalid_rows'], 1);
+      // The skipped file keeps its previous entry; files absent from an
+      // otherwise clean scan are still removed.
+      expect(
+        (await live.query('library')).map((row) => row['id']),
+        unorderedEquals(['new', 'broken', 'other']),
+      );
+      await cleaned();
+    },
+  );
 
   test(
     'incremental removes current downloads and exact source-scoped deleted paths',
