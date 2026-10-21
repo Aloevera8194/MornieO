@@ -111,6 +111,11 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
   bool _loading = false;
   bool _hasStarted = false;
   bool _userScrolling = false;
+
+  /// Hides the list until it first lands on the playing line. A view that
+  /// opens on screen would otherwise paint the start of the lyrics, then an
+  /// estimated offset, before settling on the line.
+  bool _awaitingFirstScroll = false;
   bool _tickerEnabled = true;
   bool get _visible =>
       widget.isActive &&
@@ -315,10 +320,15 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     _focus = _focusFor(_active, _activeLines, position);
     _updateRowVisibility(immediate: true);
     _activeTransitionPosition = position;
+    // Only before the first layout: a list already on screen keeps its
+    // lines while it moves.
+    _awaitingFirstScroll = !_scroll.hasClients && _focus >= 0;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _visible) {
-        unawaited(_maybeAutoScroll(_active, immediate: true));
-      }
+      if (!mounted) return;
+      final scrolled = _visible
+          ? _maybeAutoScroll(_active, immediate: true)
+          : Future<void>.value();
+      unawaited(scrolled.whenComplete(_endFirstScroll));
     });
     _scheduleNextLine(position);
     _positionSubscription = ref.listenManual<Duration>(
@@ -348,6 +358,11 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
       _setActiveLine(_activeIndexAt(position), position: position);
       _scheduleNextLine(position);
     });
+  }
+
+  void _endFirstScroll() {
+    if (!mounted || !_awaitingFirstScroll) return;
+    setState(() => _awaitingFirstScroll = false);
   }
 
   Duration get _displayPosition =>
@@ -987,7 +1002,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                   double.infinity,
                 )
               : topPadding;
-          return ListView.builder(
+          final list = ListView.builder(
             controller: _scroll,
             itemExtentBuilder: mornye
                 ? (index, _) => index < lines.length
@@ -1201,6 +1216,8 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
               );
             },
           );
+          // Laid out but not painted while it finds the playing line.
+          return Opacity(opacity: _awaitingFirstScroll ? 0 : 1, child: list);
         },
       ),
     );
