@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ import 'package:mornye/utils/lyrics_parser.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_window.dart';
+import 'package:mornye/widgets/player_lyrics.dart';
 
 const _track = MediaItem(
   id: 'track',
@@ -39,6 +41,26 @@ const _ttml =
     '</div></body></tt>';
 
 const _channel = MethodChannel('com.zarz.mornye/window');
+
+Future<List<int>> _wordPixels(WidgetTester tester) async {
+  final paint = find.descendant(
+    of: find.byType(WordTimedLyricLine),
+    matching: find.byType(CustomPaint),
+  );
+  final painter = tester.widget<CustomPaint>(paint).painter!;
+  final size = tester.getSize(paint);
+  return (await tester.runAsync(() async {
+    final recorder = ui.PictureRecorder();
+    painter.paint(Canvas(recorder), size);
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.width.ceil(), size.height.ceil());
+    final bytes = (await image.toByteData(format: ui.ImageByteFormat.rawRgba))!;
+    final result = bytes.buffer.asUint8List().toList();
+    image.dispose();
+    picture.dispose();
+    return result;
+  }))!;
+}
 
 void main() {
   late List<MethodCall> calls;
@@ -150,11 +172,92 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     await tester.pump(const Duration(milliseconds: 500));
     expect(find.textContaining('Second'), findsNothing);
-    expect(find.textContaining('Third'), findsOneWidget);
+    expect(find.byType(WordTimedLyricLine), findsOneWidget);
+    expect(
+      tester
+          .widget<WordTimedLyricLine>(find.byType(WordTimedLyricLine))
+          .line
+          .text,
+      'Third words',
+    );
   });
 
   for (final mornye in [false, true]) {
     final style = mornye ? 'Mornye' : 'Material';
+
+    testWidgets(
+      '$style TTML words follow pause and seeks during panel resizing',
+      (tester) async {
+        tester.view.physicalSize = const Size(360, 248);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final playback = StreamController<PlaybackState>();
+        addTearDown(playback.close);
+        void pauseAt(int seconds) => playback.add(
+          PlaybackState(
+            processingState: AudioProcessingState.ready,
+            updatePosition: Duration(seconds: seconds),
+          ),
+        );
+        pauseAt(1);
+        desktopMiniPlayerOpen.value = true;
+        desktopMiniPlayerLyrics.value = true;
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              currentMediaItemProvider.overrideWithBuild(
+                (ref, notifier) => Stream.value(_track),
+              ),
+              playbackStateProvider.overrideWith((ref) => playback.stream),
+            ],
+            child: MaterialApp(
+              theme: mornye
+                  ? MornyeTheme.build(Brightness.light)
+                  : AppTheme.light(),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: DesktopMiniPlayer(
+                metadataControllerFactory: () => PlayerMetadataController(
+                  readMetadata: (_) async => {'lyrics': _ttml},
+                  parseLyrics: (raw) async => LyricsParser.parse(raw!),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final first = await _wordPixels(tester);
+        pauseAt(3);
+        await tester.pumpAndSettle();
+        final second = await _wordPixels(tester);
+        expect(second, isNot(orderedEquals(first)));
+        await tester.pump(const Duration(seconds: 1));
+        expect(await _wordPixels(tester), orderedEquals(second));
+        pauseAt(1);
+        await tester.pumpAndSettle();
+        expect(await _wordPixels(tester), orderedEquals(first));
+
+        pauseAt(6);
+        await tester.pumpAndSettle();
+        expect(
+          tester
+              .widget<WordTimedLyricLine>(find.byType(WordTimedLyricLine))
+              .line
+              .text,
+          'Second words',
+        );
+        for (final height in [192.0, 140.0, 192.0, 248.0]) {
+          tester.view.physicalSize = Size(360, height);
+          await tester.pump();
+          expect(tester.takeException(), isNull);
+        }
+        pauseAt(1);
+        await tester.pumpAndSettle();
+        expect(await _wordPixels(tester), orderedEquals(first));
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
 
     testWidgets('$style panel follows the lyrics and grows for them', (
       tester,

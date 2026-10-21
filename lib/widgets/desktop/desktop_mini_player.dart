@@ -141,10 +141,13 @@ class _DesktopMiniPlayerState extends ConsumerState<DesktopMiniPlayer> {
             const Positioned.fill(child: DesktopWindowDragArea()),
             ValueListenableBuilder<bool>(
               valueListenable: desktopMiniPlayerLyrics,
-              builder: (context, lyrics, _) => Align(
-                alignment: AlignmentDirectional.topStart,
-                child: SizedBox.fromSize(
-                  size: _miniPlayerSize(lyrics: lyrics),
+              builder: (context, lyrics, _) => ClipRect(
+                child: OverflowBox(
+                  alignment: AlignmentDirectional.topStart,
+                  minWidth: _miniPlayerWidth,
+                  maxWidth: _miniPlayerWidth,
+                  minHeight: _miniPlayerSize(lyrics: lyrics).height,
+                  maxHeight: _miniPlayerSize(lyrics: lyrics).height,
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: _content(context, mediaItem, lyrics: lyrics),
@@ -271,12 +274,14 @@ class _MiniPlayerLyrics extends ConsumerStatefulWidget {
 
 class _MiniPlayerLyricsState extends ConsumerState<_MiniPlayerLyrics> {
   Timer? _nextLine;
+  final _seekPreview = ValueNotifier<Duration?>(null);
 
   PlayerMetadataController get metadata => widget.metadata;
 
   @override
   void dispose() {
     _nextLine?.cancel();
+    _seekPreview.dispose();
     super.dispose();
   }
 
@@ -338,38 +343,57 @@ class _MiniPlayerLyricsState extends ConsumerState<_MiniPlayerLyrics> {
           final next = _leadLineAfter(lines, current);
           return Padding(
             padding: const EdgeInsets.only(top: 10),
-            child: AnimatedSwitcher(
-              duration: MediaQuery.disableAnimationsOf(context)
-                  ? Duration.zero
-                  : const Duration(milliseconds: 220),
-              layoutBuilder: (current, previous) => Stack(
-                alignment: AlignmentDirectional.topStart,
-                children: [...previous, ?current],
-              ),
-              child: Column(
-                key: ValueKey(current),
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (current >= 0)
-                    Text(
-                      lines[current].text,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+            child: SingleChildScrollView(
+              child: AnimatedSwitcher(
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 220),
+                layoutBuilder: (current, previous) => Stack(
+                  alignment: AlignmentDirectional.topStart,
+                  children: [...previous, ?current],
+                ),
+                child: Column(
+                  key: ValueKey(current),
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (current >= 0)
+                      if (lines[current].hasWordTiming)
+                        WordTimedLyricLine(
+                          line: lines[current],
+                          initialPosition:
+                              ref
+                                  .watch(playbackStateProvider)
+                                  .value
+                                  ?.position ??
+                              Duration.zero,
+                          seekPreview: _seekPreview,
+                          style: textTheme.titleLarge!.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 2,
+                        )
+                      else
+                        Text(
+                          lines[current].text,
+                          style: textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    if (next >= 0)
+                      Text(
+                        lines[next].text,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  if (next >= 0)
-                    Text(
-                      lines[next].text,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           );

@@ -25,6 +25,7 @@ import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/widgets/mornye_playback_button.dart';
 import 'package:mornye/widgets/mornye_player_background.dart';
 import 'package:mornye/widgets/player_artwork.dart';
+import 'package:mornye/widgets/player_lyrics.dart';
 import 'package:mornye/widgets/player_volume_control.dart';
 import 'package:mornye/widgets/playback_seek_slider.dart';
 

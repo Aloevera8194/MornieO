@@ -1,5 +1,38 @@
 part of 'player_lyrics.dart';
 
+/// A compact timed line using the full player's word sweep and playback clock.
+/// Supplements stay in the full lyrics view.
+class WordTimedLyricLine extends StatelessWidget {
+  const WordTimedLyricLine({
+    super.key,
+    required this.line,
+    required this.initialPosition,
+    required this.seekPreview,
+    required this.style,
+    this.maxLines,
+  });
+
+  final LyricLine line;
+  final Duration initialPosition;
+  final ValueListenable<Duration?> seekPreview;
+  final TextStyle style;
+  final int? maxLines;
+
+  @override
+  Widget build(BuildContext context) => _WordHighlightedLyricLine(
+    line: line,
+    colorScheme: Theme.of(context).colorScheme,
+    animate: true,
+    initialPosition: initialPosition,
+    seekPreview: seekPreview,
+    supplementVisibility: Offset.zero,
+    pronunciationLayout: null,
+    textAlign: TextAlign.start,
+    textStyle: style,
+    maxLines: maxLines,
+  );
+}
+
 class _WordHighlightedLyricLine extends ConsumerStatefulWidget {
   final LyricLine line;
   final ColorScheme colorScheme;
@@ -9,6 +42,8 @@ class _WordHighlightedLyricLine extends ConsumerStatefulWidget {
   final Offset supplementVisibility;
   final LyricPronunciationLayout? pronunciationLayout;
   final TextAlign textAlign;
+  final TextStyle? textStyle;
+  final int? maxLines;
 
   const _WordHighlightedLyricLine({
     required this.line,
@@ -19,6 +54,8 @@ class _WordHighlightedLyricLine extends ConsumerStatefulWidget {
     required this.supplementVisibility,
     required this.pronunciationLayout,
     required this.textAlign,
+    this.textStyle,
+    this.maxLines,
   });
 
   @override
@@ -261,6 +298,7 @@ class _WordHighlightedLyricLineState
   @override
   Widget build(BuildContext context) {
     final style =
+        widget.textStyle ??
         _primaryLyricStyle(context, background: widget.line.isBackground);
     final primary = widget.line.hasWordTiming
         ? _buildTimedText(widget.line.text, widget.line.words, style)
@@ -268,6 +306,8 @@ class _WordHighlightedLyricLineState
             widget.line.text,
             textAlign: widget.textAlign,
             style: style.copyWith(color: widget.colorScheme.onSurface),
+            maxLines: widget.maxLines,
+            overflow: widget.maxLines == null ? null : TextOverflow.ellipsis,
           );
     // Both scripts share this state's position interpolation and animation
     // clock, including pause, seek and track changes.
@@ -311,6 +351,7 @@ class _WordHighlightedLyricLineState
       highlightedColor: highlightedColor,
       semanticsLabel: text,
       liftEnabled: lift && mornye && !MediaQuery.disableAnimationsOf(context),
+      maxLines: widget.maxLines,
     );
   }
 }
@@ -327,6 +368,7 @@ class _SweepingTimedLyricText extends StatefulWidget {
   final Color highlightedColor;
   final String semanticsLabel;
   final bool liftEnabled;
+  final int? maxLines;
 
   const _SweepingTimedLyricText({
     required this.segments,
@@ -340,6 +382,7 @@ class _SweepingTimedLyricText extends StatefulWidget {
     required this.highlightedColor,
     required this.semanticsLabel,
     required this.liftEnabled,
+    this.maxLines,
   });
 
   @override
@@ -358,6 +401,7 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
   Locale? _cachedLocale;
   Color? _cachedPendingColor;
   Color? _cachedHighlightedColor;
+  int? _cachedMaxLines;
   List<String>? _cachedSegments;
   List<List<Rect>>? _cachedSegmentBoxes;
   double? _cachedMinWidth;
@@ -375,6 +419,7 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
         _cachedDirection == textDirection &&
         _cachedScaler == textScaler &&
         _cachedLocale == locale &&
+        _cachedMaxLines == widget.maxLines &&
         _cachedPendingColor == widget.pendingColor &&
         _cachedHighlightedColor == widget.highlightedColor) {
       return;
@@ -392,6 +437,8 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
       textDirection: textDirection,
       textScaler: textScaler,
       locale: locale,
+      maxLines: widget.maxLines,
+      ellipsis: widget.maxLines == null ? null : '\u2026',
     );
     _highlightedPainter = TextPainter(
       text: TextSpan(
@@ -402,6 +449,8 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
       textDirection: textDirection,
       textScaler: textScaler,
       locale: locale,
+      maxLines: widget.maxLines,
+      ellipsis: widget.maxLines == null ? null : '\u2026',
     );
     _cachedText = text;
     _cachedStyle = widget.style;
@@ -409,6 +458,7 @@ class _SweepingTimedLyricTextState extends State<_SweepingTimedLyricText> {
     _cachedDirection = textDirection;
     _cachedScaler = textScaler;
     _cachedLocale = locale;
+    _cachedMaxLines = widget.maxLines;
     _cachedPendingColor = widget.pendingColor;
     _cachedHighlightedColor = widget.highlightedColor;
   }
