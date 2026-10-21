@@ -46,7 +46,7 @@ void main() {
       slider.onChanged!(45);
       await tester.pump();
       expect(container.read(settingsProvider).autoMixDuration, 5);
-      expect(find.text('Mix duration: 45 s'), findsOneWidget);
+      expect(find.text('45 s'), findsOneWidget);
       slider.onChangeEnd!(45);
       await tester.pump();
       expect(container.read(settingsProvider).autoMixDuration, 45);

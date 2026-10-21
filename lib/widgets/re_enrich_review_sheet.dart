@@ -46,6 +46,7 @@ Future<bool> showReEnrichReviewSheet(
       previews.length,
     ),
     maxHeightFactor: 0.9,
+    dialogSize: AppDialogSize.wide,
     builder: (sheetContext) => _ReEnrichReviewContent(previews: previews),
   );
   return confirmed == true;

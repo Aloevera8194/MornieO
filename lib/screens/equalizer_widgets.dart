@@ -654,11 +654,6 @@ class _SliderTile extends StatelessWidget {
     final colors = theme.colorScheme;
     final tokens = context.tokens;
     final mornye = context.isMornye;
-    final label = _format(value);
-    final valueStyle = theme.textTheme.labelLarge?.copyWith(
-      color: colors.onSecondaryContainer,
-      fontFeatures: const [FontFeature.tabularFigures()],
-    );
     final content = Padding(
       padding: EdgeInsetsDirectional.fromSTEB(
         tokens.rowPaddingH + (indented && !mornye ? 24 + tokens.rowIconGap : 0),
@@ -669,58 +664,18 @@ class _SliderTile extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              // Mornye rows, like iOS Settings, carry no leading glyphs.
-              if (icon != null && !mornye) ...[
-                AppIcon.adaptive(
-                  icon!,
-                  color: colors.onSurfaceVariant,
-                  size: 24,
-                ),
-                SizedBox(width: tokens.rowIconGap),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: theme.textTheme.bodyLarge),
-                    if (subtitle != null)
-                      Text(
-                        subtitle!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              SizedBox(width: tokens.gapSm),
-              if (mornye)
-                // iOS detail text: the value in secondary label color.
-                Text(
-                  label,
-                  style: theme.textTheme.bodyLarge?.copyWith(
+          SliderValueHeader(
+            title: title,
+            subtitle: subtitle,
+            value: _format(value),
+            // Mornye rows, like iOS Settings, carry no leading glyphs.
+            leading: icon == null || mornye
+                ? null
+                : AppIcon.adaptive(
+                    icon!,
                     color: colors.onSurfaceVariant,
-                    fontFeatures: const [FontFeature.tabularFigures()],
+                    size: 24,
                   ),
-                )
-              else
-                DecoratedBox(
-                  decoration: ShapeDecoration(
-                    color: colors.secondaryContainer,
-                    shape: const StadiumBorder(),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 4,
-                    ),
-                    child: Text(label, style: valueStyle),
-                  ),
-                ),
-            ],
           ),
           if (mornye)
             MornyeLevelSlider(

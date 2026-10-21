@@ -30,6 +30,7 @@ import 'package:mornye/widgets/expressive_icon_button.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/widgets/mornye_level_slider.dart';
 import 'package:mornye/widgets/settings_group.dart';
+import 'package:mornye/widgets/slider_value_header.dart';
 
 part 'equalizer_widgets.dart';
 part 'equalizer_curve.dart';

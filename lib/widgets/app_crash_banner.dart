@@ -142,6 +142,7 @@ class _AppCrashBannerState extends ConsumerState<AppCrashBanner> {
     showAppScrollableBottomSheet<void>(
       context: context,
       title: context.l10n.appCrashDetails,
+      dialogSize: AppDialogSize.wide,
       builder: (context, controller) => SingleChildScrollView(
         controller: controller,
         padding: EdgeInsets.fromLTRB(
