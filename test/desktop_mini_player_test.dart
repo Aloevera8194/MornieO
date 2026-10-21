@@ -10,11 +10,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mornye/controllers/player_metadata_controller.dart';
 import 'package:mornye/l10n/app_localizations.dart';
 import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/lyrics_parser.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
+import 'package:mornye/widgets/desktop/desktop_navigation.dart';
 import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_window.dart';
 import 'package:mornye/widgets/player_lyrics.dart';
@@ -258,6 +260,133 @@ void main() {
         await tester.pumpWidget(const SizedBox.shrink());
       },
     );
+
+    testWidgets('$style switches the retained shell through native resizing', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      final navigatorKey = GlobalKey<NavigatorState>();
+      final pageKey = GlobalKey();
+      late Completer<Object?> transition;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(_channel, (call) async {
+            transition = Completer<Object?>();
+            return transition.future;
+          });
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            currentMediaItemProvider.overrideWithBuild(
+              (ref, notifier) => Stream.value(null),
+            ),
+            playbackStateProvider.overrideWith(
+              (ref) => Stream.value(PlaybackState()),
+            ),
+          ],
+          child: MaterialApp(
+            theme: mornye
+                ? MornyeTheme.build(Brightness.light)
+                : AppTheme.light(),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Builder(
+              builder: (context) {
+                MediaQuery.sizeOf(context);
+                return Scaffold(
+                  body: DesktopShellLayout(
+                    destinations: const [
+                      DesktopDestination(
+                        tab: ShellTab.home,
+                        icon: Icons.home,
+                        selectedIcon: Icons.home,
+                        label: 'Home',
+                      ),
+                    ],
+                    selected: ShellTab.home,
+                    onSelected: (_) {},
+                    body: KeyedSubtree(
+                      key: pageKey,
+                      child: Navigator(
+                        key: navigatorKey,
+                        onGenerateRoute: (_) => MaterialPageRoute<void>(
+                          builder: (_) => const Scaffold(
+                            body: Center(child: Text('Retained page')),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final navigator = navigatorKey.currentState;
+      final pageSize = tester.getSize(find.byKey(pageKey));
+      double opacity(String key) => tester
+          .widget<Opacity>(find.byKey(ValueKey(key), skipOffstage: false))
+          .opacity;
+      for (var attempt = 0; attempt < 3; attempt++) {
+        await tester.tap(find.byKey(const ValueKey('desktop-player-mini')));
+        await tester.pump();
+        expect(opacity('desktop-mini-player-fade'), 0);
+        expect(opacity('desktop-mini-player-shell-fade'), 1);
+        var previous = 0.0;
+        for (final size in [
+          const Size(1000, 650),
+          const Size(640, 390),
+          const Size(360, 140),
+        ]) {
+          tester.view.physicalSize = size;
+          await tester.pump();
+          final fade = opacity('desktop-mini-player-fade');
+          expect(fade, greaterThan(previous));
+          expect(opacity('desktop-mini-player-shell-fade'), 1 - fade);
+          expect(
+            tester.getSize(find.byKey(pageKey, skipOffstage: false)),
+            pageSize,
+          );
+          expect(tester.takeException(), isNull);
+          previous = fade;
+        }
+        transition.complete(true);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.byType(DesktopMiniPlayer), findsOneWidget);
+        expect(find.text('Retained page'), findsNothing);
+        expect(navigatorKey.currentState, same(navigator));
+        await tester.tap(
+          find.byKey(const ValueKey('desktop-mini-player-expand')),
+        );
+        await tester.pump();
+        previous = 1;
+        for (final size in [
+          const Size(640, 390),
+          const Size(1000, 650),
+          const Size(1280, 800),
+        ]) {
+          tester.view.physicalSize = size;
+          await tester.pump();
+          final fade = opacity('desktop-mini-player-fade');
+          expect(fade, lessThan(previous));
+          expect(opacity('desktop-mini-player-shell-fade'), 1 - fade);
+          expect(navigatorKey.currentState, same(navigator));
+          expect(tester.takeException(), isNull);
+          previous = fade;
+        }
+        expect(desktopMiniPlayerOpen.value, isTrue);
+        transition.complete(null);
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        expect(find.text('Retained page'), findsOneWidget);
+        expect(navigatorKey.currentState, same(navigator));
+      }
+    });
 
     testWidgets('$style panel follows the lyrics and grows for them', (
       tester,

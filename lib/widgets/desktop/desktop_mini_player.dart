@@ -16,6 +16,10 @@ Size _miniPlayerSize({required bool lyrics}) => Size(
   _miniPlayerHeight + (lyrics ? _miniPlayerLyricsHeight : 0),
 );
 
+/// The content size requested from the native mini player window.
+Size get desktopMiniPlayerSize =>
+    _miniPlayerSize(lyrics: desktopMiniPlayerLyrics.value);
+
 bool _miniPlayerBusy = false;
 
 /// Turns the window into the mini player, or back into the full window.
@@ -33,15 +37,12 @@ Future<void> setDesktopMiniPlayer({required bool open}) async {
   _miniPlayerBusy = true;
   try {
     if (open) {
-      // The panel shows before the window shrinks, so the shell never lays
-      // out in the small window.
       desktopMiniPlayerOpen.value = true;
-      final opened = await openDesktopMiniPlayerWindow(
-        _miniPlayerSize(lyrics: desktopMiniPlayerLyrics.value),
-      );
+      final opened = await openDesktopMiniPlayerWindow(desktopMiniPlayerSize);
       if (!opened) desktopMiniPlayerOpen.value = false;
     } else {
-      // The window grows back before the shell returns.
+      // The shell fades back with the window's actual size. Keep both
+      // surfaces mounted until AppKit finishes restoring the frame.
       await closeDesktopMiniPlayerWindow();
       desktopMiniPlayerOpen.value = false;
     }
@@ -57,10 +58,11 @@ Future<void> _toggleMiniPlayerLyrics() async {
   _miniPlayerBusy = true;
   try {
     final show = !desktopMiniPlayerLyrics.value;
-    // Content never asks for more room than the window has.
-    if (!show) desktopMiniPlayerLyrics.value = false;
-    await openDesktopMiniPlayerWindow(_miniPlayerSize(lyrics: show));
     if (show) desktopMiniPlayerLyrics.value = true;
+    final resized = await openDesktopMiniPlayerWindow(
+      _miniPlayerSize(lyrics: show),
+    );
+    desktopMiniPlayerLyrics.value = resized ? show : !show;
   } finally {
     _miniPlayerBusy = false;
   }

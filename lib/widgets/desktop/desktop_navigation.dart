@@ -147,32 +147,70 @@ class DesktopShellLayout extends StatelessWidget {
       final mediaQuery = MediaQuery.of(context);
       if (!mini) _fullWindowSize = mediaQuery.size;
       final full = mini ? _fullWindowSize : null;
-      return Stack(
-        fit: StackFit.expand,
-        children: [
-          Visibility(
-            visible: !mini,
-            maintainState: true,
-            child: OverflowBox(
-              alignment: Alignment.topLeft,
-              minWidth: full?.width,
-              maxWidth: full?.width,
-              minHeight: full?.height,
-              maxHeight: full?.height,
-              child: MediaQuery(
-                data: full == null
-                    ? mediaQuery
-                    : mediaQuery.copyWith(size: full),
-                child: window!,
+      // Follow native resize frames instead of running a second animation
+      // clock that could finish before AppKit or a slow Flutter frame.
+      final span = full == null
+          ? 0.0
+          : full.width - desktopMiniPlayerSize.width;
+      final progress = !mini
+          ? 0.0
+          : span <= 0
+          ? 1.0
+          : ((full!.width - mediaQuery.size.width) / span).clamp(0.0, 1.0);
+      final fade = Curves.easeInOut.transform(progress);
+      return ClipRect(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Visibility(
+              visible: progress < 1,
+              maintainState: true,
+              child: IgnorePointer(
+                ignoring: mini,
+                child: ExcludeSemantics(
+                  excluding: mini,
+                  child: Opacity(
+                    key: const ValueKey('desktop-mini-player-shell-fade'),
+                    opacity: 1 - fade,
+                    child: RepaintBoundary(
+                      child: OverflowBox(
+                        alignment: Alignment.topLeft,
+                        minWidth: full?.width,
+                        maxWidth: full?.width,
+                        minHeight: full?.height,
+                        maxHeight: full?.height,
+                        child: MediaQuery(
+                          data: full == null
+                              ? mediaQuery
+                              : mediaQuery.copyWith(size: full),
+                          child: window!,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
-          if (mini)
-            const KeyedSubtree(
-              key: ValueKey('desktop-mini-player'),
-              child: DesktopMiniPlayer(),
-            ),
-        ],
+            if (mini)
+              IgnorePointer(
+                ignoring: progress < 1,
+                child: Opacity(
+                  key: const ValueKey('desktop-mini-player-fade'),
+                  opacity: fade,
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: SizedBox(
+                      width: desktopMiniPlayerSize.width,
+                      child: const KeyedSubtree(
+                        key: ValueKey('desktop-mini-player'),
+                        child: DesktopMiniPlayer(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       );
     },
     child: Builder(builder: _nowPlayingOrShell),
