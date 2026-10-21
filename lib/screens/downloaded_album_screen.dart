@@ -687,10 +687,16 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
               duration: track.duration == null
                   ? null
                   : Duration(seconds: track.duration!),
-              trailing: AlbumTrackPlayButton(
-                isPlaying: false,
-                onPlay: () => _openFile(track, queueItems: tracks),
-                dense: true,
+              mediaId: track.id,
+              trailing: _TrackPlaybackBuilder(
+                mediaId: track.id,
+                builder: (context, playback, toggle) => AlbumTrackPlayButton(
+                  isPlaying: playback.isPlaying,
+                  onPlay: playback.isCurrent
+                      ? toggle
+                      : () => _openFile(track, queueItems: tracks),
+                  dense: true,
+                ),
               ),
             ),
         ],
@@ -750,26 +756,34 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
     List<DownloadHistoryItem> navigationItems,
     int navigationIndex,
   ) {
-    return AlbumTrackTile(
-      trackNumber: track.trackNumber,
-      trackName: track.trackName,
-      subtitle: Text(
-        track.artistName,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: colorScheme.onSurfaceVariant),
+    final subtitle = Text(
+      track.artistName,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: TextStyle(color: colorScheme.onSurfaceVariant),
+    );
+    return _TrackPlaybackBuilder(
+      mediaId: track.id,
+      builder: (context, playback, toggle) => AlbumTrackTile(
+        trackNumber: track.trackNumber,
+        trackName: track.trackName,
+        subtitle: subtitle,
+        isSelectionMode: isSelectionMode,
+        isSelected: selectedIds.contains(track.id),
+        isCurrent: playback.isCurrent,
+        isPlaying: playback.isPlaying,
+        colorScheme: colorScheme,
+        onToggleSelection: () => toggleSelection(track.id),
+        onOpen: () => _navigateToMetadataScreen(
+          track,
+          navigationItems: navigationItems,
+          navigationIndex: navigationIndex,
+        ),
+        onEnterSelectionMode: () => enterSelectionMode(track.id),
+        onPlay: playback.isCurrent
+            ? toggle
+            : () => _openFile(track, queueItems: navigationItems),
       ),
-      isSelectionMode: isSelectionMode,
-      isSelected: selectedIds.contains(track.id),
-      colorScheme: colorScheme,
-      onToggleSelection: () => toggleSelection(track.id),
-      onOpen: () => _navigateToMetadataScreen(
-        track,
-        navigationItems: navigationItems,
-        navigationIndex: navigationIndex,
-      ),
-      onEnterSelectionMode: () => enterSelectionMode(track.id),
-      onPlay: () => _openFile(track, queueItems: navigationItems),
     );
   }
 
@@ -880,6 +894,33 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
           onPressed: () => _deleteSelected(tracks),
         ),
       ],
+    );
+  }
+}
+
+/// Builds one track's row from its playback state, so a track change
+/// rebuilds only the rows involved. [builder] gets a callback that pauses or
+/// resumes the current track.
+class _TrackPlaybackBuilder extends ConsumerWidget {
+  const _TrackPlaybackBuilder({required this.mediaId, required this.builder});
+
+  final String mediaId;
+  final Widget Function(
+    BuildContext context,
+    ({bool isCurrent, bool isPlaying, bool isLoading}) playback,
+    VoidCallback toggle,
+  )
+  builder;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final playback = ref.watch(mediaItemPlaybackUiProvider(mediaId));
+    return builder(
+      context,
+      playback,
+      () => ref
+          .read(musicPlayerControllerProvider)
+          .togglePlayPause(playback.isPlaying),
     );
   }
 }

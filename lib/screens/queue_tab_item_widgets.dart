@@ -931,6 +931,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
                     _ => null,
                   },
                   leading: _buildUnifiedCoverImage(item, colorScheme, 32),
+                  mediaId: _libraryPlaybackMediaId(item),
                 ),
             ],
             columns: const [
@@ -1025,119 +1026,142 @@ extension _QueueTabItemWidgets on _QueueTabState {
       localNavigationIndex: localNavigationIndex,
     );
 
+    final mediaId = _libraryPlaybackMediaId(item);
+    final leading = Hero(
+      tag: 'cover_lib_${item.id}',
+      child: _buildUnifiedCoverImage(
+        item,
+        colorScheme,
+        context.tokens.coverList,
+      ),
+    );
+    final subtitle = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // The history service is where the audio was downloaded from;
+        // artist lookups use the user's search provider instead.
+        ClickableArtistName(
+          artistName: item.artistName,
+          coverUrl: item.coverUrl,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 2),
+        Row(
+          children: [
+            Container(
+              padding: context.tokens.badgePadding,
+              decoration: BoxDecoration(
+                color: sourceColor,
+                borderRadius: context.tokens.borderRadiusBadge,
+              ),
+              child: Text(
+                sourceLabel,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: sourceTextColor,
+                  fontSize: context.tokens.badgeFontSize,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                dateStr,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            if (quality != null && quality.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              _buildLibraryQualityBadge(
+                context,
+                colorScheme,
+                quality,
+                listStyle: true,
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+    final trailing = ValueListenableBuilder<bool>(
+      valueListenable: fileExistsListenable,
+      builder: (context, fileExists, child) {
+        if (fileExists) {
+          return _LibraryPlaybackButton(
+            mediaId: mediaId,
+            playTooltip: context.l10n.a11yPlayTrackByArtist(
+              item.trackName,
+              item.artistName,
+            ),
+            onPlay: () => _playLibraryItem(item, libraryItems),
+          );
+        }
+        return Tooltip(
+          message: context.l10n.queueDownloadedFileMissing,
+          child: AppIcon(
+            Icons.error_outline,
+            color: colorScheme.error,
+            size: 20,
+          ),
+        );
+      },
+    );
+    Widget card({bool current = false, bool playing = false}) => TrackCard(
+      isSelectionMode: _isSelectionMode,
+      isSelected: isSelected,
+      isCurrent: current,
+      isPlaying: playing,
+      leadingArtwork: true,
+      onTap: isDesktopPlatform
+          ? () => _desktopLibraryItemClick(item, libraryItems, open)
+          : _isSelectionMode
+          ? () => _toggleSelection(item.id)
+          : open,
+      onContextMenu: (position) => _showLibraryItemMenu(
+        context,
+        item,
+        libraryItems,
+        position,
+        onOpenDetails: open,
+      ),
+      onLongPress: playlistDragEnabled
+          ? null
+          : _isSelectionMode
+          ? () => _selectRangeTo(item.id, libraryItems)
+          : () => _enterSelectionMode(item.id),
+      leading: leading,
+      title: item.trackName,
+      subtitle: subtitle,
+      trailing: trailing,
+    );
+
     return Semantics(
       label: context.l10n.a11yTrackByArtist(item.trackName, item.artistName),
       selected: isSelected,
-      child: TrackCard(
-        isSelectionMode: _isSelectionMode,
-        isSelected: isSelected,
-        onTap: isDesktopPlatform
-            ? () => _desktopLibraryItemClick(item, libraryItems, open)
-            : _isSelectionMode
-            ? () => _toggleSelection(item.id)
-            : open,
-        onContextMenu: (position) => _showLibraryItemMenu(
-          context,
-          item,
-          libraryItems,
-          position,
-          onOpenDetails: open,
-        ),
-        onLongPress: playlistDragEnabled
-            ? null
-            : _isSelectionMode
-            ? () => _selectRangeTo(item.id, libraryItems)
-            : () => _enterSelectionMode(item.id),
-        leading: Hero(
-          tag: 'cover_lib_${item.id}',
-          child: _buildUnifiedCoverImage(
-            item,
-            colorScheme,
-            context.tokens.coverList,
-          ),
-        ),
-        title: item.trackName,
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // The history service is where the audio was downloaded from;
-            // artist lookups use the user's search provider instead.
-            ClickableArtistName(
-              artistName: item.artistName,
-              coverUrl: item.coverUrl,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+      // Material rows follow their own media id, so a track change rebuilds
+      // only the rows involved. Mornye rows show no current-track state.
+      child: context.isMornye
+          ? card()
+          : Consumer(
+              builder: (context, ref, _) {
+                final playback = ref.watch(
+                  mediaItemPlaybackUiProvider(mediaId),
+                );
+                return card(
+                  current: playback.isCurrent,
+                  playing: playback.isPlaying,
+                );
+              },
             ),
-            const SizedBox(height: 2),
-            Row(
-              children: [
-                Container(
-                  padding: context.tokens.badgePadding,
-                  decoration: BoxDecoration(
-                    color: sourceColor,
-                    borderRadius: context.tokens.borderRadiusBadge,
-                  ),
-                  child: Text(
-                    sourceLabel,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: sourceTextColor,
-                      fontSize: context.tokens.badgeFontSize,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    dateStr,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-                if (quality != null && quality.isNotEmpty) ...[
-                  const SizedBox(width: 8),
-                  _buildLibraryQualityBadge(
-                    context,
-                    colorScheme,
-                    quality,
-                    listStyle: true,
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-        trailing: ValueListenableBuilder<bool>(
-          valueListenable: fileExistsListenable,
-          builder: (context, fileExists, child) {
-            if (fileExists) {
-              return _LibraryPlaybackButton(
-                mediaId: _libraryPlaybackMediaId(item),
-                playTooltip: context.l10n.a11yPlayTrackByArtist(
-                  item.trackName,
-                  item.artistName,
-                ),
-                onPlay: () => _playLibraryItem(item, libraryItems),
-              );
-            }
-            return Tooltip(
-              message: context.l10n.queueDownloadedFileMissing,
-              child: AppIcon(
-                Icons.error_outline,
-                color: colorScheme.error,
-                size: 20,
-              ),
-            );
-          },
-        ),
-      ),
     );
   }
 
@@ -1336,13 +1360,23 @@ class _LibraryPlaybackButton extends ConsumerWidget {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    // Material draws a filled tonal icon button: a solid role pair rather
+    // than a faded primary container.
+    final material = !context.isMornye;
     return AppIconButton(
       onPressed: onPressed,
-      icon: Icon(icon, color: colorScheme.primary),
+      icon: Icon(
+        icon,
+        color: material
+            ? colorScheme.onSecondaryContainer
+            : colorScheme.primary,
+      ),
       tooltip: tooltip,
       style: IconButton.styleFrom(
         minimumSize: Size.square(context.tokens.minTouchTarget),
-        backgroundColor: colorScheme.primaryContainer.withValues(alpha: 0.3),
+        backgroundColor: material
+            ? colorScheme.secondaryContainer
+            : colorScheme.primaryContainer.withValues(alpha: 0.3),
       ),
     );
   }
