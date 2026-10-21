@@ -264,10 +264,11 @@ class MaterialPlayerLayout extends StatelessWidget {
                           final track = ref
                               .watch(playerCollectionTrackProvider(mediaItem))
                               .value;
+                          // No extensionId: a downloaded track's source is
+                          // its download service, not a metadata catalog.
                           return ClickableArtistName(
                             artistName: mediaItem.artist ?? '',
                             artistId: track?.artistId,
-                            extensionId: track?.source,
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(color: colorScheme.onSurfaceVariant),
                             textAlign: TextAlign.center,

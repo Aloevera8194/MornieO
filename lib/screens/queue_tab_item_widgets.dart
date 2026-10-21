@@ -1061,10 +1061,11 @@ extension _QueueTabItemWidgets on _QueueTabState {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // The history service is where the audio was downloaded from;
+            // artist lookups use the user's search provider instead.
             ClickableArtistName(
               artistName: item.artistName,
               coverUrl: item.coverUrl,
-              extensionId: item.historyItem?.service,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -1282,10 +1283,10 @@ extension _QueueTabItemWidgets on _QueueTabState {
           ),
       ],
       title: item.trackName,
+      // Not the history service: see the list row above.
       subtitle: ClickableArtistName(
         artistName: item.artistName,
         coverUrl: item.coverUrl,
-        extensionId: item.historyItem?.service,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: Theme.of(
