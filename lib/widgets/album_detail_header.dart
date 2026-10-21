@@ -33,7 +33,8 @@ import 'package:mornye/widgets/desktop/detail_header.dart';
 /// Colours come from a scheme derived from [paletteSource] (see [CoverPalette])
 /// and are published to descendants through [HeaderPalette], so the header
 /// follows both the artwork and the app's light/dark mode instead of assuming a
-/// black backdrop with white text.
+/// black backdrop with white text. The Material desktop header scopes the same
+/// scheme to its artwork and details (see [desktopDetailHeaderSlivers]).
 class AlbumDetailHeader extends StatelessWidget {
   const AlbumDetailHeader({
     super.key,
@@ -255,6 +256,7 @@ class AlbumDetailHeader extends StatelessWidget {
         title: title,
         artwork: (context, size) =>
             coverBuilder?.call(context, size) ?? background,
+        paletteSource: paletteSource,
         subtitle: subtitle,
         meta: meta,
         actions: actions,

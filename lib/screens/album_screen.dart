@@ -606,23 +606,26 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
                   )
           : null,
       subtitle: (artistName != null && artistName.isNotEmpty)
-          ? ClickableArtistName(
-              artistName: artistName,
-              artistId: _artistId,
-              coverUrl: widget.coverUrl,
-              extensionId: widget.extensionId,
-              style: isDesktopPlatform
-                  ? desktopDetailSubtitleStyle(context)
-                  : TextStyle(
-                      color: colorScheme.primary,
-                      fontSize: context.tokens.headerSubtitleSize,
-                      fontWeight: context.isMornye
-                          ? FontWeight.w400
-                          : FontWeight.w600,
-                    ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+          // Built inside the header, so desktop reads its artwork scheme.
+          ? Builder(
+              builder: (header) => ClickableArtistName(
+                artistName: artistName,
+                artistId: _artistId,
+                coverUrl: widget.coverUrl,
+                extensionId: widget.extensionId,
+                style: isDesktopPlatform
+                    ? desktopDetailSubtitleStyle(header)
+                    : TextStyle(
+                        color: colorScheme.primary,
+                        fontSize: context.tokens.headerSubtitleSize,
+                        fontWeight: context.isMornye
+                            ? FontWeight.w400
+                            : FontWeight.w600,
+                      ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             )
           : null,
       meta: _buildHeaderMeta(context, releaseDate, commonQualityTrack),

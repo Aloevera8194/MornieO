@@ -399,22 +399,25 @@ class _DownloadedAlbumScreenState extends ConsumerState<DownloadedAlbumScreen>
         coverSize,
         cacheWidth,
       ),
-      subtitle: Text(
-        widget.artistName,
-        style: isDesktopPlatform
-            ? desktopDetailSubtitleStyle(context)
-            : TextStyle(
-                color: context.isMornye
-                    ? colorScheme.primary
-                    : HeaderPalette.of(context).onSurfaceVariant,
-                fontSize: context.tokens.headerSubtitleSize,
-                fontWeight: context.isMornye
-                    ? FontWeight.w400
-                    : FontWeight.w600,
-              ),
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      // Built inside the header, so desktop reads its artwork scheme.
+      subtitle: Builder(
+        builder: (header) => Text(
+          widget.artistName,
+          style: isDesktopPlatform
+              ? desktopDetailSubtitleStyle(header)
+              : TextStyle(
+                  color: context.isMornye
+                      ? colorScheme.primary
+                      : HeaderPalette.of(context).onSurfaceVariant,
+                  fontSize: context.tokens.headerSubtitleSize,
+                  fontWeight: context.isMornye
+                      ? FontWeight.w400
+                      : FontWeight.w600,
+                ),
+          textAlign: TextAlign.center,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
       meta: tracks.isNotEmpty
           ? _buildDownloadedHeaderMeta(context, tracks, commonQuality)

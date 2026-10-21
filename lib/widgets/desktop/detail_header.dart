@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/providers/runtime_profile_provider.dart';
 import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/cover_palette.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/player_artwork_theme.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
 import 'package:mornye/widgets/album_detail_header.dart';
 import 'package:mornye/widgets/app_icon.dart';
@@ -24,6 +26,9 @@ double desktopDetailArtworkSize(double contentWidth) =>
 
 /// The artist line under a desktop detail title: large and in the accent
 /// color, like the album pages of Apple Music.
+///
+/// Pass a [context] inside the header (a `Builder` around the subtitle), so
+/// a Material header takes the accent of its artwork scheme.
 TextStyle desktopDetailSubtitleStyle(BuildContext context) {
   final scheme = Theme.of(context).colorScheme;
   return context.isMornye
@@ -47,10 +52,15 @@ TextStyle desktopDetailSubtitleStyle(BuildContext context) {
 /// and a capsule of [appBarActions] over the pane; Material keeps a toolbar
 /// that shows the title once the header scrolls away. [moreMenu] adds a
 /// "More" button that opens those groups as a menu.
+///
+/// In Material, the artwork and details take the scheme of [paletteSource]
+/// (a cover URL or local path) through [PlayerArtworkTheme] and
+/// [HeaderPalette]; the toolbar and the page below keep the app scheme.
 List<Widget> desktopDetailHeaderSlivers(
   BuildContext context, {
   required String title,
   required Widget Function(BuildContext context, double size) artwork,
+  String? paletteSource,
   bool circularArtwork = false,
   Widget? subtitle,
   Widget? meta,
@@ -100,7 +110,10 @@ List<Widget> desktopDetailHeaderSlivers(
                   fontWeight: FontWeight.w700,
                   height: 1.15,
                 )
-              : theme.textTheme.headlineMedium?.copyWith(
+              // The text theme keeps the app's on-surface color, so the
+              // title reads the header scheme directly.
+              : Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
         ),
@@ -229,7 +242,19 @@ List<Widget> desktopDetailHeaderSlivers(
     SliverToBoxAdapter(
       child: Padding(
         padding: EdgeInsets.fromLTRB(inset, 4, inset, 28),
-        child: LayoutBuilder(builder: details),
+        child: mornye
+            ? LayoutBuilder(builder: details)
+            // Kept without a source too, so artwork that arrives later
+            // moves the scheme instead of rebuilding the header.
+            : PlayerArtworkTheme(
+                artUri: paletteSource,
+                child: Builder(
+                  builder: (context) => HeaderPalette(
+                    scheme: Theme.of(context).colorScheme,
+                    child: LayoutBuilder(builder: details),
+                  ),
+                ),
+              ),
       ),
     ),
   ];
