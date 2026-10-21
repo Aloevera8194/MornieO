@@ -79,7 +79,11 @@ class _DesktopDownloadsButtonState
         DesktopDownloadsPopover(
           onShowAll: () {
             _menu.close();
-            ShellNavigationService.requestTab(ShellTab.library);
+            // Mornye lists downloads on their own sidebar page; Library
+            // would reopen whichever page it showed last, such as Songs.
+            if (!ShellNavigationService.requestLibraryLink('downloads')) {
+              ShellNavigationService.requestTab(ShellTab.library);
+            }
           },
         ),
       ],

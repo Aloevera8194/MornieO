@@ -418,10 +418,17 @@ void main() {
         _download('c', 'Done song', DownloadStatus.completed, progress: 1),
       ]);
       final requested = <ShellTab>[];
+      final links = <String>[];
       final owner = Object();
       ShellNavigationService.registerTabSelectionHandler(
         owner: owner,
         handler: requested.add,
+        // Like the shell: only the Mornye sidebar has Library links.
+        libraryLinkHandler: (id) {
+          if (!mornye) return false;
+          links.add(id);
+          return true;
+        },
       );
       addTearDown(
         () => ShellNavigationService.unregisterTabSelectionHandler(owner),
@@ -455,7 +462,10 @@ void main() {
         find.byKey(const ValueKey('desktop-downloads-show-all')),
       );
       await tester.pumpAndSettle();
-      expect(requested, [ShellTab.library]);
+      // Mornye opens its Downloads page, not whichever Library page was
+      // open last.
+      expect(requested, mornye ? isEmpty : [ShellTab.library]);
+      expect(links, mornye ? ['downloads'] : isEmpty);
       expect(popover, findsNothing);
     });
 

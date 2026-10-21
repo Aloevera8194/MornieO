@@ -90,19 +90,23 @@ class ShellNavigationService {
   static bool _showSearchTab = false;
   static Object? _tabSelectionOwner;
   static ValueChanged<ShellTab>? _tabSelectionHandler;
+  static bool Function(String id)? _libraryLinkHandler;
 
   static void registerTabSelectionHandler({
     required Object owner,
     required ValueChanged<ShellTab> handler,
+    bool Function(String id)? libraryLinkHandler,
   }) {
     _tabSelectionOwner = owner;
     _tabSelectionHandler = handler;
+    _libraryLinkHandler = libraryLinkHandler;
   }
 
   static void unregisterTabSelectionHandler(Object owner) {
     if (!identical(_tabSelectionOwner, owner)) return;
     _tabSelectionOwner = null;
     _tabSelectionHandler = null;
+    _libraryLinkHandler = null;
   }
 
   static bool requestTab(ShellTab tab) {
@@ -111,6 +115,12 @@ class ShellNavigationService {
     handler(tab);
     return true;
   }
+
+  /// Opens a Library sidebar link (`downloads`, `songs`, ...) where the
+  /// shell has them, the Mornye desktop sidebar. Returns false elsewhere, so
+  /// callers fall back to [requestTab].
+  static bool requestLibraryLink(String id) =>
+      _libraryLinkHandler?.call(id) ?? false;
 
   static void syncState({
     required int currentTabIndex,

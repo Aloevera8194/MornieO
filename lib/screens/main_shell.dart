@@ -245,6 +245,7 @@ class _MainShellState extends ConsumerState<MainShell>
     ShellNavigationService.registerTabSelectionHandler(
       owner: this,
       handler: _onShellTabRequested,
+      libraryLinkHandler: _requestDesktopLibraryLink,
     );
     ShellNavigationService.syncState(
       currentTabIndex: _currentIndex,
@@ -745,6 +746,14 @@ class _MainShellState extends ConsumerState<MainShell>
       desktopSidebarLink.value = page == null ? null : id;
     });
     WidgetsBinding.instance.ensureVisualUpdate();
+  }
+
+  /// Only the Mornye desktop sidebar has Library links; Material keeps a
+  /// plain Library tab request.
+  bool _requestDesktopLibraryLink(String id) {
+    if (!mounted || !isDesktopPlatform || !context.isMornye) return false;
+    _openDesktopLibraryLink(id);
+    return true;
   }
 
   /// Opens the profile from the Mornye desktop sidebar's account row: in
