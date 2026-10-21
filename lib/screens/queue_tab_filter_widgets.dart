@@ -293,8 +293,9 @@ extension _QueueTabFilterWidgets on _QueueTabState {
     // Active downloads and the library tracks below them form one connected
     // run of rows.
     Widget leadListCell(int index) {
-      // Sectioned lists keep the active downloads as their own run.
-      final runLength = rootLibrary && !context.isMornye
+      // Sectioned lists and desktop tables keep the active downloads as
+      // their own run.
+      final runLength = isDesktopPlatform || (rootLibrary && !context.isMornye)
           ? leadCount
           : leadCount + filteredUnifiedItems.length;
       if (index < activeDownloadIds.length) {
@@ -626,6 +627,34 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                   childCount:
                       leadCount + collectionCount + filteredUnifiedItems.length,
                 ),
+              ),
+            )
+          else if (isDesktopPlatform &&
+              (filteredUnifiedItems.isNotEmpty ||
+                  leadCount > 0 ||
+                  collectionCount > 0))
+            // Desktop lists songs in the sortable table, as the singles view
+            // does, with the collections and active downloads leading it.
+            _buildLibrarySongTable(
+              context,
+              items: filteredUnifiedItems,
+              leadCount: collectionCount + leadCount,
+              leadBuilder: (index) => index < collectionCount
+                  ? _buildAllTabListCollectionItem(
+                      context: context,
+                      colorScheme: colorScheme,
+                      entry: collectionEntries[index],
+                      collectionState: collectionState,
+                      filteredUnifiedItems: filteredUnifiedItems,
+                    )
+                  : leadListCell(index - collectionCount),
+              openAction: (item) => _libraryItemOpenAction(
+                item,
+                downloadedNavigationItems: downloadedNavigationItems,
+                downloadedNavigationIndex:
+                    downloadedNavigationIndexByUnifiedId[item.id],
+                localNavigationItems: localNavigationItems,
+                localNavigationIndex: localNavigationIndexByUnifiedId[item.id],
               ),
             )
           else if (sectioned)
