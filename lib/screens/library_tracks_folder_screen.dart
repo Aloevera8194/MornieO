@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -755,10 +756,19 @@ class _LibraryTracksFolderScreenState
           : null,
       actions: entries.isNotEmpty
           ? ExpressiveButtonGroup(
-              flexible: const {0, 1},
+              flexible: const {0, 2},
               spacing: 8,
               children: [
                 _buildPlayAllCenterButton(entries),
+                HeaderCircleButton(
+                  key: const ValueKey('collection-shuffle'),
+                  icon: Icons.shuffle,
+                  tooltip: context.l10n.actionShuffle,
+                  tonal: true,
+                  onPressed: () => _shuffleAll(
+                    entries.map((e) => e.track).toList(growable: false),
+                  ),
+                ),
                 _buildDownloadAllCenterButton(entries),
               ],
             )
@@ -834,6 +844,23 @@ class _LibraryTracksFolderScreenState
     try {
       await ref.read(musicPlayerControllerProvider).setShuffle(false);
       await ref.read(playbackProvider.notifier).playTrackList(tracks);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.l10n.snackbarCannotOpenFile('$e'))),
+      );
+    }
+  }
+
+  /// Turns shuffle on and starts from a random song, as album headers do.
+  Future<void> _shuffleAll(List<Track> tracks) async {
+    if (tracks.isEmpty) return;
+
+    try {
+      await ref.read(musicPlayerControllerProvider).setShuffle(true);
+      await ref
+          .read(playbackProvider.notifier)
+          .playTrackList(tracks, startIndex: Random().nextInt(tracks.length));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

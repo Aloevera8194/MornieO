@@ -17,6 +17,7 @@ import 'package:mornye/screens/library_tracks_folder_screen.dart';
 import 'package:mornye/services/music_player_service.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/album_detail_header.dart';
 import 'package:mornye/widgets/track_card.dart';
 
 import 'support/app_icon_finder.dart';
@@ -45,9 +46,13 @@ class _Handler extends Fake implements MusicPlayerHandler {}
 class _Player extends MusicPlayerController {
   List<PlayableMedia> queue = [];
   int? index;
+  bool? shuffle;
 
   @override
   Future<MusicPlayerHandler?> ensureInitialized() async => _Handler();
+
+  @override
+  Future<void> setShuffle(bool enabled) async => shuffle = enabled;
 
   @override
   Future<void> playAll(
@@ -461,6 +466,111 @@ void main() {
         'Last',
       ]);
       expect(player.index, 1);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('playlist header shuffles every song (Mornye: $mornye)', (
+      tester,
+    ) async {
+      // A narrow phone, so Play, Shuffle and Download all must share it.
+      tester.view.physicalSize = const Size(360, 780);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final player = _Player();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(_Settings.new),
+            musicPlayerControllerProvider.overrideWithValue(player),
+            playbackProvider.overrideWith(_Playback.new),
+            libraryCollectionsProvider.overrideWith(_Collections.new),
+            localLibraryProvider.overrideWith(_Library.new),
+            downloadHistoryProvider.overrideWith(_History.new),
+            localLibraryCoverProvider.overrideWith(
+              (ref, request) async => null,
+            ),
+            localLibraryFirstCoverProvider.overrideWith(
+              (ref, request) async => null,
+            ),
+          ],
+          child: MaterialApp(
+            theme: mornye
+                ? MornyeTheme.build(Brightness.dark)
+                : AppTheme.light(),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const LibraryTracksFolderScreen(
+              mode: LibraryTracksFolderMode.playlist,
+              playlistId: 'playlist',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('collection-shuffle')));
+      await tester.pumpAndSettle();
+
+      expect(player.shuffle, isTrue);
+      // The unresolved song drops out; the rest play from a random one.
+      expect(player.queue.map((item) => item.title), [
+        'First',
+        'Selected',
+        'Last',
+      ]);
+      expect(player.index, inInclusiveRange(0, 2));
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('playlist header mirrors in Arabic (Mornye: $mornye)', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 780);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            settingsProvider.overrideWith(_Settings.new),
+            musicPlayerControllerProvider.overrideWithValue(_Player()),
+            playbackProvider.overrideWith(_Playback.new),
+            libraryCollectionsProvider.overrideWith(_Collections.new),
+            localLibraryProvider.overrideWith(_Library.new),
+            downloadHistoryProvider.overrideWith(_History.new),
+            localLibraryCoverProvider.overrideWith(
+              (ref, request) async => null,
+            ),
+            localLibraryFirstCoverProvider.overrideWith(
+              (ref, request) async => null,
+            ),
+          ],
+          child: MaterialApp(
+            locale: const Locale('ar'),
+            theme: mornye
+                ? MornyeTheme.build(Brightness.dark)
+                : AppTheme.light(),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const LibraryTracksFolderScreen(
+              mode: LibraryTracksFolderMode.playlist,
+              playlistId: 'playlist',
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final width = tester.view.physicalSize.width;
+      // Back sits at the reading start, the right edge in Arabic.
+      expect(
+        tester.getCenter(find.byTooltip('رجوع').first).dx,
+        greaterThan(width / 2),
+      );
+      // Play leads the header actions from the right.
+      final play = tester.getCenter(find.byType(HeaderFilledButton).first);
+      final shuffle = tester.getCenter(
+        find.byKey(const ValueKey('collection-shuffle')),
+      );
+      expect(play.dx, greaterThan(shuffle.dx));
       expect(tester.takeException(), isNull);
     });
   }
