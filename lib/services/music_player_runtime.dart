@@ -278,6 +278,9 @@ class MusicPlayerRuntime {
       _handlers.add(handler);
       if (dependencies.isAndroid || dependencies.isIOS) {
         PlayerWidgetService.instance.bind(handler);
+      }
+      // Desktop presence goes through the Rust IPC client instead of the SDK.
+      if (dependencies.isAndroid || dependencies.isIOS || isDesktopPlatform) {
         DiscordPresenceService.instance.bind(handler);
       }
       return handler;
