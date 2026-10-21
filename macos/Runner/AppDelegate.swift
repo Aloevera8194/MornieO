@@ -18,6 +18,27 @@ class AppDelegate: FlutterAppDelegate {
       }
     #endif
     super.applicationWillFinishLaunching(notification)
+    NotificationCenter.default.addObserver(
+      forName: NSApplication.didUpdateNotification, object: nil, queue: nil
+    ) { [weak self] _ in
+      self?.adoptWindowsMenu()
+    }
+  }
+
+  /// Flutter's menu bar replaces the main menu, and its Window menu is not
+  /// the app's windows menu, so macOS leaves out the window tiling items
+  /// (Fill, Center, Move & Resize) and their shortcuts. The Window menu is
+  /// the one holding Bring All to Front, whatever its localized title.
+  private func adoptWindowsMenu() {
+    guard let mainMenu = NSApp.mainMenu else { return }
+    let menus = mainMenu.items.compactMap(\.submenu)
+    if let current = NSApp.windowsMenu, menus.contains(where: { $0 === current }) {
+      return
+    }
+    let arrange = #selector(NSApplication.arrangeInFront(_:))
+    guard let menu = menus.first(where: { $0.items.contains { $0.action == arrange } })
+    else { return }
+    NSApp.windowsMenu = menu
   }
 
   override func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
