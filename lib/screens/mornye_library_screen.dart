@@ -433,23 +433,28 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                         () => widget.onOpenSection('all'),
                       ),
                     ]) ...[
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        minVerticalPadding: 12,
-                        leading: Icon(
-                          category.$1,
-                          color: colors.primary,
-                          size: 28,
+                      // The desktop shell paints its background without a
+                      // Material, which would hide the row's ink.
+                      Material(
+                        type: MaterialType.transparency,
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          minVerticalPadding: 12,
+                          leading: Icon(
+                            category.$1,
+                            color: colors.primary,
+                            size: 28,
+                          ),
+                          title: Text(
+                            category.$2,
+                            style: const TextStyle(fontSize: 22),
+                          ),
+                          trailing: Icon(
+                            Icons.chevron_right,
+                            color: colors.onSurfaceVariant,
+                          ),
+                          onTap: category.$3,
                         ),
-                        title: Text(
-                          category.$2,
-                          style: const TextStyle(fontSize: 22),
-                        ),
-                        trailing: Icon(
-                          Icons.chevron_right,
-                          color: colors.onSurfaceVariant,
-                        ),
-                        onTap: category.$3,
                       ),
                       const Divider(height: 1, indent: 48),
                     ],
