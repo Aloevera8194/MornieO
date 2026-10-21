@@ -300,15 +300,18 @@ class SelectionBottomBar extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  allSelected
-                      ? allSelectedLabel ?? context.l10n.selectionAllSelected
-                      : tapToSelectLabel ??
-                            context.l10n.downloadedAlbumTapToSelect,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                // The tap hint describes touch selection; desktop rows select
+                // with the pointer and modifiers, and the toolbar stays short.
+                if (!isDesktopPlatform)
+                  Text(
+                    allSelected
+                        ? allSelectedLabel ?? context.l10n.selectionAllSelected
+                        : tapToSelectLabel ??
+                              context.l10n.downloadedAlbumTapToSelect,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
@@ -349,61 +352,75 @@ class SelectionBottomBar extends StatelessWidget {
       ),
     );
     const floatingMargin = 12.0;
-    final panel = _SelectionPanelDrag(
-      onClose: onClose,
-      header: header,
-      bottomPadding: bottomPadding,
-      floatingMargin: context.isMornye ? 0 : floatingMargin,
-      children: children,
-      surfaceBuilder: (content) {
-        if (context.isMornye) {
-          return MornyeGlassPanel.overlay(child: content);
-        }
-        // Expressive floating toolbar: detached from the screen edges and
-        // fully rounded. The faded backdrop hides and blocks the navigation
-        // bar underneath, so a tap beside the toolbar cannot switch tabs.
-        final surface = colorScheme.surface;
-        return Listener(
-          behavior: HitTestBehavior.opaque,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [surface.withValues(alpha: 0), surface],
-                stops: const [0, 0.4],
-              ),
-            ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                floatingMargin,
-                0,
-                floatingMargin,
-                floatingMargin + MediaQuery.viewPaddingOf(context).bottom,
-              ),
-              child: Material(
-                color: colorScheme.surfaceContainerHigh,
-                surfaceTintColor: Colors.transparent,
-                shadowColor: colorScheme.shadow,
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(tokens.radiusSheet),
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: MediaQuery.removePadding(
-                  context: context,
-                  removeBottom: true,
-                  child: content,
-                ),
-              ),
+    Widget surface(Widget content) {
+      if (context.isMornye) {
+        return MornyeGlassPanel.overlay(child: content);
+      }
+      final toolbar = Material(
+        color: colorScheme.surfaceContainerHigh,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: colorScheme.shadow,
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(tokens.radiusSheet),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: MediaQuery.removePadding(
+          context: context,
+          removeBottom: true,
+          child: content,
+        ),
+      );
+      if (isDesktopPlatform) {
+        // No navigation bar sits under a desktop page, so the toolbar
+        // floats on its own without the backdrop.
+        return Padding(
+          padding: const EdgeInsets.all(floatingMargin),
+          child: toolbar,
+        );
+      }
+      // Expressive floating toolbar: detached from the screen edges and
+      // fully rounded. The faded backdrop hides and blocks the navigation
+      // bar underneath, so a tap beside the toolbar cannot switch tabs.
+      final backdrop = colorScheme.surface;
+      return Listener(
+        behavior: HitTestBehavior.opaque,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [backdrop.withValues(alpha: 0), backdrop],
+              stops: const [0, 0.4],
             ),
           ),
-        );
-      },
-    );
-    if (!isDesktopPlatform) return panel;
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              floatingMargin,
+              0,
+              floatingMargin,
+              floatingMargin + MediaQuery.viewPaddingOf(context).bottom,
+            ),
+            child: toolbar,
+          ),
+        ),
+      );
+    }
+
+    if (!isDesktopPlatform) {
+      return _SelectionPanelDrag(
+        onClose: onClose,
+        header: header,
+        bottomPadding: bottomPadding,
+        floatingMargin: context.isMornye ? 0 : floatingMargin,
+        surfaceBuilder: surface,
+        children: children,
+      );
+    }
     // Desktop: a bounded toolbar over the page, clear of Mornye's floating
-    // player, rather than a sheet across the whole pane.
+    // player, rather than a sheet across the whole pane. There is no drag
+    // handle, since pointer input has no gesture to tuck the actions away;
+    // the close button ends the selection.
     return Align(
       alignment: Alignment.bottomCenter,
       heightFactor: 1,
@@ -413,7 +430,31 @@ class SelectionBottomBar extends StatelessWidget {
           padding: EdgeInsets.only(
             bottom: context.isMornye ? desktopDetailBottomInset : 0,
           ),
-          child: panel,
+          child: surface(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.6,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    header,
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [const SizedBox(height: 12), ...children],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

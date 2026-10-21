@@ -302,8 +302,10 @@ class TrackTableLayout {
   static const double albumNumber = 32;
   static const double albumTitleGap = 14;
 
+  // Pointer rows: Music's 40pt, and the M3 compact list density for Material
+  // instead of the 48dp touch row.
   static double rowMinHeightFor(BuildContext context) =>
-      context.isMornye ? 40 : 48;
+      context.isMornye ? 40 : 44;
 
   static double headerHeightFor(BuildContext context) =>
       MediaQuery.textScalerOf(context).scale(20) + 16;

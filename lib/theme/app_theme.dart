@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mornye/models/theme_settings.dart';
 import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 
 class AppTheme {
   static const Color defaultSeedColor = Color(kDefaultSeedColor);
@@ -63,7 +64,9 @@ class AppTheme {
       popupMenuTheme: _popupMenuTheme(scheme),
       tabBarTheme: _tabBarTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
-      extensions: const <ThemeExtension<dynamic>>[AppTokens.standard],
+      extensions: <ThemeExtension<dynamic>>[
+        isDesktopPlatform ? AppTokens.desktop : AppTokens.standard,
+      ],
       fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
     );
   }
@@ -106,7 +109,9 @@ class AppTheme {
       popupMenuTheme: _popupMenuTheme(scheme),
       tabBarTheme: _tabBarTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
-      extensions: const <ThemeExtension<dynamic>>[AppTokens.standard],
+      extensions: <ThemeExtension<dynamic>>[
+        isDesktopPlatform ? AppTokens.desktop : AppTokens.standard,
+      ],
       fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
     );
   }

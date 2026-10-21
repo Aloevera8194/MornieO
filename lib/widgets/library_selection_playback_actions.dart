@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/models/unified_library_item.dart';
 import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/playlist_picker_sheet.dart';
 import 'package:mornye/widgets/selection_action_button.dart';
 
@@ -61,7 +62,10 @@ class LibrarySelectionPlaybackActions extends ConsumerWidget {
           runSpacing: 8,
           children: [
             for (final action in actions)
-              SizedBox(width: (constraints.maxWidth - 8) / 2, child: action),
+              if (isDesktopPlatform)
+                action
+              else
+                SizedBox(width: (constraints.maxWidth - 8) / 2, child: action),
           ],
         ),
       ),
