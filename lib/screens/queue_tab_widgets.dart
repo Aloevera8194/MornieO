@@ -105,6 +105,7 @@ class _LibraryToolGroupState extends State<_LibraryToolGroup> {
       child: _TouchTargetPadding(
         minHeight: context.tokens.minTouchTarget,
         child: MaterialExpressiveScope(
+          skipAutofocus: true,
           child: M3EButtonGroup(
             type: M3EButtonGroupType.connected,
             style: M3EButtonStyle.filled,

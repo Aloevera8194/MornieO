@@ -886,6 +886,7 @@ class SettingsSegmentedChoice<T> extends StatelessWidget {
     if (materialExpressiveEnabled(context)) {
       final index = options.indexWhere((option) => option.value == selected);
       return MaterialExpressiveScope(
+        skipAutofocus: true,
         child: M3EButtonGroup(
           type: M3EButtonGroupType.connected,
           style: M3EButtonStyle.filled,

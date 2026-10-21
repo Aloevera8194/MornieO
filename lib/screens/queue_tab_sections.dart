@@ -382,6 +382,7 @@ extension _QueueTabSections on _QueueTabState {
     final Widget toggle;
     if (materialExpressiveEnabled(context)) {
       toggle = MaterialExpressiveScope(
+        skipAutofocus: true,
         child: M3EButtonGroup(
           type: M3EButtonGroupType.connected,
           style: M3EButtonStyle.filled,
