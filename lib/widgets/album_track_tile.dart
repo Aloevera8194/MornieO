@@ -24,6 +24,7 @@ class AlbumTrackTile extends StatelessWidget {
     required this.onOpen,
     required this.onEnterSelectionMode,
     required this.onPlay,
+    this.isCurrent = false,
     this.isPlaying = false,
   });
 
@@ -37,6 +38,11 @@ class AlbumTrackTile extends StatelessWidget {
   final VoidCallback onOpen;
   final VoidCallback onEnterSelectionMode;
   final VoidCallback onPlay;
+
+  /// The row is the player's current track. See [TrackCard.isCurrent].
+  final bool isCurrent;
+
+  /// The current track is playing: the button offers pause.
   final bool isPlaying;
 
   @override
@@ -45,6 +51,8 @@ class AlbumTrackTile extends StatelessWidget {
       style: TrackCardStyle.flat,
       isSelectionMode: isSelectionMode,
       isSelected: isSelected,
+      isCurrent: isCurrent,
+      isPlaying: isPlaying,
       onTap: isSelectionMode ? onToggleSelection : onOpen,
       onLongPress: isSelectionMode ? null : onEnterSelectionMode,
       leading: SizedBox(
@@ -83,6 +91,8 @@ class AlbumTrackPlayButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // Material draws a filled tonal icon button: a solid role pair rather
+    // than a faded primary container.
     return AppIconButton(
       tooltip: isPlaying ? context.l10n.actionPause : context.l10n.tooltipPlay,
       onPressed: onPlay,
@@ -90,7 +100,9 @@ class AlbumTrackPlayButton extends StatelessWidget {
         context.isMornye
             ? (isPlaying ? CupertinoIcons.pause_fill : CupertinoIcons.play_fill)
             : (isPlaying ? Icons.pause : Icons.play_arrow),
-        color: colorScheme.primary,
+        color: context.isMornye
+            ? colorScheme.primary
+            : colorScheme.onSecondaryContainer,
         size: dense ? 18 : null,
       ),
       style: IconButton.styleFrom(
@@ -99,7 +111,7 @@ class AlbumTrackPlayButton extends StatelessWidget {
         tapTargetSize: dense ? MaterialTapTargetSize.shrinkWrap : null,
         backgroundColor: context.isMornye
             ? Colors.transparent
-            : colorScheme.primaryContainer.withValues(alpha: 0.3),
+            : colorScheme.secondaryContainer,
       ),
     );
   }

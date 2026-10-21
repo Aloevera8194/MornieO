@@ -592,6 +592,7 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
               duration: track.duration == null
                   ? null
                   : Duration(seconds: track.duration!),
+              mediaId: track.id,
               trailing: Consumer(
                 builder: (context, ref, _) {
                   final isCurrent = ref.watch(

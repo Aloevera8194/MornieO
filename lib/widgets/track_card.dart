@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/widgets/app_content_card.dart';
 import 'package:mornye/widgets/desktop/context_menu.dart';
+import 'package:mornye/widgets/now_playing_indicator.dart';
 import 'package:mornye/widgets/settings_group.dart';
 
 /// How a [TrackCard] paints its container.
@@ -99,6 +101,9 @@ class TrackCard extends StatelessWidget {
     this.onLongPress,
     this.onContextMenu,
     this.margin,
+    this.isCurrent = false,
+    this.isPlaying = false,
+    this.leadingArtwork = false,
   });
 
   /// Track number, cover art, or anything else that identifies the row.
@@ -132,16 +137,42 @@ class TrackCard extends StatelessWidget {
   /// aligned with each other.
   final EdgeInsetsGeometry? margin;
 
+  /// The row is the player's current track. The Material style fills it with
+  /// `primaryContainer`, rounds its ends into a pill and shows a
+  /// [NowPlayingIndicator] before [trailing]. Mornye ignores it.
+  final bool isCurrent;
+
+  /// The current track is playing, so the indicator moves.
+  final bool isPlaying;
+
+  /// [leading] is square artwork, which the Material style rounds toward a
+  /// circle while the row is current.
+  final bool leadingArtwork;
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final material = !context.isMornye;
+    final current = material && isCurrent;
     final filled = style == TrackCardStyle.filled;
     final borderRadius =
         (filled ? TrackCardSegment.radiusOf(context) : null) ??
         tokens.borderRadiusCover;
     final segmentMargin = filled ? TrackCardSegment.marginOf(context) : null;
+    // The two styles carry their own outer margin so no call site has to
+    // repeat it: flat rows sit tight inside a collection list, filled cards
+    // get the Material list margin.
+    final cardMargin =
+        margin ??
+        segmentMargin ??
+        (style == TrackCardStyle.flat
+            ? EdgeInsets.symmetric(horizontal: tokens.gapSm, vertical: 2)
+            : EdgeInsets.symmetric(
+                horizontal: tokens.gapLg,
+                vertical: tokens.gapXs,
+              ));
     final contentPadding = style == TrackCardStyle.flat
         ? EdgeInsetsDirectional.fromSTEB(
             tokens.gapMd,
@@ -151,31 +182,74 @@ class TrackCard extends StatelessWidget {
           )
         : EdgeInsetsDirectional.all(tokens.gapMd);
 
+    // Material selection and the current track use solid roles. A selected
+    // current row keeps the selection fill and shows its state through the
+    // shape, the glyph and the title weight.
     final Color? cardColor;
+    final Color? contentColor;
     if (isSelected) {
-      cardColor = colorScheme.primaryContainer.withValues(alpha: 0.3);
+      cardColor = material
+          ? colorScheme.secondaryContainer
+          : colorScheme.primaryContainer.withValues(alpha: 0.3);
+      contentColor = material ? colorScheme.onSecondaryContainer : null;
+    } else if (current) {
+      cardColor = colorScheme.primaryContainer;
+      contentColor = colorScheme.onPrimaryContainer;
     } else if (style == TrackCardStyle.flat || context.isMornye) {
       cardColor = Colors.transparent;
+      contentColor = null;
     } else {
       // The card theme's tone, which the expressive card does not read.
       cardColor = theme.cardTheme.color;
+      contentColor = null;
     }
+
+    // The current row's shapes morph on the spatial spring; reduced motion
+    // switches them in place. A clip applies only while the row is, or is
+    // leaving, the current track.
+    final shapeMotion = AppMotion.spatial(
+      context,
+      const AppMotionSpec(Duration.zero, Curves.linear),
+    );
+    final textDirection = Directionality.of(context);
+    Widget morph(
+      Widget child, {
+      required ShapeBorder from,
+      required ShapeBorder to,
+      EdgeInsets inset = EdgeInsets.zero,
+    }) => TweenAnimationBuilder<double>(
+      tween: Tween(end: current ? 1 : 0),
+      duration: shapeMotion.duration,
+      curve: shapeMotion.curve,
+      builder: (context, t, child) {
+        final progress = t.clamp(0.0, 1.0);
+        return ClipPath(
+          clipper: _InsetShapeClipper(
+            shape: ShapeBorder.lerp(from, to, progress)!,
+            inset: inset,
+            textDirection: textDirection,
+          ),
+          clipBehavior: progress > 0 ? Clip.antiAlias : Clip.none,
+          child: child,
+        );
+      },
+      child: child,
+    );
+
+    final rowLeading = material && leadingArtwork
+        ? morph(
+            leading,
+            from: RoundedRectangleBorder(
+              borderRadius: tokens.borderRadiusThumb,
+            ),
+            to: const CircleBorder(),
+          )
+        : leading;
 
     final card = AppContentCard(
       elevation: 0,
       mornyeSurface: false,
-      // The two styles carry their own outer margin so no call site has to
-      // repeat it: flat rows sit tight inside a collection list, filled cards
-      // get the Material list margin.
-      margin:
-          margin ??
-          segmentMargin ??
-          (style == TrackCardStyle.flat
-              ? EdgeInsets.symmetric(horizontal: tokens.gapSm, vertical: 2)
-              : EdgeInsets.symmetric(
-                  horizontal: tokens.gapLg,
-                  vertical: tokens.gapXs,
-                )),
+      margin: cardMargin,
       color: cardColor,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(borderRadius: borderRadius),
@@ -203,7 +277,7 @@ class TrackCard extends StatelessWidget {
                   ),
                   SizedBox(width: tokens.gapMd),
                 ],
-                leading,
+                rowLeading,
                 SizedBox(width: tokens.gapMd),
                 Expanded(
                   child: Column(
@@ -215,7 +289,10 @@ class TrackCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w500,
+                          fontWeight: current
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: contentColor,
                         ),
                       ),
                       if (subtitle != null) ...[
@@ -225,6 +302,10 @@ class TrackCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (current) ...[
+                  SizedBox(width: tokens.gapSm),
+                  NowPlayingIndicator(playing: isPlaying, color: contentColor),
+                ],
                 if (trailing != null && !isSelectionMode) ...[
                   SizedBox(width: tokens.gapSm),
                   trailing!,
@@ -235,10 +316,17 @@ class TrackCard extends StatelessWidget {
         ],
       ),
     );
-    if (!context.isMornye) {
+    if (material) {
+      // The card keeps its connected-group corners; a clip inside the
+      // margin rounds the current row's ends into a pill, ripple included.
       return DesktopContextMenuRegion(
         onContextMenu: onContextMenu,
-        child: card,
+        child: morph(
+          card,
+          from: RoundedRectangleBorder(borderRadius: borderRadius),
+          to: const StadiumBorder(),
+          inset: cardMargin.resolve(textDirection),
+        ),
       );
     }
     return DesktopContextMenuRegion(
@@ -258,6 +346,32 @@ class TrackCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Clips to [shape] laid out inside [inset], so a card's outer margin stays
+/// outside its silhouette.
+class _InsetShapeClipper extends CustomClipper<Path> {
+  const _InsetShapeClipper({
+    required this.shape,
+    required this.inset,
+    required this.textDirection,
+  });
+
+  final ShapeBorder shape;
+  final EdgeInsets inset;
+  final TextDirection textDirection;
+
+  @override
+  Path getClip(Size size) => shape.getOuterPath(
+    inset.deflateRect(Offset.zero & size),
+    textDirection: textDirection,
+  );
+
+  @override
+  bool shouldReclip(_InsetShapeClipper oldClipper) =>
+      shape != oldClipper.shape ||
+      inset != oldClipper.inset ||
+      textDirection != oldClipper.textDirection;
 }
 
 /// Grid counterpart of [TrackCard]: square artwork with overlays, then the
