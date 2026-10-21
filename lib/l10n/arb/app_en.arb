@@ -7710,6 +7710,14 @@
   "desktopMenuWindow": "Window",
   "desktopMenuHelp": "Help",
   "desktopMenuPlayPause": "Play/Pause",
+  "desktopMenuMiniPlayer": "Mini Player",
+  "@desktopMenuMiniPlayer": {
+    "description": "Window menu item, player bar button and Keyboard Shortcuts row that shrink the window into a small player floating above other windows"
+  },
+  "desktopMiniPlayerExpand": "Show Full Window",
+  "@desktopMiniPlayerExpand": {
+    "description": "Mini player button that returns the window to its full size"
+  },
   "desktopMenuRefresh": "Refresh",
   "@desktopMenuRefresh": {
     "description": "View menu item and Keyboard Shortcuts row that reloads the page on screen (Home, Repo, statistics)"

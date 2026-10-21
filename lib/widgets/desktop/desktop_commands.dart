@@ -28,6 +28,9 @@ enum DesktopCommand {
   /// ([AppRefreshIndicator.refreshVisible]).
   refresh,
 
+  /// Turns the window into the floating mini player, or back.
+  miniPlayer,
+
   /// Escape: leaves a focused text field, otherwise closes the top dialog
   /// or page.
   dismiss,
@@ -55,9 +58,16 @@ SingleActivator _primary(
   LogicalKeyboardKey key,
   TargetPlatform platform, {
   bool shift = false,
+  bool alt = false,
 }) {
   final command = _usesCommandKey(platform);
-  return SingleActivator(key, meta: command, control: !command, shift: shift);
+  return SingleActivator(
+    key,
+    meta: command,
+    control: !command,
+    shift: shift,
+    alt: alt,
+  );
 }
 
 /// The shortcut for [command], or null when it has none on [platform].
@@ -95,6 +105,11 @@ SingleActivator? desktopCommandShortcut(
             )
           : null,
     DesktopCommand.refresh => _primary(LogicalKeyboardKey.keyR, target),
+    // Music's "Switch to MiniPlayer". Only the macOS window can shrink.
+    DesktopCommand.miniPlayer =>
+      target == TargetPlatform.macOS
+          ? _primary(LogicalKeyboardKey.keyM, target, alt: true)
+          : null,
     DesktopCommand.dismiss => const SingleActivator(LogicalKeyboardKey.escape),
   };
 }

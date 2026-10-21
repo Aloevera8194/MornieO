@@ -17,6 +17,8 @@ import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/app_refresh_indicator.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
+import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
+import 'package:mornye/widgets/desktop/desktop_window.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Keyboard shortcuts for desktop builds, plus the macOS menu bar that
@@ -123,6 +125,8 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
         desktopSidebarCollapsed.value = !desktopSidebarCollapsed.value;
       case DesktopCommand.refresh:
         AppRefreshIndicator.refreshVisible();
+      case DesktopCommand.miniPlayer:
+        unawaited(toggleDesktopMiniPlayer());
     }
   }
 
@@ -408,6 +412,15 @@ class _DesktopMenuBar extends StatelessWidget {
                   PlatformProvidedMenuItemType.minimizeWindow,
                   PlatformProvidedMenuItemType.zoomWindow,
                 ]),
+                if (desktopMiniPlayerSupported)
+                  PlatformMenuItemGroup(
+                    members: [
+                      _command(
+                        l10n.desktopMenuMiniPlayer,
+                        DesktopCommand.miniPlayer,
+                      ),
+                    ],
+                  ),
                 PlatformMenuItemGroup(
                   members: [
                     ..._provided([

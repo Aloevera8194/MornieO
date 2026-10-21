@@ -53,6 +53,30 @@ void listenDesktopWindowFullScreen() {
   }());
 }
 
+/// Whether the window can turn into the mini player. Only the macOS runner
+/// implements it.
+bool get desktopMiniPlayerSupported => desktopTitleBarInContent;
+
+/// Shrinks the window into the floating mini player panel of [size], or
+/// resizes the panel. Returns false when the window cannot, such as in full
+/// screen.
+Future<bool> openDesktopMiniPlayerWindow(Size size) async {
+  try {
+    final opened = await _windowChannel.invokeMethod<bool>('openMiniPlayer', {
+      'width': size.width,
+      'height': size.height,
+    });
+    return opened ?? false;
+  } on MissingPluginException {
+    return false;
+  } on PlatformException {
+    return false;
+  }
+}
+
+/// Returns the window from the mini player to its full size and place.
+Future<void> closeDesktopMiniPlayerWindow() => _invokeWindow('closeMiniPlayer');
+
 Future<void> _invokeWindow(String method) async {
   try {
     await _windowChannel.invokeMethod<void>(method);

@@ -12,6 +12,12 @@ class MainFlutterWindow: NSWindow {
 
   private var windowChannel: FlutterMethodChannel?
 
+  /// The full window's frame and minimum size while the mini player shows.
+  private var miniPlayerRestore: (frame: NSRect, minSize: NSSize)?
+
+  /// Where the mini player last sat, by its top-left corner.
+  private static let miniPlayerOriginKey = "MornyeMiniPlayerTopLeft"
+
   override func awakeFromNib() {
     let flutterViewController = FlutterViewController()
     self.contentViewController = flutterViewController
@@ -64,6 +70,71 @@ class MainFlutterWindow: NSWindow {
         self?.windowChannel?.invokeMethod("fullScreenChanged", arguments: fullScreen)
       }
     }
+
+    // Quitting from the mini player leaves the full window for the next
+    // launch to restore.
+    NotificationCenter.default.addObserver(
+      forName: NSApplication.willTerminateNotification,
+      object: nil,
+      queue: .main
+    ) { [weak self] _ in
+      self?.closeMiniPlayer(animate: false)
+    }
+  }
+
+  /// Shrinks the window into a small floating panel of [size], or resizes
+  /// the panel when it already shows. It stays above other windows and on
+  /// every Space, keeps its top-left corner when it resizes, and opens
+  /// where it last sat (first at the top right of the screen).
+  private func openMiniPlayer(size: NSSize) -> Bool {
+    if styleMask.contains(.fullScreen) { return false }
+    let opening = miniPlayerRestore == nil
+    if opening {
+      miniPlayerRestore = (frame, contentMinSize)
+      styleMask.remove(.resizable)
+      level = .floating
+      collectionBehavior.insert([.canJoinAllSpaces, .fullScreenAuxiliary])
+      for button: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
+        standardWindowButton(button)?.isHidden = true
+      }
+    }
+    contentMinSize = size
+    var target = frameRect(forContentRect: NSRect(origin: .zero, size: size))
+    let visible = (screen ?? NSScreen.main)?.visibleFrame ?? frame
+    var topLeft: NSPoint
+    if !opening {
+      topLeft = NSPoint(x: frame.minX, y: frame.maxY)
+    } else if let saved = UserDefaults.standard.string(forKey: Self.miniPlayerOriginKey) {
+      topLeft = NSPointFromString(saved)
+    } else {
+      topLeft = NSPoint(x: visible.maxX - target.width - 16, y: visible.maxY - 16)
+    }
+    // Keep the whole panel on the screen it opens on.
+    topLeft.x = min(max(topLeft.x, visible.minX), visible.maxX - target.width)
+    topLeft.y = min(max(topLeft.y, visible.minY + target.height), visible.maxY)
+    target.origin = NSPoint(x: topLeft.x, y: topLeft.y - target.height)
+    setFrame(target, display: true, animate: true)
+    return true
+  }
+
+  /// Returns the window to the size, place and behavior it had before the
+  /// mini player.
+  private func closeMiniPlayer(animate: Bool) {
+    guard let restore = miniPlayerRestore else { return }
+    miniPlayerRestore = nil
+    UserDefaults.standard.set(
+      NSStringFromPoint(NSPoint(x: frame.minX, y: frame.maxY)),
+      forKey: Self.miniPlayerOriginKey
+    )
+    level = .normal
+    collectionBehavior.remove([.canJoinAllSpaces, .fullScreenAuxiliary])
+    styleMask.insert(.resizable)
+    contentMinSize = restore.minSize
+    setFrame(restore.frame, display: true, animate: animate)
+    for button: NSWindow.ButtonType in [.closeButton, .miniaturizeButton, .zoomButton] {
+      standardWindowButton(button)?.isHidden = false
+    }
+    layoutWindowControls()
   }
 
   @objc private func windowControlsNeedLayout(_ notification: Notification) {
@@ -118,6 +189,14 @@ class MainFlutterWindow: NSWindow {
         result(nil)
       case "isFullScreen":
         result(self.styleMask.contains(.fullScreen))
+      case "openMiniPlayer":
+        let args = call.arguments as? [String: Any]
+        let width = (args?["width"] as? NSNumber)?.doubleValue ?? 360
+        let height = (args?["height"] as? NSNumber)?.doubleValue ?? 140
+        result(self.openMiniPlayer(size: NSSize(width: width, height: height)))
+      case "closeMiniPlayer":
+        self.closeMiniPlayer(animate: true)
+        result(nil)
       default:
         result(FlutterMethodNotImplemented)
       }

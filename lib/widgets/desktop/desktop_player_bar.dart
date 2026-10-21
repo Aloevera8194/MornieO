@@ -1,14 +1,17 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mornye/controllers/player_metadata_controller.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/theme/player_artwork_theme.dart';
+import 'package:mornye/utils/lyrics_parser.dart';
 import 'package:mornye/utils/string_utils.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
@@ -17,11 +20,15 @@ import 'package:mornye/widgets/audio_quality_badges.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_downloads_button.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
+import 'package:mornye/widgets/desktop/desktop_window.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/widgets/mornye_playback_button.dart';
+import 'package:mornye/widgets/mornye_player_background.dart';
 import 'package:mornye/widgets/player_artwork.dart';
 import 'package:mornye/widgets/player_volume_control.dart';
 import 'package:mornye/widgets/playback_seek_slider.dart';
+
+part 'desktop_mini_player.dart';
 
 /// The persistent desktop player. It replaces the mobile mini player: no
 /// swipe gestures, with transport, seek, volume, lyrics, Up Next and
@@ -718,6 +725,22 @@ class _TrailingControls extends StatelessWidget {
             ],
           ),
         ),
+        if (desktopMiniPlayerSupported)
+          AppIconButton(
+            key: const ValueKey('desktop-player-mini'),
+            tooltip: desktopTooltip(
+              context,
+              l10n.desktopMenuMiniPlayer,
+              DesktopCommand.miniPlayer,
+            ),
+            color: mornye ? colorScheme.onSurface : null,
+            icon: AppIcon(
+              mornye
+                  ? CupertinoIcons.rectangle_on_rectangle
+                  : Icons.picture_in_picture_alt_outlined,
+            ),
+            onPressed: toggleDesktopMiniPlayer,
+          ),
         if (mornye)
           const _MornyeVolumeButton()
         else ...[

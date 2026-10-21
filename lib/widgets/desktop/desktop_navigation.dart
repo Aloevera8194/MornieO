@@ -136,29 +136,74 @@ class DesktopShellLayout extends StatelessWidget {
   final Widget playerBar;
   final Widget nowPlaying;
 
+  /// The mini player ([desktopMiniPlayerOpen]) replaces the whole window.
+  /// The shell stays mounted behind it, in the same place in the tree and at
+  /// the last full window size, so its pages keep their layout and state
+  /// while the window is small.
+  @override
+  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
+    valueListenable: desktopMiniPlayerOpen,
+    builder: (context, mini, window) {
+      final mediaQuery = MediaQuery.of(context);
+      if (!mini) _fullWindowSize = mediaQuery.size;
+      final full = mini ? _fullWindowSize : null;
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          Visibility(
+            visible: !mini,
+            maintainState: true,
+            child: OverflowBox(
+              alignment: Alignment.topLeft,
+              minWidth: full?.width,
+              maxWidth: full?.width,
+              minHeight: full?.height,
+              maxHeight: full?.height,
+              child: MediaQuery(
+                data: full == null
+                    ? mediaQuery
+                    : mediaQuery.copyWith(size: full),
+                child: window!,
+              ),
+            ),
+          ),
+          if (mini)
+            const KeyedSubtree(
+              key: ValueKey('desktop-mini-player'),
+              child: DesktopMiniPlayer(),
+            ),
+        ],
+      );
+    },
+    child: Builder(builder: _nowPlayingOrShell),
+  );
+
+  /// The window's size before the mini player shrank it.
+  static Size? _fullWindowSize;
+
   /// Now Playing covers the whole window, as Music's player does. The
   /// destinations keep their state underneath, but stop painting and
   /// ticking.
-  @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-    valueListenable: desktopNowPlayingOpen,
-    builder: (context, nowPlayingOpen, shell) => Stack(
-      fit: StackFit.expand,
-      children: [
-        Visibility(
-          visible: !nowPlayingOpen,
-          maintainState: true,
-          child: shell!,
+  Widget _nowPlayingOrShell(BuildContext context) =>
+      ValueListenableBuilder<bool>(
+        valueListenable: desktopNowPlayingOpen,
+        builder: (context, nowPlayingOpen, shell) => Stack(
+          fit: StackFit.expand,
+          children: [
+            Visibility(
+              visible: !nowPlayingOpen,
+              maintainState: true,
+              child: shell!,
+            ),
+            if (nowPlayingOpen)
+              KeyedSubtree(
+                key: const ValueKey('desktop-now-playing'),
+                child: nowPlaying,
+              ),
+          ],
         ),
-        if (nowPlayingOpen)
-          KeyedSubtree(
-            key: const ValueKey('desktop-now-playing'),
-            child: nowPlaying,
-          ),
-      ],
-    ),
-    child: Builder(builder: _shell),
-  );
+        child: Builder(builder: _shell),
+      );
 
   Widget _shell(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
