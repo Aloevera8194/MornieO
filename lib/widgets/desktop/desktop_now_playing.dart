@@ -34,14 +34,17 @@ import 'package:mornye/widgets/player_volume_control.dart';
 /// stands alone in the middle. Close or Escape return to the shell
 /// ([desktopNowPlayingOpen]).
 class DesktopNowPlaying extends ConsumerStatefulWidget {
-  const DesktopNowPlaying({super.key});
+  const DesktopNowPlaying({super.key, this.metadataControllerFactory});
+
+  final PlayerMetadataController Function()? metadataControllerFactory;
 
   @override
   ConsumerState<DesktopNowPlaying> createState() => _DesktopNowPlayingState();
 }
 
 class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
-  final _metadata = PlayerMetadataController();
+  late final _metadata =
+      widget.metadataControllerFactory?.call() ?? PlayerMetadataController();
   final _seekPreview = PlaybackSeekPreview();
   ProviderSubscription<AsyncValue<MediaItem?>>? _mediaItemSub;
 
@@ -250,6 +253,10 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
     final leading = width * 5 / 11;
     final centerX = lerpDouble(width / 2, leading / 2, progress)!;
     final rtl = Directionality.of(context) == TextDirection.rtl;
+    // Whole device pixels, so the fading lyrics never land between pixels
+    // and shimmer as they slide.
+    final pixelRatio = MediaQuery.devicePixelRatioOf(context);
+    final slide = ((1 - size) * 48 * pixelRatio).roundToDouble() / pixelRatio;
     final player = SizedBox(
       width: columnWidth,
       child: _PlayerColumn(
@@ -258,6 +265,9 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
         seekPreview: _seekPreview,
         colorScheme: colorScheme,
         artworkSize: columnWidth,
+        // The cover decodes once at its largest size rather than on every
+        // frame of the resize.
+        decodeSize: columnWidthFor(520),
       ),
     );
     final panel = _lastPanel;
@@ -296,7 +306,7 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
               child: Opacity(
                 opacity: size,
                 child: Transform.translate(
-                  offset: Offset((1 - size) * 48 * (rtl ? -1 : 1), 0),
+                  offset: Offset(slide * (rtl ? -1 : 1), 0),
                   child: Padding(
                     padding: const EdgeInsetsDirectional.fromSTEB(
                       0,
@@ -331,6 +341,7 @@ class _PlayerColumn extends StatelessWidget {
     required this.seekPreview,
     required this.colorScheme,
     required this.artworkSize,
+    required this.decodeSize,
   });
 
   final MediaItem mediaItem;
@@ -338,6 +349,9 @@ class _PlayerColumn extends StatelessWidget {
   final PlaybackSeekPreview seekPreview;
   final ColorScheme colorScheme;
   final double artworkSize;
+
+  /// The width the cover is decoded at, at least [artworkSize].
+  final double decodeSize;
 
   @override
   Widget build(BuildContext context) {
@@ -348,8 +362,7 @@ class _PlayerColumn extends StatelessWidget {
       artUri: mediaItem.artUri?.toString(),
       colorScheme: colorScheme,
       iconSize: 96,
-      cacheWidth: (artworkSize * MediaQuery.devicePixelRatioOf(context))
-          .round(),
+      cacheWidth: (decodeSize * MediaQuery.devicePixelRatioOf(context)).round(),
     );
     final subtitle = [
       mediaItem.artist,
