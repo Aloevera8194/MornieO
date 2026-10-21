@@ -24,6 +24,10 @@ enum DesktopCommand {
   upNext,
   toggleSidebar,
 
+  /// Refreshes the page on screen when it can refresh
+  /// ([AppRefreshIndicator.refreshVisible]).
+  refresh,
+
   /// Escape: leaves a focused text field, otherwise closes the top dialog
   /// or page.
   dismiss,
@@ -90,6 +94,7 @@ SingleActivator? desktopCommandShortcut(
               control: true,
             )
           : null,
+    DesktopCommand.refresh => _primary(LogicalKeyboardKey.keyR, target),
     DesktopCommand.dismiss => const SingleActivator(LogicalKeyboardKey.escape),
   };
 }

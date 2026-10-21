@@ -67,6 +67,7 @@ class KeyboardShortcutsPage extends ConsumerWidget {
             MaterialLocalizations.of(context).backButtonTooltip,
             keys(DesktopCommand.back),
           ),
+          (l10n.desktopMenuRefresh, keys(DesktopCommand.refresh)),
           (l10n.desktopShortcutDismiss, keys(DesktopCommand.dismiss)),
         ],
       ),

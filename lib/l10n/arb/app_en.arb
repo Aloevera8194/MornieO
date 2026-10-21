@@ -7710,6 +7710,10 @@
   "desktopMenuWindow": "Window",
   "desktopMenuHelp": "Help",
   "desktopMenuPlayPause": "Play/Pause",
+  "desktopMenuRefresh": "Refresh",
+  "@desktopMenuRefresh": {
+    "description": "View menu item and Keyboard Shortcuts row that reloads the page on screen (Home, Repo, statistics)"
+  },
   "desktopMenuProjectPage": "Project page",
   "@desktopMenuProjectPage": {
     "description": "Help menu item that opens the app's source repository"

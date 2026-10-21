@@ -14,6 +14,7 @@ import 'package:mornye/services/music_playback_deck.dart'
     show usbHardwareVolume;
 import 'package:mornye/services/shell_navigation_service.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/widgets/app_refresh_indicator.dart';
 import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -120,6 +121,8 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
         toggleDesktopInspector(DesktopInspectorPanel.upNext);
       case DesktopCommand.toggleSidebar:
         desktopSidebarCollapsed.value = !desktopSidebarCollapsed.value;
+      case DesktopCommand.refresh:
+        AppRefreshIndicator.refreshVisible();
     }
   }
 
@@ -360,6 +363,7 @@ class _DesktopMenuBar extends StatelessWidget {
                 PlatformMenuItemGroup(
                   members: [
                     _command(material.backButtonTooltip, DesktopCommand.back),
+                    _command(l10n.desktopMenuRefresh, DesktopCommand.refresh),
                     _command(l10n.nowPlayingTabLyrics, DesktopCommand.lyrics),
                     _command(l10n.nowPlayingUpNext, DesktopCommand.upNext),
                   ],

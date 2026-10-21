@@ -15,6 +15,7 @@ import 'package:mornye/services/library_database.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
 import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
+import 'package:mornye/widgets/app_refresh_indicator.dart';
 import 'package:mornye/widgets/app_search_field.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
 import 'package:mornye/utils/desktop_platform.dart';
@@ -353,7 +354,7 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
         ),
       ],
     ];
-    return RefreshIndicator(
+    return AppRefreshIndicator(
       onRefresh: () async {
         if (searchingLibrary) return;
         ref.invalidate(libraryBrowseProvider(_request));
