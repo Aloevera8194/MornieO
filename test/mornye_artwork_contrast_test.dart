@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mornye/widgets/mornye_artwork_contrast.dart';
 
 void main() {
-  for (final interruption in ['none', 'disabled', 'background']) {
+  for (final interruption in ['none', 'disabled', 'background', 'hidden']) {
     testWidgets(
       'static invalidation survives overlapping readback ($interruption)',
       (tester) async {
@@ -30,27 +30,31 @@ void main() {
           if (!release.isCompleted) release.complete();
         });
         Map<String, Color> colors = {};
-        Widget app(Color color, {bool enabled = true}) => MaterialApp(
-          home: Stack(
-            fit: StackFit.expand,
-            children: [
-              MornyeArtworkContrast(
-                key: capture,
-                enabled: enabled,
-                targets: {'header': target},
-                onChanged: (value) => colors = value,
-                child: ColoredBox(color: color),
+        Widget app(Color color, {bool enabled = true, bool tickers = true}) =>
+            MaterialApp(
+              home: TickerMode(
+                enabled: tickers,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    MornyeArtworkContrast(
+                      key: capture,
+                      enabled: enabled,
+                      targets: {'header': target},
+                      onChanged: (value) => colors = value,
+                      child: ColoredBox(color: color),
+                    ),
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      width: 80,
+                      height: 20,
+                      child: SizedBox(key: target),
+                    ),
+                  ],
+                ),
               ),
-              Positioned(
-                top: 20,
-                left: 20,
-                width: 80,
-                height: 20,
-                child: SizedBox(key: target),
-              ),
-            ],
-          ),
-        );
+            );
         Future<void> finishReadback() => tester.runAsync(
           () => Future<void>.delayed(const Duration(milliseconds: 30)),
         );
@@ -63,6 +67,8 @@ void main() {
         expect(MornyeArtworkContrast.debugReadbackCount(capture), 1);
         if (interruption == 'disabled') {
           await tester.pumpWidget(app(Colors.white, enabled: false));
+        } else if (interruption == 'hidden') {
+          await tester.pumpWidget(app(Colors.white, tickers: false));
         } else if (interruption == 'background') {
           tester.binding.handleAppLifecycleStateChanged(
             AppLifecycleState.paused,
@@ -78,7 +84,7 @@ void main() {
           expect(colors['header'], Colors.black);
         } else {
           expect(MornyeArtworkContrast.debugReadbackCount(capture), 1);
-          if (interruption == 'disabled') {
+          if (interruption == 'disabled' || interruption == 'hidden') {
             await tester.pumpWidget(app(Colors.white));
           } else {
             tester.binding.handleAppLifecycleStateChanged(
@@ -196,28 +202,35 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
-  testWidgets('video samples without scene changes and stops in background', (
+  testWidgets('video sampling stops when hidden or backgrounded', (
     tester,
   ) async {
     final capture = GlobalKey();
     final target = GlobalKey();
+    final tickers = ValueNotifier(true);
+    addTearDown(tickers.dispose);
     await tester.pumpWidget(
       MaterialApp(
-        home: Stack(
-          children: [
-            MornyeArtworkContrast(
-              key: capture,
-              enabled: true,
-              continuous: true,
-              targets: {'header': target},
-              onChanged: (_) {},
-              child: const ColoredBox(
-                color: Colors.black,
-                child: SizedBox.expand(),
+        home: ValueListenableBuilder<bool>(
+          valueListenable: tickers,
+          builder: (context, enabled, child) =>
+              TickerMode(enabled: enabled, child: child!),
+          child: Stack(
+            children: [
+              MornyeArtworkContrast(
+                key: capture,
+                enabled: true,
+                continuous: true,
+                targets: {'header': target},
+                onChanged: (_) {},
+                child: const ColoredBox(
+                  color: Colors.black,
+                  child: SizedBox.expand(),
+                ),
               ),
-            ),
-            SizedBox(key: target, width: 80, height: 20),
-          ],
+              SizedBox(key: target, width: 80, height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -234,6 +247,19 @@ void main() {
     expect(
       MornyeArtworkContrast.debugReadbackCount(capture),
       greaterThan(before),
+    );
+    tickers.value = false;
+    await tester.pump();
+    final hidden = MornyeArtworkContrast.debugReadbackCount(capture);
+    await sample();
+    await sample();
+    expect(MornyeArtworkContrast.debugReadbackCount(capture), hidden);
+    tickers.value = true;
+    await tester.pump();
+    await sample();
+    expect(
+      MornyeArtworkContrast.debugReadbackCount(capture),
+      greaterThan(hidden),
     );
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     final paused = MornyeArtworkContrast.debugReadbackCount(capture);

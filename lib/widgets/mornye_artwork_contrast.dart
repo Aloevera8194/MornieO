@@ -66,6 +66,7 @@ class _MornyeArtworkContrastState extends State<MornyeArtworkContrast>
     with WidgetsBindingObserver {
   final _background = GlobalKey();
   Timer? _timer;
+  bool _tickersEnabled = true;
   bool _sampling = false;
   bool _resamplePending = false;
   int _readbacks = 0;
@@ -77,6 +78,13 @@ class _MornyeArtworkContrastState extends State<MornyeArtworkContrast>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _schedule();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _tickersEnabled = TickerMode.valuesOf(context).enabled;
     _schedule();
   }
 
@@ -97,7 +105,7 @@ class _MornyeArtworkContrastState extends State<MornyeArtworkContrast>
     _timer = null;
     _sampledRevision = null;
     _resamplePending = false;
-    if (!widget.enabled) {
+    if (!widget.enabled || !_tickersEnabled) {
       _colors = {};
       return;
     }
@@ -109,7 +117,9 @@ class _MornyeArtworkContrastState extends State<MornyeArtworkContrast>
   }
 
   void _queueSample() {
-    if (!mounted || !widget.enabled || _timer != null) return;
+    if (!mounted || !widget.enabled || !_tickersEnabled || _timer != null) {
+      return;
+    }
     final lifecycle = WidgetsBinding.instance.lifecycleState;
     if (lifecycle != null && lifecycle != AppLifecycleState.resumed) return;
     // Composition also reports changes inside nested repaint boundaries, such
@@ -122,7 +132,7 @@ class _MornyeArtworkContrastState extends State<MornyeArtworkContrast>
   }
 
   Future<void> _sample() async {
-    if (!mounted || !widget.enabled) return;
+    if (!mounted || !widget.enabled || !_tickersEnabled) return;
     final lifecycle = WidgetsBinding.instance.lifecycleState;
     if (lifecycle != null && lifecycle != AppLifecycleState.resumed) return;
     final route = ModalRoute.of(context);
@@ -169,7 +179,9 @@ class _MornyeArtworkContrastState extends State<MornyeArtworkContrast>
           await (MornyeArtworkContrast.debugReadback?.call(boundary, scale) ??
               boundary.toImage(pixelRatio: scale));
       final pixels = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-      if (!mounted || !widget.enabled || pixels == null) return;
+      if (!mounted || !widget.enabled || !_tickersEnabled || pixels == null) {
+        return;
+      }
       final currentLifecycle = WidgetsBinding.instance.lifecycleState;
       if (currentLifecycle != null &&
           currentLifecycle != AppLifecycleState.resumed) {
