@@ -2,7 +2,7 @@ part of 'queue_tab.dart';
 
 /// A run of consecutive rows sharing one section label.
 class _LibrarySection {
-  const _LibrarySection(this.label, this.start, this.end, {this.month});
+  const _LibrarySection(this.label, this.start, this.end);
 
   final String label;
   final int start;
@@ -10,16 +10,7 @@ class _LibrarySection {
   /// Exclusive.
   final int end;
 
-  /// A date in the month a date-sorted section covers; null for other sorts.
-  final DateTime? month;
-
   int get length => end - start;
-
-  /// Whether this section covers the month of [now].
-  bool coversMonthOf(DateTime now) {
-    final month = this.month;
-    return month != null && month.year == now.year && month.month == now.month;
-  }
 }
 
 final _letterPattern = RegExp(r'[\p{L}]', unicode: true);
@@ -131,9 +122,6 @@ extension _QueueTabSections on _QueueTabState {
       return _cachedTrackSections;
     }
     final sections = <_LibrarySection>[];
-    // Month sections keep a date, so a header can tell the current month
-    // without parsing its label.
-    final dated = _dateSorts.contains(_sortMode);
     String? label;
     var start = 0;
     for (var i = 0; i < items.length; i++) {
@@ -141,27 +129,13 @@ extension _QueueTabSections on _QueueTabState {
       if (i == 0) {
         label = next;
       } else if (next != label) {
-        sections.add(
-          _LibrarySection(
-            label!,
-            start,
-            i,
-            month: dated ? items[start].addedAt : null,
-          ),
-        );
+        sections.add(_LibrarySection(label!, start, i));
         label = next;
         start = i;
       }
     }
     if (items.isNotEmpty) {
-      sections.add(
-        _LibrarySection(
-          label!,
-          start,
-          items.length,
-          month: dated ? items[start].addedAt : null,
-        ),
-      );
+      sections.add(_LibrarySection(label!, start, items.length));
     }
     _sectionItems = items;
     _sectionSort = _sortMode;
@@ -553,7 +527,6 @@ class _LibrarySectionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
     final starts = <int>[];
     final headers = <int>[];
     var count = leadCount;
@@ -580,10 +553,7 @@ class _LibrarySectionList extends StatelessWidget {
         final hasHeader = section.label.isNotEmpty;
         final offset = index - starts[low - 1];
         if (hasHeader && offset == 0) {
-          return _LibrarySectionHeader(
-            label: section.label,
-            current: section.coversMonthOf(now),
-          );
+          return _LibrarySectionHeader(label: section.label);
         }
         final row = offset - (hasHeader ? 1 : 0);
         return rowBuilder(section.start + row, section);
@@ -592,100 +562,31 @@ class _LibrarySectionList extends StatelessWidget {
   }
 }
 
-/// Pinned label above a section of library rows.
-///
-/// Material shows the label in a centered chip between two short rails, so
-/// the grouping reads apart from the rows; the current month's chip takes
-/// the primary container. Mornye keeps a text header.
+/// Pinned label above a section of library rows, aligned with their start.
 class _LibrarySectionHeader extends StatelessWidget {
-  const _LibrarySectionHeader({required this.label, this.current = false});
+  const _LibrarySectionHeader({required this.label});
 
   final String label;
-
-  /// Whether the section covers the current month.
-  final bool current;
-
-  static const _railWidth = 24.0;
-  static const _railHeight = 4.0;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    if (context.isMornye) {
-      return ColoredBox(
-        color: theme.scaffoldBackgroundColor,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
-          child: Semantics(
-            header: true,
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: theme.colorScheme.primary,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    final colors = theme.colorScheme;
-    final tokens = context.tokens;
-    const rail = SizedBox(width: _railWidth, height: _railHeight);
-    final railDecoration = ShapeDecoration(
-      color: colors.outlineVariant,
-      shape: const StadiumBorder(),
-    );
     // Opaque, so the pinned header covers the rows scrolling under it.
     return ColoredBox(
       color: theme.scaffoldBackgroundColor,
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          tokens.gapLg,
-          tokens.gapMd,
-          tokens.gapLg,
-          tokens.gapSm,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            DecoratedBox(decoration: railDecoration, child: rail),
-            SizedBox(width: tokens.gapSm),
-            Flexible(
-              child: DecoratedBox(
-                decoration: ShapeDecoration(
-                  color: current
-                      ? colors.primaryContainer
-                      : colors.secondaryContainer,
-                  shape: const StadiumBorder(),
-                ),
-                child: Padding(
-                  // A 32dp chip at the default text size.
-                  padding: EdgeInsets.symmetric(
-                    horizontal: tokens.gapMd,
-                    vertical: 6,
-                  ),
-                  child: Semantics(
-                    header: true,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: current
-                            ? colors.onPrimaryContainer
-                            : colors.onSecondaryContainer,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
+        child: Semantics(
+          header: true,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: theme.colorScheme.primary,
             ),
-            SizedBox(width: tokens.gapSm),
-            DecoratedBox(decoration: railDecoration, child: rail),
-          ],
+          ),
         ),
       ),
     );

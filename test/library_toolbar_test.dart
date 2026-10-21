@@ -279,29 +279,24 @@ void main() {
     expect(find.text(l10n.libraryFilterTitle), findsOneWidget);
   });
 
-  testWidgets('month headers are chips; the current month is primary', (
-    tester,
-  ) async {
+  testWidgets('month headers are start-aligned text headers', (tester) async {
     final now = DateTime.now();
     await pumpLibrary(tester, dates: [DateTime(2020, 1, 10), now]);
     final handle = tester.ensureSemantics();
     final colors = Theme.of(tester.element(find.byType(QueueTab))).colorScheme;
 
-    Color? chipColor(String label) {
-      final chip = find
-          .ancestor(of: find.text(label), matching: find.byType(DecoratedBox))
+    for (final label in [DateFormat.yMMMM('en').format(now), 'January 2020']) {
+      final header = find.text(label);
+      expect(tester.widget<Text>(header).style?.color, colors.primary);
+      final band = find
+          .ancestor(of: header, matching: find.byType(ColoredBox))
           .first;
-      final decoration = tester.widget<DecoratedBox>(chip).decoration;
-      return (decoration as ShapeDecoration).color;
+      expect(
+        tester.getRect(header).left,
+        moreOrLessEquals(tester.getRect(band).left + 20),
+      );
+      expect(tester.getSemantics(header), isSemantics(isHeader: true));
     }
-
-    final current = DateFormat.yMMMM('en').format(now);
-    expect(chipColor(current), colors.primaryContainer);
-    expect(chipColor('January 2020'), colors.secondaryContainer);
-    expect(
-      tester.getSemantics(find.text('January 2020')),
-      isSemantics(isHeader: true),
-    );
     handle.dispose();
   });
 }
