@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -53,21 +55,21 @@ void main() {
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    final playback = StreamController<PlaybackState>();
+    addTearDown(playback.close);
+    PlaybackState pausedAt(int seconds) => PlaybackState(
+      processingState: AudioProcessingState.ready,
+      updatePosition: Duration(seconds: seconds),
+    );
+    // Paused mid-song, on line 40.
+    playback.add(pausedAt(121));
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           currentMediaItemProvider.overrideWithBuild(
             (ref, notifier) => Stream.value(_track),
           ),
-          // Paused mid-song, on line 40.
-          playbackStateProvider.overrideWith(
-            (ref) => Stream.value(
-              PlaybackState(
-                processingState: AudioProcessingState.ready,
-                updatePosition: const Duration(seconds: 121),
-              ),
-            ),
-          ),
+          playbackStateProvider.overrideWith((ref) => playback.stream),
           playQueueProvider.overrideWith((ref) => Stream.value(const [_track])),
           systemVolumeProvider.overrideWith((ref) => Stream.value(0.5)),
         ],
@@ -96,7 +98,19 @@ void main() {
       (widget) => widget is PlayerArtwork && widget.iconSize == 96,
     );
     final coverWidths = <int?>{};
-    State? lyricsState;
+    var playingLine = 40;
+    // The lyrics stay mounted while the panel is closed.
+    expect(view, findsOneWidget);
+    final lyricsState = tester.state(view);
+
+    // Lets the hidden lyrics finish scrolling to the playing line.
+    Future<void> followPlayback() async {
+      for (var frame = 0; frame < 60; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+    }
+
+    await followPlayback();
 
     // Whether the lyrics view paints its list at all.
     bool listShown() {
@@ -117,13 +131,17 @@ void main() {
     void checkFrame(String label) {
       coverWidths.add(tester.widget<PlayerArtwork>(cover).cacheWidth);
       expect(find.byType(AppLoadingIndicator), findsNothing, reason: label);
-      if (view.evaluate().isEmpty) return;
-      final state = tester.state(view);
-      lyricsState ??= state;
-      expect(state, same(lyricsState), reason: '$label rebuilt the lyrics');
+      expect(
+        tester.state(view),
+        same(lyricsState),
+        reason: '$label rebuilt the lyrics',
+      );
 
       final panel = tester.renderObject<RenderOpacity>(
         find.ancestor(of: view, matching: find.byType(Opacity)).first,
+      );
+      final layer = tester.renderObject<RenderAnimatedOpacity>(
+        find.ancestor(of: view, matching: find.byType(AnimatedOpacity)).first,
       );
       final slide = tester.widget<Transform>(
         find.ancestor(of: view, matching: find.byType(Transform)).first,
@@ -131,13 +149,16 @@ void main() {
       final dx = slide.transform.getTranslation().x * 2;
       expect(dx, dx.roundToDouble(), reason: '$label slid between pixels');
 
-      if (panel.opacity == 0 || !listShown()) return;
+      if (panel.opacity == 0) return;
+      // Whenever the panel shows, it shows the lyrics: never a blank panel.
+      expect(layer.opacity.value, 1, reason: '$label hid the lyrics');
+      expect(listShown(), isTrue, reason: '$label hid the lyrics');
       final viewport = tester.getRect(
         find.descendant(of: view, matching: find.byType(Scrollable)).first,
       );
       final playing = find.descendant(
         of: view,
-        matching: find.text('Lyric line 40'),
+        matching: find.text('Lyric line $playingLine'),
       );
       expect(playing, findsOneWidget, reason: label);
       expect(
@@ -153,15 +174,15 @@ void main() {
         await tester.pump(const Duration(milliseconds: 16));
         checkFrame('open $cycle frame $frame');
       }
-      // The list shows once it has found the line.
-      expect(listShown(), isTrue);
       desktopInspectorPanel.value = null;
       for (var frame = 0; frame < 25; frame++) {
         await tester.pump(const Duration(milliseconds: 16));
         checkFrame('close $cycle frame $frame');
       }
-      expect(view, findsNothing);
-      lyricsState = null;
+      // The song moves on while the panel is closed.
+      playingLine += 10;
+      playback.add(pausedAt(playingLine * 3 + 1));
+      await followPlayback();
     }
     // The cover column resizes with the panel but decodes its cover once.
     expect(coverWidths, hasLength(1));

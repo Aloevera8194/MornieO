@@ -271,19 +271,12 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
       ),
     );
     final panel = _lastPanel;
-    final Widget? trailing = switch (panel) {
-      null => null,
-      DesktopInspectorPanel.lyrics => PlayerLyricsSection(
-        metadata: _metadata,
-        seekPreview: _seekPreview,
-        colorScheme: colorScheme,
-        isActive: true,
-      ),
-      DesktopInspectorPanel.upNext =>
-        context.isMornye
-            ? MornyePlayerQueue(colorScheme: colorScheme)
-            : DesktopMaterialQueue(colorScheme: colorScheme),
-    };
+    final showsLyrics = panel == DesktopInspectorPanel.lyrics;
+    // Panels cross-fade only when one replaces another; a panel that opens
+    // shows at once and fades with the panel side.
+    final switchDuration = MediaQuery.disableAnimationsOf(context) || size < 0.5
+        ? Duration.zero
+        : const Duration(milliseconds: 180);
     return Stack(
       children: [
         Positioned.directional(
@@ -294,15 +287,16 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
           width: columnWidth,
           child: Center(child: player),
         ),
-        if (trailing != null && progress > 0)
-          PositionedDirectional(
-            start: leading,
-            end: 0,
-            top: 0,
-            bottom: 0,
-            // A leaving panel stops taking clicks once it is mostly gone.
-            child: IgnorePointer(
-              ignoring: size < 0.5,
+        PositionedDirectional(
+          start: leading,
+          end: 0,
+          top: 0,
+          bottom: 0,
+          // A leaving panel stops taking clicks once it is mostly gone.
+          child: IgnorePointer(
+            ignoring: size < 0.5,
+            child: ExcludeFocus(
+              excluding: size == 0,
               child: Opacity(
                 opacity: size,
                 child: Transform.translate(
@@ -314,20 +308,57 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
                       48,
                       80,
                     ),
-                    child: AnimatedSwitcher(
-                      duration: MediaQuery.disableAnimationsOf(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 180),
-                      child: KeyedSubtree(
-                        key: ValueKey('desktop-now-playing-${panel!.name}'),
-                        child: NoScrollbars(child: trailing),
-                      ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // The lyrics stay laid out and follow playback while
+                        // hidden, so they open already on the playing line.
+                        IgnorePointer(
+                          key: const ValueKey('desktop-now-playing-lyrics'),
+                          ignoring: !showsLyrics,
+                          child: ExcludeFocus(
+                            excluding: !showsLyrics,
+                            child: AnimatedOpacity(
+                              opacity: showsLyrics ? 1 : 0,
+                              duration: switchDuration,
+                              child: NoScrollbars(
+                                child: PlayerLyricsSection(
+                                  metadata: _metadata,
+                                  seekPreview: _seekPreview,
+                                  colorScheme: colorScheme,
+                                  isActive: true,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        AnimatedSwitcher(
+                          duration: switchDuration,
+                          child: panel == DesktopInspectorPanel.upNext
+                              ? KeyedSubtree(
+                                  key: const ValueKey(
+                                    'desktop-now-playing-upNext',
+                                  ),
+                                  child: NoScrollbars(
+                                    child: context.isMornye
+                                        ? MornyePlayerQueue(
+                                            colorScheme: colorScheme,
+                                          )
+                                        : DesktopMaterialQueue(
+                                            colorScheme: colorScheme,
+                                          ),
+                                  ),
+                                )
+                              : const SizedBox.shrink(),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
           ),
+        ),
       ],
     );
   }
