@@ -132,8 +132,16 @@ jobs:
           path: build/desktop/Mornye-macos-universal.zip
 
   build-linux:
-    name: Linux bundle (x64)
-    runs-on: ubuntu-22.04
+    name: Linux bundle (${{ matrix.flutter_arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - flutter_arch: x64
+            runner: ubuntu-22.04
+          - flutter_arch: arm64
+            runner: ubuntu-22.04-arm
 
     steps:
       - name: Checkout repository
@@ -154,6 +162,15 @@ jobs:
             libjson-glib-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
             libasound2-dev libclang-dev libmpv-dev
 
+      # The arm64 runner image ships without rustup.
+      - name: Install rustup
+        run: |
+          if ! command -v rustup >/dev/null 2>&1; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs |
+              sh -s -- -y --profile minimal --default-toolchain none
+            echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          fi
+
       - name: Activate pinned Rust toolchain
         working-directory: rust_backend
         run: rustup show
@@ -166,28 +183,40 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             rust_backend/target
-          key: cargo-${{ runner.os }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-${{ hashFiles('rust_backend/Cargo.lock') }}
-          restore-keys: cargo-${{ runner.os }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-
+          key: cargo-${{ runner.os }}-${{ runner.arch }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-${{ hashFiles('rust_backend/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-${{ runner.arch }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-
 
       - name: Build Rust desktop library
         run: bash scripts/build_rust_backend.sh desktop
 
       - name: Fetch LGPL FFmpeg
-        run: bash scripts/fetch_desktop_ffmpeg.sh linux-x64
+        run: bash scripts/fetch_desktop_ffmpeg.sh "linux-${{ matrix.flutter_arch }}"
 
       - name: Setup Flutter
+        if: matrix.flutter_arch == 'x64'
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: "stable"
           flutter-version-file: .fvmrc
           cache: true
 
+      # Flutter publishes no Linux arm64 SDK archive; a clone of the release
+      # tag downloads the arm64 Dart SDK and engine on first run.
+      - name: Setup Flutter (arm64)
+        if: matrix.flutter_arch == 'arm64'
+        run: |
+          flutter_version="$(jq -r .flutter .fvmrc)"
+          git clone --depth 1 --branch "$flutter_version" \
+            https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/flutter/bin/flutter" --version
+
       - name: Cache pub dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.pub-cache
-          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
-          restore-keys: pub-${{ runner.os }}-
+          key: pub-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Get Flutter dependencies
         run: flutter pub get
@@ -201,7 +230,7 @@ jobs:
 
       - name: Verify and package Linux bundle
         run: |
-          bundle="build/linux/x64/release/bundle"
+          bundle="build/linux/${{ matrix.flutter_arch }}/release/bundle"
           test -x "$bundle/mornye"
           test -s "$bundle/lib/libmornye_desktop.so"
           ffmpeg_dir="$bundle/lib/ffmpeg"
@@ -216,14 +245,14 @@ jobs:
             exit 1
           fi
           mkdir -p build/desktop
-          (cd "$bundle" && zip -r -y "$GITHUB_WORKSPACE/build/desktop/Mornye-linux-x64.zip" .)
+          (cd "$bundle" && zip -r -y "$GITHUB_WORKSPACE/build/desktop/Mornye-linux-${{ matrix.flutter_arch }}.zip" .)
 
       - name: Upload Linux bundle artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: desktop-linux-x64
+          name: desktop-linux-${{ matrix.flutter_arch }}
           if-no-files-found: error
-          path: build/desktop/Mornye-linux-x64.zip
+          path: build/desktop/Mornye-linux-${{ matrix.flutter_arch }}.zip
 
   build-windows:
     name: Windows app (x64)
