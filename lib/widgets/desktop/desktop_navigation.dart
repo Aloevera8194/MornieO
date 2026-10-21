@@ -208,24 +208,21 @@ class DesktopShellLayout extends StatelessWidget {
                         width: desktopWindowControlsWidth,
                         child: DesktopWindowDragArea(zoomOnDoubleClick: true),
                       ),
-                    // Collapsed below [desktopExpandedRailBreakpoint]; the
-                    // rail's menu button and the sidebar shortcut toggle it
-                    // in between.
+                    // Collapsed by default and always below
+                    // [desktopExpandedRailBreakpoint]; the sidebar shortcut
+                    // expands it in wider windows.
                     Expanded(
-                      child: _DesktopRailAutoCollapse(
-                        windowWidth: width,
-                        child: ValueListenableBuilder<bool>(
-                          valueListenable: desktopSidebarCollapsed,
-                          builder: (context, collapsed, _) =>
-                              DesktopNavigationRail(
-                                destinations: destinations,
-                                selected: selected,
-                                onSelected: onSelected,
-                                extended: !collapsed,
-                                onExtendedChanged: (extended) =>
-                                    desktopSidebarCollapsed.value = !extended,
-                              ),
-                        ),
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: desktopSidebarCollapsed,
+                        builder: (context, collapsed, _) =>
+                            DesktopNavigationRail(
+                              destinations: destinations,
+                              selected: selected,
+                              onSelected: onSelected,
+                              extended:
+                                  !collapsed &&
+                                  width >= desktopExpandedRailBreakpoint,
+                            ),
                       ),
                     ),
                   ],
@@ -245,54 +242,6 @@ class DesktopShellLayout extends StatelessWidget {
       ],
     );
   }
-}
-
-/// Collapses the Material rail when the window narrows past
-/// [desktopExpandedRailBreakpoint] and expands it when it widens back. The
-/// rail's menu button and the shortcut still toggle it in between.
-class _DesktopRailAutoCollapse extends StatefulWidget {
-  const _DesktopRailAutoCollapse({
-    required this.windowWidth,
-    required this.child,
-  });
-
-  final double windowWidth;
-  final Widget child;
-
-  @override
-  State<_DesktopRailAutoCollapse> createState() =>
-      _DesktopRailAutoCollapseState();
-}
-
-class _DesktopRailAutoCollapseState extends State<_DesktopRailAutoCollapse> {
-  bool? _narrow;
-
-  void _update() {
-    final narrow = widget.windowWidth < desktopExpandedRailBreakpoint;
-    final previous = _narrow;
-    _narrow = narrow;
-    // A wide first frame keeps the remembered choice; crossing the width
-    // either way follows the window.
-    if (previous == narrow || (previous == null && !narrow)) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _narrow == narrow) desktopSidebarCollapsed.value = narrow;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _update();
-  }
-
-  @override
-  void didUpdateWidget(_DesktopRailAutoCollapse oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.windowWidth != widget.windowWidth) _update();
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
 }
 
 /// Gives [child] the size of the space it lays out in, so width-based layout
@@ -432,10 +381,9 @@ class _DesktopContentArea extends StatelessWidget {
 int _positionOf(List<DesktopDestination> destinations, ShellTab tab) =>
     destinations.indexWhere((destination) => destination.tab == tab) + 1;
 
-/// Material 3 Expressive navigation rail for desktop windows: collapsed
-/// below [desktopExpandedRailBreakpoint], expanded to [desktopSidebarWidth]
-/// above it, with Settings anchored at the bottom. A menu button on top
-/// toggles it.
+/// Material 3 Expressive navigation rail for desktop windows: collapsed, or
+/// expanded to [desktopSidebarWidth] when [extended], with Settings anchored
+/// at the bottom.
 class DesktopNavigationRail extends StatelessWidget {
   const DesktopNavigationRail({
     super.key,
@@ -443,17 +391,12 @@ class DesktopNavigationRail extends StatelessWidget {
     required this.selected,
     required this.onSelected,
     required this.extended,
-    this.onExtendedChanged,
   });
 
   final List<DesktopDestination> destinations;
   final ShellTab? selected;
   final ValueChanged<ShellTab> onSelected;
   final bool extended;
-
-  /// Called by the rail's menu button. Without it the rail has no menu
-  /// button and follows [extended] alone.
-  final ValueChanged<bool>? onExtendedChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -492,8 +435,6 @@ class DesktopNavigationRail extends StatelessWidget {
     final settings = destinations
         .where((destination) => destination.tab == ShellTab.settings)
         .firstOrNull;
-    final onExtendedChanged = this.onExtendedChanged;
-    final material = MaterialLocalizations.of(context);
     final motion = AppMotion.spatial(
       context,
       const AppMotionSpec(Duration(milliseconds: 300), Curves.easeInOutCubic),
@@ -525,27 +466,6 @@ class DesktopNavigationRail extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (onExtendedChanged != null)
-                    // Centered over the collapsed rail, where it stays, on
-                    // the same axis as the destination icons whatever size
-                    // the desktop visual density gives the button.
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: SizedBox(
-                        width: desktopCollapsedRailWidth,
-                        child: Center(
-                          child: IconButton(
-                            tooltip: extended
-                                ? material.expandedIconTapHint
-                                : material.collapsedIconTapHint,
-                            icon: AppIcon(
-                              extended ? Icons.menu_open : Icons.menu,
-                            ),
-                            onPressed: () => onExtendedChanged(!extended),
-                          ),
-                        ),
-                      ),
-                    ),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.only(top: 8),

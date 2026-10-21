@@ -192,9 +192,9 @@ List<ShellTab> desktopDestinationTabs({
   ShellTab.settings,
 ];
 
-/// Whether the Material desktop rail is collapsed. Kept for the app session
-/// so the shortcut and the rail's menu button share it.
-final desktopSidebarCollapsed = ValueNotifier<bool>(false);
+/// Whether the Material desktop rail is collapsed, as it starts. Kept for the
+/// app session; the sidebar shortcut toggles it.
+final desktopSidebarCollapsed = ValueNotifier<bool>(true);
 
 /// Opens Now Playing in the content pane. Lyrics and Up Next live in the
 /// trailing inspector, toggled with [toggleDesktopInspector].

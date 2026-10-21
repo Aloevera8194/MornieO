@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -182,7 +181,7 @@ void main() {
       await pumpShell(tester, mornye: false, width: 900);
 
       expect(find.byType(DesktopNavigationRail), findsOneWidget);
-      // The rail springs closed from the remembered expanded state.
+      // Narrow windows keep the rail collapsed even when it was expanded.
       expect(
         tester.getSize(find.byType(DesktopNavigationRail)).width,
         closeTo(desktopCollapsedRailWidth, 0.5),
@@ -198,7 +197,7 @@ void main() {
       expect(find.text('content'), findsOneWidget);
     });
 
-    testWidgets('expands the rail at 1400 with Settings at the bottom', (
+    testWidgets('expanded rail at 1400 keeps Settings at the bottom', (
       tester,
     ) async {
       await pumpShell(tester, mornye: false, width: 1400);
@@ -268,50 +267,28 @@ void main() {
       expect(library.center.dy - home.center.dy, closeTo(56 + 8, 0.5));
     });
 
-    for (final width in [900.0, 1400.0]) {
-      testWidgets('rail menu icon lines up with the destinations at $width', (
-        tester,
-      ) async {
-        // Desktop platforms get a compact visual density, which shrinks
-        // the menu button.
-        debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
-        await pumpShell(tester, mornye: false, width: width);
-
-        Offset iconCenter(IconData icon) => tester.getCenter(
-          find.byWidgetPredicate((w) => w is AppIcon && w.icon == icon).first,
-        );
-        final menu = iconCenter(width < 1200 ? Icons.menu : Icons.menu_open);
-        // Home is selected; Library is not.
-        final home = iconCenter(Icons.circle);
-        final library = iconCenter(Icons.circle_outlined);
-        debugDefaultTargetPlatformOverride = null;
-        expect(menu.dx, closeTo(home.dx, 0.5));
-        expect(library.dx, closeTo(home.dx, 0.5));
-      });
-    }
-
-    testWidgets('rail menu button collapses and expands the rail', (
-      tester,
-    ) async {
+    testWidgets('rail starts collapsed with no menu button', (tester) async {
+      desktopSidebarCollapsed.value = true;
       await pumpShell(tester, mornye: false, width: 1400);
       double railWidth() =>
           tester.getSize(find.byType(DesktopNavigationRail)).width;
-      expect(railWidth(), desktopSidebarWidth);
+      expect(railWidth(), closeTo(desktopCollapsedRailWidth, 0.5));
+      for (final icon in [Icons.menu, Icons.menu_open]) {
+        expect(
+          find.byWidgetPredicate((w) => w is AppIcon && w.icon == icon),
+          findsNothing,
+        );
+      }
 
-      await tester.tap(find.byTooltip('Collapse'));
-      // Halfway, the rail is between its widths with one label showing.
+      // The sidebar shortcut expands it; halfway, the rail is between its
+      // widths with one label showing.
+      desktopSidebarCollapsed.value = false;
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 120));
-      expect(railWidth(), lessThan(desktopSidebarWidth));
       expect(railWidth(), greaterThan(desktopCollapsedRailWidth));
+      expect(railWidth(), lessThan(desktopSidebarWidth));
       expect(find.text('library'), findsOneWidget);
       await tester.pumpAndSettle();
-      expect(desktopSidebarCollapsed.value, isTrue);
-      expect(railWidth(), closeTo(desktopCollapsedRailWidth, 0.5));
-
-      await tester.tap(find.byTooltip('Expand'));
-      await tester.pumpAndSettle();
-      expect(desktopSidebarCollapsed.value, isFalse);
       expect(railWidth(), closeTo(desktopSidebarWidth, 0.5));
     });
 
