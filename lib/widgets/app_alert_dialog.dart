@@ -4,6 +4,8 @@ import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/material_expressive.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/expressive_button.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
@@ -182,6 +184,14 @@ class AppAlertDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     if (!context.isMornye) {
       return AlertDialog(
+        // M3 basic dialogs are 280 to 560dp wide; without a cap, a long
+        // message stretches the dialog across a wide window. Desktop starts
+        // at the compact class, so a short question or a single field is
+        // not squeezed to the minimum.
+        constraints: BoxConstraints(
+          minWidth: isDesktopPlatform ? AppDialogSize.compact.width : 280,
+          maxWidth: appSheetDialogMaxWidth,
+        ),
         backgroundColor: backgroundColor,
         shape: shape,
         icon: icon == null ? null : symbolIconWidget(icon!),

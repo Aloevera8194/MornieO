@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/app_choice_chip.dart';
 import 'package:mornye/widgets/app_slider.dart';
+import 'package:mornye/widgets/slider_value_header.dart';
 
 /// Gain mode and pre-amp shown under the volume normalization switch.
 class PlaybackNormalizationSettings extends ConsumerStatefulWidget {
@@ -67,7 +69,14 @@ class _PlaybackNormalizationSettingsState
             ],
           ),
           const SizedBox(height: 16),
-          Text('${l10n.playbackNormalizationPreamp}: $value'),
+          if (context.isMornye)
+            Text('${l10n.playbackNormalizationPreamp}: $value')
+          else
+            SliderValueHeader(
+              title: l10n.playbackNormalizationPreamp,
+              value: value,
+              enabled: widget.enabled,
+            ),
           AppSlider(
             value: preamp.toDouble(),
             min: -15,
