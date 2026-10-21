@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mornye/widgets/library_fast_scroller.dart';
@@ -146,6 +148,77 @@ void main() {
     await tester.pumpWidget(host(controller: controller, itemCount: 20));
     controller.jumpTo(10);
     await tester.pump();
+    expect(thumb(), findsNothing);
+  });
+
+  testWidgets('scrolling keeps the thumb visible without per-frame timers', (
+    tester,
+  ) async {
+    final controller = ScrollController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(host(controller: controller));
+    var hideTimers = 0;
+    double opacity() => tester
+        .widget<AnimatedOpacity>(
+          find.descendant(of: thumb(), matching: find.byType(AnimatedOpacity)),
+        )
+        .opacity;
+
+    await runZoned(
+      () async {
+        final gesture = await tester.startGesture(const Offset(200, 450));
+        for (var index = 0; index < 100; index++) {
+          await gesture.moveBy(const Offset(0, -2));
+          await tester.pump(const Duration(milliseconds: 16));
+        }
+        expect(controller.offset, greaterThan(100));
+        expect(opacity(), 1);
+        expect(hideTimers, 0);
+
+        await tester.pump(const Duration(seconds: 2));
+        expect(opacity(), 1);
+        await gesture.up();
+        await tester.pump();
+        expect(hideTimers, 1);
+        expect(opacity(), 1);
+        await tester.pump(const Duration(milliseconds: 1400));
+        expect(opacity(), 1);
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(opacity(), 0);
+        await tester.pumpAndSettle();
+      },
+      zoneSpecification: ZoneSpecification(
+        createTimer: (self, parent, zone, duration, callback) {
+          if (duration == const Duration(milliseconds: 1500)) hideTimers++;
+          return parent.createTimer(zone, duration, callback);
+        },
+      ),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('short lists allocate no thumb hide timers while scrolling', (
+    tester,
+  ) async {
+    final controller = ScrollController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(host(controller: controller, itemCount: 20));
+    var hideTimers = 0;
+    await runZoned(
+      () async {
+        for (var index = 1; index <= 30; index++) {
+          controller.jumpTo(index * 10);
+          await tester.pump();
+        }
+      },
+      zoneSpecification: ZoneSpecification(
+        createTimer: (self, parent, zone, duration, callback) {
+          if (duration == const Duration(milliseconds: 1500)) hideTimers++;
+          return parent.createTimer(zone, duration, callback);
+        },
+      ),
+    );
+    expect(hideTimers, 0);
     expect(thumb(), findsNothing);
   });
 
