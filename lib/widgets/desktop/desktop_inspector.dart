@@ -19,6 +19,7 @@ import 'package:mornye/widgets/mornye_player_background.dart';
 import 'package:mornye/widgets/mornye_player_queue.dart';
 import 'package:mornye/widgets/player_lyrics_section.dart';
 import 'package:mornye/widgets/player_queue_sheet.dart';
+import 'package:mornye/widgets/no_scrollbars.dart';
 
 /// A panel of the desktop trailing inspector.
 enum DesktopInspectorPanel { lyrics, upNext }
@@ -261,7 +262,8 @@ class DesktopInspector extends ConsumerWidget {
                 ]
               : null,
         ),
-        child: panelSurface,
+        // Lyrics and Up Next scroll without a bar, as in the full player.
+        child: NoScrollbars(child: panelSurface),
       ),
     );
   }

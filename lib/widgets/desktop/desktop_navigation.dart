@@ -19,6 +19,7 @@ import 'package:mornye/widgets/desktop/desktop_now_playing.dart';
 import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_window.dart';
 import 'package:mornye/widgets/profile_avatar.dart';
+import 'package:mornye/widgets/no_scrollbars.dart';
 
 /// Window width at which the Material rail shows labels beside its icons.
 const double desktopExpandedRailBreakpoint = 1200;
@@ -826,43 +827,46 @@ class DesktopSidebar extends ConsumerWidget {
               tooltip: tooltip ?? link.label,
               onTap: () => openLink!(link.id),
             );
-        return ListView(
-          padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
-          children: [
-            for (final destination in topLevel) destinationRow(destination),
-            if (links.isNotEmpty) ...[
-              _SidebarSectionHeader(l10n.navLibrary),
-              for (final (index, link) in links.indexed)
-                linkRow(
-                  link,
-                  tooltip: index == 0 && libraryPosition > 0
-                      ? desktopDestinationTooltip(
-                          context,
-                          link.label,
-                          libraryPosition,
-                        )
-                      : null,
-                ),
-            ],
-            if (openLink != null) ...[
-              _SidebarSectionHeader(l10n.searchPlaylists),
-              linkRow(
-                DesktopSidebarLink(
-                  id: DesktopSidebarLink.allPlaylistsId,
-                  icon: CupertinoIcons.square_grid_2x2,
-                  label: l10n.desktopAllPlaylists,
-                ),
-              ),
-              for (final playlist in playlists)
+        // A source list scrolls without a bar, as in Music's sidebar.
+        return NoScrollbars(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(6, 0, 6, 8),
+            children: [
+              for (final destination in topLevel) destinationRow(destination),
+              if (links.isNotEmpty) ...[
+                _SidebarSectionHeader(l10n.navLibrary),
+                for (final (index, link) in links.indexed)
+                  linkRow(
+                    link,
+                    tooltip: index == 0 && libraryPosition > 0
+                        ? desktopDestinationTooltip(
+                            context,
+                            link.label,
+                            libraryPosition,
+                          )
+                        : null,
+                  ),
+              ],
+              if (openLink != null) ...[
+                _SidebarSectionHeader(l10n.searchPlaylists),
                 linkRow(
                   DesktopSidebarLink(
-                    id: DesktopSidebarLink.playlistId(playlist.id),
-                    icon: CupertinoIcons.music_note_list,
-                    label: playlist.name,
+                    id: DesktopSidebarLink.allPlaylistsId,
+                    icon: CupertinoIcons.square_grid_2x2,
+                    label: l10n.desktopAllPlaylists,
                   ),
                 ),
+                for (final playlist in playlists)
+                  linkRow(
+                    DesktopSidebarLink(
+                      id: DesktopSidebarLink.playlistId(playlist.id),
+                      icon: CupertinoIcons.music_note_list,
+                      label: playlist.name,
+                    ),
+                  ),
+              ],
             ],
-          ],
+          ),
         );
       },
     );

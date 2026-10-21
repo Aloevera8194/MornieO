@@ -108,5 +108,27 @@ void main() {
       }
       debugDefaultTargetPlatformOverride = null;
     });
+
+    testWidgets('desktop rows that scroll sideways show no scrollbar', (
+      tester,
+    ) async {
+      for (final platform in [TargetPlatform.macOS, TargetPlatform.windows]) {
+        simulateDesktop(platform);
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: ScrollConfiguration(
+              behavior: appScrollBehavior(disableOverscrollEffects: false),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: const [SizedBox(width: 4000)],
+              ),
+            ),
+          ),
+        );
+        expect(find.byType(Scrollbar), findsNothing);
+      }
+      debugDefaultTargetPlatformOverride = null;
+    });
   });
 }

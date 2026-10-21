@@ -489,66 +489,73 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
     );
     return SizedBox(
       height: size + 8 + textHeight + 16,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-        itemCount: hits.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 20),
-        itemBuilder: (context, index) {
-          final hit = hits[index];
-          return SizedBox(
-            key: ValueKey('${hit.kind.name}:${hit.source}:${hit.id}'),
-            width: size,
-            child: GestureDetector(
-              onSecondaryTapUp: (details) =>
-                  _showHitMenu(hit, details.globalPosition),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: _selecting ? null : () => _open(hit),
-                child: Column(
-                  crossAxisAlignment: artist
-                      ? CrossAxisAlignment.center
-                      : CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        artist ? size / 2 : 8,
-                      ),
-                      child: SizedBox.square(
-                        dimension: size,
-                        child: hit.cover?.isNotEmpty == true
-                            ? LocalOrNetworkCoverImage(
-                                url: hit.cover!,
-                                placeholder: fallback,
-                              )
-                            : fallback(context),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      hit.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: artist ? TextAlign.center : TextAlign.start,
-                      style: textTheme.bodyLarge,
-                    ),
-                    if (!artist)
-                      Text(
-                        kind == LibrarySearchKind.albums
-                            ? hit.artist
-                            : context.l10n.queueTrackCount(hit.trackCount),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+      // Shelves have no paging arrows, so they keep the desktop scrollbar
+      // the app hides on other sideways rows.
+      child: ScrollConfiguration(
+        behavior: const MaterialScrollBehavior().copyWith(
+          physics: ScrollConfiguration.of(context).getScrollPhysics(context),
+        ),
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+          itemCount: hits.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 20),
+          itemBuilder: (context, index) {
+            final hit = hits[index];
+            return SizedBox(
+              key: ValueKey('${hit.kind.name}:${hit.source}:${hit.id}'),
+              width: size,
+              child: GestureDetector(
+                onSecondaryTapUp: (details) =>
+                    _showHitMenu(hit, details.globalPosition),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: _selecting ? null : () => _open(hit),
+                  child: Column(
+                    crossAxisAlignment: artist
+                        ? CrossAxisAlignment.center
+                        : CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(
+                          artist ? size / 2 : 8,
+                        ),
+                        child: SizedBox.square(
+                          dimension: size,
+                          child: hit.cover?.isNotEmpty == true
+                              ? LocalOrNetworkCoverImage(
+                                  url: hit.cover!,
+                                  placeholder: fallback,
+                                )
+                              : fallback(context),
                         ),
                       ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        hit.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: artist ? TextAlign.center : TextAlign.start,
+                        style: textTheme.bodyLarge,
+                      ),
+                      if (!artist)
+                        Text(
+                          kind == LibrarySearchKind.albums
+                              ? hit.artist
+                              : context.l10n.queueTrackCount(hit.trackCount),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

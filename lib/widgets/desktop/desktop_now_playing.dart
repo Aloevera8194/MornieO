@@ -19,6 +19,7 @@ import 'package:mornye/widgets/material_player_backdrop.dart';
 import 'package:mornye/widgets/mornye_player_background.dart';
 import 'package:mornye/widgets/mornye_player_favorite_button.dart';
 import 'package:mornye/widgets/mornye_player_queue.dart';
+import 'package:mornye/widgets/no_scrollbars.dart';
 import 'package:mornye/widgets/player_artwork.dart';
 import 'package:mornye/widgets/player_lyrics_section.dart';
 import 'package:mornye/widgets/player_metadata_title.dart';
@@ -298,7 +299,7 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
                           : const Duration(milliseconds: 180),
                       child: KeyedSubtree(
                         key: ValueKey('desktop-now-playing-${panel!.name}'),
-                        child: trailing,
+                        child: NoScrollbars(child: trailing),
                       ),
                     ),
                   ),

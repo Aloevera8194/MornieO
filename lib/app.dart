@@ -101,7 +101,7 @@ Locale _resolveSupportedLocale(
 /// iOS-style fluid scroll on mobile and macOS: momentum glide + bounce instead
 /// of the Android clamping stop. Widgets that set explicit physics (queue filter
 /// PageView, bottom sheets) are unaffected.
-class _FluidScrollBehavior extends MaterialScrollBehavior {
+class _FluidScrollBehavior extends _VerticalScrollbarBehavior {
   const _FluidScrollBehavior();
 
   @override
@@ -109,15 +109,31 @@ class _FluidScrollBehavior extends MaterialScrollBehavior {
       const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics());
 }
 
+/// Desktop scrollbars mark long vertical content only. Rows that scroll
+/// sideways (carousels, shelves, recent cards) already show arrows and read
+/// cleaner without a bar.
+class _VerticalScrollbarBehavior extends MaterialScrollBehavior {
+  const _VerticalScrollbarBehavior();
+
+  @override
+  Widget buildScrollbar(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => axisDirectionToAxis(details.direction) == Axis.horizontal
+      ? child
+      : super.buildScrollbar(context, child, details);
+}
+
 /// Mobile and macOS use the fluid bounce. Windows and Linux keep Material's
 /// desktop behavior: clamping physics with scrollbars.
 @visibleForTesting
 ScrollBehavior appScrollBehavior({required bool disableOverscrollEffects}) {
   if (disableOverscrollEffects) {
-    return const MaterialScrollBehavior().copyWith(overscroll: false);
+    return const _VerticalScrollbarBehavior().copyWith(overscroll: false);
   }
   if (isDesktopPlatform && defaultTargetPlatform != TargetPlatform.macOS) {
-    return const MaterialScrollBehavior();
+    return const _VerticalScrollbarBehavior();
   }
   return const _FluidScrollBehavior();
 }

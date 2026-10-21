@@ -38,6 +38,7 @@ import 'package:mornye/widgets/app_search_field.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
 import 'package:mornye/widgets/settings_group.dart';
 import 'package:mornye/widgets/profile_avatar.dart';
+import 'package:mornye/widgets/no_scrollbars.dart';
 
 /// One entry on the Settings tab.
 class _Destination {
@@ -453,12 +454,15 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_supportsListDetail) return _buildList(context);
-    return LayoutBuilder(
-      builder: (context, constraints) =>
-          constraints.maxWidth >= listDetailMinWidth
-          ? _buildListDetail(context)
-          : _buildList(context),
+    // Settings reads as chrome; its pages scroll without a bar.
+    if (!_supportsListDetail) return NoScrollbars(child: _buildList(context));
+    return NoScrollbars(
+      child: LayoutBuilder(
+        builder: (context, constraints) =>
+            constraints.maxWidth >= listDetailMinWidth
+            ? _buildListDetail(context)
+            : _buildList(context),
+      ),
     );
   }
 
