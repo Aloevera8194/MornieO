@@ -131,7 +131,7 @@ class _LoadingOrErrorScaffold extends StatelessWidget {
                           borderRadius: 0,
                         ),
                       ),
-                subtitle: CollectionHeaderSkeletonRows.subtitle(),
+                subtitle: CollectionHeaderSkeletonRows.subtitle(context),
                 meta: CollectionHeaderSkeletonRows.meta(),
                 actions: CollectionHeaderSkeletonRows.actions(context),
               ),

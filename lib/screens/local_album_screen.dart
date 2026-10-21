@@ -288,7 +288,9 @@ class _LocalAlbumScreenState extends ConsumerState<LocalAlbumScreen>
           )
         else if (_loadingTracks)
           const SliverToBoxAdapter(
-            child: RepaintBoundary(child: AlbumTrackListSkeleton(itemCount: 8)),
+            child: RepaintBoundary(
+              child: AlbumTrackListSkeleton(itemCount: 8, showQuality: true),
+            ),
           )
         else
           _buildTrackList(context, colorScheme, tracks),

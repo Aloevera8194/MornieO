@@ -192,18 +192,6 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
   List<ArtistAlbum> _singlesBucket = const [];
   List<ArtistAlbum> _compilationsBucket = const [];
 
-  double _artistAlbumTileSize() {
-    final scale = responsiveScale(context: context, min: 0.82, max: 1.05);
-    final textScale = effectiveTextScale(context);
-    return 140 * scale * (1 + (textScale - 1) * 0.12);
-  }
-
-  double _artistAlbumSectionHeight() {
-    final tileSize = _artistAlbumTileSize();
-    final textScale = effectiveTextScale(context);
-    return tileSize + 64 + ((textScale - 1) * 14);
-  }
-
   String? _recommendedDownloadService() {
     return _directMetadataProviderId();
   }

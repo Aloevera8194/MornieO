@@ -986,8 +986,8 @@ extension _ArtistScreenSections on _ArtistScreenState {
     ColorScheme colorScheme, {
     bool showTypeBadge = false,
   }) {
-    final sectionHeight = _artistAlbumSectionHeight();
-    final tileSize = _artistAlbumTileSize();
+    final sectionHeight = artistAlbumSectionHeight(context);
+    final tileSize = artistAlbumTileSize(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

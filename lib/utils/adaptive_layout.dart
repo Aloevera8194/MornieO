@@ -126,6 +126,18 @@ double wideListInset(BuildContext context, {double? contentMaxWidth}) =>
 
 const double desktopContentMaxWidth = 1600;
 
+/// Discography cover geometry shared by loaded cards and loading placeholders.
+double artistAlbumTileSize(BuildContext context) {
+  final scale = responsiveScale(context: context, min: 0.82, max: 1.05);
+  final textScale = effectiveTextScale(context);
+  return 140 * scale * (1 + (textScale - 1) * 0.12);
+}
+
+double artistAlbumSectionHeight(BuildContext context) =>
+    artistAlbumTileSize(context) +
+    64 +
+    ((effectiveTextScale(context) - 1) * 14);
+
 /// Scales fixed sizes with the shortest screen side, clamped to [min]..[max].
 double responsiveScale({
   required BuildContext context,

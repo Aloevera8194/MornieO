@@ -196,7 +196,7 @@ class _SliverTrackTableState extends State<SliverTrackTable> {
         SliverPersistentHeader(
           pinned: true,
           delegate: _HeaderDelegate(
-            height: _TrackTableHeader.heightFor(context),
+            height: TrackTableLayout.headerHeightFor(context),
             child: _TrackTableHeader(
               columns: widget.columns,
               sortColumn: sort?.column,
@@ -289,13 +289,24 @@ String _formatDuration(Duration duration) {
       : '$minutes:$seconds';
 }
 
-/// Shared column geometry, so header and rows line up.
-class _Columns {
+/// Shared geometry for loaded tables and their loading placeholders.
+class TrackTableLayout {
+  const TrackTableLayout._();
+
   static const double number = 44;
   static const double quality = 132;
   static const double duration = 64;
   static const double trailing = 52;
   static const double gap = 12;
+  static const double albumRowHeight = 46;
+  static const double albumNumber = 32;
+  static const double albumTitleGap = 14;
+
+  static double rowMinHeightFor(BuildContext context) =>
+      context.isMornye ? 40 : 48;
+
+  static double headerHeightFor(BuildContext context) =>
+      MediaQuery.textScalerOf(context).scale(20) + 16;
 
   static int flex(TrackTableColumn column) => switch (column) {
     TrackTableColumn.title => 5,
@@ -320,14 +331,14 @@ class _Columns {
     Widget? trailing,
   }) => [
     for (final column in columns) ...[
-      if (_Columns.width(column) case final width?)
+      if (width(column) case final width?)
         SizedBox(width: width, child: cell(column))
       else
-        Expanded(flex: _Columns.flex(column), child: cell(column)),
+        Expanded(flex: flex(column), child: cell(column)),
       const SizedBox(width: gap),
     ],
     if (hasTrailing)
-      SizedBox(width: _Columns.trailing, child: trailing)
+      SizedBox(width: TrackTableLayout.trailing, child: trailing)
     else
       const SizedBox(width: gap),
   ];
@@ -374,10 +385,6 @@ class _TrackTableHeader extends StatelessWidget {
   final bool hasTrailing;
   final ValueChanged<TrackTableColumn> onSort;
 
-  /// Tall enough for a 32dp pointer target, growing with the text size.
-  static double heightFor(BuildContext context) =>
-      MediaQuery.textScalerOf(context).scale(20) + 16;
-
   String _label(BuildContext context, TrackTableColumn column) {
     final l10n = context.l10n;
     return switch (column) {
@@ -401,7 +408,7 @@ class _TrackTableHeader extends StatelessWidget {
     Widget cell(TrackTableColumn column) {
       final label = _label(context, column);
       final sorted = sortColumn == column;
-      final end = _Columns.alignEnd(column);
+      final end = TrackTableLayout.alignEnd(column);
       final text = Text(
         column == TrackTableColumn.number ? '#' : label,
         maxLines: 1,
@@ -427,7 +434,7 @@ class _TrackTableHeader extends StatelessWidget {
           onTap: sortable ? () => onSort(column) : null,
           borderRadius: BorderRadius.circular(6),
           child: SizedBox(
-            height: heightFor(context),
+            height: TrackTableLayout.headerHeightFor(context),
             child: Row(
               mainAxisAlignment: end
                   ? MainAxisAlignment.end
@@ -454,7 +461,7 @@ class _TrackTableHeader extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: context.tokens.gapSm),
           child: Row(
-            children: _Columns.layout(
+            children: TrackTableLayout.layout(
               columns: columns,
               cell: cell,
               hasTrailing: hasTrailing,
@@ -483,10 +490,6 @@ class _TrackTableRowView extends StatefulWidget {
   final bool selected;
   final VoidCallback onTap;
   final ValueChanged<Offset>? onContextMenu;
-
-  /// Desktop density: compact rows for Mornye, the Material list height.
-  static double minHeightFor(BuildContext context) =>
-      context.isMornye ? 40 : 48;
 
   @override
   State<_TrackTableRowView> createState() => _TrackTableRowViewState();
@@ -584,12 +587,12 @@ class _TrackTableRowViewState extends State<_TrackTableRowView> {
               onHover: (hovered) => setState(() => _hovered = hovered),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: _TrackTableRowView.minHeightFor(context),
+                  minHeight: TrackTableLayout.rowMinHeightFor(context),
                 ),
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: tokens.gapXs),
                   child: Row(
-                    children: _Columns.layout(
+                    children: TrackTableLayout.layout(
                       columns: columns,
                       cell: cell,
                       hasTrailing: hasTrailing,
@@ -651,7 +654,7 @@ class _AlbumRowViewState extends State<_AlbumRowView> {
     final l10n = MaterialLocalizations.of(context);
     final onContextMenu = widget.onContextMenu;
     final number = SizedBox(
-      width: 32,
+      width: TrackTableLayout.albumNumber,
       child: _hovered
           ? IconButton(
               tooltip: context.l10n.tooltipPlay,
@@ -756,13 +759,15 @@ class _AlbumRowViewState extends State<_AlbumRowView> {
             onHover: (hovered) => setState(() => _hovered = hovered),
             hoverColor: Colors.transparent,
             child: ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 46),
+              constraints: const BoxConstraints(
+                minHeight: TrackTableLayout.albumRowHeight,
+              ),
               child: Padding(
                 padding: EdgeInsetsDirectional.only(start: tokens.gapXs),
                 child: Row(
                   children: [
                     number,
-                    const SizedBox(width: 14),
+                    const SizedBox(width: TrackTableLayout.albumTitleGap),
                     // The separator starts at the title, as in Apple Music.
                     Expanded(
                       child: DecoratedBox(
@@ -779,7 +784,9 @@ class _AlbumRowViewState extends State<_AlbumRowView> {
                                 ),
                         ),
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(minHeight: 46),
+                          constraints: const BoxConstraints(
+                            minHeight: TrackTableLayout.albumRowHeight,
+                          ),
                           child: Row(
                             children: [
                               Expanded(child: title),
