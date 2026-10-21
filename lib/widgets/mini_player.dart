@@ -56,6 +56,8 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
 
   /// Upward travel of the current vertical drag, in logical pixels.
   double _dragUp = 0;
+  double _dragAcross = 0;
+  bool _dragCancelled = false;
 
   void _openNowPlaying() {
     Navigator.of(context, rootNavigator: true).push(
@@ -80,13 +82,24 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
     final travel = _dragUp;
     _dragUp = 0;
     final velocity = -(details.primaryVelocity ?? 0);
-    if (velocity > 300 || (velocity >= 0 && travel > 48)) _openNowPlaying();
+    if (!_dragCancelled && (velocity > 300 || (velocity >= 0 && travel > 48))) {
+      _openNowPlaying();
+    }
   }
 
-  // Hides the bar in the frames between a swipe-dismiss and the stopped
-  // service clearing the media item (a dismissed Dismissible must leave the
-  // tree immediately). Playing the same track again shows the bar normally.
-  String? _dismissedItemId;
+  void _onHorizontalDragEnd(DragEndDetails details) {
+    final travel = _dragAcross;
+    _dragAcross = 0;
+    final velocity = details.primaryVelocity ?? 0;
+    if (_dragCancelled || (travel.abs() < 48 && velocity.abs() < 550)) return;
+    final direction = velocity.abs() >= 550 ? velocity : travel;
+    final controller = ref.read(musicPlayerControllerProvider);
+    if (direction < 0) {
+      controller.next();
+    } else {
+      controller.previous();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,9 +108,6 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
 
     final isPlaying = ref.watch(playbackPlayingProvider);
     final isLoading = ref.watch(playbackLoadingProvider);
-    if (mediaItem.id == _dismissedItemId && !isPlaying) {
-      return const SizedBox.shrink();
-    }
 
     final controller = ref.read(musicPlayerControllerProvider);
     final colorScheme = Theme.of(context).colorScheme;
@@ -296,7 +306,7 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
         ),
       ),
     );
-    // Swiping up opens the full player; sideways swipes still dismiss.
+    // Swiping up opens the full player; sideways swipes change tracks.
     // Desktop has no touch gestures: a click opens the player instead.
     final swipeable = isDesktopPlatform
         ? surface
@@ -307,13 +317,16 @@ class _MiniPlayerState extends ConsumerState<MiniPlayer> {
             onVerticalDragUpdate: (details) =>
                 _dragUp -= details.primaryDelta ?? 0,
             onVerticalDragEnd: _onVerticalDragEnd,
-            child: Dismissible(
-              key: ValueKey('mini-player-${mediaItem.id}'),
-              direction: DismissDirection.horizontal,
-              onDismissed: (_) {
-                setState(() => _dismissedItemId = mediaItem.id);
-                controller.stop();
-              },
+            onVerticalDragCancel: () => _dragUp = 0,
+            onHorizontalDragStart: (_) => _dragAcross = 0,
+            onHorizontalDragUpdate: (details) =>
+                _dragAcross += details.primaryDelta ?? 0,
+            onHorizontalDragEnd: _onHorizontalDragEnd,
+            onHorizontalDragCancel: () => _dragAcross = 0,
+            child: Listener(
+              // Flutter ends an accepted drag even after a pointer cancel.
+              onPointerDown: (_) => _dragCancelled = false,
+              onPointerCancel: (_) => _dragCancelled = true,
               child: surface,
             ),
           );

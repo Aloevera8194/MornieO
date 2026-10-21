@@ -633,11 +633,19 @@ void main() {
     await pump();
     await tester.pumpAndSettle();
     expect(find.byType(Dismissible), findsNothing);
+    Finder touchGestures() => find.descendant(
+      of: find.byType(MiniPlayer),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is GestureDetector && widget.onHorizontalDragEnd != null,
+      ),
+    );
+    expect(touchGestures(), findsNothing);
 
     debugDesktopPlatformOverride = false;
     await tester.pumpWidget(const SizedBox());
     await pump();
     await tester.pumpAndSettle();
-    expect(find.byType(Dismissible), findsOneWidget);
+    expect(touchGestures(), findsOneWidget);
   });
 }

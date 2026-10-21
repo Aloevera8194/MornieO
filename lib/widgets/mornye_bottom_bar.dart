@@ -61,7 +61,7 @@ class MornyeChromeController extends ValueNotifier<bool> {
 }
 
 /// A single mini-player survives the transition, preserving its artwork Hero,
-/// playback controls and swipe-to-dismiss state as the tabs fold away.
+/// playback controls and track swipe gestures as the tabs fold away.
 class MornyeBottomBar extends ConsumerStatefulWidget {
   const MornyeBottomBar({
     super.key,
