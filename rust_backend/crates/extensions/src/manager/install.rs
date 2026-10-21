@@ -80,7 +80,7 @@ impl ExtensionManager {
             )));
         }
         let stage = self.stage(&mut package, "install")?;
-        let mut candidate = self.candidate(&package, stage.path(), false);
+        let mut candidate = self.candidate(&package, stage.path(), true);
         if let Err(error) = self.validate(&candidate) {
             self.failed(&candidate, &error);
         }
@@ -89,6 +89,17 @@ impl ExtensionManager {
         Arc::get_mut(&mut candidate)
             .expect("unpublished extension")
             .source = target;
+        let enabled = candidate
+            .status
+            .read()
+            .expect("extension status lock")
+            .enabled;
+        if let Err(error) =
+            self.environment
+                .set_setting(&candidate.manifest.name, "_enabled", enabled.into())
+        {
+            self.failed(&candidate, &cause("failed to persist enabled state", error));
+        }
         self.entries
             .lock()
             .expect("extension manager lock")

@@ -2,7 +2,148 @@ use super::{ExtensionManager, RuntimeLimits};
 use crate::storage::{StorageMasterKey, encrypt};
 use serde_json::{Value, json};
 use std::fs::File;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
+
+fn manager(directory: &Path) -> ExtensionManager {
+    ExtensionManager::new(
+        &directory.join("sources"),
+        &directory.join("data"),
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "1",
+        RuntimeLimits::default(),
+    )
+    .unwrap()
+}
+
+fn package(directory: &Path, id: &str, version: &str, source: &str) -> PathBuf {
+    let path = directory.join(format!("{id}-{version}.mornye-ext"));
+    let mut writer = zip::ZipWriter::new(File::create(&path).unwrap());
+    let manifest = json!({"name":id,"displayName":"Example","version":version,
+        "description":"Generic installation fixture","type":["metadata_provider"]});
+    for (name, body) in [
+        ("manifest.json", manifest.to_string()),
+        ("index.js", source.into()),
+    ] {
+        writer
+            .start_file(name, zip::write::SimpleFileOptions::default())
+            .unwrap();
+        writer.write_all(body.as_bytes()).unwrap();
+    }
+    writer.finish().unwrap();
+    path
+}
+
+#[test]
+fn new_installations_are_usable_and_remain_enabled_after_restart() {
+    let directory = tempfile::tempdir().unwrap();
+    let archive = package(
+        directory.path(),
+        "example.install",
+        "1",
+        "registerExtension({ping(){return 'ready';}});",
+    );
+    let installed = manager(directory.path());
+    let result: Value = serde_json::from_str(&installed.install(&archive).unwrap()).unwrap();
+    assert_eq!(result["enabled"], true);
+    assert_eq!(
+        installed.provider_ids("metadata_provider").unwrap(),
+        ["example.install"]
+    );
+    assert_eq!(
+        installed
+            .call("example.install", "ping", "[]", None, 0)
+            .unwrap(),
+        "\"ready\""
+    );
+    installed.shutdown();
+
+    let reopened = manager(directory.path());
+    reopened.load_all().unwrap();
+    assert_eq!(
+        reopened.provider_ids("metadata_provider").unwrap(),
+        ["example.install"]
+    );
+    assert_eq!(
+        reopened
+            .call("example.install", "ping", "[]", None, 0)
+            .unwrap(),
+        "\"ready\""
+    );
+}
+
+#[test]
+fn upgrades_preserve_enabled_and_disabled_choices_after_restart() {
+    for enabled in [true, false] {
+        for use_install in [true, false] {
+            let directory = tempfile::tempdir().unwrap();
+            let installed = manager(directory.path());
+            let archive = package(
+                directory.path(),
+                "example.upgrade",
+                "1",
+                "registerExtension({});",
+            );
+            installed.install(&archive).unwrap();
+            installed.set_enabled("example.upgrade", enabled).unwrap();
+            let upgrade = package(
+                directory.path(),
+                "example.upgrade",
+                "2",
+                "registerExtension({});",
+            );
+            let result = if use_install {
+                installed.install(&upgrade)
+            } else {
+                installed.upgrade(&upgrade)
+            };
+            let result: Value = serde_json::from_str(&result.unwrap()).unwrap();
+            assert_eq!(result["version"], "2");
+            assert_eq!(result["enabled"], enabled);
+            installed.shutdown();
+
+            let reopened = manager(directory.path());
+            reopened.load_all().unwrap();
+            let entries: Value = serde_json::from_str(&reopened.installed().unwrap()).unwrap();
+            assert_eq!(entries[0]["version"], "2");
+            assert_eq!(entries[0]["enabled"], enabled);
+        }
+    }
+}
+
+#[test]
+fn invalid_installations_remain_disabled_after_restart() {
+    let directory = tempfile::tempdir().unwrap();
+    let archive = package(
+        directory.path(),
+        "example.invalid",
+        "1",
+        "throw Error('invalid fixture');",
+    );
+    let installed = manager(directory.path());
+    let result: Value = serde_json::from_str(&installed.install(&archive).unwrap()).unwrap();
+    assert_eq!(result["enabled"], false);
+    assert!(
+        installed
+            .provider_ids("metadata_provider")
+            .unwrap()
+            .is_empty()
+    );
+    installed.shutdown();
+
+    let reopened = manager(directory.path());
+    reopened.load_all().unwrap();
+    let entries: Value = serde_json::from_str(&reopened.installed().unwrap()).unwrap();
+    assert_eq!(entries[0]["enabled"], false);
+    assert_eq!(entries[0]["status"], "error");
+    assert!(
+        entries[0]["error_message"]
+            .as_str()
+            .unwrap()
+            .contains("invalid fixture")
+    );
+}
 
 #[test]
 fn unreadable_settings_keep_installed_packages_visible_and_preserve_data() {
