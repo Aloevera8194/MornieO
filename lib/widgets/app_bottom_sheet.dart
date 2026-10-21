@@ -315,6 +315,8 @@ Future<T?> showAppScrollableBottomSheet<T>({
 ///
 /// Desktop windows present the sheet as a centered dialog instead
 /// ([showAppSheetDialog]); there is no edge to slide from or drag to.
+/// Mornye draws the sheet on overlay glass unless [mornyeGlass] is false for
+/// content that brings its own.
 Future<T?> showAppModalBottomSheet<T>({
   required BuildContext context,
   required WidgetBuilder builder,
@@ -324,6 +326,7 @@ Future<T?> showAppModalBottomSheet<T>({
   bool useRootNavigator = false,
   bool useSafeArea = false,
   bool? showDragHandle,
+  bool mornyeGlass = true,
   BoxConstraints? constraints,
   Color? backgroundColor,
 }) {
@@ -334,6 +337,7 @@ Future<T?> showAppModalBottomSheet<T>({
       isScrollControlled: isScrollControlled,
       isDismissible: isDismissible,
       topInset: showDragHandle == true,
+      mornyeGlass: mornyeGlass,
       backgroundColor: backgroundColor,
     );
   }
@@ -353,7 +357,7 @@ Future<T?> showAppModalBottomSheet<T>({
         ? CupertinoDynamicColor.resolve(kCupertinoModalBarrierColor, context)
         : null,
     elevation: mornye ? 0 : null,
-    builder: (context) => mornye
+    builder: (context) => mornye && mornyeGlass
         ? MornyeGlassPanel.overlay(child: Builder(builder: builder))
         : builder(context),
   );

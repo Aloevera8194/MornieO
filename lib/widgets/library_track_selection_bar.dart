@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_action_button.dart';
 import 'package:mornye/widgets/selection_action_button.dart';
 import 'package:mornye/widgets/selection_bottom_bar.dart';
@@ -42,6 +43,29 @@ class LibraryTrackSelectionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = selectedCount > 0;
+    final delete = AppActionButton(
+      isDestructive: true,
+      onPressed: hasSelection ? onDelete : null,
+      icon: const Icon(Icons.delete_outline),
+      label: Text(
+        hasSelection
+            ? context.l10n.selectionDeleteTracksCount(selectedCount)
+            : context.l10n.selectionSelectToDelete,
+      ),
+      fontSize: isDesktopPlatform ? 14 : 17,
+      style: FilledButton.styleFrom(
+        backgroundColor: hasSelection
+            ? colorScheme.error
+            : colorScheme.surfaceContainerHighest,
+        foregroundColor: hasSelection
+            ? colorScheme.onError
+            : colorScheme.onSurfaceVariant,
+        padding: isDesktopPlatform
+            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
+            : const EdgeInsets.symmetric(vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
     return SelectionBottomBar(
       selectedCount: selectedCount,
       allSelected: allSelected,
@@ -90,31 +114,12 @@ class LibraryTrackSelectionBar extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        SizedBox(
-          width: double.infinity,
-          child: AppActionButton(
-            isDestructive: true,
-            onPressed: hasSelection ? onDelete : null,
-            icon: const Icon(Icons.delete_outline),
-            label: Text(
-              hasSelection
-                  ? context.l10n.selectionDeleteTracksCount(selectedCount)
-                  : context.l10n.selectionSelectToDelete,
-            ),
-            style: FilledButton.styleFrom(
-              backgroundColor: hasSelection
-                  ? colorScheme.error
-                  : colorScheme.surfaceContainerHighest,
-              foregroundColor: hasSelection
-                  ? colorScheme.onError
-                  : colorScheme.onSurfaceVariant,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-        ),
+        // Desktop keeps the destructive action at its own width, as a
+        // toolbar button, instead of a full-width sheet button.
+        if (isDesktopPlatform)
+          Align(alignment: AlignmentDirectional.centerStart, child: delete)
+        else
+          SizedBox(width: double.infinity, child: delete),
       ],
     );
   }

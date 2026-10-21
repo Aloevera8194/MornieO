@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_action_button.dart';
 import 'package:mornye/widgets/expressive_button.dart';
 
@@ -12,6 +13,11 @@ class SelectionActionGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isDesktopPlatform) {
+      // A toolbar row: each action keeps its own width and wraps when the
+      // panel is narrow, instead of equal touch-sized cells.
+      return Wrap(spacing: 8, runSpacing: 8, children: children);
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         const spacing = 8.0;
@@ -59,6 +65,9 @@ class SelectionActionButton extends StatelessWidget {
         fontSize: 15,
       );
     }
+    // Desktop: the M3 Expressive small button (40dp) on one line, since the
+    // pointer needs no 48dp target and the toolbar lays actions in a row.
+    final compact = isDesktopPlatform;
     return Semantics(
       button: true,
       enabled: onPressed != null,
@@ -72,11 +81,19 @@ class SelectionActionButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: colorScheme.secondaryContainer,
           foregroundColor: colorScheme.onSecondaryContainer,
-          minimumSize: Size(48, context.tokens.minTouchTarget),
-          padding: const EdgeInsets.all(12),
+          minimumSize: compact
+              ? const Size(0, 40)
+              : Size(48, context.tokens.minTouchTarget),
+          padding: compact
+              ? const EdgeInsets.symmetric(horizontal: 14, vertical: 6)
+              : const EdgeInsets.all(12),
           textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
         ),
-        child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis),
+        child: Text(
+          label,
+          maxLines: compact ? 1 : 2,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }

@@ -258,8 +258,9 @@ void main() {
         return;
       }
 
-      // Material table density, with the row's play button shown on hover.
-      expect(tester.getSize(row).height, 48);
+      // Material desktop table density (compact, below the touch row), with
+      // the row's play button shown on hover.
+      expect(tester.getSize(row).height, 44);
       final rowY = tester.getCenter(row).dy;
       final rowPlay = find.ancestor(
         of: find.byWidgetPredicate(

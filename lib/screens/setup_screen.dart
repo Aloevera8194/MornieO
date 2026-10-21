@@ -9,6 +9,7 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/material_expressive.dart';
 import 'package:mornye/widgets/app_alert_dialog.dart';
+import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/app_content_card.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
@@ -469,9 +470,8 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
 
   Future<void> _showIOSDirectoryOptions() async {
     final colorScheme = Theme.of(context).colorScheme;
-    await showModalBottomSheet<void>(
+    await showAppModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       builder: (ctx) => SafeArea(
         child: Column(

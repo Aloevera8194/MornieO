@@ -4,12 +4,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/providers/extension_provider.dart';
-import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/theme/mornye_icons.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 
@@ -43,20 +43,14 @@ class DownloadServicePicker extends ConsumerStatefulWidget {
   }) {
     final mornye = context.isMornye;
 
-    showModalBottomSheet<void>(
+    showAppModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
-      backgroundColor: mornye ? Colors.transparent : null,
-      elevation: mornye ? 0 : null,
-      // Only the glass draws the sheet outline, including its bottom corners.
-      shape: mornye ? const RoundedRectangleBorder() : null,
-      clipBehavior: mornye ? Clip.none : null,
-      barrierColor: mornye
-          ? CupertinoDynamicColor.resolve(kCupertinoModalBarrierColor, context)
-          : null,
       isScrollControlled: true,
       showDragHandle: !mornye,
+      // Phones float the glass above the home indicator; the desktop dialog
+      // draws its own glass around the picker.
+      mornyeGlass: isDesktopPlatform,
       // Explicit constraints replace the theme's, so repeat its tablet width.
       constraints: BoxConstraints(
         maxWidth: 640,
@@ -70,20 +64,19 @@ class DownloadServicePicker extends ConsumerStatefulWidget {
           onSelect: onSelect,
           recommendedService: recommendedService,
         );
-        return context.isMornye
-            ? Padding(
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                child: MornyeGlassPanel.overlay(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const AppSheetHandle(),
-                      Flexible(child: picker),
-                    ],
-                  ),
-                ),
-              )
-            : picker;
+        if (!context.isMornye) return picker;
+        final content = Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppSheetHandle(),
+            Flexible(child: picker),
+          ],
+        );
+        if (isDesktopPlatform) return content;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          child: MornyeGlassPanel.overlay(child: content),
+        );
       },
     );
   }

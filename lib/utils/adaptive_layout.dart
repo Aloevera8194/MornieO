@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 
 /// Keeps touch-first tablets on the bottom navigation used by phones. A rail
@@ -111,20 +112,28 @@ double wideInsetForWidth(
 }) => maxWidth > contentMaxWidth ? (maxWidth - contentMaxWidth) / 2 : 0;
 
 /// Horizontal inset that centers full-width list content on tablets/landscape;
-/// zero on phones, so rows stop stretching across the whole screen. Desktop
-/// pages run across the whole content pane, as Music's do, and center only
-/// past [desktopContentMaxWidth].
+/// zero on phones, so rows stop stretching across the whole screen. Mornye
+/// desktop pages run across the whole content pane, as Music's do, and center
+/// only past [desktopContentMaxWidth]. Material desktop pages center past
+/// [desktopMaterialContentMaxWidth], so long lists keep a reading width
+/// instead of stretching across a wide window.
 double wideListInset(BuildContext context, {double? contentMaxWidth}) =>
     wideInsetForWidth(
       MediaQuery.sizeOf(context).width,
       contentMaxWidth:
           contentMaxWidth ??
           (isDesktopPlatform
-              ? desktopContentMaxWidth
+              ? (context.isMornye
+                    ? desktopContentMaxWidth
+                    : desktopMaterialContentMaxWidth)
               : defaultWideContentMaxWidth),
     );
 
 const double desktopContentMaxWidth = 1600;
+
+/// The M3 large window class starts at 1200dp; the extra 80dp leaves room
+/// for the navigation rail, since the inset is measured on the window width.
+const double desktopMaterialContentMaxWidth = 1280;
 
 /// Discography cover geometry shared by loaded cards and loading placeholders.
 double artistAlbumTileSize(BuildContext context) {
