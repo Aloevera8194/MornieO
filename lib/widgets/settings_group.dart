@@ -13,23 +13,14 @@ import 'package:mornye/theme/mornye_icons.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
 
-/// Background fill for grouped cards, matching the Settings group look. Blends a
-/// translucent overlay over the surface so it stays visible on AMOLED (pure
-/// black) dark themes as well as normal light/dark themes.
-Color settingsGroupColor(BuildContext context) {
-  final colorScheme = Theme.of(context).colorScheme;
-  if (context.isMornye) return colorScheme.surfaceContainer;
-  final isDark = Theme.of(context).brightness == Brightness.dark;
-  return isDark
-      ? Color.alphaBlend(
-          Colors.white.withValues(alpha: 0.08),
-          colorScheme.surface,
-        )
-      : Color.alphaBlend(
-          Colors.black.withValues(alpha: 0.04),
-          colorScheme.surface,
-        );
-}
+/// Background fill for grouped cards, matching the Settings group look.
+///
+/// Settings groups, grouped rows and app chrome share the
+/// [ColorScheme.surfaceContainer] role in both styles. The tier sits above the
+/// page, so groups stay distinct without an outline, including on AMOLED,
+/// whose container ladder starts above pure black.
+Color settingsGroupColor(BuildContext context) =>
+    Theme.of(context).colorScheme.surfaceContainer;
 
 /// Carries a Settings search result into its destination page.
 ///
@@ -248,18 +239,14 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardColor = settingsGroupColor(context);
-    final colorScheme = Theme.of(context).colorScheme;
 
+    // The container tier separates the group from the page, so the Material
+    // card needs no outline, as in the expressive filled card.
     final decoration = BoxDecoration(
       color: cardColor,
       borderRadius: BorderRadius.circular(
         context.isMornye ? 28 : context.tokens.radiusCard,
       ),
-      border: context.isMornye
-          ? null
-          : Border.all(
-              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-            ),
     );
     final child = Material(
       color: Colors.transparent,
@@ -778,16 +765,11 @@ class SettingsChoiceChip extends StatelessWidget {
     final tokens = context.tokens;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final borderRadius = BorderRadius.circular(tokens.radiusCover);
 
+    // One solid tier above a settings group in light, dark and AMOLED.
     final unselectedColor = context.isMornye
         ? Colors.transparent
-        : isDark
-        ? Color.alphaBlend(
-            Colors.white.withValues(alpha: 0.05),
-            colorScheme.surface,
-          )
         : colorScheme.surfaceContainerHigh;
     final foreground = context.isMornye && isSelected
         ? colorScheme.primary
@@ -1026,22 +1008,31 @@ class SettingsInfoCard extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    // Material uses the solid container with its paired on-color, so the
+    // text keeps its contrast; Mornye keeps its softer fills.
+    final mornye = context.isMornye;
     final (background, foreground) = switch (tone) {
       SettingsInfoTone.neutral => (
-        colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        mornye
+            ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.5)
+            : colorScheme.surfaceContainerHigh,
         colorScheme.onSurfaceVariant,
       ),
       SettingsInfoTone.warning => (
-        colorScheme.tertiaryContainer.withValues(alpha: 0.5),
+        mornye
+            ? colorScheme.tertiaryContainer.withValues(alpha: 0.5)
+            : colorScheme.tertiaryContainer,
         colorScheme.onTertiaryContainer,
       ),
       SettingsInfoTone.error => (
-        colorScheme.errorContainer.withValues(alpha: 0.6),
+        mornye
+            ? colorScheme.errorContainer.withValues(alpha: 0.6)
+            : colorScheme.errorContainer,
         colorScheme.onErrorContainer,
       ),
     };
 
-    final useGlass = glass && context.isMornye;
+    final useGlass = glass && mornye;
     final textColor = useGlass ? colorScheme.onSurface : foreground;
     final content = Padding(
       padding: EdgeInsets.all(tokens.gapLg),

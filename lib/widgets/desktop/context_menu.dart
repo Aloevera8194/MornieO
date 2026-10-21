@@ -26,6 +26,9 @@ class ContextMenuAction {
 
   /// Runs after the menu has closed. Null shows the row disabled.
   final VoidCallback? onSelected;
+
+  /// Draws the row in the error color. Put destructive rows in the last
+  /// group, where the divider sets them apart.
   final bool destructive;
 
   /// Marks the active choice of a toggle, such as Favorite.
@@ -254,10 +257,21 @@ class _MaterialContextMenuState extends State<_MaterialContextMenu> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    // The container, its radius and the item shape come from the app theme's
+    // menu skin, shared with popup menus; rows keep the pointer density.
     final itemStyle = MenuItemButton.styleFrom(
       minimumSize: const Size(180, 40),
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    );
+    // A checked row takes the selected item fill of the M3 Expressive
+    // standard menu, as in M3EMenuPopup, and keeps its check.
+    final checkedStyle = MenuItemButton.styleFrom(
+      minimumSize: const Size(180, 40),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      backgroundColor: colorScheme.tertiaryContainer,
+      foregroundColor: colorScheme.onTertiaryContainer,
+      iconColor: colorScheme.onTertiaryContainer,
+      overlayColor: colorScheme.onTertiaryContainer,
     );
     // Focus the first enabled row so arrow keys and Escape work at once.
     final firstEnabled = widget.groups
@@ -267,32 +281,20 @@ class _MaterialContextMenuState extends State<_MaterialContextMenu> {
     return MenuAnchor(
       controller: _controller,
       onClose: _handleClose,
-      style: MenuStyle(
-        backgroundColor: WidgetStatePropertyAll(
-          colorScheme.surfaceContainerLow,
-        ),
-        elevation: const WidgetStatePropertyAll(3),
-        padding: const WidgetStatePropertyAll(
-          EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-        ),
-        shape: WidgetStatePropertyAll(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        ),
-      ),
       menuChildren: [
         for (var i = 0; i < widget.groups.length; i++) ...[
           if (i > 0) const Divider(height: 9, indent: 12, endIndent: 12),
           for (final action in widget.groups[i])
             MenuItemButton(
               autofocus: identical(action, firstEnabled),
-              style: itemStyle,
+              style: action.checked ? checkedStyle : itemStyle,
               leadingIcon: AppIcon(
                 action.icon,
                 size: 20,
                 color: action.destructive ? colorScheme.error : null,
               ),
               trailingIcon: action.checked
-                  ? AppIcon(Icons.check, size: 20, color: colorScheme.primary)
+                  ? const AppIcon(Icons.check, size: 20)
                   : null,
               onPressed: action.onSelected,
               child: Text(

@@ -457,12 +457,8 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
     required Widget Function(int index, bool showDivider) itemBuilder,
     bool showSortButton = false,
   }) {
-    final sectionColor = Theme.of(context).brightness == Brightness.dark
-        ? Color.alphaBlend(
-            Colors.white.withValues(alpha: 0.08),
-            colorScheme.surface,
-          )
-        : colorScheme.surfaceContainerHighest;
+    // Material result groups are grouped rows, on the settings group tier.
+    final sectionColor = colorScheme.surfaceContainer;
     final mornye = context.isMornye;
 
     return [
