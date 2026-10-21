@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:liquid_glass_easy/liquid_glass_easy.dart';
 import 'package:mornye/providers/runtime_profile_provider.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/mornye_selection_pill.dart';
 import 'package:mornye/widgets/mornye_liquid_backdrop.dart';
 import 'package:mornye/widgets/mornye_squircle_border.dart';
@@ -42,7 +43,11 @@ class MornyeSegmentedControl extends ConsumerWidget {
           radius: height / 2,
           child: MornyeSelectionPill(
             contrastBlocked: contrastBlocked,
+            // The held lens follows a finger. A click never holds it, and over
+            // an opaque toolbar it only refracts a flat fill, so desktop skips
+            // it.
             liquidInteraction:
+                !isDesktopPlatform &&
                 ref.watch(mornyeLiquidGlassProvider) &&
                 MornyeTheme.glassClarityOf(context) > 0.2,
             labels: labels,
