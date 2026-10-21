@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/library_track_selection_bar.dart';
 import 'package:mornye/widgets/selection_action_button.dart';
 
@@ -127,6 +128,57 @@ void main() {
         }
         expect(tester.takeException(), isNull);
       }
+    });
+
+    testWidgets('desktop delete leads the Remove RG row ($mornye)', (
+      tester,
+    ) async {
+      debugDesktopPlatformOverride = true;
+      addTearDown(() => debugDesktopPlatformOverride = null);
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      var deleted = false;
+      await tester.pumpWidget(
+        _app(
+          mornye,
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: LibraryTrackSelectionBar(
+              selectedCount: 1,
+              allSelected: false,
+              onClose: () {},
+              onToggleSelectAll: () {},
+              bottomPadding: 0,
+              onReEnrich: () {},
+              onConvert: () {},
+              onReplayGain: ({required remove}) {},
+              onDelete: () => deleted = true,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      Rect button(IconData icon) => tester.getRect(
+        find.byWidgetPredicate(
+          (widget) => widget is SelectionActionButton && widget.icon == icon,
+        ),
+      );
+      final delete = button(Icons.delete_outline);
+      final removeGain = button(Icons.remove_circle_outline);
+      // Same row and height, delete on the leading side.
+      expect(delete.top, removeGain.top);
+      expect(delete.height, removeGain.height);
+      expect(delete.right, lessThan(removeGain.left));
+      // Nothing sits alone below the row.
+      final lowest = tester
+          .widgetList<SelectionActionButton>(find.byType(SelectionActionButton))
+          .map((widget) => button(widget.icon).top)
+          .reduce((a, b) => a > b ? a : b);
+      expect(lowest, delete.top);
+      await tester.tap(find.text('Delete 1 track'));
+      expect(deleted, isTrue);
+      expect(tester.takeException(), isNull);
     });
   }
 }

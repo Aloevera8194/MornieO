@@ -43,28 +43,16 @@ class LibraryTrackSelectionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final hasSelection = selectedCount > 0;
-    final delete = AppActionButton(
-      isDestructive: true,
-      onPressed: hasSelection ? onDelete : null,
-      icon: const Icon(Icons.delete_outline),
-      label: Text(
-        hasSelection
-            ? context.l10n.selectionDeleteTracksCount(selectedCount)
-            : context.l10n.selectionSelectToDelete,
-      ),
-      fontSize: isDesktopPlatform ? 14 : 17,
-      style: FilledButton.styleFrom(
-        backgroundColor: hasSelection
-            ? colorScheme.error
-            : colorScheme.surfaceContainerHighest,
-        foregroundColor: hasSelection
-            ? colorScheme.onError
-            : colorScheme.onSurfaceVariant,
-        padding: isDesktopPlatform
-            ? const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-            : const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
+    final deleteLabel = hasSelection
+        ? context.l10n.selectionDeleteTracksCount(selectedCount)
+        : context.l10n.selectionSelectToDelete;
+    Widget replayGain({required bool remove}) => SelectionActionButton(
+      icon: remove ? Icons.remove_circle_outline : Icons.graphic_eq,
+      label: remove
+          ? context.l10n.selectionRemoveReplayGainCount(selectedCount)
+          : context.l10n.selectionReplayGainCount(selectedCount),
+      onPressed: hasSelection ? () => onReplayGain(remove: remove) : null,
+      colorScheme: colorScheme,
     );
     return SelectionBottomBar(
       selectedCount: selectedCount,
@@ -100,26 +88,53 @@ class LibraryTrackSelectionBar extends StatelessWidget {
               onPressed: hasSelection ? onConvert : null,
               colorScheme: colorScheme,
             ),
-            for (final remove in [false, true])
-              SelectionActionButton(
-                icon: remove ? Icons.remove_circle_outline : Icons.graphic_eq,
-                label: remove
-                    ? context.l10n.selectionRemoveReplayGainCount(selectedCount)
-                    : context.l10n.selectionReplayGainCount(selectedCount),
-                onPressed: hasSelection
-                    ? () => onReplayGain(remove: remove)
-                    : null,
-                colorScheme: colorScheme,
-              ),
+            replayGain(remove: false),
+            // Desktop keeps delete a toolbar button. It shares a row with
+            // the other removal, delete first, so neither wraps onto a row
+            // of its own.
+            if (isDesktopPlatform)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  SelectionActionButton(
+                    icon: Icons.delete_outline,
+                    label: deleteLabel,
+                    onPressed: hasSelection ? onDelete : null,
+                    colorScheme: colorScheme,
+                    destructive: true,
+                  ),
+                  replayGain(remove: true),
+                ],
+              )
+            else
+              replayGain(remove: true),
           ],
         ),
-        const SizedBox(height: 8),
-        // Desktop keeps the destructive action at its own width, as a
-        // toolbar button, instead of a full-width sheet button.
-        if (isDesktopPlatform)
-          Align(alignment: AlignmentDirectional.centerStart, child: delete)
-        else
-          SizedBox(width: double.infinity, child: delete),
+        if (!isDesktopPlatform) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: AppActionButton(
+              isDestructive: true,
+              onPressed: hasSelection ? onDelete : null,
+              icon: const Icon(Icons.delete_outline),
+              label: Text(deleteLabel),
+              style: FilledButton.styleFrom(
+                backgroundColor: hasSelection
+                    ? colorScheme.error
+                    : colorScheme.surfaceContainerHighest,
+                foregroundColor: hasSelection
+                    ? colorScheme.onError
+                    : colorScheme.onSurfaceVariant,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
