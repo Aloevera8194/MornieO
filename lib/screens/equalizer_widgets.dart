@@ -264,26 +264,35 @@ class _PresetBar extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final inset = settingsHorizontalInset(constraints.maxWidth);
+        final chips = [
+          for (final preset in presets)
+            AppChoiceChip(
+              label: Text(preset.name),
+              selected: preset == selected,
+              singleChoice: true,
+              onSelected: (_) => onApply(preset),
+            ),
+        ];
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: inset),
-              child: Row(
-                children: [
-                  for (final (index, preset) in presets.indexed) ...[
-                    if (index > 0) SizedBox(width: tokens.gapSm),
-                    AppChoiceChip(
-                      label: Text(preset.name),
-                      selected: preset == selected,
-                      singleChoice: true,
-                      onSelected: (_) => onApply(preset),
-                    ),
-                  ],
-                ],
+            // A mouse cannot swipe a clipped row, so desktop windows wrap
+            // every preset onto view.
+            if (isDesktopPlatform)
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: inset),
+                child: Wrap(
+                  spacing: tokens.gapSm,
+                  runSpacing: tokens.gapSm,
+                  children: chips,
+                ),
+              )
+            else
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: inset),
+                child: Row(spacing: tokens.gapSm, children: chips),
               ),
-            ),
             SizedBox(height: tokens.gapMd),
             Padding(
               padding: EdgeInsets.symmetric(horizontal: inset),
