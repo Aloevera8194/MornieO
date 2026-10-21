@@ -33,13 +33,20 @@ class DesktopLibraryWatcher {
   final Stream<String> _changes;
   final Duration debounce;
 
+  // Native folder watching belongs to the process, including across a rapid
+  // disable/enable cycle that replaces this Dart watcher before dispose ends.
+  static Future<void> _registrationTail = Future<void>.value();
+
   /// Watched root path to source ID.
   Map<String, String> _roots = const {};
+  Map<String, String> _registeredRoots = const {};
   final _pending = <String>{};
   StreamSubscription<String>? _subscription;
   Timer? _timer;
   bool _flushing = false;
   bool _disposed = false;
+  bool _nativeWatchRequested = false;
+  Future<void>? _disposing;
 
   @visibleForTesting
   Set<String> get pendingSourceIds => Set.unmodifiable(_pending);
@@ -48,25 +55,50 @@ class DesktopLibraryWatcher {
   /// re-registered.
   Future<void> updateSources(Iterable<LocalLibrarySource> sources) async {
     if (_disposed) return;
-    _subscription ??= _changes.listen(_onChanged);
+    _subscription ??= _changes.listen(
+      _onChanged,
+      onError: (Object error) =>
+          _log.w('Library folder change stream failed: $error'),
+    );
     final roots = {
       for (final source in sources)
         if (source.enabled && source.available && source.path.isNotEmpty)
           source.path: source.id,
     };
-    if (mapEquals(roots, _roots)) return;
     _roots = roots;
     _pending.removeWhere((id) => !roots.containsValue(id));
-    try {
-      if (roots.isEmpty) {
-        await _unwatch();
-      } else {
-        final watched = await _watch(roots.keys.toList(growable: false));
-        _log.d('Watching ${watched.length} of ${roots.length} library folders');
+    await _queueRegistration(() async {
+      if (_disposed ||
+          !mapEquals(roots, _roots) ||
+          (mapEquals(roots, _registeredRoots) &&
+              (roots.isNotEmpty || !_nativeWatchRequested))) {
+        return;
       }
-    } catch (error) {
-      _log.w('Could not watch library folders: $error');
-    }
+      try {
+        if (roots.isEmpty) {
+          await _unwatch();
+          _nativeWatchRequested = false;
+        } else {
+          _nativeWatchRequested = true;
+          final watched = await _watch(roots.keys.toList(growable: false));
+          _log.d(
+            'Watching ${watched.length} of ${roots.length} library folders',
+          );
+        }
+        _registeredRoots = roots;
+      } catch (error) {
+        _log.w('Could not watch library folders: $error');
+      }
+    });
+  }
+
+  static Future<void> _queueRegistration(Future<void> Function() operation) {
+    final pending = _registrationTail.then((_) => operation());
+    _registrationTail = pending.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return pending;
   }
 
   void _onChanged(String root) {
@@ -104,19 +136,27 @@ class DesktopLibraryWatcher {
     }
   }
 
-  Future<void> dispose() async {
+  Future<void> dispose() => _disposing ??= _dispose();
+
+  Future<void> _dispose() async {
     _disposed = true;
     _timer?.cancel();
-    await _subscription?.cancel();
-    _subscription = null;
-    _pending.clear();
-    if (_roots.isNotEmpty) {
-      _roots = const {};
+    // Queue cleanup before awaiting the stream so a replacement watcher can
+    // register only after this instance's pending native work has stopped.
+    final stopped = _queueRegistration(() async {
+      if (!_nativeWatchRequested) return;
       try {
         await _unwatch();
       } catch (_) {
         // Shutting down; the backend drops its watcher with the process.
       }
-    }
+      _nativeWatchRequested = false;
+      _registeredRoots = const {};
+    });
+    await _subscription?.cancel();
+    _subscription = null;
+    _pending.clear();
+    _roots = const {};
+    await stopped;
   }
 }
