@@ -25,6 +25,13 @@ void main() {
       'Third line',
     ]);
     expect(lyricsPreviewLines(lrc, limit: -1), hasLength(4));
+
+    // Singer marks and backing vocal groups stay out of the preview.
+    const multiPerson =
+        '[00:01.00]v1:<00:01.00>Lead line\n'
+        '[bg:<00:01.20>Backing<00:01.80>]\n'
+        '[00:02.00]v2:Answer line';
+    expect(lyricsPreviewLines(multiPerson), ['Lead line', 'Answer line']);
   });
 
   test('results are classified by their timing', () {

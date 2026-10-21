@@ -50,12 +50,16 @@ class LyricsProviderResult {
 
 final _tags = RegExp(r'\[[^\]]*\]|<[^>]*>');
 
-/// The first [limit] lines of lyric text, without timestamps, word timing or
-/// header tags such as `[ar:...]`. A negative [limit] returns every line.
+/// Multi-person lyrics mark each line's singer, as in `[00:01.00]v1:Words`.
+final _voice = RegExp(r'^v\d+:');
+
+/// The first [limit] lines of lyric text, without timestamps, word timing,
+/// singer marks or header tags such as `[ar:...]`. A negative [limit]
+/// returns every line.
 List<String> lyricsPreviewLines(String lyrics, {int limit = 3}) {
   final lines = <String>[];
   for (final raw in lyrics.split('\n')) {
-    final text = raw.replaceAll(_tags, '').trim();
+    final text = raw.replaceAll(_tags, '').trim().replaceFirst(_voice, '');
     if (text.isEmpty) continue;
     lines.add(text);
     if (limit >= 0 && lines.length >= limit) break;
