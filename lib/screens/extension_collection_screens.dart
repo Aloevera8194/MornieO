@@ -15,6 +15,7 @@ import 'package:mornye/screens/collapsing_header_scroll_mixin.dart';
 import 'package:mornye/screens/artist_screen.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/clickable_metadata.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/widgets/desktop/detail_header.dart';
 import 'package:mornye/utils/extension_auth_launcher.dart';
@@ -445,6 +446,15 @@ class _ExtensionAlbumScreenState extends ConsumerState<ExtensionAlbumScreen> {
     _albumType = normalizeOptionalString(widget.initialAlbumType);
     _albumTotalTracks = widget.initialTotalTracks;
     _fetchTracks();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    DetailPage.mark(
+      context,
+      DetailPage.album(widget.albumId, providerId: widget.extensionId),
+    );
   }
 
   Future<void> _fetchTracks() async {

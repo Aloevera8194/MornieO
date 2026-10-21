@@ -162,6 +162,15 @@ class _AlbumScreenState extends ConsumerState<AlbumScreen>
     }
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    DetailPage.mark(
+      context,
+      DetailPage.album(widget.albumId, providerId: widget.extensionId),
+    );
+  }
+
   Future<void> _fetchTracks() async {
     setState(() {
       _isLoading = true;

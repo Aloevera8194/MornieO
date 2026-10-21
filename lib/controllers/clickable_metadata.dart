@@ -460,22 +460,70 @@ void _pushAlbumScreen(
             extensionId: resolvedExtensionId,
             tracks: const [],
           ),
+    page: DetailPage.album(albumId, providerId: extensionId),
   );
+}
+
+/// The catalog page a route shows, so a link to the page already on top
+/// keeps it instead of stacking a copy. A page without a provider matches
+/// the same id from any provider.
+class DetailPage {
+  const DetailPage.album(this.id, {this.providerId}) : kind = 'album';
+
+  final String kind;
+  final String id;
+  final String? providerId;
+
+  bool matches(DetailPage other) =>
+      kind == other.kind &&
+      id == other.id &&
+      (providerId == null ||
+          other.providerId == null ||
+          providerId == other.providerId);
+
+  static final _routes = Expando<DetailPage>('detail page');
+
+  /// Records that the route around [context] shows [page].
+  static void mark(BuildContext context, DetailPage page) {
+    final route = ModalRoute.of(context);
+    if (route != null) _routes[route] = page;
+  }
+
+  static bool _isOnTop(NavigatorState navigator, DetailPage page) {
+    Route<dynamic>? top;
+    // Reads the top route without popping anything.
+    navigator.popUntil((route) {
+      top = route;
+      return true;
+    });
+    final shown = top == null ? null : _routes[top!];
+    return shown != null && shown.matches(page);
+  }
 }
 
 /// Pushes detail pages into the active tab navigator when invoked from a root
 /// modal such as Now Playing. The root modal is dismissed first so the album
-/// is immediately visible instead of being hidden behind it.
-void pushViaPreferredNavigator(BuildContext context, WidgetBuilder builder) {
+/// is immediately visible instead of being hidden behind it. A [page] that
+/// is already on top is not pushed again.
+void pushViaPreferredNavigator(
+  BuildContext context,
+  WidgetBuilder builder, {
+  DetailPage? page,
+}) {
   final currentNavigator = Navigator.of(context);
   final rootNavigator = Navigator.of(context, rootNavigator: true);
   final activeTabNavigator = ShellNavigationService.activeTabNavigator();
+
+  void push(NavigatorState navigator) {
+    if (page != null && DetailPage._isOnTop(navigator, page)) return;
+    navigator.push(MaterialPageRoute<void>(builder: builder));
+  }
 
   final shouldRouteToTabNavigator =
       identical(currentNavigator, rootNavigator) && activeTabNavigator != null;
 
   if (!shouldRouteToTabNavigator) {
-    currentNavigator.push(MaterialPageRoute<void>(builder: builder));
+    push(currentNavigator);
     return;
   }
 
@@ -487,12 +535,12 @@ void pushViaPreferredNavigator(BuildContext context, WidgetBuilder builder) {
     currentNavigator.pop();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!activeTabNavigator.mounted) return;
-      activeTabNavigator.push(MaterialPageRoute<void>(builder: builder));
+      push(activeTabNavigator);
     });
     return;
   }
 
-  activeTabNavigator.push(MaterialPageRoute<void>(builder: builder));
+  push(activeTabNavigator);
 }
 
 void _showLoadingSnackBar(BuildContext context, String message) {
