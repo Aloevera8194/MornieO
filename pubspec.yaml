@@ -124,6 +124,10 @@ dependency_overrides:
   # but allows any 2.x runtime; a newer one fails its version check at start
   # and leaves Windows without media transport controls.
   flutter_rust_bridge: 2.11.1
+  # Builds the Linux plugin without its native bundle where upstream has
+  # none (arm64); desktop runs the bundled ffmpeg CLI instead.
+  ffmpeg_kit_flutter_new_audio:
+    path: third_party/ffmpeg_kit_flutter_new_audio
 
 hooks:
   user_defines:
