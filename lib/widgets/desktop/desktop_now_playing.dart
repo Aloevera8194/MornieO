@@ -11,6 +11,7 @@ import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/player_artwork_theme.dart';
 import 'package:mornye/utils/playback_seek_preview.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
@@ -76,12 +77,22 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaItem = ref.watch(currentMediaItemProvider).value;
+    if (context.isMornye) return _buildPlayer(context, mediaItem);
+    // Material takes the track's artwork scheme. Providers are read above,
+    // so the scoped builder reads none.
+    return PlayerArtworkTheme(
+      artUri: mediaItem?.artUri?.toString(),
+      child: Builder(builder: (context) => _buildPlayer(context, mediaItem)),
+    );
+  }
+
+  Widget _buildPlayer(BuildContext context, MediaItem? mediaItem) {
     final mornye = context.isMornye;
     final theme = mornye
         ? MornyeTheme.fromContext(context, brightness: Brightness.dark)
         : Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final mediaItem = ref.watch(currentMediaItemProvider).value;
     return Theme(
       data: theme,
       child: Material(

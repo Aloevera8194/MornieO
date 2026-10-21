@@ -18,6 +18,7 @@ import 'package:mornye/screens/local_album_screen.dart';
 import 'package:mornye/screens/equalizer_screen.dart';
 import 'package:mornye/screens/lyrics_share_screen.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/player_artwork_theme.dart';
 import 'package:mornye/utils/clickable_metadata.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/utils/lyrics_parser.dart';
@@ -226,15 +227,34 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaItem = ref.watch(currentMediaItemProvider).value;
+    final fullScreenCover = ref.watch(
+      settingsProvider.select((s) => s.playerCoverStyle == 'fullscreen'),
+    );
     return LyricsScreenAwake(
-      visible:
-          _currentPage == 1 &&
-          ref.watch(currentMediaItemProvider).value != null,
-      child: _buildPlayer(context),
+      visible: _currentPage == 1 && mediaItem != null,
+      child: context.isMornye
+          ? _buildPlayer(context, mediaItem, fullScreenCover: fullScreenCover)
+          // Material takes the track's artwork scheme. The providers it needs
+          // are read above, so the scoped builder reads none.
+          : PlayerArtworkTheme(
+              artUri: mediaItem?.artUri?.toString(),
+              child: Builder(
+                builder: (context) => _buildPlayer(
+                  context,
+                  mediaItem,
+                  fullScreenCover: fullScreenCover,
+                ),
+              ),
+            ),
     );
   }
 
-  Widget _buildPlayer(BuildContext context) {
+  Widget _buildPlayer(
+    BuildContext context,
+    MediaItem? mediaItem, {
+    required bool fullScreenCover,
+  }) {
     final mornye = context.isMornye;
     final colorScheme = mornye
         ? MornyeTheme.fromContext(
@@ -242,7 +262,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             brightness: Brightness.dark,
           ).colorScheme
         : Theme.of(context).colorScheme;
-    final mediaItem = ref.watch(currentMediaItemProvider).value;
 
     if (mediaItem == null) {
       return Scaffold(
@@ -280,9 +299,6 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
             : null);
     final squareArtwork =
         motionArtwork == null || (motionRatio != null && motionRatio >= 0.95);
-    final fullScreenCover = ref.watch(
-      settingsProvider.select((s) => s.playerCoverStyle == 'fullscreen'),
-    );
     // Motion artwork is always full-bleed in Mornye; still covers follow the
     // cover style setting through the same layout, as a square video would.
     final fullBleed = mornye && (motionArtwork != null || fullScreenCover);
@@ -438,7 +454,7 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                     tooltip: context.l10n.nowPlayingUpNext,
                     color: overCover ? Colors.white : null,
                     icon: const AppIcon(Icons.queue_music),
-                    onPressed: () => _showQueueSheet(colorScheme),
+                    onPressed: () => _showQueueSheet(context, colorScheme),
                   ),
                   AppIconButton(
                     color: overCover ? Colors.white : null,
@@ -515,12 +531,13 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
                         fullScreenArtwork: materialFullScreen,
                         lyricsBuilder: (_) =>
                             _lyricsSection(colorScheme, isActive: true),
-                        onOpenQueue: () => _showQueueSheet(colorScheme),
+                        onOpenQueue: () =>
+                            _showQueueSheet(context, colorScheme),
                       ),
               ),
               _autoHidingLyricsControls(
                 PlayerQueueSwipeRegion(
-                  onOpenQueue: () => _showQueueSheet(colorScheme),
+                  onOpenQueue: () => _showQueueSheet(context, colorScheme),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -1314,7 +1331,9 @@ class _NowPlayingScreenState extends ConsumerState<NowPlayingScreen> {
     );
   }
 
-  void _showQueueSheet(ColorScheme colorScheme) {
+  /// Opens Up Next. The Material sheet captures the theme of [context], the
+  /// player's artwork scope.
+  void _showQueueSheet(BuildContext context, ColorScheme colorScheme) {
     if (_toggleInspector(2)) return;
     if (context.isMornye) {
       _setMornyePage(2);

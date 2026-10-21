@@ -18,6 +18,7 @@ import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/material_expressive.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/player_artwork_theme.dart';
 import 'package:mornye/screens/now_playing_screen.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/string_utils.dart';
@@ -38,6 +39,32 @@ class MiniPlayer extends ConsumerStatefulWidget {
 }
 
 class _MiniPlayerState extends ConsumerState<MiniPlayer> {
+  @override
+  Widget build(BuildContext context) {
+    final body = _MiniPlayerBody(
+      compact: widget.compact,
+      bottomPadding: widget.bottomPadding,
+    );
+    if (context.isMornye) return body;
+    // Material takes the track's artwork scheme, like the full player.
+    final artUri = ref.watch(
+      currentMediaItemProvider.select((item) => item.value?.artUri),
+    );
+    return PlayerArtworkTheme(artUri: artUri?.toString(), child: body);
+  }
+}
+
+class _MiniPlayerBody extends ConsumerStatefulWidget {
+  const _MiniPlayerBody({required this.compact, required this.bottomPadding});
+
+  final bool compact;
+  final double bottomPadding;
+
+  @override
+  ConsumerState<_MiniPlayerBody> createState() => _MiniPlayerBodyState();
+}
+
+class _MiniPlayerBodyState extends ConsumerState<_MiniPlayerBody> {
   final _surfaceKey = GlobalKey();
   final _artworkKey = GlobalKey();
 
