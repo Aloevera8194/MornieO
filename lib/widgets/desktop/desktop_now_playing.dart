@@ -311,8 +311,8 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        // The lyrics stay laid out and follow playback while
-                        // hidden, so they open already on the playing line.
+                        // Hidden lyrics follow line positions so they reopen
+                        // centered, without running word animations off screen.
                         IgnorePointer(
                           key: const ValueKey('desktop-now-playing-lyrics'),
                           ignoring: !showsLyrics,
@@ -327,6 +327,7 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
                                   seekPreview: _seekPreview,
                                   colorScheme: colorScheme,
                                   isActive: true,
+                                  animateWords: showsLyrics,
                                 ),
                               ),
                             ),

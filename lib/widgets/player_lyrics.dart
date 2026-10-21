@@ -69,6 +69,9 @@ class SyncedLyricsView extends ConsumerStatefulWidget {
   final bool showPronunciation;
   final bool showTranslation;
 
+  /// Hidden retained panels keep line positions current without word frames.
+  final bool animateWords;
+
   /// Long-pressing a sung line starts sharing it.
   final ValueChanged<LyricLine>? onLongPressLine;
 
@@ -81,6 +84,7 @@ class SyncedLyricsView extends ConsumerStatefulWidget {
     required this.isActive,
     required this.showPronunciation,
     required this.showTranslation,
+    this.animateWords = true,
     this.onLongPressLine,
   });
 
@@ -1086,7 +1090,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                 content = _WordHighlightedLyricLine(
                   line: line,
                   colorScheme: widget.colorScheme,
-                  animate: _visible,
+                  animate: _visible && widget.animateWords,
                   initialPosition: _activeTransitionPosition,
                   seekPreview: widget.seekPreview,
                   supplementVisibility: visibility,

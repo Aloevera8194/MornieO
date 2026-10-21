@@ -20,6 +20,7 @@ class PlayerLyricsSection extends ConsumerWidget {
     required this.seekPreview,
     required this.colorScheme,
     required this.isActive,
+    this.animateWords = true,
     this.options,
     this.onShareLyrics,
   });
@@ -28,6 +29,7 @@ class PlayerLyricsSection extends ConsumerWidget {
   final PlaybackSeekPreview seekPreview;
   final ColorScheme colorScheme;
   final bool isActive;
+  final bool animateWords;
   final Widget? options;
 
   /// Long-pressing lyrics opens sharing, preselecting a timed line.
@@ -123,6 +125,7 @@ class PlayerLyricsSection extends ConsumerWidget {
             credits: _lyricsCredits(),
             colorScheme: colorScheme,
             isActive: isActive,
+            animateWords: animateWords,
             showPronunciation: visibility.$1,
             showTranslation: visibility.$2,
             onLongPressLine: onShareLyrics,

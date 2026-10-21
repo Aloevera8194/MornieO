@@ -77,7 +77,7 @@ class _WordHighlightedLyricLineState
   bool _playing = false;
   bool _loading = false;
   bool _tickerEnabled = true;
-  bool _hasSubscribed = false;
+  bool _useInitialPosition = true;
   Duration _visualEnd = Duration.zero;
 
   // An inactive app is still on screen, as in [SyncedLyricsView]: the sweep
@@ -129,6 +129,7 @@ class _WordHighlightedLyricLineState
 
   void _syncSubscriptions() {
     if (!_visible) {
+      _useInitialPosition = false;
       _positionSubscription?.close();
       _playingSubscription?.close();
       _loadingSubscription?.close();
@@ -144,10 +145,10 @@ class _WordHighlightedLyricLineState
     }
     _playing = ref.read(playbackPlayingProvider);
     _loading = ref.read(playbackLoadingProvider);
-    if (_hasSubscribed) {
+    if (!_useInitialPosition) {
       _anchorAt(widget.seekPreview.value ?? ref.read(playbackPositionProvider));
     }
-    _hasSubscribed = true;
+    _useInitialPosition = false;
     _positionSubscription = ref.listenManual<Duration>(
       playbackPositionProvider,
       (previous, next) => _updateReportedPosition(next),

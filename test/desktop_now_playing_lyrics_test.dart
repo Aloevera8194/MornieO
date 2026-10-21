@@ -11,6 +11,7 @@ import 'package:mornye/l10n/app_localizations.dart';
 import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/providers/system_volume_provider.dart';
 import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/lyrics_parser.dart';
 import 'package:mornye/widgets/app_loading_indicator.dart';
@@ -35,6 +36,12 @@ final _lrc = [
   for (var i = 0; i < 80; i++) '${_timestamp(i * 3)}Lyric line $i',
 ].join('\n');
 
+const _ttml = '''
+<tt xmlns="http://www.w3.org/ns/ttml"><body><div>
+<p begin="0s" end="120s"><span begin="0s" end="60s">Timed </span><span begin="60s" end="120s">words</span></p>
+</div></body></tt>
+''';
+
 void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -46,6 +53,126 @@ void main() {
     debugDesktopPlatformOverride = null;
     desktopInspectorPanel.value = null;
   });
+
+  for (final mornye in [false, true]) {
+    testWidgets(
+      '${mornye ? 'Mornye' : 'Material'} hidden lyrics stop word sweep frames',
+      (tester) async {
+        tester.view.physicalSize = const Size(1520, 1000);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final playback = StreamController<PlaybackState>();
+        addTearDown(playback.close);
+        void reportPosition(int seconds, {bool playing = false}) =>
+            playback.add(
+              PlaybackState(
+                playing: playing,
+                processingState: AudioProcessingState.ready,
+                updatePosition: Duration(seconds: seconds),
+              ),
+            );
+        reportPosition(1);
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              currentMediaItemProvider.overrideWithBuild(
+                (ref, notifier) => Stream.value(_track),
+              ),
+              playbackStateProvider.overrideWith((ref) => playback.stream),
+              playQueueProvider.overrideWith(
+                (ref) => Stream.value(const [_track]),
+              ),
+              systemVolumeProvider.overrideWith((ref) => Stream.value(0.5)),
+            ],
+            child: MaterialApp(
+              theme: mornye
+                  ? MornyeTheme.build(Brightness.dark)
+                  : AppTheme.dark(),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: DesktopNowPlaying(
+                  metadataControllerFactory: () => PlayerMetadataController(
+                    readMetadata: (_) async => {'lyrics': _ttml},
+                    parseLyrics: (raw) async => LyricsParser.parse(raw!),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        final view = find.byType(SyncedLyricsView);
+        final retainedState = tester.state(view);
+        expect(tester.widget<SyncedLyricsView>(view).animateWords, isFalse);
+        reportPosition(90);
+        await tester.pump();
+
+        desktopInspectorPanel.value = DesktopInspectorPanel.lyrics;
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        final paint = find.descendant(
+          of: view,
+          matching: find.byWidgetPredicate(
+            (widget) =>
+                widget is CustomPaint &&
+                widget.painter.runtimeType.toString() ==
+                    '_TimedLyricSweepPainter',
+          ),
+        );
+        expect(paint, findsOneWidget);
+        final painter = tester.widget<CustomPaint>(paint).painter!;
+        // ignore: avoid_dynamic_calls
+        final position = (painter as dynamic).currentPosition() as Duration;
+        expect(position, const Duration(seconds: 90));
+        var repaints = 0;
+        void repaint() => repaints++;
+        painter.addListener(repaint);
+        addTearDown(() => painter.removeListener(repaint));
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(repaints, 0);
+        reportPosition(90, playing: true);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(repaints, greaterThan(0));
+
+        desktopInspectorPanel.value = null;
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(tester.widget<SyncedLyricsView>(view).animateWords, isTrue);
+        await tester.pump(const Duration(milliseconds: 500));
+        await tester.pump();
+        expect(tester.widget<SyncedLyricsView>(view).animateWords, isFalse);
+        final hiddenRepaints = repaints;
+        await tester.pump(const Duration(seconds: 1));
+        expect(repaints, hiddenRepaints);
+        expect(tester.state(view), same(retainedState));
+
+        desktopInspectorPanel.value = DesktopInspectorPanel.lyrics;
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(tester.widget<SyncedLyricsView>(view).animateWords, isTrue);
+        expect(tester.state(view), same(retainedState));
+        final resumedRepaints = repaints;
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(repaints, greaterThan(resumedRepaints));
+
+        desktopInspectorPanel.value = DesktopInspectorPanel.upNext;
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+        expect(tester.widget<SyncedLyricsView>(view).animateWords, isFalse);
+        final queueRepaints = repaints;
+        await tester.pump(const Duration(seconds: 1));
+        expect(repaints, queueRepaints);
+        expect(tester.state(view), same(retainedState));
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+  }
 
   testWidgets('Material lyrics toggle paints only the playing line', (
     tester,
