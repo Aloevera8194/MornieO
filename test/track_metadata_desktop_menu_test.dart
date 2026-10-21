@@ -91,7 +91,6 @@ void main() {
         expect(find.text('Copy file path'), findsOneWidget);
         expect(find.text('Go to Artist'), findsOneWidget);
         if (desktop) {
-          // The items sit in an anchored menu, not in a phone sheet.
           expect(find.byType(MenuItemButton), findsWidgets);
           expect(find.byType(BottomSheet), findsNothing);
           final button = tester.getRect(findAppIcon(Icons.more_vert));

@@ -141,7 +141,6 @@ void main() {
       );
       expect(find.byType(SelectionBottomBar), findsNothing);
 
-      // Escape closes the menu and ends the selection it made.
       await tester.sendKeyEvent(LogicalKeyboardKey.escape);
       await tester.pumpAndSettle();
       expect(
@@ -160,7 +159,6 @@ void main() {
       expect(playback.started, ['2']);
       expect(find.text('Play next'), findsNothing);
 
-      // Play from the menu ends the selection as well.
       await _click(tester, find.text('Charlie'), buttons: kSecondaryButton);
       await tester.pumpAndSettle();
       await tester.tap(

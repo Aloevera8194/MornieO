@@ -84,7 +84,6 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	
-	<!-- Network Access -->
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Connect to your music servers and network storage to browse and play your music.</string>
 	<key>NSAppTransportSecurity</key>
@@ -95,7 +94,6 @@
 		<true/>
 	</dict>
 	
-	<!-- File Sharing - Allow access via Files app -->
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
@@ -103,11 +101,9 @@
 	<key>UISupportsDocumentBrowser</key>
 	<true/>
 	
-	<!-- Photo Library (for cover art if needed) -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Mornye needs access to save album artwork</string>
 	
-	<!-- URL Schemes for deep linking -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -123,7 +119,6 @@
 		</dict>
 	</array>
 	
-	<!-- Associated Domains for Universal Links -->
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>spotify</string>
@@ -133,7 +128,6 @@
 		<string>youtube-music</string>
 	</array>
 	
-	<!-- Background audio playback -->
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

@@ -6,11 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 
-// Library scan backend calls: the cover cache directory, full and
-// incremental scans of local folders and SAF trees, and scan progress,
-// cancel, pause and resume. MainActivity's backend `when` dispatches each
-// case here, in the order it lists them.
-
 internal suspend fun MainActivity.handleSetLibraryCoverCacheDir(call: MethodCall, result: MethodChannel.Result) {
     val cacheDir = call.argument<String>("cache_dir") ?: ""
     withContext(Dispatchers.IO) {

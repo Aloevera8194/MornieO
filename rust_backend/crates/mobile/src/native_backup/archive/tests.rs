@@ -283,7 +283,6 @@ fn unsafe_or_missing_write_entry_cannot_publish_partial_archive() {
         );
         assert!(!output.exists());
     }
-    // Files produced by Rust are standard ZIPs, with ordinary deflate/store.
     let output = dir.path().join("valid");
     write(
         &json!({"output_path": output, "files": [{"name": "history.ndjson", "path": source}]}),

@@ -1,5 +1,3 @@
-//! Unit tests for the backend download orchestration.
-
 use super::*;
 use crate::environment::ExtensionEnvironment;
 use crate::{

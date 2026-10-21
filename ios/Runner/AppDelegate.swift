@@ -33,7 +33,6 @@ import UniformTypeIdentifiers
     private let securityScopedAccessLock = NSLock()
     private var securityScopedAccesses: [String: (URL, CoreDirectoryScope)] = [:]
 
-    /// Pending Flutter result for the native folder picker
     private var pendingDirectoryPickerResult: FlutterResult?
 
     /// Whether a download queue is active; while true a background assertion

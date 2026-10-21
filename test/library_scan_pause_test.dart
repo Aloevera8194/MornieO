@@ -52,7 +52,6 @@ void main() {
     expect(state.scanIsPaused, isTrue);
     expect(state.scannedFiles, 100);
 
-    // Repeated pauses do not reach native code again.
     await notifier.pauseScan();
     expect(calls, ['pauseLibraryScan']);
 

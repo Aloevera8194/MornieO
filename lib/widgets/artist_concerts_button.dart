@@ -39,7 +39,6 @@ class ArtistConcertsButton extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
     );
     if (!context.isMornye) {
-      // A compact tonal pill with the expressive press morph.
       return ExpressiveButton(
         tonal: true,
         onPressed: open,

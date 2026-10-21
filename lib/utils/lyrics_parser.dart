@@ -407,7 +407,6 @@ class LyricsParser {
 
       sawTimestamp = true;
 
-      // Strip leading line timestamps to obtain the lyric content.
       final lastTag = timeMatches.last;
       final (content, voice) = _vocalText(line.substring(lastTag.end).trim());
 
@@ -439,7 +438,6 @@ class LyricsParser {
     }
 
     if (!sawTimestamp) {
-      // Pure plain text.
       return ParsedLyrics(
         synced: false,
         wordSynced: false,

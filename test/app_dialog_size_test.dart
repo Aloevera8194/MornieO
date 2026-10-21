@@ -128,7 +128,6 @@ void main() {
       expect(find.text('Row 0').hitTestable(), findsNothing);
       expect(tester.takeException(), isNull);
 
-      // The header ends with a close button.
       await tester.tap(find.byTooltip('Close'));
       await tester.pumpAndSettle();
       expect(dialog, findsNothing);
@@ -153,7 +152,6 @@ void main() {
           tester.widget<Dialog>(find.byKey(_dialogKey)).shape!
               as RoundedRectangleBorder;
       expect(shape.borderRadius, BorderRadius.circular(28));
-      // Mornye headers stay as they were, without a close button.
       expect(find.byTooltip('Close'), mornye ? findsNothing : findsOneWidget);
       await tester.pumpWidget(const SizedBox.shrink());
     }

@@ -1,7 +1,5 @@
 part of 'audio_analysis_widget.dart';
 
-// Read-only info card with metric chips for a finished analysis.
-
 class _AudioInfoCard extends StatelessWidget {
   final AudioAnalysisData data;
   final VoidCallback? onRescan;

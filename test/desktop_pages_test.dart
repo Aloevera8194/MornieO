@@ -158,7 +158,6 @@ void main() {
           isSemantics(isSelected: true, hasTapAction: true),
         );
         semantics.dispose();
-        // The list stays beside the page.
         expect(list, findsOneWidget);
         expect(tester.takeException(), isNull);
       });
@@ -258,7 +257,6 @@ void main() {
         await tester.pumpAndSettle();
         expect(lyrics, findsOneWidget);
         expect(tester.getSize(lyrics).width, desktopInspectorWidth);
-        // Beside: the content ends where the inspector starts.
         final content = tester.getRect(find.text('content'));
         expect(content.right, lessThan(tester.getRect(lyrics).left));
 
@@ -287,7 +285,6 @@ void main() {
         await pressShortcut(tester, LogicalKeyboardKey.keyL);
         final lyrics = find.byKey(const ValueKey('desktop-inspector-lyrics'));
         expect(lyrics, findsOneWidget);
-        // Overlay: the content keeps the full pane under the panel.
         final content = tester.getRect(
           find.ancestor(
             of: find.text('content'),
@@ -312,7 +309,6 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('now playing'), findsOneWidget);
         expect(find.text('content'), findsNothing);
-        // The sidebar hides under it too.
         expect(find.text('home'), findsNothing);
         expect(
           tester.getSize(find.byKey(const ValueKey('desktop-now-playing'))),
@@ -368,7 +364,6 @@ void main() {
         );
         expect(find.text('content'), findsNothing);
 
-        // Escape returns to the shell with the lyrics panel closed.
         await tester.sendKeyEvent(LogicalKeyboardKey.escape);
         await tester.pumpAndSettle();
         expect(player, findsNothing);

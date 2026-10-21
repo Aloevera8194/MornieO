@@ -534,7 +534,6 @@ void main() {
     final restingSlot = tester.getSize(slot).width;
     final restingDownload = tester.getSize(download).width;
     expect(restingSlot, 48);
-    // The flexible action fills what the fixed slots and gaps leave.
     expect(restingDownload, closeTo(360 - 2 * 48 - 2 * 12, 1));
 
     final gesture = await tester.startGesture(

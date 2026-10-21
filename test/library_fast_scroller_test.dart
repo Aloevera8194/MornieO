@@ -41,7 +41,6 @@ void main() {
     await gesture.moveBy(const Offset(0, 260));
     await tester.pump();
     expect(controller.offset, greaterThan(1000));
-    // The bubble names the section at the thumb.
     expect(find.textContaining(RegExp(r'^[A-Z]$')), findsOneWidget);
 
     await gesture.moveBy(const Offset(0, 2000));

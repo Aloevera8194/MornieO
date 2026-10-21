@@ -452,7 +452,6 @@ class _TrackOptionsSheet extends ConsumerWidget {
                   ),
                 ],
               ),
-              // Material sheets separate the header by space alone.
               if (context.isMornye)
                 Divider(
                   height: 1,

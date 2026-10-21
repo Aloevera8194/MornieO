@@ -188,7 +188,6 @@ class AppTheme {
     ),
   );
 
-  // Expressive cards use the larger card radius.
   static CardThemeData _cardTheme(ColorScheme scheme) => CardThemeData(
     elevation: 0,
     shape: RoundedRectangleBorder(
@@ -225,7 +224,6 @@ class AppTheme {
 
   static TextButtonThemeData _textButtonTheme(ColorScheme scheme) =>
       TextButtonThemeData(
-        // Same full-round shape as the filled and outlined buttons.
         style: TextButton.styleFrom(
           shape: const StadiumBorder(),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -244,7 +242,6 @@ class AppTheme {
 
   static InputDecorationTheme _inputDecorationTheme(ColorScheme scheme) =>
       InputDecorationTheme(
-        // Expressive fields sit on a solid tonal container.
         filled: true,
         fillColor: scheme.surfaceContainerHigh,
         border: OutlineInputBorder(
@@ -384,7 +381,6 @@ class AppTheme {
     ),
   );
 
-  // Expressive tabs: a label-width indicator with rounded top corners.
   static TabBarThemeData _tabBarTheme(ColorScheme scheme) => TabBarThemeData(
     indicatorSize: TabBarIndicatorSize.label,
     indicator: UnderlineTabIndicator(

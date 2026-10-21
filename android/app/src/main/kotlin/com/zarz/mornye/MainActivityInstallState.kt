@@ -6,9 +6,6 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.LinkedHashMap
 
-// Install-scoped marker and the runtime state handed to the selected backend,
-// behind the `ensureInstallMarker` and `prepareRuntimeState` backend calls.
-
 /**
  * Creates an install-scoped marker in noBackupFilesDir. A platform restore
  * can bring SharedPreferences back after reinstall, but this marker is never

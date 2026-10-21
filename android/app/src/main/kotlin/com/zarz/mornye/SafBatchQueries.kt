@@ -6,9 +6,6 @@ import androidx.documentfile.provider.DocumentFile
 import org.json.JSONArray
 import org.json.JSONObject
 
-// Batch SAF document queries for library and history checks: existence
-// status per URI and last-modified values per URI.
-
 // A failed DocumentsProvider query must never be mistaken for a missing file.
 // Unlike DocumentFile.exists(), this keeps null cursors/exceptions inconclusive.
 internal fun MainActivity.safExistsBatch(urisJson: String): String {

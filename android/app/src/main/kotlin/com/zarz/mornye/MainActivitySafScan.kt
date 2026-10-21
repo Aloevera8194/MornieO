@@ -9,11 +9,6 @@ import java.io.IOException
 import java.security.MessageDigest
 import java.util.Locale
 
-// SAF library scans: the full and incremental tree scans, the pause and
-// cancel check, and scan-progress state shared with the progress stream in
-// MainActivity. Listing, checkpoint, CUE, history inspection and batch query
-// helpers live in the Saf*.kt files beside this one.
-
 internal fun MainActivity.buildStableLibraryId(filePath: String): String {
         val digest = MessageDigest.getInstance("SHA-1")
         val bytes = digest.digest(filePath.toByteArray(Charsets.UTF_8))
@@ -392,7 +387,6 @@ internal fun MainActivity.scanSafTree(
         )
 
         val pendingAudio = mutableListOf<SafAudioEntry>()
-        // Skip resumable and CUE entries before parallel reads.
         for (audio in audioFiles) {
             val doc = audio.doc
             if (safScanStopRequested()) {

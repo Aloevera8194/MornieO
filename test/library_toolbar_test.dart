@@ -212,7 +212,6 @@ void main() {
       expect((group.actions[1].label! as Text).data, l10n.libraryFilterTitle);
       expect(group.actions[2].tooltip, l10n.appearanceHistoryViewGrid);
       expect(group.actions[2].label, isNull);
-      // Nothing in the toolbar stays selected.
       expect(group.selectedIndex, isNull);
 
       // A compact visual that keeps the 48dp touch target.

@@ -113,7 +113,6 @@ void main() {
       expect(row('Second'), findsOneWidget);
       expect(tester.widget<AlbumTrackTile>(row('Second')).isCurrent, isTrue);
       expect(tester.widget<AlbumTrackTile>(row('First')).isCurrent, isFalse);
-      // The current track offers pause in both styles.
       expect(
         find.descendant(of: row('Second'), matching: find.byTooltip('Pause')),
         findsOneWidget,
@@ -122,7 +121,6 @@ void main() {
         find.descendant(of: row('First'), matching: find.byTooltip('Play')),
         findsOneWidget,
       );
-      // Only Material marks the row itself.
       expect(
         find.descendant(
           of: row('Second'),

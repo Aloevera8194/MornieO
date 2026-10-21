@@ -65,7 +65,6 @@ class RemoteSafPlaybackTest {
         }.array()
         withProxy(wav) { fd, _ ->
             val path = "/proc/self/fd/${fd.fd}"
-            // Reproduce the old path before exercising the patched plugin.
             assertTrue(runCatching { FileInputStream(path).use { it.read() } }.isFailure)
             val prepared = CountDownLatch(1)
             val failed = AtomicLong()

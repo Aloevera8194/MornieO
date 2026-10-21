@@ -263,8 +263,6 @@ class _MiniPlayerBodyState extends ConsumerState<_MiniPlayerBody> {
                       ),
                     ),
                     if (expressive)
-                      // Round while paused, square while playing, like the
-                      // full player's play-pause.
                       AppIconButton.filled(
                         tooltip: isPlaying
                             ? context.l10n.actionPause

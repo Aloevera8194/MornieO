@@ -1,6 +1,5 @@
 part of 'home_tab.dart';
 
-/// Dropdown widget for quick search provider switching
 class _SearchProviderDropdown extends ConsumerWidget {
   final VoidCallback? onProviderChanged;
 
@@ -405,7 +404,6 @@ class _TrackItemWithStatus extends ConsumerWidget {
   }
 }
 
-/// Widget for displaying album/playlist items in search results
 class _CollectionItemWidget extends StatelessWidget {
   final Track item;
   final bool showDivider;
@@ -653,7 +651,6 @@ class _DownloadedOrRemoteCoverState extends State<_DownloadedOrRemoteCover> {
   }
 }
 
-/// Swipeable Quick Picks widget with page indicator
 class _QuickPicksPageView extends StatefulWidget {
   final ExploreSection section;
   final ColorScheme colorScheme;

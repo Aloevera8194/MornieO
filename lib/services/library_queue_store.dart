@@ -5,8 +5,6 @@ import 'package:mornye/services/library_schema.dart';
 import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
 import 'package:mornye/utils/library_format_filters.dart';
 
-// SQL builders for the queue tab's history+local union queries.
-
 String confirmedMissingLyricsSqlPredicate({
   required String hasLyricsExpr,
   required String lyricsKnownExpr,

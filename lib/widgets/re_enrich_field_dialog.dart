@@ -346,7 +346,6 @@ class _ReEnrichFieldSheetState extends State<_ReEnrichFieldSheet> {
 
   Widget _options({required List<Widget> children, bool grouped = true}) {
     if (!context.isMornye) {
-      // Material separates rows with gaps; the dividers are Mornye's.
       return SettingsGroup(
         connected: true,
         children: [

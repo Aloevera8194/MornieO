@@ -4,10 +4,6 @@ import android.content.Intent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// Extension OAuth and session-grant callbacks and verification notification
-// taps that reach MainActivity by Intent, and their hand-off to Dart. The
-// pending state lives in MainActivity; these helpers fill and drain it.
-
 internal fun MainActivity.handleVerificationNotificationIntent(intent: Intent?) {
     if (intent?.action != VerificationNotificationIntent.ACTION) return
     val payload = intent.getStringExtra(VerificationNotificationIntent.PAYLOAD)

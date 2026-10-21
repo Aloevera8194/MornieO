@@ -35,7 +35,6 @@ class ExploreCacheStore {
 
   Future<void> write(String payload) async {
     await _prefs.setString(_cacheKey, payload);
-    // Timestamp after the payload write completes.
     await _prefs.setInt(_cacheTsKey, DateTime.now().millisecondsSinceEpoch);
   }
 

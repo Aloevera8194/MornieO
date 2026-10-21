@@ -374,7 +374,6 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
         ],
       ),
       actions: isDesktopPlatform
-          // Desktop: each control at its own width beside the artwork.
           ? Row(
               mainAxisSize: MainAxisSize.min,
               spacing: 10,

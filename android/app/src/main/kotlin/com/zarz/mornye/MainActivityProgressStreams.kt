@@ -10,9 +10,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicReference
 
-// Download and library-scan progress EventChannels. The stream state lives in
-// MainActivity; these helpers start, poll and stop the streams.
-
 private val DOWNLOAD_PROGRESS_STREAM_CHANNEL =
     "com.zarz.mornye/download_progress_stream"
 private val LIBRARY_SCAN_PROGRESS_STREAM_CHANNEL =

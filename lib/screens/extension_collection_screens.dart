@@ -604,7 +604,6 @@ class _ExtensionAlbumScreenState extends ConsumerState<ExtensionAlbumScreen> {
   }
 }
 
-/// Screen for viewing extension playlist with track fetching
 class ExtensionPlaylistScreen extends ConsumerStatefulWidget {
   final String extensionId;
   final String playlistId;

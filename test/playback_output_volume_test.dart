@@ -24,7 +24,6 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getDouble(PlaybackOutputVolumeStore.storageKey), 0.35);
 
-    // Next launch.
     PlaybackOutputVolumeStore.debugReset();
     playbackOutputVolume.value = 1;
     await PlaybackOutputVolumeStore.ensureRestored();

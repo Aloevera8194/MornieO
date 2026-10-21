@@ -4,10 +4,6 @@ import android.content.ContentValues
 import com.zarz.mornye.NativeFinalizationPolicy.normalizeAudioCodec
 import org.json.JSONObject
 
-
-// Worker request contract validation and download history row helpers for
-// NativeDownloadFinalizer.
-
 internal fun NativeDownloadFinalizer.validateRequestContract(request: JSONObject) {
     val version = request.optInt("contract_version", -1)
     if (version != NATIVE_WORKER_CONTRACT_VERSION) {

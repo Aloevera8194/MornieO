@@ -6,8 +6,6 @@ import java.util.UUID
 import org.json.JSONArray
 import org.json.JSONObject
 
-// Application method dispatch behind RustCoreBackend.invokeApplication.
-
 internal fun RustCoreBackend.dispatchApplication(method: String, arguments: Any?): Any? {
     val args = arguments as? Map<*, *> ?: emptyMap<Any, Any>()
     fun string(key: String, default: String = "") = args[key] as? String ?: default

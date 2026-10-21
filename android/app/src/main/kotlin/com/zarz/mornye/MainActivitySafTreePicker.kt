@@ -10,9 +10,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import org.json.JSONObject
 
-// SAF tree picker: launching ACTION_OPEN_DOCUMENT_TREE for `pickSafTree`,
-// persisting the granted tree, and the display path returned to Dart.
-
 internal fun MainActivity.launchSafTreePicker(call: MethodCall, result: MethodChannel.Result) {
     if (MainActivity.pendingSafTreeResult != null) {
         result.error("saf_pending", "SAF picker already active", null)

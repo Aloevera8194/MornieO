@@ -154,7 +154,6 @@ class _LibraryTracksFolderScreenState
     };
   }
 
-  /// Find the first available cover URL from entries.
   String? _firstRawCoverUrl(List<CollectionTrackEntry> entries) {
     for (final entry in entries) {
       final cover = _resolveRawCoverUrl(entry.track);
@@ -1166,7 +1165,6 @@ class _CollectionTrackTile extends ConsumerWidget {
               tooltip: isPlaying
                   ? context.l10n.actionPause
                   : context.l10n.tooltipPlay,
-              // The current track pauses and resumes in place.
               onPressed: isCurrent
                   ? () => ref
                         .read(musicPlayerControllerProvider)

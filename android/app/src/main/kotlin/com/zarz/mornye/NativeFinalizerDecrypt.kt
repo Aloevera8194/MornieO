@@ -9,10 +9,6 @@ import java.io.File
 import java.util.Locale
 import java.util.concurrent.CancellationException
 
-
-// Decryption and decrypted ISO-BMFF extension normalization for
-// NativeDownloadFinalizer.
-
 internal fun NativeDownloadFinalizer.finalizeDecryption(
     context: Context,
     input: NativeDownloadFinalizer.FinalizeInput,

@@ -70,7 +70,6 @@ void main() {
     }
     await tester.pumpAndSettle();
     expect(share().onPressed, isNotNull);
-    // The card quotes each selected line once.
     expect(find.text('Line 0'), findsNWidgets(2));
 
     await tester.scrollUntilVisible(choice(6), 100);

@@ -334,7 +334,6 @@ mod tests {
         );
     }
 
-    // The explicit set `native_lyrics` used before it shared `dart_trim`.
     fn previous_lyrics_whitespace(c: char) -> bool {
         matches!(
             c,

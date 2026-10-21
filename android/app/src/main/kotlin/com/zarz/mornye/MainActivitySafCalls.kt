@@ -11,11 +11,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
 
-// SAF backend calls: document existence, access probes, stat and lookup,
-// temp copies, playback leases, document creation from a local file,
-// content URI open/share, and writes back into SAF. MainActivity's backend
-// `when` dispatches each case here, in the order it lists them.
-
 internal suspend fun MainActivity.handleSafExists(call: MethodCall, result: MethodChannel.Result) {
     val uriStr = call.argument<String>("uri") ?: ""
     val exists = withContext(Dispatchers.IO) {

@@ -1,7 +1,5 @@
 part of 'audio_analysis_widget.dart';
 
-// Spectrogram rendering: interactive view, axis painter, palette.
-
 class _SpectrogramView extends StatelessWidget {
   final ui.Image image;
   final int sampleRate;

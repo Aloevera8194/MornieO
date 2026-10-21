@@ -4,7 +4,6 @@
 
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
 
-    <!-- Permissions -->
     <!-- Playback never records audio. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" tools:node="remove" />
@@ -62,7 +61,6 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
 
-            <!-- Main launcher -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -75,7 +73,6 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
 
-            <!-- Handle Spotify deep links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -83,7 +80,6 @@
                 <data android:scheme="https" android:host="open.spotify.com" />
             </intent-filter>
 
-            <!-- Handle Deezer deep links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -93,7 +89,6 @@
                 <data android:scheme="https" android:host="deezer.page.link" />
             </intent-filter>
 
-            <!-- Handle Tidal deep links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -102,7 +97,6 @@
                 <data android:scheme="https" android:host="listen.tidal.com" />
             </intent-filter>
 
-            <!-- Handle YouTube Music deep links -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -131,7 +125,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Home screen player -->
         <receiver
             android:name=".PlayerWidgetProvider"
             android:label="@string/player_widget_name"
@@ -152,7 +145,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Download Service -->
         <service
             android:name=".DownloadService"
             android:exported="false"
@@ -193,7 +185,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- flutter_local_notifications receivers -->
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>

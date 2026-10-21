@@ -19,7 +19,6 @@
 -dontwarn java.awt.HeadlessException
 -dontwarn java.awt.Window
 
-# Keep native methods
 -keepclasseswithmembernames class * {
     native <methods>;
 }
@@ -57,7 +56,6 @@
     public <init>();
 }
 
-# Prevent R8 from removing metadata
 -keepattributes *Annotation*
 -keepattributes SourceFile,LineNumberTable
 -keepattributes Signature

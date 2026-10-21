@@ -5,9 +5,6 @@ import com.zarz.mornye.SafDownloadHandler.mimeTypeForExt
 import org.json.JSONObject
 import java.io.File
 
-
-// Extension post-processing hook stage for NativeDownloadFinalizer.
-
 internal fun NativeDownloadFinalizer.runPostProcessing(
     context: Context,
     input: NativeDownloadFinalizer.FinalizeInput,

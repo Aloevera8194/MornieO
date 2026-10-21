@@ -5,9 +5,6 @@ import android.os.Build
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 
-// The single-method `concert_calendar` and `audio_output` MethodChannels.
-// MainActivity holds the channel references and clears them in onDestroy.
-
 internal fun MainActivity.registerConcertCalendarChannel(messenger: BinaryMessenger) {
     concertCalendarChannel = MethodChannel(messenger, "com.zarz.mornye/concert_calendar").also { channel ->
         channel.setMethodCallHandler { call, result ->

@@ -229,7 +229,6 @@ impl Registry {
 mod tests {
     use super::*;
 
-    // The matcher this module used before it shared core's `field_name`.
     fn previous_field_matches(key: &str, wire: &str) -> bool {
         key.chars()
             .map(|value| match value {

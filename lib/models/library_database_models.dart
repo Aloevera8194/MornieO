@@ -1,8 +1,6 @@
 import 'package:mornye/services/sqlite_helpers.dart' as sqlite;
 import 'package:mornye/utils/audio_format_utils.dart';
 
-// Row models and query descriptors for the local library database.
-
 // v4 records ReplayGain availability; older rows rescan once.
 const libraryAudioMetadataScanVersion = 4;
 const libraryLyricsMetadataScanVersion = 3;

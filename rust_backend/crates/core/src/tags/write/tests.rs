@@ -1,5 +1,3 @@
-//! Unit tests for tag writing.
-
 use super::*;
 use std::cell::Cell;
 use std::io;

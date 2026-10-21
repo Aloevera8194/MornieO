@@ -9,12 +9,6 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.io.File
 
-// Metadata and tag backend calls: reading and editing tags, M4A and AC-4
-// writes, cover download and extraction, re-enrichment, post-processing and
-// CUE sheets. SAF documents go through a temp copy where the backend needs
-// a file path. MainActivity's backend `when` dispatches each case here, in
-// the order it lists them.
-
 internal suspend fun MainActivity.handleRewriteSplitArtistTags(call: MethodCall, result: MethodChannel.Result) {
     val filePath = call.argument<String>("file_path") ?: ""
     val artist = call.argument<String>("artist") ?: ""
@@ -108,7 +102,6 @@ internal suspend fun MainActivity.handleEditFileMetadata(call: MethodCall, resul
                         return@withContext obj.toString()
                         // Note: temp file NOT deleted here - Dart will clean up after FFmpeg + writeTempToSaf
                     }
-                    // FLAC: the backend wrote to temp, copy back now
                     if (!writeUriFromPath(uri, tempPath)) {
                         try { File(tempPath).delete() } catch (_: Exception) {}
                         return@withContext """{"error":"Failed to write metadata back to SAF file"}"""
@@ -261,7 +254,6 @@ internal suspend fun MainActivity.handleReEnrichFile(call: MethodCall, result: M
                         // Dart cleans up after FFmpeg + writeTempToSaf.
                     }
 
-                    // FLAC: the selected backend wrote to temp; copy back now.
                     if (!writeUriFromPath(uri, tempPath)) {
                         return@withContext """{"error":"Failed to write enriched metadata back to SAF file"}"""
                     }

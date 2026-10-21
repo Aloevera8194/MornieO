@@ -336,7 +336,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(prefs.getDouble(kMornyeGlassClarityKey), 1);
 
-      // The override and chosen clarity survive reopening settings.
       await tester.pumpWidget(const SizedBox());
       await openSettings(tester, prefs);
       await tester.ensureVisible(slider);

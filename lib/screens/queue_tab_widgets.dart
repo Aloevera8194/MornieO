@@ -25,7 +25,6 @@ class _QueueItemSliverRow extends ConsumerWidget {
   }
 }
 
-/// One tool of a [_LibraryToolGroup].
 class _LibraryTool {
   const _LibraryTool({
     required this.icon,
@@ -360,7 +359,6 @@ class _LibraryPageTabsState extends State<_LibraryPageTabs>
   @override
   void didUpdateWidget(covariant _LibraryPageTabs oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Swiping the pages moves the indicator along with them.
     if (widget.selectedIndex != _controller.index) {
       _controller.animateTo(widget.selectedIndex);
     }

@@ -1,5 +1,3 @@
-// Source contract tests.
-//
 // These tests read production files across Dart, Kotlin and Swift by path and
 // pin literal source text on purpose. When a refactor moves code, update the
 // path or the assertion here in the same commit; never delete the check.

@@ -46,7 +46,6 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // The row subtitle names the current mode before the picker opens.
       expect(find.text('Single joined value'), findsOneWidget);
       await tester.tap(find.text('Artist Tag Mode'));
       await tester.pumpAndSettle();
@@ -64,7 +63,6 @@ void main() {
 
       expect(container.read(settingsProvider).artistTagMode, 'primary');
       expect(find.byType(BottomSheet), findsNothing);
-      // The settings row now names the selected mode.
       expect(find.text('Primary artist only'), findsOneWidget);
       expect(tester.takeException(), isNull);
 

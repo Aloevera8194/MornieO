@@ -182,7 +182,6 @@ pub fn clean(path: &Path) -> PathBuf {
 mod tests {
     use super::*;
 
-    // The copy `isrc::native_files` used before it shared this helper.
     fn previous_isrc_clean(path: &Path) -> PathBuf {
         let mut output = PathBuf::new();
         for component in path.components() {

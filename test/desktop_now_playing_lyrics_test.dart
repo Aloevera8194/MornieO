@@ -99,7 +99,6 @@ void main() {
     );
     final coverWidths = <int?>{};
     var playingLine = 40;
-    // The lyrics stay mounted while the panel is closed.
     expect(view, findsOneWidget);
     final lyricsState = tester.state(view);
 
@@ -112,7 +111,6 @@ void main() {
 
     await followPlayback();
 
-    // Whether the lyrics view paints its list at all.
     bool listShown() {
       final list = find
           .descendant(of: view, matching: find.byType(Scrollable))
@@ -150,7 +148,6 @@ void main() {
       expect(dx, dx.roundToDouble(), reason: '$label slid between pixels');
 
       if (panel.opacity == 0) return;
-      // Whenever the panel shows, it shows the lyrics: never a blank panel.
       expect(layer.opacity.value, 1, reason: '$label hid the lyrics');
       expect(listShown(), isTrue, reason: '$label hid the lyrics');
       final viewport = tester.getRect(
@@ -179,7 +176,6 @@ void main() {
         await tester.pump(const Duration(milliseconds: 16));
         checkFrame('close $cycle frame $frame');
       }
-      // The song moves on while the panel is closed.
       playingLine += 10;
       playback.add(pausedAt(playingLine * 3 + 1));
       await followPlayback();

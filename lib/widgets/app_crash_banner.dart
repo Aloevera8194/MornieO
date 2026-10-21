@@ -151,7 +151,6 @@ class _AppCrashBannerState extends ConsumerState<AppCrashBanner> {
           tokens.gapXl,
           tokens.gapXl,
         ),
-        // Same monospace treatment as the log viewer.
         child: SelectableText(
           crash.report,
           style: TextStyle(

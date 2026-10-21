@@ -118,7 +118,6 @@ class _DesktopLibraryDropTargetState
   }
 }
 
-/// A full-window scrim with a drop zone outline and its prompt.
 class _DropOverlay extends StatelessWidget {
   const _DropOverlay();
 

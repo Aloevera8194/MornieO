@@ -23,7 +23,6 @@ const lyricsShareMaxLines = 5;
 /// The logical size of the shared card; captured at 3× for 1080×1920.
 const lyricsShareCardSize = Size(360, 640);
 
-/// One selectable lyric line.
 typedef LyricsShareLine = ({String text, bool background});
 
 /// Lines a card can quote: timed lines in order, or the plain text's lines.
@@ -286,7 +285,6 @@ class _LyricsShareScreenState extends State<LyricsShareScreen> {
                 ),
               ),
             ),
-            // Floating toolbar: background swatches beside the primary action.
             Padding(
               padding: EdgeInsets.fromLTRB(
                 tokens.gapMd,

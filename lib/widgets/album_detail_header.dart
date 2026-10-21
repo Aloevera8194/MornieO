@@ -219,7 +219,6 @@ class AlbumDetailHeader extends StatelessWidget {
         ),
         SliverToBoxAdapter(
           child: Stack(
-            // Centers the metadata when it is narrower than the screen.
             alignment: Alignment.topCenter,
             children: [
               Positioned.fill(
@@ -352,7 +351,6 @@ class AlbumDetailHeader extends StatelessWidget {
       ),
     );
     if (expressive) {
-      // The collapsed title rises into the toolbar as the hero title leaves.
       toolbarTitle = AnimatedSlide(
         duration: titleSlide.duration,
         curve: titleSlide.curve,
@@ -1009,7 +1007,6 @@ class HeaderMetaRow extends StatelessWidget {
     }
 
     return Wrap(
-      // The desktop header sets its details flush with the artwork.
       alignment: isDesktopPlatform ? WrapAlignment.start : WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       runSpacing: 4,
@@ -1028,7 +1025,6 @@ class HeaderMetaItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = HeaderPalette.of(context);
-    // Desktop: the small, bold secondary line under the artist.
     final desktop = isDesktopPlatform;
     final textStyle = TextStyle(
       color: context.isMornye || desktop

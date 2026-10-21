@@ -5,11 +5,6 @@ import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// Download and background-work backend calls: the download strategy entry,
-// the download foreground service, background work notifications, and the
-// native download worker queue. One-line cases stay inline in MainActivity's
-// backend `when`, which dispatches the rest here in the order it lists them.
-
 internal suspend fun MainActivity.handleDownloadByStrategy(call: MethodCall, result: MethodChannel.Result) {
     val requestJson = call.arguments as String
     val response = withContext(Dispatchers.IO) {

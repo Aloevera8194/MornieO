@@ -1,5 +1,3 @@
-//! Unit tests for the native library module.
-
 use super::*;
 use std::cell::Cell;
 use tempfile::TempDir;

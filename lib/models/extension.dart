@@ -1,6 +1,3 @@
-// Manifest-backed models: extension metadata, capabilities, health, and
-// install results.
-
 class ExtensionRestoreResult {
   final int installed;
   final int alreadyPresent;

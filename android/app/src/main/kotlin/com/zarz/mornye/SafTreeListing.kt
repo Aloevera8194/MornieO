@@ -15,10 +15,6 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
-// SAF tree listing for the library scan: child queries with provider-loading
-// retries, readable tree resolution, listing prefetch and the ordered
-// metadata read pool.
-
 // Provider round trips dominate on SD cards, USB drives and network shares.
 private const val SAF_LIST_CONCURRENCY = 4
 private const val SAF_READ_WORKERS = 6

@@ -18,10 +18,6 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.util.Locale
 
-
-// Metadata embedding, cover download, external LRC, and quality-variant
-// filename helpers for NativeDownloadFinalizer.
-
 internal fun NativeDownloadFinalizer.qualityVariantFilenameLabel(state: NativeDownloadFinalizer.FinalizeState): String? {
     return NativeFinalizationPolicy.qualityVariantFilenameLabel(
         measuredQuality = state.quality,

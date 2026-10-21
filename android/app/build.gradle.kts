@@ -148,7 +148,6 @@ android {
         }
     }
 
-    // Split APKs by ABI for smaller individual downloads
     splits {
         abi {
             isEnable = true

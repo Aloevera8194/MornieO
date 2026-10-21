@@ -209,7 +209,6 @@ class _ReEnrichReviewContent extends StatelessWidget {
                           child: Column(children: children),
                         ),
                       )
-                    // Material separates rows with gaps; dividers are Mornye's.
                     : SettingsGroup(
                         connected: true,
                         children: [

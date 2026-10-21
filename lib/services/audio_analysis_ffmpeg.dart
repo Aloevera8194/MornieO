@@ -3,9 +3,6 @@ import 'dart:typed_data';
 
 import 'package:mornye/services/audio_analysis_models.dart';
 
-// Pure FFmpeg argument builders, log/metadata parsers and the spectral
-// cutoff estimator used by the audio analysis runner.
-
 const int audioSpectrogramWidth = 1600;
 const int audioSpectrogramHeight = 800;
 const int audioSpectralAnalysisWidth = 400;

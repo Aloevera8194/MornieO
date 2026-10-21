@@ -244,7 +244,6 @@ void main() {
       await _settle(tester);
       expect(toolbar, findsNothing);
 
-      // Play ends it too.
       await _rightClick(tester, find.text('Alpha'));
       await tester.tap(menuRow('Play'));
       await _settle(tester);

@@ -426,13 +426,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // No large title: the field sits centered in the toolbar.
     expect(find.text('Search'), findsNothing);
     final field = tester.getRect(find.byType(AppSearchField));
     expect(field.center.dx, closeTo(640, 1));
     expect(find.text('Recently Searched'), findsOneWidget);
 
-    // Recents share one row that scrolls sideways.
     final cards = find.byKey(const ValueKey('recent-access-cards'));
     expect(cards, findsOneWidget);
     final first = tester.getRect(find.text('Recent artist 0'));
@@ -440,7 +438,6 @@ void main() {
     expect(second.top, closeTo(first.top, 1));
     expect(second.left, greaterThan(first.right));
 
-    // Each feed section with items becomes a Browse tile that opens it.
     expect(find.text('Browse'), findsOneWidget);
     expect(find.text('Empty section'), findsNothing);
     expect(find.text('New releases'), findsOneWidget);
@@ -457,7 +454,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    // The library scope waits for words, without recents or Browse.
     expect(find.text('Search Your Library'), findsOneWidget);
     expect(find.text('Recently Searched'), findsNothing);
     expect(find.text('Browse'), findsNothing);
@@ -477,7 +473,6 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('All'), findsOneWidget);
     expect(find.text('Owned songs song'), findsNothing);
-    // The online provider is never asked.
     expect(find.text('Found artist'), findsNothing);
     expect(tester.takeException(), isNull);
   });

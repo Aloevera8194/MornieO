@@ -243,8 +243,6 @@ class MornyeApp extends ConsumerWidget {
             Widget appContent = _OrientationFade(
               child: AppScaffoldMessenger(
                 child: PlaybackFeedback(
-                  // Desktop only: music dropped on the window joins the
-                  // Library.
                   child: DesktopLibraryDropTarget(
                     child: child ?? const SizedBox.shrink(),
                   ),

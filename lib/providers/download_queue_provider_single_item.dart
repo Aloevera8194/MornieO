@@ -1,9 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 part of 'download_queue_provider.dart';
 
-/// The per-item download pipeline: metadata enrichment, output resolution,
-/// the native download call, decrypt/convert/embed finalization, and the
-/// history hand-off. Queue scheduling stays in the main file.
 extension _SingleItemDownload on DownloadQueueNotifier {
   Future<String?> _runPostProcessingHooks(
     String filePath,
@@ -110,7 +107,6 @@ class _DownloadRun {
 
   late DownloadResult result;
 
-  // Success-path state shared between finalization stages.
   String? filePath;
   bool wasExisting = false;
   String actualQuality = '';

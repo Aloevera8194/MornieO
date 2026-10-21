@@ -82,7 +82,6 @@ class AppProgressIndicator extends StatelessWidget {
             );
     }
     final scheme = Theme.of(context).colorScheme;
-    // Indeterminate progress always waves.
     final wavy = this.wavy || value == null;
     if (!_circular) {
       return MaterialExpressiveScope(

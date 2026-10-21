@@ -179,7 +179,6 @@ class DownloadQueueWidgetProvider : AppWidgetProvider() {
                         views.setImageViewBitmap(R.id.widget_wave, wavyBar(context, width - 32, percent))
                     }
                 } else {
-                    // The percent replaces the icon inside the ring once known.
                     views.setViewVisibility(R.id.widget_icon, if (determinate) View.GONE else View.VISIBLE)
                     if (running) {
                         views.setImageViewBitmap(R.id.widget_ring, wavyRing(context, percent))

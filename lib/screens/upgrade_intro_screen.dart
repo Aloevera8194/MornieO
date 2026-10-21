@@ -505,7 +505,6 @@ class _TourHeroState extends State<_TourHero> with TickerProviderStateMixin {
     child: Stack(
       alignment: Alignment.center,
       children: [
-        // A thin tonal glow behind the shape.
         DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.circle,

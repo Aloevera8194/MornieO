@@ -7,10 +7,6 @@ import com.zarz.mornye.NativeFinalizationPolicy.normalizeAudioCodec
 import java.io.File
 import java.util.Locale
 
-
-// Lossless container conversion and automatic lossy conversion for
-// NativeDownloadFinalizer.
-
 internal fun NativeDownloadFinalizer.finalizeAutoConversion(
     context: Context,
     input: NativeDownloadFinalizer.FinalizeInput,

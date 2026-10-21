@@ -133,7 +133,6 @@ fn read_limited_matches_the_bounded_read_loops_it_replaced() {
             )
             .unwrap()
     };
-    // The loop shared by the lyrics, resolver and registry readers.
     let previous = |stream: &mut HttpStream, limit: usize, buffer: &mut [u8]| {
         let mut body = Vec::new();
         loop {

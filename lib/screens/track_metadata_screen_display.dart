@@ -1,8 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 part of 'track_metadata_screen.dart';
 
-// Display helpers: quality/bitrate labels, service track-id formatting,
-// snackbars, and path formatting.
 final _spotifyTrackIdPattern = RegExp(r'^[A-Za-z0-9]{22}$');
 
 extension _TrackMetadataDisplay on _TrackMetadataScreenState {

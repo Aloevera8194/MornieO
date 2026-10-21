@@ -162,7 +162,6 @@ class _AudioInfoSheetState extends State<_AudioInfoSheet> {
             ],
             SizedBox(height: context.tokens.gapLg),
             if (context.isMornye)
-              // An iOS action cell: tinted text in the same grouped surface.
               _FactGroup(
                 children: [
                   CupertinoButton(

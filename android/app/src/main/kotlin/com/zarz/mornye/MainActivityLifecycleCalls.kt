@@ -5,11 +5,6 @@ import io.flutter.plugin.common.MethodChannel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-// App and runtime lifecycle backend calls: screen wake, the pending
-// verification notification, install marker and runtime state, exiting the
-// app, backend implementation info, and memory release. MainActivity's
-// backend `when` dispatches each case here, in the order it lists them.
-
 internal fun MainActivity.handleSetScreenAwake(call: MethodCall, result: MethodChannel.Result) {
     val flag = android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
     if (call.argument<Boolean>("enabled") == true) {

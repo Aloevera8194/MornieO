@@ -152,7 +152,6 @@ void main() {
       // and headroom move to mpv's volume.
       final gainInChain = af.contains('volume@pre');
 
-      // Band gains are set again while playing.
       playbackEqualizer.value = playbackEqualizer.value.copyWith(
         gains: [2, 5, 3, 1, 0, 0, 0, 0, 0, 0],
       );

@@ -166,11 +166,9 @@ void main() {
       );
       final delete = button(Icons.delete_outline);
       final removeGain = button(Icons.remove_circle_outline);
-      // Same row and height, delete on the leading side.
       expect(delete.top, removeGain.top);
       expect(delete.height, removeGain.height);
       expect(delete.right, lessThan(removeGain.left));
-      // Nothing sits alone below the row.
       final lowest = tester
           .widgetList<SelectionActionButton>(find.byType(SelectionActionButton))
           .map((widget) => button(widget.icon).top)

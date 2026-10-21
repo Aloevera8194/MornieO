@@ -15,9 +15,6 @@ import java.io.IOException
 import java.time.Instant
 import java.util.Locale
 
-// SAF/MediaStore URI IO helpers: temp copies, writes, sidecars, and the
-// SAF post-processing pipeline.
-
 internal fun errorJson(message: String): String {
         val obj = JSONObject()
         obj.put("success", false)

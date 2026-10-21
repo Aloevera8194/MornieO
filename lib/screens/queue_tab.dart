@@ -416,7 +416,6 @@ class _QueueTabState extends ConsumerState<QueueTab> {
     );
   }
 
-  /// Switches the Albums page between albums and singles.
   void _setAlbumsShowSingles(bool singles) {
     if (_albumsShowSingles == singles) return;
     HapticFeedback.selectionClick();
@@ -908,8 +907,6 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                                 constraints: BoxConstraints(
                                   minWidth: constraints.maxWidth,
                                 ),
-                                // Mornye spreads its glass pills across the
-                                // search field.
                                 child: Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
@@ -1015,7 +1012,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                       },
                     ),
             ),
-          ), // ScrollConfiguration
+          ),
         ],
       ),
     );

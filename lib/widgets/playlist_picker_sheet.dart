@@ -212,7 +212,6 @@ class _PlaylistPickerSheetContentState
               title: Text(context.l10n.collectionAddToPlaylist),
               subtitle: Text(subtitle),
             ),
-          // Material sheets separate the header by space alone.
           if (context.isMornye) const Divider(height: 1),
           _PlaylistPickerRow(
             leading: Icon(

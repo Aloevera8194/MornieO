@@ -153,12 +153,12 @@ class DesktopDiagnostics {
     try {
       if (_marker.existsSync()) _marker.deleteSync();
     } on FileSystemException {
-      // The next launch then shows a report; never block quitting.
+      // Marker cleanup must never block quitting.
     }
     try {
       _log?.flushSync();
     } on FileSystemException {
-      // Same as above.
+      // Log flushing must not block quitting.
     }
   }
 

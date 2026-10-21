@@ -113,7 +113,6 @@ Future<bool> writeReEnrichSidecarLrc({
 }) async {
   if (reEnrichResult['write_external_lrc'] != true) return false;
 
-  // SAF documents are handled natively in Kotlin; nothing to do from Dart.
   if (isContentUri(audioFilePath)) return false;
 
   final lrc = (reEnrichResult['lyrics'] as String?)?.trim() ?? '';

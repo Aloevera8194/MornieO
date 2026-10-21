@@ -458,7 +458,6 @@ class _BatchConvertSheetState extends State<BatchConvertSheet> {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
-      // Same borderless surface as SettingsGroup cards.
       decoration: BoxDecoration(
         color: settingsGroupColor(context),
         borderRadius: BorderRadius.circular(20),

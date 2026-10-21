@@ -15,9 +15,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
-
-// FFmpeg execution, probing, and container helpers for NativeDownloadFinalizer.
-
 internal fun isMP4ContainerFile(path: String): Boolean {
     return try {
         File(path).inputStream().use { stream ->

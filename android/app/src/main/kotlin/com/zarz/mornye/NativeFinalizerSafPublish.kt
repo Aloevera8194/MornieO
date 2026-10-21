@@ -8,9 +8,6 @@ import com.zarz.mornye.NativeFinalizationPolicy.removeQualityVariantStagingLabel
 import org.json.JSONObject
 import java.io.File
 
-
-// Deferred SAF publish helpers for NativeDownloadFinalizer.
-
 internal fun NativeDownloadFinalizer.promoteStagedSafOutputIfNeeded(
     context: Context,
     input: NativeDownloadFinalizer.FinalizeInput,

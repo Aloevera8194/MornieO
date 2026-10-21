@@ -82,7 +82,6 @@ void main() {
       text.style?.fontSize,
       Theme.of(context).textTheme.labelLarge?.fontSize,
     );
-    // A disabled slider dims its pill with it.
     expect(
       pill(tester, '+2 dB')!.color,
       scheme.onSurface.withValues(alpha: 0.12),

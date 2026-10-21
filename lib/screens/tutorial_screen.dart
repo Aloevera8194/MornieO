@@ -789,7 +789,7 @@ class _TutorialPage extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: contentGap),
-                    content, // The content itself now handles its own internal animations
+                    content,
                     SizedBox(height: bottomGap),
                   ],
                 ),

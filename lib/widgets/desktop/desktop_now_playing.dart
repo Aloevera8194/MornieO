@@ -364,7 +364,6 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
   }
 }
 
-/// The cover over the title and the transport.
 class _PlayerColumn extends StatelessWidget {
   const _PlayerColumn({
     required this.mediaItem,
@@ -452,7 +451,6 @@ class _PlayerColumn extends StatelessWidget {
                 ],
               ),
             ),
-            // Music keeps the star beside the title.
             if (mornye)
               MornyePlayerFavoriteButton(
                 mediaItem: mediaItem,
@@ -476,7 +474,6 @@ class _PlayerColumn extends StatelessWidget {
   }
 }
 
-/// A translucent capsule behind the floating controls.
 class _Capsule extends StatelessWidget {
   const _Capsule({required this.child});
 

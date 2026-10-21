@@ -87,7 +87,6 @@ mod tests {
         assert_eq!(lower_hex(&[]), "");
         assert_eq!(lower_hex(&[0x00, 0x0f, 0x7f, 0x80, 0xff]), "000f7f80ff");
         let every: Vec<u8> = (0..=u8::MAX).collect();
-        // The `format!` per byte form used by the mobile digest helpers.
         let previous: String = every.iter().map(|byte| format!("{byte:02x}")).collect();
         assert_eq!(lower_hex(&every), previous);
     }

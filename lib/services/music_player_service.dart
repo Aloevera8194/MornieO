@@ -149,7 +149,6 @@ class MusicPlayerHandler extends BaseAudioHandler
   final Random _random = Random();
   final List<int> _playHistory = [];
 
-  // True when playback was paused because another app took audio focus.
   bool _pausedByInterruption = false;
   bool _interruptionActive = false;
   bool _userPaused = false;
@@ -548,7 +547,6 @@ class MusicPlayerHandler extends BaseAudioHandler
               return;
             }
 
-            // Another app took focus or a transient interruption began.
             _interruptionActive = true;
             _pausedByInterruption =
                 _player.state == PlaybackDeckState.playing ||
@@ -559,8 +557,6 @@ class MusicPlayerHandler extends BaseAudioHandler
               return;
             }
 
-            // Focus returned; resume only if we paused due to a transient
-            // (duck/pause) interruption.
             _interruptionActive = false;
             if (_pausedByInterruption &&
                 event.type == AudioInterruptionType.pause &&

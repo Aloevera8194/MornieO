@@ -11,10 +11,6 @@ import java.io.File
 import java.util.Locale
 import kotlin.math.abs
 
-
-// Metadata stage, ReplayGain tagging, and final audio quality probing for
-// NativeDownloadFinalizer.
-
 internal fun NativeDownloadFinalizer.finalizeMetadata(context: Context, input: NativeDownloadFinalizer.FinalizeInput, state: NativeDownloadFinalizer.FinalizeState) {
     if (!input.request.optBoolean("embed_metadata", false)) return
     if (!state.filePath.startsWith("content://")) {

@@ -183,7 +183,6 @@ class _DownloadServicePickerState extends ConsumerState<DownloadServicePicker> {
                 artistName: widget.artistName,
                 coverUrl: widget.coverUrl,
               ),
-              // Material sheets separate the header by space alone.
               if (context.isMornye)
                 Divider(
                   height: 1,

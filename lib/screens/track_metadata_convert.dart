@@ -1,7 +1,6 @@
 part of 'track_metadata_screen.dart';
 
 extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
-  /// Whether the current file format supports conversion
   bool get _isConvertibleFormat {
     final lower = cleanFilePath.toLowerCase();
     return lower.endsWith('.flac') ||

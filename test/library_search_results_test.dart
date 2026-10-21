@@ -358,7 +358,6 @@ void main() {
         expect(find.textContaining('selected'), findsNothing);
         expect(find.byTooltip('Play'), findsNWidgets(2));
 
-        // A new query starts without the previous selection.
         await tester.longPress(find.text('Song a'));
         await tester.pumpAndSettle();
         expect(find.text('1 selected'), findsOneWidget);

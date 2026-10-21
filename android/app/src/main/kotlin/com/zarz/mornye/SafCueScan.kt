@@ -5,9 +5,6 @@ import org.json.JSONArray
 import java.io.File
 import java.util.Locale
 
-// CUE sheet helpers for the SAF library scan: the audio file a sheet names,
-// cached per-directory child lookups, and resolving the sheet's audio sibling.
-
     /**
      * Extract the audio filename referenced by a CUE sheet file.
      * Reads the FILE "name" TYPE line from the .cue text.

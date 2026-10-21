@@ -1,7 +1,6 @@
 // ignore_for_file: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
 part of 'track_metadata_screen.dart';
 
-// The overflow menu and the Material sheet's header cover.
 extension _TrackMetadataMenu on _TrackMetadataScreenState {
   /// The overflow menu's items in order. Every surface starts a new group
   /// where an item asks for a divider or is destructive.

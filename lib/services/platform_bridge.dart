@@ -968,8 +968,6 @@ class PlatformBridge {
     return result as String;
   }
 
-  // ---- SAF ----
-
   static Future<Map<String, dynamic>?> pickSafTree({
     bool forSetup = false,
   }) async {
@@ -1209,8 +1207,6 @@ class PlatformBridge {
     });
     return result as bool? ?? false;
   }
-
-  // ---- Media files ----
 
   static Future<String> getLyricsLRC(
     String spotifyId,
@@ -2337,7 +2333,6 @@ class PlatformBridge {
     }
   }
 
-  // ---- Application crash diagnostics ----
   // Android reports process exits natively; desktop uses the session marker
   // in DesktopDiagnostics.
 
@@ -2390,8 +2385,6 @@ class PlatformBridge {
       'logs': logs,
     });
   }
-
-  // ---- Library scan ----
 
   static Future<Map<String, dynamic>?> getLibraryScanExitInfo({
     required int startedAfter,

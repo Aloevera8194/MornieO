@@ -4,10 +4,6 @@ import org.json.JSONObject
 import java.io.File
 import java.io.RandomAccessFile
 
-// Resumable SAF scan state: the `<output>.state` checkpoint beside the NDJSON
-// output, its reconciliation with the rows already written, and output repair
-// after an interrupted scan.
-
 internal fun safScanCheckpointPath(outputPath: String): String = "$outputPath.state"
 
 internal fun loadSafScanCheckpoint(path: String): MutableMap<String, Long> {

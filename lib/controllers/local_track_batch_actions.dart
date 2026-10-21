@@ -269,7 +269,6 @@ Future<void> reEnrichLocalTracks(
   );
 
   if (selection == null || !context.mounted || !isActive()) {
-    // Cancelled — restore selection mode (IDs are still intact).
     if (context.mounted && isActive()) onSelectionRestore();
     return;
   }

@@ -670,7 +670,6 @@ class NotificationService {
       body:
           _l10n?.notifUpdateFailedBody ??
           'Could not download update. Try again later.',
-      // Android playSound defaults to true here (was omitted originally).
       details: _details(playSound: true),
     );
   }

@@ -351,7 +351,6 @@ class _UpdateDialogState extends State<UpdateDialog> {
                     padding: context.isMornye
                         ? const EdgeInsets.all(16)
                         : EdgeInsets.zero,
-                    // Material shows progress directly on the dialog surface.
                     decoration: context.isMornye
                         ? BoxDecoration(
                             color: MornyeTheme.controlFill(context),
@@ -558,7 +557,6 @@ class _UpdateDialogState extends State<UpdateDialog> {
     );
   }
 
-  /// Format changelog - clean up markdown and extract relevant content
   String _formatChangelog(String changelog, String emptyFallback) {
     var content = changelog;
 

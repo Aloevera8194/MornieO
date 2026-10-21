@@ -54,7 +54,6 @@ class MaterialPlayerLayout extends StatelessWidget {
                 child: PlayerArtworkDragRegion(
                   child: Hero(
                     tag: kNowPlayingArtworkHeroTag,
-                    // Expressive rest: paused artwork settles smaller and rounder.
                     child: Consumer(
                       builder: (context, ref, artwork) {
                         final resting =

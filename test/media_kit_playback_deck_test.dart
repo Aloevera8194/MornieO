@@ -143,7 +143,6 @@ void main() {
     await _settle();
     expect(engine.properties['af'], contains('volume=-2dB'));
 
-    // Drags coalesce into one write.
     var writes = engine.filterWrites.length;
     for (final gain in [-1.0, -1.5, -2.0]) {
       playbackEqualizer.value = playbackEqualizer.value.copyWith(

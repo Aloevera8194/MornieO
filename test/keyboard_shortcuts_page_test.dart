@@ -39,7 +39,6 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Every registered binding is named on the page.
         final shown = tester
             .widgetList<Text>(find.byType(Text))
             .map((text) => text.data ?? '')

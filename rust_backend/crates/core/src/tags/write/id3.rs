@@ -372,7 +372,6 @@ fn read_frames(
 mod tests {
     use super::*;
 
-    // The decoder `size` inlined before it shared the reader's `syncsafe`.
     fn previous_syncsafe_size(data: &[u8]) -> usize {
         ((data[0] as usize) << 21)
             | ((data[1] as usize) << 14)

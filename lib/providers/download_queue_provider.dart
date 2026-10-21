@@ -86,7 +86,6 @@ final _trimUnderscoresAndSpacesRegex = RegExp(r'^[_ ]+|[_ ]+$');
 final _multiWhitespaceRegex = RegExp(r'\s+');
 final _multiUnderscoreRegex = RegExp(r'_+');
 
-/// log10 helper using dart:math's natural log.
 double _log10(num x) => log(x) / ln10;
 final _yearRegex = RegExp(r'^(\d{4})');
 const _defaultOutputFolderName = 'Mornye';

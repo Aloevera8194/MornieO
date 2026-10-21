@@ -1,5 +1,3 @@
-//! Unit tests for provider metadata value handling.
-
 use super::*;
 use crate::RuntimeLimits;
 use std::sync::atomic::{AtomicBool, Ordering};

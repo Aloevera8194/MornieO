@@ -211,7 +211,6 @@ fn owner_methods_require_initialization_then_round_trip_settings() {
         call("initExtensionSystem", init.clone()).unwrap(),
         Value::Null
     );
-    // Idempotent with the same storage.
     assert_eq!(call("initExtensionSystem", init).unwrap(), Value::Null);
 
     assert_eq!(call("getInstalledExtensions", Value::Null).unwrap(), "[]");

@@ -275,7 +275,6 @@ void main() {
       );
       expect(_radiusOf(panel.shape), BorderRadius.circular(16));
 
-      // The destructive row keeps the error color in the last group.
       expect(
         tester.widget<Text>(find.text('Delete')).style?.color,
         scheme.error,

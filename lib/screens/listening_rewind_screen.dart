@@ -237,7 +237,6 @@ class _YearlyRewindBanner extends StatelessWidget {
                 openListeningRewind(context, ListeningRewindPeriod.year),
             child: Stack(
               children: [
-                // The year as a giant, faded watermark.
                 PositionedDirectional(
                   end: -8,
                   bottom: -28,

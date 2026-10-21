@@ -3,10 +3,6 @@ package com.zarz.mornye
 import android.net.Uri
 import java.util.UUID
 
-// Descriptor leases for zero-copy SAF playback (`safOpenPlaybackLease` and
-// `safClosePlaybackLease`). The lease table lives in MainActivity; these
-// helpers open, close and release the leased descriptors.
-
 /**
  * Opens a short-lived descriptor lease for zero-copy SAF playback. The
  * returned proc path identifies the lease. The Android audio plugin must

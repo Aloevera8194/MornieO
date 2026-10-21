@@ -140,7 +140,6 @@ class PlayerQueueSheet extends ConsumerWidget {
                     child: child,
                   );
                 }
-                // The lifted row springs up slightly larger and rounder.
                 return AnimatedBuilder(
                   animation: animation,
                   child: child,
@@ -179,7 +178,6 @@ class PlayerQueueSheet extends ConsumerWidget {
                       start: 16,
                       end: 4,
                     ),
-                    // The playing song's artwork rounds into a circle.
                     leading: TweenAnimationBuilder<double>(
                       tween: Tween(end: expressive && isCurrent ? 22 : 8),
                       duration: artworkMotion.duration,

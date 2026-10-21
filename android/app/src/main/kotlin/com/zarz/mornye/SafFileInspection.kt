@@ -7,9 +7,6 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.util.Locale
 
-// SAF history file inspection: resolving one file by name inside a document
-// tree, and batch inspection of many history entries with one walk per tree.
-
 internal fun Context.resolveSafFile(treeUriStr: String, relativeDir: String, fileName: String): String {
         val obj = JSONObject()
         if (treeUriStr.isBlank() || fileName.isBlank()) {
