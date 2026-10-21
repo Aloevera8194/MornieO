@@ -254,7 +254,7 @@ class _HomeContinueListeningCard extends ConsumerWidget {
                 rootNavigator: true,
               ).push(NowPlayingRoute(child: const NowPlayingScreen())),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 16, 12),
+          padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 16, 12),
           child: Row(
             children: [
               ClipRRect(

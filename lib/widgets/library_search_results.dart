@@ -437,7 +437,7 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
 
   Widget _shelfHeader(LibrarySearchKind kind) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 20, 20, 8),
+      padding: const EdgeInsetsDirectional.fromSTEB(14, 20, 20, 8),
       child: Align(
         alignment: AlignmentDirectional.centerStart,
         child: Semantics(

@@ -197,9 +197,9 @@ class _ThemePreviewCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                Positioned(
+                PositionedDirectional(
                   bottom: 12,
-                  right: 12,
+                  end: 12,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -453,7 +453,7 @@ class _ColorPalettePicker extends StatelessWidget {
               .padLeft(8, '0')
               .toUpperCase();
           return Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsetsDirectional.only(end: 12),
             child: Semantics(
               button: true,
               selected: isSelected,
@@ -601,7 +601,7 @@ class _HistoryViewSelector extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 8, bottom: 8),
+            padding: const EdgeInsetsDirectional.only(start: 8, bottom: 8),
             child: Text(
               context.l10n.appearanceHistoryView,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(

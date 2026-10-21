@@ -1077,7 +1077,7 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                   )
                 : Padding(
                     key: const ValueKey('dl_header'),
-                    padding: EdgeInsets.fromLTRB(
+                    padding: EdgeInsetsDirectional.fromSTEB(
                       16 + wideListInset(context),
                       4,
                       4 + wideListInset(context),

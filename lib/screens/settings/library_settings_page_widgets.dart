@@ -154,7 +154,7 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
           children: [
             if (isScanning)
               Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsetsDirectional.only(end: 8),
                 child: _AnimatedScanCount(
                   count: scannedFiles,
                   progress: progress,
@@ -387,7 +387,7 @@ class _LibraryHeroCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Text(
                     displayCount.toString(),
                     style: TextStyle(

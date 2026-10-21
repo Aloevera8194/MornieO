@@ -251,13 +251,17 @@ class DesktopInspector extends ConsumerWidget {
         width: desktopInspectorWidth,
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          border: overlay ? null : Border(left: divider),
+          border: overlay ? null : BorderDirectional(start: divider),
+          // The shadow falls toward the content the pane floats over.
           boxShadow: overlay
               ? [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.18),
                     blurRadius: 24,
-                    offset: const Offset(-4, 0),
+                    offset: Offset(
+                      Directionality.of(context) == TextDirection.rtl ? 4 : -4,
+                      0,
+                    ),
                   ),
                 ]
               : null,

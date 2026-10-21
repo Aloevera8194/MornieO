@@ -87,7 +87,7 @@ class AppSliverHeader extends StatelessWidget {
       leadingWidth: showLeading ? kToolbarHeight + edgeInset : null,
       leading: showLeading
           ? Padding(
-              padding: EdgeInsets.only(left: edgeInset),
+              padding: EdgeInsetsDirectional.only(start: edgeInset),
               child:
                   leading ??
                   (context.isMornye
@@ -116,7 +116,7 @@ class AppSliverHeader extends StatelessWidget {
                         )),
             )
           : null,
-      actionsPadding: EdgeInsets.only(right: edgeInset),
+      actionsPadding: EdgeInsetsDirectional.only(end: edgeInset),
       actions: actions,
       flexibleSpace: LayoutBuilder(
         builder: (context, constraints) {
@@ -151,9 +151,9 @@ class AppSliverHeader extends StatelessWidget {
           final bar = FlexibleSpaceBar(
             centerTitle: false,
             expandedTitleScale: 1.0,
-            titlePadding: EdgeInsets.only(
-              left: leftPadding,
-              right: tokens.gapLg,
+            titlePadding: EdgeInsetsDirectional.only(
+              start: leftPadding,
+              end: tokens.gapLg,
               bottom: tokens.gapLg,
             ),
             title: Semantics(

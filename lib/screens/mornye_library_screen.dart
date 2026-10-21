@@ -673,8 +673,8 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
                     child: _LibraryBrowseArtwork(entry: entry),
                   ),
                   if (entry.completeness != null)
-                    Positioned(
-                      right: 8,
+                    PositionedDirectional(
+                      end: 8,
                       bottom: 8,
                       child: _buildCompletenessBadge(entry.completeness!),
                     ),

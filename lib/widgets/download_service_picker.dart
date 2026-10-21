@@ -387,7 +387,7 @@ class _QualityOption extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Icon(
-              CupertinoIcons.chevron_right,
+              CupertinoIcons.right_chevron,
               size: 14,
               color: colorScheme.onSurfaceVariant,
             ),

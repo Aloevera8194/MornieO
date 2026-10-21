@@ -3534,11 +3534,11 @@ void main() {
           await settlePlayer(tester);
           expect(
             tester.widget<Text>(find.text('Together')).textAlign,
-            TextAlign.left,
+            TextAlign.start,
           );
           expect(
             tester.widget<Text>(find.text('Guest returns')).textAlign,
-            TextAlign.right,
+            TextAlign.end,
           );
         }
         expect(tester.takeException(), isNull);
@@ -3644,7 +3644,7 @@ void main() {
             backing.style!.fontSize,
             lessThan(lead.style!.fontSize! * 0.85),
           );
-          expect(backing.textAlign, TextAlign.right);
+          expect(backing.textAlign, TextAlign.end);
           if (mornye) {
             // Inactive vocals shrink around their center. Check the row gap
             // before that paint transform, rather than the scaled text bounds.
@@ -3748,13 +3748,10 @@ void main() {
         await settlePlayer(tester);
         expect(
           tester.widget<Text>(find.text('Lead')).textAlign,
-          TextAlign.left,
+          TextAlign.start,
         );
         for (final text in ['Guest', 'Guest reading', 'Guest translation']) {
-          expect(
-            tester.widget<Text>(find.text(text)).textAlign,
-            TextAlign.right,
-          );
+          expect(tester.widget<Text>(find.text(text)).textAlign, TextAlign.end);
         }
         expect(find.textContaining('v1:'), findsNothing);
         expect(find.textContaining('v2:'), findsNothing);
@@ -3815,7 +3812,7 @@ void main() {
         }
         expect(
           tester.widget<Text>(find.text('Guest translation')).textAlign,
-          TextAlign.right,
+          TextAlign.end,
         );
         playback.add(
           PlaybackState(

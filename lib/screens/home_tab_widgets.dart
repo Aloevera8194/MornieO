@@ -28,7 +28,7 @@ class _SearchProviderDropdown extends ConsumerWidget {
 
     if (!hasAnyProvider) {
       return Padding(
-        padding: const EdgeInsets.only(left: 12, right: 8),
+        padding: const EdgeInsetsDirectional.only(start: 12, end: 8),
         child: SizedBox(
           width: 28,
           height: 28,
@@ -73,7 +73,7 @@ class _SearchProviderDropdown extends ConsumerWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(left: 8),
+      padding: const EdgeInsetsDirectional.only(start: 8),
       child: AppMenuButton<String>(
         icon: Row(
           mainAxisSize: MainAxisSize.min,
@@ -248,7 +248,7 @@ class _TrackItemWithStatus extends ConsumerWidget {
             splashColor: colorScheme.primary.withValues(alpha: 0.12),
             highlightColor: colorScheme.primary.withValues(alpha: 0.08),
             child: Padding(
-              padding: EdgeInsets.fromLTRB(
+              padding: EdgeInsetsDirectional.fromSTEB(
                 12,
                 context.tokens.trackRowPaddingV,
                 6,

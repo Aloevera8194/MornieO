@@ -568,8 +568,8 @@ class _PlaylistPickerThumbnail extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(
-              right: 2,
+            PositionedDirectional(
+              end: 2,
               top: 2,
               child: Container(
                 decoration: BoxDecoration(

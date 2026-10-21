@@ -78,7 +78,7 @@ class _LoadingOrErrorScaffold extends StatelessWidget {
                 elevation: 0,
                 leadingWidth: 68,
                 leading: Padding(
-                  padding: const EdgeInsets.only(left: 12),
+                  padding: const EdgeInsetsDirectional.only(start: 12),
                   child: HeaderCircleButton(
                     icon: Icons.arrow_back,
                     tooltip: MaterialLocalizations.of(
@@ -146,7 +146,7 @@ class _LoadingOrErrorScaffold extends StatelessWidget {
           leadingWidth: context.isMornye ? 68 : null,
           leading: context.isMornye
               ? Padding(
-                  padding: const EdgeInsets.only(left: 12),
+                  padding: const EdgeInsetsDirectional.only(start: 12),
                   child: HeaderCircleButton(
                     icon: Icons.arrow_back,
                     tooltip: MaterialLocalizations.of(
@@ -382,7 +382,7 @@ class _ArtistLoadingScaffold extends StatelessWidget {
             ),
             leadingWidth: kToolbarHeight + edgeInset,
             leading: Padding(
-              padding: EdgeInsets.only(left: edgeInset),
+              padding: EdgeInsetsDirectional.only(start: edgeInset),
               // Centered so the tight leading slot cannot stretch it.
               child: Center(
                 child: HeaderCircleButton(

@@ -557,7 +557,7 @@ class SettingsItem extends StatelessWidget {
                       const SizedBox(width: 8),
                       AppIcon(
                         context.isMornye
-                            ? CupertinoIcons.chevron_forward
+                            ? CupertinoIcons.forward
                             : Icons.chevron_right,
                         size: context.tokens.rowChevronSize,
                         color: colorScheme.onSurfaceVariant,
@@ -1077,7 +1077,10 @@ class SettingsInfoCard extends StatelessWidget {
                 ),
                 if (action != null) ...[
                   SizedBox(height: tokens.gapSm),
-                  Align(alignment: Alignment.centerLeft, child: action!),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: action!,
+                  ),
                 ],
               ],
             ),

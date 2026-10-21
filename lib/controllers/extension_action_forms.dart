@@ -333,7 +333,7 @@ class _AccountFormDialogState extends State<_AccountFormDialog> {
             ),
             if (state.errorText != null)
               Padding(
-                padding: const EdgeInsets.only(left: 4, top: 6),
+                padding: const EdgeInsetsDirectional.only(start: 4, top: 6),
                 child: Text(
                   state.errorText!,
                   style: theme.textTheme.bodySmall?.copyWith(
@@ -367,7 +367,7 @@ class _AccountFormDialogState extends State<_AccountFormDialog> {
         children: [
           if (mornye) ...[
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 6),
+              padding: const EdgeInsetsDirectional.only(start: 4, bottom: 6),
               child: Text(
                 label,
                 style: theme.textTheme.bodySmall?.copyWith(

@@ -143,8 +143,13 @@ class TrackCard extends StatelessWidget {
         tokens.borderRadiusCover;
     final segmentMargin = filled ? TrackCardSegment.marginOf(context) : null;
     final contentPadding = style == TrackCardStyle.flat
-        ? EdgeInsets.fromLTRB(tokens.gapMd, tokens.gapMd, 6, tokens.gapMd)
-        : EdgeInsets.all(tokens.gapMd);
+        ? EdgeInsetsDirectional.fromSTEB(
+            tokens.gapMd,
+            tokens.gapMd,
+            6,
+            tokens.gapMd,
+          )
+        : EdgeInsetsDirectional.all(tokens.gapMd);
 
     final Color? cardColor;
     if (isSelected) {
@@ -394,7 +399,7 @@ class TrackGridPlayButton extends StatelessWidget {
       tooltip: tooltip,
       onPressed: onPressed,
       padding: EdgeInsets.zero,
-      alignment: Alignment.bottomRight,
+      alignment: AlignmentDirectional.bottomEnd,
       style: IconButton.styleFrom(
         minimumSize: Size.square(tokens.minTouchTarget),
         padding: EdgeInsets.zero,

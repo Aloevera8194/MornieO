@@ -66,7 +66,7 @@ class _ArtistConcertsScreenState extends State<ArtistConcertsScreen> {
             surfaceTintColor: Colors.transparent,
             leadingWidth: 64,
             leading: Padding(
-              padding: const EdgeInsets.only(left: 12),
+              padding: const EdgeInsetsDirectional.only(start: 12),
               child: HeaderCircleButton(
                 icon: Icons.arrow_back,
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,

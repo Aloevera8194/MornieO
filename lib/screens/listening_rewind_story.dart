@@ -254,7 +254,7 @@ class _RewindStoryState extends State<_RewindStory>
                 ),
               SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 4, 0),
+                  padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 4, 0),
                   child: Row(
                     children: [
                       Expanded(

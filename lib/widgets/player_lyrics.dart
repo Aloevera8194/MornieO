@@ -1009,7 +1009,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                       height: 24,
                       child: Align(
                         alignment: mornye
-                            ? Alignment.centerLeft
+                            ? AlignmentDirectional.centerStart
                             : Alignment.center,
                         child:
                             isActive &&
@@ -1126,7 +1126,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                 );
                 content = FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment.topLeft,
+                  alignment: AlignmentDirectional.topStart,
                   child: SizedBox(width: layoutWidth, child: content),
                 );
               }
@@ -1157,9 +1157,10 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                       scale: isActive ? 1.0 : 0.96,
                       alignment: !mornye
                           ? Alignment.center
-                          : textAlign == TextAlign.right
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
+                          : (textAlign == TextAlign.end
+                                    ? AlignmentDirectional.centerEnd
+                                    : AlignmentDirectional.centerStart)
+                                .resolve(Directionality.of(context)),
                       duration: motion,
                       curve: Curves.easeOutCubic,
                       child: AnimatedOpacity(
@@ -1187,11 +1188,11 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
     TextAlign align,
     Widget child,
   ) {
-    final alignment = align == TextAlign.right
-        ? Alignment.topRight
+    final AlignmentGeometry alignment = align == TextAlign.end
+        ? AlignmentDirectional.topEnd
         : align == TextAlign.center
         ? Alignment.topCenter
-        : Alignment.topLeft;
+        : AlignmentDirectional.topStart;
     // A fixed-extent row is already shrinking. Measure its contents at full
     // height so fitting does not scale it twice.
     final fullHeight = OverflowBox(

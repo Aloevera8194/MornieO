@@ -90,8 +90,8 @@ class _DesktopScrollArrowsState extends State<DesktopScrollArrows> {
     final mornye = context.isMornye;
     final colorScheme = Theme.of(context).colorScheme;
     final icon = forward
-        ? (mornye ? CupertinoIcons.chevron_forward : Icons.chevron_right)
-        : (mornye ? CupertinoIcons.chevron_back : Icons.chevron_left);
+        ? (mornye ? CupertinoIcons.forward : Icons.chevron_right)
+        : (mornye ? CupertinoIcons.back : Icons.chevron_left);
     return PositionedDirectional(
       start: forward ? null : 8,
       end: forward ? 8 : null,

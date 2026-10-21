@@ -473,7 +473,7 @@ class _BatchConvertSheetState extends State<BatchConvertSheet> {
 
   Widget _sectionLabel(ColorScheme cs, String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, bottom: 12),
+      padding: const EdgeInsetsDirectional.only(start: 2, bottom: 12),
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(

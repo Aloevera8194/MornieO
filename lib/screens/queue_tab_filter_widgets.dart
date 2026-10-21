@@ -23,7 +23,7 @@ extension _QueueTabFilterWidgets on _QueueTabState {
           Expanded(
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              alignment: Alignment.centerRight,
+              alignment: AlignmentDirectional.centerEnd,
               child: Row(mainAxisSize: MainAxisSize.min, children: actions),
             ),
           ),
@@ -1235,8 +1235,8 @@ extension _QueueTabFilterWidgets on _QueueTabState {
                   borderRadius: BorderRadius.circular(12),
                   child: coverWidget ?? _albumPlaceholder(colorScheme),
                 ),
-                Positioned(
-                  right: 8,
+                PositionedDirectional(
+                  end: 8,
                   bottom: 8,
                   child: Tooltip(
                     message:

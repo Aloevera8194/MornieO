@@ -145,7 +145,7 @@ class MetadataEditorSelectionField extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 6),
+              padding: const EdgeInsetsDirectional.only(start: 4, bottom: 6),
               child: Text(
                 label,
                 style: Theme.of(
@@ -192,7 +192,7 @@ class MetadataEditorSelectionField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
+            padding: const EdgeInsetsDirectional.only(start: 4, bottom: 6),
             child: Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
@@ -209,7 +209,7 @@ class MetadataEditorSelectionField extends StatelessWidget {
             child: InkWell(
               onTap: enabled ? onTap : null,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 12, 14),
                 child: Row(
                   children: [
                     Expanded(

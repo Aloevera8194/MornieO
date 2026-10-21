@@ -187,7 +187,7 @@ class MornyePlayerQueue extends ConsumerWidget {
                   key: ObjectKey(item),
                   onRemove: () => controller.removeQueuedItem(item),
                   child: ListTile(
-                    contentPadding: const EdgeInsets.only(left: 12),
+                    contentPadding: const EdgeInsetsDirectional.only(start: 12),
                     minVerticalPadding: 6,
                     leading: ClipRRect(
                       borderRadius: BorderRadius.circular(5),

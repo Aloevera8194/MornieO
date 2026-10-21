@@ -758,7 +758,7 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
               ),
               leadingWidth: kToolbarHeight + edgeInset,
               leading: Padding(
-                padding: EdgeInsets.only(left: edgeInset),
+                padding: EdgeInsetsDirectional.only(start: edgeInset),
                 // Centered so the tight leading slot cannot stretch it.
                 child: Center(
                   child: HeaderCircleButton(
@@ -770,7 +770,7 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
                   ),
                 ),
               ),
-              actionsPadding: EdgeInsets.only(right: edgeInset),
+              actionsPadding: EdgeInsetsDirectional.only(end: edgeInset),
               actions: [
                 HeaderCircleButton(
                   icon: Icons.more_vert,

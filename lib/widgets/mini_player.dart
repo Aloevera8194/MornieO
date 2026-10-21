@@ -355,8 +355,14 @@ class _MiniPlayerProgress extends ConsumerWidget {
     required this.playing,
   });
 
+  // Playback progress fills left to right in right-to-left layouts too.
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => Directionality(
+    textDirection: TextDirection.ltr,
+    child: _buildProgress(context, ref),
+  );
+
+  Widget _buildProgress(BuildContext context, WidgetRef ref) {
     final durationMs = duration.inMilliseconds;
     final positionMs = ref.watch(playbackPositionProvider).inMilliseconds;
     final progress = durationMs > 0

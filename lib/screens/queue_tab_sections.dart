@@ -331,7 +331,7 @@ extension _QueueTabSections on _QueueTabState {
     }
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: Align(alignment: Alignment.centerLeft, child: toggle),
+      child: Align(alignment: AlignmentDirectional.centerStart, child: toggle),
     );
   }
 

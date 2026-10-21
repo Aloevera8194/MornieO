@@ -90,9 +90,7 @@ class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
                             onPressed: () => _goTo(_page - 1),
                             color: scheme.primary,
                             icon: Icon(
-                              mornye
-                                  ? CupertinoIcons.chevron_back
-                                  : Icons.arrow_back,
+                              mornye ? CupertinoIcons.back : Icons.arrow_back,
                             ),
                           )
                         else
@@ -217,7 +215,7 @@ class _UpgradeIntroScreenState extends State<UpgradeIntroScreen> {
                             ? null
                             : Icon(
                                 mornye
-                                    ? CupertinoIcons.arrow_right
+                                    ? mornyeArrowForward
                                     : Icons.arrow_forward,
                               ),
                         style: FilledButton.styleFrom(
@@ -623,7 +621,7 @@ class _FeatureRow extends StatelessWidget {
     const inner = Radius.circular(6);
     final url = feature.url;
     final row = Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 20, 16),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 20, 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

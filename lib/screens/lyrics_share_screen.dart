@@ -706,7 +706,7 @@ class LyricsShareCard extends StatelessWidget {
                           constraints: const BoxConstraints(maxHeight: 380),
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
-                            alignment: Alignment.topLeft,
+                            alignment: AlignmentDirectional.topStart,
                             child: SizedBox(
                               width: lyricsShareCardSize.width - 100,
                               child: lines.isEmpty
@@ -757,7 +757,12 @@ class LyricsShareCard extends StatelessWidget {
                   const Spacer(),
                   Center(
                     child: Container(
-                      padding: const EdgeInsets.fromLTRB(6, 6, 14, 6),
+                      padding: const EdgeInsetsDirectional.fromSTEB(
+                        6,
+                        6,
+                        14,
+                        6,
+                      ),
                       decoration: ShapeDecoration(
                         color: foreground.withValues(
                           alpha: light ? 0.06 : 0.14,

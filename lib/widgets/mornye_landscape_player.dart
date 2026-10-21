@@ -176,8 +176,8 @@ class _MornyeLandscapePlayerState extends State<MornyeLandscapePlayer> {
                                               child: widget.lyrics,
                                             ),
                                             if (widget.lyricsOptions != null)
-                                              Positioned(
-                                                left: 20,
+                                              PositionedDirectional(
+                                                start: 20,
                                                 bottom: 52,
                                                 child: IgnorePointer(
                                                   ignoring: !_actionsVisible,

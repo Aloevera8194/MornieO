@@ -151,7 +151,12 @@ class _ReEnrichReviewContent extends StatelessWidget {
                       label:
                           '${_fieldLabel(context, change.field)}: ${_oldValue(context, change)}, ${_newValue(context, change)}',
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(56, 10, 16, 10),
+                        padding: const EdgeInsetsDirectional.fromSTEB(
+                          56,
+                          10,
+                          16,
+                          10,
+                        ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

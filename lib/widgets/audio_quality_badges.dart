@@ -104,7 +104,7 @@ class ExplicitTrackTitle extends StatelessWidget {
               child: Transform.translate(
                 offset: const Offset(0, -2),
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 6),
+                  padding: const EdgeInsetsDirectional.only(start: 6),
                   child: ExplicitBadge(
                     colorScheme: colorScheme ?? Theme.of(context).colorScheme,
                   ),

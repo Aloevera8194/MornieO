@@ -7,12 +7,12 @@ class LyricSupplementTransition extends StatelessWidget {
     super.key,
     required this.visibility,
     required this.child,
-    this.alignment = Alignment.topLeft,
+    this.alignment = AlignmentDirectional.topStart,
   });
 
   final double visibility;
   final Widget child;
-  final Alignment alignment;
+  final AlignmentGeometry alignment;
 
   @override
   Widget build(BuildContext context) => Align(
@@ -36,12 +36,12 @@ class LyricBackingTransition extends StatelessWidget {
     super.key,
     required this.visibility,
     required this.child,
-    this.alignment = Alignment.topLeft,
+    this.alignment = AlignmentDirectional.topStart,
   });
 
   final double visibility;
   final Widget child;
-  final Alignment alignment;
+  final AlignmentGeometry alignment;
 
   @override
   Widget build(BuildContext context) {

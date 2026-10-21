@@ -81,8 +81,8 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                     ),
             ),
           if (isFailed)
-            Positioned(
-              right: 4,
+            PositionedDirectional(
+              end: 4,
               top: 4,
               child: Container(
                 padding: const EdgeInsets.all(4),
@@ -151,8 +151,8 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
           : _navigateToMetadataScreen(item),
       cover: Hero(tag: heroTag, child: cover),
       overlays: [
-        Positioned(
-          right: 4,
+        PositionedDirectional(
+          end: 4,
           top: 4,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -168,18 +168,18 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
           ),
         ),
         if (quality != null && quality.isNotEmpty)
-          Positioned(
-            left: 4,
-            right: 28,
+          PositionedDirectional(
+            start: 4,
+            end: 28,
             top: 4,
             child: Align(
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: _buildLibraryQualityBadge(context, colorScheme, quality),
             ),
           ),
         if (playablePath != null)
-          Positioned(
-            right: 4,
+          PositionedDirectional(
+            end: 4,
             bottom: 4,
             child: ValueListenableBuilder<CompletionBridgePlayableResult>(
               valueListenable: _completionBridgePlayableProbe.listenable(
@@ -325,7 +325,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
           if (quality != null && quality.isNotEmpty) ...[
             const SizedBox(height: 4),
             Align(
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: _buildLibraryQualityBadge(
                 context,
                 colorScheme,
@@ -427,7 +427,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
       child: !listStyle && isDetailed
           ? FittedBox(
               fit: BoxFit.scaleDown,
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: label,
             )
           : label,
@@ -814,9 +814,9 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                       ),
                     ),
                   if (_isPlaylistSelectionMode)
-                    Positioned(
+                    PositionedDirectional(
                       top: 4,
-                      right: 4,
+                      end: 4,
                       child: IgnorePointer(
                         child: AnimatedSelectionCheckbox(
                           visible: true,

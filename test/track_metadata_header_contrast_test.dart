@@ -112,7 +112,7 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        expect(find.byIcon(CupertinoIcons.chevron_back), findsOneWidget);
+        expect(find.byIcon(CupertinoIcons.back), findsOneWidget);
         expect(find.byIcon(CupertinoIcons.ellipsis), findsOneWidget);
         expect(find.byType(Card), findsNothing);
         final row = find.widgetWithText(MornyeMetadataRow, 'Track name');

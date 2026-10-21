@@ -57,7 +57,7 @@ class MetadataTextField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
+            padding: const EdgeInsetsDirectional.only(start: 4, bottom: 6),
             child: Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(

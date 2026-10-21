@@ -134,12 +134,10 @@ class _ExtensionDetailsScreenState
       ),
       leadingWidth: kToolbarHeight + edgeInset,
       leading: Padding(
-        padding: EdgeInsets.only(left: edgeInset),
+        padding: EdgeInsetsDirectional.only(start: edgeInset),
         child: AppIconButton(
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-          icon: Icon(
-            context.isMornye ? CupertinoIcons.chevron_back : Icons.arrow_back,
-          ),
+          icon: Icon(context.isMornye ? CupertinoIcons.back : Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
       ),

@@ -167,7 +167,7 @@ List<Widget> desktopDetailHeaderSlivers(
       (Navigator.canPop(context)
           ? (mornye
                 ? HeaderCircleButton(
-                    icon: CupertinoIcons.chevron_back,
+                    icon: CupertinoIcons.back,
                     tooltip: MaterialLocalizations.of(
                       context,
                     ).backButtonTooltip,

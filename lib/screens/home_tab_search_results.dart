@@ -475,9 +475,11 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
           // Aligned with the clamped result list below on wide screens.
           padding:
               (mornye
-                  ? const EdgeInsets.fromLTRB(20, 16, 12, 10)
-                  : const EdgeInsets.fromLTRB(16, 8, 8, 8)) +
-              EdgeInsets.symmetric(horizontal: wideListInset(context)),
+                      ? const EdgeInsetsDirectional.fromSTEB(20, 16, 12, 10)
+                      : const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 8))
+                  .add(
+                    EdgeInsets.symmetric(horizontal: wideListInset(context)),
+                  ),
           child: Row(
             children: [
               Expanded(
@@ -748,12 +750,12 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
         child: Row(
           children: [
             Padding(
-              padding: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsetsDirectional.only(end: 8),
               child: filterChip('all', context.l10n.historyFilterAll),
             ),
             ...filters.map((filter) {
               return Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsetsDirectional.only(end: 8),
                 child: filterChip(
                   filter.id,
                   filter.label ?? filter.id,

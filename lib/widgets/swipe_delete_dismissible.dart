@@ -55,8 +55,9 @@ class _SwipeDeleteDismissibleState extends State<SwipeDeleteDismissible> {
           color: reached ? colorScheme.error : colorScheme.errorContainer,
           borderRadius: radius,
         ),
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
+        // The row slides toward the start, uncovering its end.
+        alignment: AlignmentDirectional.centerEnd,
+        padding: const EdgeInsetsDirectional.only(end: 20),
         child: Transform.scale(
           scale: expressive ? scale : 1,
           child: AppIcon(

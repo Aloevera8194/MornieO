@@ -352,8 +352,14 @@ class _Transport extends ConsumerWidget {
 
   final bool enabled;
 
+  // Media controls keep their order in right-to-left layouts.
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => Directionality(
+    textDirection: TextDirection.ltr,
+    child: _buildControls(context, ref),
+  );
+
+  Widget _buildControls(BuildContext context, WidgetRef ref) {
     final controller = ref.read(musicPlayerControllerProvider);
     final isPlaying = ref.watch(playbackPlayingProvider);
     final isLoading = ref.watch(playbackLoadingProvider);
@@ -457,8 +463,14 @@ class _SeekRow extends ConsumerWidget {
   /// The Mornye LCD's thin bar with a small thumb.
   final bool dense;
 
+  // Time runs left to right in right-to-left layouts too.
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => Directionality(
+    textDirection: TextDirection.ltr,
+    child: _buildRow(context, ref),
+  );
+
+  Widget _buildRow(BuildContext context, WidgetRef ref) {
     final item = mediaItem;
     final colorScheme = Theme.of(context).colorScheme;
     final mornye = context.isMornye;

@@ -315,7 +315,7 @@ class _MaterialTrackSkeleton extends StatelessWidget {
     // Flat card margin plus its content padding, centered on wide screens.
     final inset = wideListInset(context);
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         tokens.gapSm + tokens.gapMd + inset,
         2 + tokens.gapMd,
         tokens.gapSm + 6 + inset,
@@ -1112,7 +1112,10 @@ class _MornyeTrackSkeleton extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: EdgeInsets.only(left: numbered ? 64 : 80, right: 20),
+          padding: EdgeInsetsDirectional.only(
+            start: numbered ? 64 : 80,
+            end: 20,
+          ),
           child: const Divider(height: 1, thickness: 0.5),
         ),
       ],
@@ -1199,9 +1202,9 @@ class HomeSearchSkeleton extends StatelessWidget {
         Padding(
           padding:
               (mornye
-                  ? const EdgeInsets.fromLTRB(20, 16, 12, 10)
-                  : const EdgeInsets.fromLTRB(16, 8, 8, 8)) +
-              EdgeInsets.symmetric(horizontal: inset),
+                      ? const EdgeInsetsDirectional.fromSTEB(20, 16, 12, 10)
+                      : const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 8))
+                  .add(EdgeInsets.symmetric(horizontal: inset)),
           child: ShimmerLoading(
             child: Row(
               children: [

@@ -98,8 +98,8 @@ class PlayerLyricsSection extends ConsumerWidget {
             onLongPressLine: onShareLyrics,
           ),
           if (options != null)
-            Positioned(
-              left: context.isMornye ? mornyeLyricsContentInset : 24,
+            PositionedDirectional(
+              start: context.isMornye ? mornyeLyricsContentInset : 24,
               bottom: 8,
               child: options!,
             ),

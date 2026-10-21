@@ -24,14 +24,14 @@ extension _TrackMetadataMornye on _TrackMetadataScreenState {
               title: Text(context.l10n.trackMetadata),
               leadingWidth: 64,
               leading: Padding(
-                padding: const EdgeInsets.only(left: 16),
+                padding: const EdgeInsetsDirectional.only(start: 16),
                 child: HeaderCircleButton(
-                  icon: CupertinoIcons.chevron_back,
+                  icon: CupertinoIcons.back,
                   tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                   onPressed: _popWithMetadataResult,
                 ),
               ),
-              actionsPadding: const EdgeInsets.only(right: 16),
+              actionsPadding: const EdgeInsetsDirectional.only(end: 16),
               actions: [
                 Builder(
                   builder: (buttonContext) => HeaderCircleButton(

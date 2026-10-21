@@ -167,16 +167,16 @@ class AlbumDetailHeader extends StatelessWidget {
       ),
       leadingWidth: kToolbarHeight + edgeInset,
       leading: Padding(
-        padding: EdgeInsets.only(left: edgeInset),
+        padding: EdgeInsetsDirectional.only(start: edgeInset),
         child:
             leading ??
             HeaderCircleButton(
-              icon: CupertinoIcons.chevron_back,
+              icon: CupertinoIcons.back,
               tooltip: MaterialLocalizations.of(context).backButtonTooltip,
               onPressed: () => Navigator.pop(context),
             ),
       ),
-      actionsPadding: EdgeInsets.only(right: edgeInset),
+      actionsPadding: EdgeInsetsDirectional.only(end: edgeInset),
       actions: appBarActions,
     );
     if (immersive) {
@@ -515,7 +515,7 @@ class AlbumDetailHeader extends StatelessWidget {
       ),
       leadingWidth: kToolbarHeight + iosEdgeInset,
       leading: Padding(
-        padding: EdgeInsets.only(left: iosEdgeInset),
+        padding: EdgeInsetsDirectional.only(start: iosEdgeInset),
         child:
             leading ??
             // Centered so the tight leading slot cannot stretch the circle.
@@ -536,7 +536,7 @@ class AlbumDetailHeader extends StatelessWidget {
               ),
             ),
       ),
-      actionsPadding: EdgeInsets.only(right: iosEdgeInset),
+      actionsPadding: EdgeInsetsDirectional.only(end: iosEdgeInset),
       actions: appBarActions,
     );
   }

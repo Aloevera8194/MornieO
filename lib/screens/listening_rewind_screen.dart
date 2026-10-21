@@ -394,7 +394,11 @@ class _RewindMessage extends StatelessWidget {
             ),
           ),
         ),
-        Positioned(top: 8, right: 8, child: _CloseButton(color: foreground)),
+        PositionedDirectional(
+          top: 8,
+          end: 8,
+          child: _CloseButton(color: foreground),
+        ),
       ],
     ),
   );

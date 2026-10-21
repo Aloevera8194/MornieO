@@ -452,9 +452,12 @@ void main() {
 
       final appBar = tester.widget<SliverAppBar>(find.byType(SliverAppBar));
       expect(appBar.leadingWidth, kToolbarHeight + 12);
-      expect(appBar.actionsPadding, const EdgeInsets.only(right: 12));
+      expect(appBar.actionsPadding, const EdgeInsetsDirectional.only(end: 12));
       final leadingPadding = appBar.leading! as Padding;
-      expect(leadingPadding.padding, const EdgeInsets.only(left: 12));
+      expect(
+        leadingPadding.padding,
+        const EdgeInsetsDirectional.only(start: 12),
+      );
     });
   });
 

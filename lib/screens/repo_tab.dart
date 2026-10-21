@@ -862,7 +862,7 @@ class _RepoListSkeleton extends StatelessWidget {
             ),
           ),
           trailing: Padding(
-            padding: EdgeInsets.only(left: tokens.gapMd),
+            padding: EdgeInsetsDirectional.only(start: tokens.gapMd),
             child: ShimmerLoading(
               surface: surface,
               child: SkeletonBox(
@@ -996,7 +996,7 @@ class _ExtensionItem extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
       trailing: Padding(
-        padding: EdgeInsets.only(left: tokens.gapMd),
+        padding: EdgeInsetsDirectional.only(start: tokens.gapMd),
         child: isDownloading
             ? const AppLoadingIndicator(size: 24)
             : !context.isMornye

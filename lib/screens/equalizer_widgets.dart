@@ -140,7 +140,7 @@ class _EqualizerOverview extends StatelessWidget {
     final enabled = settings.enabled;
     final curveColor = enabled ? colors.primary : colors.outline;
     return Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         tokens.rowPaddingH,
         tokens.gapLg,
         tokens.gapLg,
@@ -651,7 +651,7 @@ class _SliderTile extends StatelessWidget {
       fontFeatures: const [FontFeature.tabularFigures()],
     );
     final content = Padding(
-      padding: EdgeInsets.fromLTRB(
+      padding: EdgeInsetsDirectional.fromSTEB(
         tokens.rowPaddingH + (indented && !mornye ? 24 + tokens.rowIconGap : 0),
         tokens.rowPaddingVCompact,
         tokens.rowPaddingH,

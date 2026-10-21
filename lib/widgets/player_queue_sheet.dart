@@ -65,7 +65,7 @@ class PlayerQueueSheet extends ConsumerWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 4, 16, 8),
+          padding: const EdgeInsetsDirectional.fromSTEB(24, 4, 16, 8),
           child: Row(
             children: [
               Expanded(
@@ -175,7 +175,10 @@ class PlayerQueueSheet extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(_rowRadius),
                           )
                         : null,
-                    contentPadding: const EdgeInsets.only(left: 16, right: 4),
+                    contentPadding: const EdgeInsetsDirectional.only(
+                      start: 16,
+                      end: 4,
+                    ),
                     // The playing song's artwork rounds into a circle.
                     leading: TweenAnimationBuilder<double>(
                       tween: Tween(end: expressive && isCurrent ? 22 : 8),

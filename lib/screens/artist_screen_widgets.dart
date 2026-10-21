@@ -534,14 +534,14 @@ extension _ArtistScreenSections on _ArtistScreenState {
       ),
       leadingWidth: kToolbarHeight + edgeInset,
       leading: Padding(
-        padding: EdgeInsets.only(left: edgeInset),
+        padding: EdgeInsetsDirectional.only(start: edgeInset),
         child: HeaderCircleButton(
           icon: Icons.arrow_back,
           tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      actionsPadding: EdgeInsets.only(right: edgeInset),
+      actionsPadding: EdgeInsetsDirectional.only(end: edgeInset),
       actions: [
         HeaderCircleButton(
           icon: Icons.open_in_new_rounded,
@@ -625,7 +625,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
                 ),
                 const SizedBox(width: 8),
                 Icon(
-                  CupertinoIcons.chevron_forward,
+                  CupertinoIcons.forward,
                   size: 14,
                   color: Colors.white.withValues(alpha: 0.7),
                 ),
@@ -781,7 +781,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
                   hasLocalPlaybackCandidate: isInHistory || isInLocalLibrary,
                 ),
             child: Padding(
-              padding: EdgeInsets.fromLTRB(
+              padding: EdgeInsetsDirectional.fromSTEB(
                 context.isMornye ? 20 : 16,
                 8,
                 10,
@@ -904,9 +904,9 @@ extension _ArtistScreenSections on _ArtistScreenState {
         return Stack(
           children: [
             row,
-            Positioned(
-              left: 80,
-              right: 20,
+            PositionedDirectional(
+              start: 80,
+              end: 20,
               bottom: 0,
               child: Divider(
                 height: 1,
@@ -1204,9 +1204,9 @@ extension _ArtistScreenSections on _ArtistScreenState {
                         ),
                       ),
                     if (isSelectionMode)
-                      Positioned(
+                      PositionedDirectional(
                         top: 8,
-                        right: 8,
+                        end: 8,
                         child: AnimatedSelectionCheckbox(
                           visible: true,
                           selected: isSelected,
@@ -1218,8 +1218,8 @@ extension _ArtistScreenSections on _ArtistScreenState {
                         ),
                       ),
                     if (showTypeBadge)
-                      Positioned(
-                        left: 6,
+                      PositionedDirectional(
+                        start: 6,
                         bottom: 6,
                         child: Container(
                           padding: const EdgeInsets.symmetric(

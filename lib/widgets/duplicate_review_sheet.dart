@@ -308,7 +308,7 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
     return SettingsGroup(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 8, 4),
           child: Row(
             children: [
               Expanded(

@@ -234,7 +234,9 @@ class MornyeArtistHeader extends StatelessWidget {
             surfaceTintColor: Colors.transparent,
             leadingWidth: 64,
             leading: Padding(
-              padding: EdgeInsets.only(left: isDesktopPlatform ? 16 : 12),
+              padding: EdgeInsetsDirectional.only(
+                start: isDesktopPlatform ? 16 : 12,
+              ),
               child: Align(
                 alignment: AlignmentDirectional.centerStart,
                 widthFactor: 1,

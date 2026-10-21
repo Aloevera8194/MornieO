@@ -175,7 +175,7 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
               surfaceTintColor: Colors.transparent,
               leadingWidth: 64,
               leading: Padding(
-                padding: const EdgeInsets.only(left: 12),
+                padding: const EdgeInsetsDirectional.only(start: 12),
                 child: HeaderCircleButton(
                   icon: Icons.arrow_back,
                   tooltip: MaterialLocalizations.of(context).backButtonTooltip,
@@ -184,7 +184,7 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
               ),
               actions: [
                 Padding(
-                  padding: const EdgeInsets.only(right: 12),
+                  padding: const EdgeInsetsDirectional.only(end: 12),
                   child: Builder(
                     builder: (context) => HeaderCircleButton(
                       icon: CupertinoIcons.share,
@@ -217,8 +217,8 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
                                   ),
                           ),
                         ),
-                        Positioned(
-                          right: -4,
+                        PositionedDirectional(
+                          end: -4,
                           bottom: -4,
                           child: Container(
                             width: 64,
@@ -383,7 +383,7 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
                       if (hasSetList) ...[
                         const SizedBox(height: 32),
                         Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: AlignmentDirectional.centerStart,
                           child: Text(
                             context.l10n.concertSetList,
                             style: const TextStyle(
@@ -425,10 +425,7 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                const Icon(
-                                  CupertinoIcons.chevron_forward,
-                                  size: 18,
-                                ),
+                                const Icon(CupertinoIcons.forward, size: 18),
                               ],
                             ),
                           ),
@@ -507,8 +504,8 @@ class _ConcertDetailScreenState extends State<ConcertDetailScreen> {
                                 ),
                         ),
                       ),
-                      Positioned(
-                        right: -4,
+                      PositionedDirectional(
+                        end: -4,
                         bottom: -4,
                         child: Container(
                           width: 64,

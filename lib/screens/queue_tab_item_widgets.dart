@@ -103,7 +103,7 @@ extension _QueueTabItemWidgets on _QueueTabState {
             background: item.status == DownloadStatus.downloading
                 ? SmoothedProgressBuilder(
                     builder: (context, progress, child) => Align(
-                      alignment: Alignment.centerLeft,
+                      alignment: AlignmentDirectional.centerStart,
                       child: FractionallySizedBox(
                         widthFactor: progress,
                         child: child,
@@ -112,8 +112,8 @@ extension _QueueTabItemWidgets on _QueueTabState {
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
+                          begin: AlignmentDirectional.centerStart,
+                          end: AlignmentDirectional.centerEnd,
                           colors: [
                             colorScheme.primary.withValues(alpha: 0.16),
                             colorScheme.primary.withValues(alpha: 0.04),
@@ -1193,8 +1193,8 @@ extension _QueueTabItemWidgets on _QueueTabState {
       ),
       overlays: [
         if (!_isSelectionMode)
-          Positioned(
-            right: 4,
+          PositionedDirectional(
+            end: 4,
             top: 4,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -1211,19 +1211,19 @@ extension _QueueTabItemWidgets on _QueueTabState {
             ),
           ),
         if (quality != null && quality.isNotEmpty)
-          Positioned(
-            left: 4,
-            right: _isSelectionMode ? 4 : 28,
+          PositionedDirectional(
+            start: 4,
+            end: _isSelectionMode ? 4 : 28,
             top: 4,
             child: Align(
-              alignment: Alignment.centerLeft,
+              alignment: AlignmentDirectional.centerStart,
               child: _buildLibraryQualityBadge(context, colorScheme, quality),
             ),
           ),
         // A desktop click selects, so the play button stays during selection.
         if (!_isSelectionMode || isDesktopPlatform)
-          Positioned(
-            right: 4,
+          PositionedDirectional(
+            end: 4,
             bottom: 4,
             child: ValueListenableBuilder<bool>(
               valueListenable: fileExistsListenable,
@@ -1269,8 +1269,8 @@ extension _QueueTabItemWidgets on _QueueTabState {
             ),
           ),
         if (_isSelectionMode)
-          Positioned(
-            right: 4,
+          PositionedDirectional(
+            end: 4,
             top: 4,
             child: AnimatedSelectionCheckbox(
               visible: true,
