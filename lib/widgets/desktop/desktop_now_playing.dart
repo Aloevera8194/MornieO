@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart' show CupertinoButton, CupertinoIcons;
@@ -8,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/controllers/player_metadata_controller.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/playback_seek_preview.dart';
 import 'package:mornye/widgets/app_icon.dart';
@@ -40,6 +42,9 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
   final _metadata = PlayerMetadataController();
   final _seekPreview = PlaybackSeekPreview();
   ProviderSubscription<AsyncValue<MediaItem?>>? _mediaItemSub;
+
+  /// The panel on the trailing side, kept while it animates closed.
+  DesktopInspectorPanel? _lastPanel;
 
   @override
   void initState() {
@@ -188,57 +193,122 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
     MediaItem mediaItem,
     ColorScheme colorScheme,
     DesktopInspectorPanel? panel,
-  ) => LayoutBuilder(
-    builder: (context, constraints) {
-      final side = panel != null;
-      // The cover column leaves room for the title and transport below.
-      final columnWidth = math.max(
-        240.0,
-        math.min(
-          side ? math.min(440.0, constraints.maxWidth * 0.34) : 520.0,
-          constraints.maxHeight - 340,
+  ) {
+    if (panel != null) _lastPanel = panel;
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    // Opening follows the panel motion; closing eases out without
+    // overshoot.
+    final motion = panel != null
+        ? desktopInspectorMotion(context)
+        : const AppMotionSpec(Duration(milliseconds: 260), Curves.easeInCubic);
+    return LayoutBuilder(
+      builder: (context, constraints) => TweenAnimationBuilder<double>(
+        tween: Tween(end: panel != null ? 1 : 0),
+        duration: reduce ? Duration.zero : motion.duration,
+        curve: motion.curve,
+        onEnd: () {
+          if (panel == null && mounted) setState(() => _lastPanel = null);
+        },
+        builder: (context, progress, _) =>
+            _sideLayout(context, constraints, mediaItem, colorScheme, progress),
+      ),
+    );
+  }
+
+  /// The cover column moves from the middle to the leading 5/11 of the
+  /// window as [progress] goes from 0 to 1, while the last panel fades in
+  /// on the trailing 6/11.
+  Widget _sideLayout(
+    BuildContext context,
+    BoxConstraints constraints,
+    MediaItem mediaItem,
+    ColorScheme colorScheme,
+    double progress,
+  ) {
+    final width = constraints.maxWidth;
+    final size = progress.clamp(0.0, 1.0);
+    // The cover column leaves room for the title and transport below.
+    double columnWidthFor(double limit) =>
+        math.max(240.0, math.min(limit, constraints.maxHeight - 340));
+    final columnWidth = lerpDouble(
+      columnWidthFor(520),
+      columnWidthFor(math.min(440.0, width * 0.34)),
+      size,
+    )!;
+    final leading = width * 5 / 11;
+    final centerX = lerpDouble(width / 2, leading / 2, progress)!;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final player = SizedBox(
+      width: columnWidth,
+      child: _PlayerColumn(
+        mediaItem: mediaItem,
+        metadata: _metadata,
+        seekPreview: _seekPreview,
+        colorScheme: colorScheme,
+        artworkSize: columnWidth,
+      ),
+    );
+    final panel = _lastPanel;
+    final Widget? trailing = switch (panel) {
+      null => null,
+      DesktopInspectorPanel.lyrics => PlayerLyricsSection(
+        metadata: _metadata,
+        seekPreview: _seekPreview,
+        colorScheme: colorScheme,
+        isActive: true,
+      ),
+      DesktopInspectorPanel.upNext =>
+        context.isMornye
+            ? MornyePlayerQueue(colorScheme: colorScheme)
+            : DesktopMaterialQueue(colorScheme: colorScheme),
+    };
+    return Stack(
+      children: [
+        Positioned.directional(
+          textDirection: Directionality.of(context),
+          start: centerX - columnWidth / 2,
+          top: 0,
+          bottom: 0,
+          width: columnWidth,
+          child: Center(child: player),
         ),
-      );
-      final player = SizedBox(
-        width: columnWidth,
-        child: _PlayerColumn(
-          mediaItem: mediaItem,
-          metadata: _metadata,
-          seekPreview: _seekPreview,
-          colorScheme: colorScheme,
-          artworkSize: columnWidth,
-        ),
-      );
-      if (!side) return Center(child: player);
-      final Widget trailing = switch (panel) {
-        DesktopInspectorPanel.lyrics => PlayerLyricsSection(
-          metadata: _metadata,
-          seekPreview: _seekPreview,
-          colorScheme: colorScheme,
-          isActive: true,
-        ),
-        DesktopInspectorPanel.upNext =>
-          context.isMornye
-              ? MornyePlayerQueue(colorScheme: colorScheme)
-              : DesktopMaterialQueue(colorScheme: colorScheme),
-      };
-      return Row(
-        children: [
-          Expanded(flex: 5, child: Center(child: player)),
-          Expanded(
-            flex: 6,
-            child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(0, 72, 48, 80),
-              child: KeyedSubtree(
-                key: ValueKey('desktop-now-playing-${panel.name}'),
-                child: trailing,
+        if (trailing != null && progress > 0)
+          PositionedDirectional(
+            start: leading,
+            end: 0,
+            top: 0,
+            bottom: 0,
+            // A leaving panel stops taking clicks once it is mostly gone.
+            child: IgnorePointer(
+              ignoring: size < 0.5,
+              child: Opacity(
+                opacity: size,
+                child: Transform.translate(
+                  offset: Offset((1 - size) * 48 * (rtl ? -1 : 1), 0),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(
+                      0,
+                      72,
+                      48,
+                      80,
+                    ),
+                    child: AnimatedSwitcher(
+                      duration: MediaQuery.disableAnimationsOf(context)
+                          ? Duration.zero
+                          : const Duration(milliseconds: 180),
+                      child: KeyedSubtree(
+                        key: ValueKey('desktop-now-playing-${panel!.name}'),
+                        child: trailing,
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-        ],
-      );
-    },
-  );
+      ],
+    );
+  }
 }
 
 /// The cover over the title and the transport.

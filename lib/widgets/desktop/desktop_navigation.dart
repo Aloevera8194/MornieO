@@ -337,14 +337,19 @@ class _DesktopContentArea extends StatelessWidget {
                 ),
               ),
             // A narrow window's inspector floats above the player.
-            if (panel != null && overlayInspector)
-              PositionedDirectional(
-                top: 0,
-                bottom: playerInset,
-                end: 0,
-                width: desktopInspectorWidth,
-                child: DesktopInspector(panel: panel, overlay: true),
+            PositionedDirectional(
+              top: 0,
+              bottom: playerInset,
+              end: 0,
+              width: desktopInspectorWidth,
+              child: DesktopInspectorTransition(
+                key: const ValueKey('desktop-inspector-overlay'),
+                panel: overlayInspector ? panel : null,
+                overlay: true,
+                builder: (context, panel) =>
+                    DesktopInspector(panel: panel, overlay: true),
               ),
+            ),
           ],
         );
         // One structure for every state, so opening the inspector never
@@ -353,8 +358,11 @@ class _DesktopContentArea extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(child: content),
-            if (panel != null && !overlayInspector)
-              DesktopInspector(panel: panel),
+            DesktopInspectorTransition(
+              key: const ValueKey('desktop-inspector-beside'),
+              panel: overlayInspector ? null : panel,
+              builder: (context, panel) => DesktopInspector(panel: panel),
+            ),
           ],
         );
         if (!titleBarDrag || !desktopTitleBarInContent) return pane;

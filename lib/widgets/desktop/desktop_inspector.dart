@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/controllers/player_metadata_controller.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/music_player_provider.dart';
+import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/playback_seek_preview.dart';
 import 'package:mornye/widgets/app_icon.dart';
@@ -261,6 +263,130 @@ class DesktopInspector extends ConsumerWidget {
         ),
         child: panelSurface,
       ),
+    );
+  }
+}
+
+/// Motion for opening the inspector: the Material spatial spring, or an
+/// iOS-like ease for Mornye.
+AppMotionSpec desktopInspectorMotion(BuildContext context) => AppMotion.spatial(
+  context,
+  const AppMotionSpec(Duration(milliseconds: 380), Curves.easeOutCubic),
+);
+
+/// Opens and closes [panel] with motion, keeping the last panel on screen
+/// while it leaves. Beside the content the pane grows from the trailing
+/// edge and pushes the content aside; as an [overlay] it slides in over it.
+/// Switching between panels cross-fades.
+class DesktopInspectorTransition extends StatefulWidget {
+  const DesktopInspectorTransition({
+    super.key,
+    required this.panel,
+    required this.builder,
+    this.overlay = false,
+  });
+
+  final DesktopInspectorPanel? panel;
+  final Widget Function(BuildContext context, DesktopInspectorPanel panel)
+  builder;
+  final bool overlay;
+
+  @override
+  State<DesktopInspectorTransition> createState() =>
+      _DesktopInspectorTransitionState();
+}
+
+class _DesktopInspectorTransitionState extends State<DesktopInspectorTransition>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    value: widget.panel == null ? 0 : 1,
+  );
+  late DesktopInspectorPanel? _shown = widget.panel;
+  Curve _curve = Curves.linear;
+
+  @override
+  void didUpdateWidget(DesktopInspectorTransition oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final panel = widget.panel;
+    if ((panel == null) == (oldWidget.panel == null)) {
+      if (panel != null) _shown = panel;
+      return;
+    }
+    final reduce = MediaQuery.disableAnimationsOf(context);
+    if (panel != null) {
+      final motion = desktopInspectorMotion(context);
+      _shown = panel;
+      _curve = motion.curve;
+      _controller.animateTo(
+        1,
+        duration: reduce ? Duration.zero : motion.duration,
+      );
+    } else {
+      // Leaving uses a short ease without overshoot, so the pane never
+      // grows again on its way out.
+      _curve = Curves.easeInCubic;
+      _controller
+          .animateBack(
+            0,
+            duration: reduce
+                ? Duration.zero
+                : const Duration(milliseconds: 220),
+          )
+          .whenCompleteOrCancel(() {
+            if (mounted && widget.panel == null && _controller.value == 0) {
+              setState(() => _shown = null);
+            }
+          });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = _shown;
+    if (shown == null) return const SizedBox.shrink();
+    final content = AnimatedSwitcher(
+      duration: MediaQuery.disableAnimationsOf(context)
+          ? Duration.zero
+          : const Duration(milliseconds: 180),
+      // Panels keep their fixed width while they cross-fade.
+      layoutBuilder: (current, previous) => Stack(
+        alignment: AlignmentDirectional.topStart,
+        children: [...previous, ?current],
+      ),
+      child: KeyedSubtree(
+        key: ValueKey(shown),
+        child: widget.builder(context, shown),
+      ),
+    );
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    return AnimatedBuilder(
+      animation: _controller,
+      child: content,
+      builder: (context, child) {
+        // The open spring may overshoot; the pane can briefly grow past its
+        // width, but never below nothing.
+        final value = math.max(0.0, _curve.transform(_controller.value));
+        if (widget.overlay) {
+          return FractionalTranslation(
+            translation: Offset((1 - value) * (rtl ? -1 : 1), 0),
+            child: Opacity(opacity: value.clamp(0.0, 1.0), child: child),
+          );
+        }
+        return ClipRect(
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            widthFactor: value,
+            child: child,
+          ),
+        );
+      },
     );
   }
 }
