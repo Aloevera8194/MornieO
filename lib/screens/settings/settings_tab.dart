@@ -581,6 +581,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
     final query = SettingsSearchQuery(_query);
     final groups = _groups(context);
     final destinations = [for (final group in groups) ...group.destinations];
+    final goal = _monthlyGoal;
 
     Widget categoryRow(
       _Destination destination, {
@@ -598,6 +599,9 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
           selected: index == _selected,
         ),
         title: destination.title,
+        footer: destination.showDonationProgress && goal?.isVisible == true
+            ? _DonationGoalProgress(goal: goal!)
+            : null,
         selected: index == _selected,
         onTap: () => _select(index),
       );
@@ -915,6 +919,7 @@ class _CategoryRow extends StatelessWidget {
     required this.selected,
     required this.onTap,
     this.subtitle,
+    this.footer,
     this.first = true,
     this.last = true,
   });
@@ -922,6 +927,9 @@ class _CategoryRow extends StatelessWidget {
   final Widget leading;
   final String title;
   final String? subtitle;
+
+  /// Shown under the title, as the donation goal's progress is on phones.
+  final Widget? footer;
   final bool selected;
   final VoidCallback? onTap;
 
@@ -1012,6 +1020,10 @@ class _CategoryRow extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
+                          if (footer != null) ...[
+                            const SizedBox(height: 6),
+                            footer!,
+                          ],
                         ],
                       ),
                     ),
