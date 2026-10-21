@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/models/track.dart';
+import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
 import 'package:mornye/widgets/desktop/desktop_selection.dart';
@@ -81,6 +82,7 @@ class TrackListTable extends ConsumerWidget {
             hasLocalPlaybackCandidate: isInHistory[i],
             dense: true,
           ),
+          playback: catalogTrackPlaybackUiProvider(catalogTrackKey(tracks[i])),
         ),
     ];
     return SliverPadding(

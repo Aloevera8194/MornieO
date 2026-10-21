@@ -522,6 +522,7 @@ class _PlaylistScreenState extends ConsumerState<PlaylistScreen>
                       playlistPosition: index + 1,
                       forceQualityPicker: forceQualityPicker,
                     ),
+                leadingArtwork: true,
                 leading: track.coverUrl != null
                     ? DownloadableCover(
                         coverUrl: track.coverUrl,

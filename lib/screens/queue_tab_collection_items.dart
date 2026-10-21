@@ -191,7 +191,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                 if (result.status == CompletionBridgePlayableStatus.playable &&
                     resolvedPath != null) {
                   return _LibraryPlaybackButton(
-                    mediaId: _cleanFilePath(resolvedPath),
+                    playbackKey: (id: '', path: _cleanFilePath(resolvedPath)),
                     playTooltip: context.l10n.a11yPlayTrackByArtist(
                       trackName,
                       artistName,
@@ -348,7 +348,7 @@ extension _QueueTabCollectionItemWidgets on _QueueTabState {
                 if (result.status == CompletionBridgePlayableStatus.playable &&
                     resolvedPath != null) {
                   return _LibraryPlaybackButton(
-                    mediaId: _cleanFilePath(resolvedPath),
+                    playbackKey: (id: '', path: _cleanFilePath(resolvedPath)),
                     playTooltip: context.l10n.a11yPlayTrackByArtist(
                       trackName,
                       artistName,
