@@ -65,6 +65,43 @@ part 'main_shell_startup_prompts.dart';
 
 final _log = AppLogger('MainShell');
 
+/// The tab at [index] in a style's destination order.
+@visibleForTesting
+ShellTab shellTabAt(
+  int index, {
+  required bool mornye,
+  required bool showStore,
+}) {
+  if (index == 0) return ShellTab.home;
+  if (index == 1) return ShellTab.library;
+  if (showStore && index == 2) return ShellTab.repository;
+  if (mornye && index == (showStore ? 3 : 2)) return ShellTab.search;
+  return ShellTab.settings;
+}
+
+/// Where [tab] sits in a style's destination order, or null when that style
+/// has no such destination.
+@visibleForTesting
+int? shellIndexOfTab(
+  ShellTab tab, {
+  required bool mornye,
+  required bool showStore,
+  required bool desktop,
+}) => switch (tab) {
+  ShellTab.home => 0,
+  ShellTab.library => 1,
+  ShellTab.repository => showStore ? 2 : null,
+  // Material searches from Home.
+  ShellTab.search => mornye ? (showStore ? 3 : 2) : 0,
+  // Mornye phones open Settings as a page, not a destination.
+  ShellTab.settings =>
+    !mornye
+        ? (showStore ? 3 : 2)
+        : desktop
+        ? (showStore ? 4 : 3)
+        : null,
+};
+
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
@@ -118,9 +155,46 @@ class _MainShellState extends ConsumerState<MainShell>
     onRoot: () => desktopSidebarLink.value = null,
   );
 
+  /// The style the current tab index was chosen under.
+  bool? _indexStyleMornye;
+
+  /// The two styles order their destinations differently, so switching
+  /// styles keeps the same tab rather than the same index (Settings would
+  /// otherwise become Mornye's Search).
+  void _keepTabAcrossStyles() {
+    final mornye = context.isMornye;
+    final previous = _indexStyleMornye;
+    _indexStyleMornye = mornye;
+    if (previous == null || previous == mornye) return;
+    final showStore = ref.read(
+      settingsProvider.select((s) => s.showExtensionStore),
+    );
+    final tab = shellTabAt(
+      _currentIndex,
+      mornye: previous,
+      showStore: showStore,
+    );
+    final index =
+        shellIndexOfTab(
+          tab,
+          mornye: mornye,
+          showStore: showStore,
+          desktop: isDesktopPlatform,
+        ) ??
+        0;
+    if (index == _currentIndex) return;
+    _currentIndex = index;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _pageController.hasClients) {
+        _pageController.jumpToPage(_currentIndex);
+      }
+    });
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _keepTabAcrossStyles();
     final l10n = context.l10n;
     NotificationService().updateStrings(l10n);
     final playback = ref.read(musicPlayerRuntimeProvider);
