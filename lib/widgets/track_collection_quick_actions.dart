@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
@@ -47,7 +46,6 @@ class TrackCollectionQuickActions extends ConsumerWidget {
     bool hasLocalPlaybackCandidate = false,
     Offset? position,
   }) {
-    final colorScheme = Theme.of(context).colorScheme;
     if (isDesktopPlatform) {
       final origin =
           position ??
@@ -75,15 +73,10 @@ class TrackCollectionQuickActions extends ConsumerWidget {
       );
       return;
     }
-    showModalBottomSheet<void>(
+    showAppModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      // Material sheets share the theme's sheet surface.
-      backgroundColor: context.isMornye
-          ? colorScheme.surfaceContainerHigh
-          : null,
       builder: (_) => _TrackOptionsSheet(
         track: track,
         hasLocalPlaybackCandidate: hasLocalPlaybackCandidate,

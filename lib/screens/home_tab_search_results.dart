@@ -177,15 +177,11 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
   void _showSortOptions(ColorScheme colorScheme) {
     var tempSort = _searchSortOption;
     final mornye = context.isMornye;
-    showModalBottomSheet<void>(
+    showAppModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: mornye
-          ? Colors.transparent
-          : colorScheme.surfaceContainerLow,
-      elevation: mornye ? 0 : null,
+      backgroundColor: mornye ? null : colorScheme.surfaceContainerLow,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) {
           final content = SafeArea(
@@ -255,7 +251,7 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
               ),
             ),
           );
-          return mornye ? MornyeGlassPanel.overlay(child: content) : content;
+          return content;
         },
       ),
     );

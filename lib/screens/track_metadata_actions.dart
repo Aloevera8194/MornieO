@@ -54,15 +54,10 @@ extension _TrackMetadataFileActions on _TrackMetadataScreenState {
 
     if (!context.mounted) return;
 
-    final saved = await showModalBottomSheet<bool>(
+    final saved = await showAppModalBottomSheet<bool>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      // Material sheets share the theme's sheet surface.
-      backgroundColor: context.isMornye
-          ? colorScheme.surfaceContainerLow
-          : null,
       builder: (sheetContext) => EditMetadataSheet(
         colorScheme: colorScheme,
         initialValues: initialValues,

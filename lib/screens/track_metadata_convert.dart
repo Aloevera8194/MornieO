@@ -227,13 +227,12 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
 
     final labels = context.l10n.losslessConversionLabels;
 
-    showModalBottomSheet<void>(
+    showAppModalBottomSheet<void>(
       context: context,
-      sheetAnimationStyle: AppMotion.surfaceEntrance(context),
       useRootNavigator: true,
       isScrollControlled: true,
-      backgroundColor: context.isMornye ? Colors.transparent : null,
-      elevation: context.isMornye ? 0 : null,
+      // The sheet draws its own glass.
+      mornyeGlass: false,
       builder: (sheetContext) => BatchConvertSheet(
         formats: formats,
         title: context.l10n.trackConvertTitle,
@@ -329,9 +328,8 @@ extension _TrackMetadataConvertAndCueSplit on _TrackMetadataScreenState {
 
       if (!mounted) return;
 
-      showModalBottomSheet<void>(
+      showAppModalBottomSheet<void>(
         context: this.context,
-        sheetAnimationStyle: AppMotion.surfaceEntrance(this.context),
         useRootNavigator: true,
         isScrollControlled: true,
         builder: (sheetContext) {
