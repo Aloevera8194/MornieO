@@ -12,6 +12,21 @@ class ImpellerCompatibilityTest {
     }
 
     @Test
+    fun samsungVulkanCrashUsesFallbackOnTheReportedDeviceAndAndroidVersion() {
+        assertTrue(hasKnownImpellerRasterCrash(36, "samsung", "SM-S711B"))
+        assertTrue(hasKnownImpellerRasterCrash(36, "SAMSUNG", "sm-s711b"))
+    }
+
+    @Test
+    fun samsungFallbackDoesNotIncludeOtherDevicesOrAndroidVersions() {
+        assertFalse(hasKnownImpellerRasterCrash(35, "samsung", "SM-S711B"))
+        assertFalse(hasKnownImpellerRasterCrash(37, "samsung", "SM-S711B"))
+        assertFalse(hasKnownImpellerRasterCrash(36, "samsung", "SM-S711U"))
+        assertFalse(hasKnownImpellerRasterCrash(36, "samsung", "SM-S911B"))
+        assertFalse(hasKnownImpellerRasterCrash(36, "Other", "SM-S711B"))
+    }
+
+    @Test
     fun otherDevicesAndAndroidVersionsKeepTheirExistingRendererPolicy() {
         assertFalse(hasKnownImpellerRasterCrash(34, "Xiaomi", "25053PC47I"))
         assertFalse(hasKnownImpellerRasterCrash(36, "Xiaomi", "25053PC47I"))
