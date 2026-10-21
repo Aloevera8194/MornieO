@@ -8,6 +8,7 @@ import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/player_artwork_theme.dart';
 import 'package:mornye/utils/string_utils.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
@@ -28,11 +29,12 @@ import 'package:mornye/widgets/playback_seek_slider.dart';
 /// Playing in the content pane; lyrics and Up Next toggle the trailing
 /// inspector.
 ///
-/// Material docks an 80dp bar on a `surfaceContainer` fill along the bottom
-/// of the window. Mornye draws a glass capsule that the shell floats over
-/// the bottom of the content pane, laid out like the Music player: shuffle
-/// and the transport, a center "LCD" with the track and its progress, then
-/// lyrics, Up Next, downloads and volume.
+/// Material docks an 80dp bar along the bottom of the window, on the
+/// `surfaceContainer` fill of the current artwork's scheme
+/// ([PlayerArtworkTheme]). Mornye draws a glass capsule that the shell
+/// floats over the bottom of the content pane, laid out like the Music
+/// player: shuffle and the transport, a center "LCD" with the track and its
+/// progress, then lyrics, Up Next, downloads and volume.
 class DesktopPlayerBar extends ConsumerWidget {
   const DesktopPlayerBar({super.key});
 
@@ -61,7 +63,15 @@ class DesktopPlayerBar extends ConsumerWidget {
     final mediaItem = ref.watch(currentMediaItemProvider).value;
     return context.isMornye
         ? _MornyePlayerBar(mediaItem: mediaItem)
-        : _MaterialPlayerBar(mediaItem: mediaItem);
+        // The bar takes the track's artwork scheme; the downloads popover
+        // it hosts keeps the app scheme.
+        : PlayerArtworkTheme(
+            artUri: mediaItem?.artUri?.toString(),
+            child: _MaterialPlayerBar(
+              mediaItem: mediaItem,
+              appTheme: Theme.of(context),
+            ),
+          );
   }
 }
 
@@ -71,9 +81,12 @@ void _toggleNowPlaying() =>
     desktopNowPlayingOpen.value = !desktopNowPlayingOpen.value;
 
 class _MaterialPlayerBar extends StatelessWidget {
-  const _MaterialPlayerBar({required this.mediaItem});
+  const _MaterialPlayerBar({required this.mediaItem, required this.appTheme});
 
   final MediaItem? mediaItem;
+
+  /// The theme outside the bar's artwork scope.
+  final ThemeData appTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +124,10 @@ class _MaterialPlayerBar extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Expanded(flex: 3, child: _TrailingControls(enabled: loaded)),
+                Expanded(
+                  flex: 3,
+                  child: _TrailingControls(enabled: loaded, appTheme: appTheme),
+                ),
               ],
             ),
           ),
@@ -648,12 +664,15 @@ class _MornyeLcdLines extends StatelessWidget {
 /// and ends with a volume button whose slider opens in a popover, as Music
 /// does.
 class _TrailingControls extends StatelessWidget {
-  const _TrailingControls({required this.enabled});
+  const _TrailingControls({required this.enabled, this.appTheme});
 
   /// Narrowest room in which the Material bar keeps its volume slider.
   static const double _materialVolumeMinWidth = 140;
 
   final bool enabled;
+
+  /// The Material bar's app theme, for the downloads button and popover.
+  final ThemeData? appTheme;
 
   @override
   Widget build(BuildContext context) {
@@ -702,7 +721,10 @@ class _TrailingControls extends StatelessWidget {
         if (mornye)
           const _MornyeVolumeButton()
         else ...[
-          const DesktopDownloadsButton(),
+          Theme(
+            data: appTheme ?? Theme.of(context),
+            child: const DesktopDownloadsButton(),
+          ),
           // A narrow window leaves too little room for a usable slider;
           // the volume shortcuts still work there.
           Flexible(

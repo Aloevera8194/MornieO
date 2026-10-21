@@ -6,9 +6,11 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_color_utilities/hct/hct.dart';
 import 'package:material_color_utilities/quantize/quantizer_celebi.dart';
 import 'package:material_color_utilities/score/score.dart';
 import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/cached_cover_image.dart';
 
 Future<List<List<int>>> _quantizePaletteInIsolate(Uint8List bytes) async {
@@ -34,7 +36,14 @@ int paletteSeedFromColorCounts(List<List<int>> colors) {
   return Score.score(populations, desired: 1).first;
 }
 
-/// Colour scheme derived from cover art, used to theme detail-screen headers.
+/// Whether a cover whose [coverSourceColor] is [source] reads as black and
+/// white: its HCT chroma is at most 12. Score would still pick a seed hue for
+/// it (or Material's blue fallback), which tints the whole scheme.
+bool isNearGrayscaleCover(Color source) =>
+    Hct.fromInt(source.toARGB32()).chroma <= 12;
+
+/// Colour scheme derived from cover art, used to theme detail-screen headers
+/// and the Material player surfaces (`PlayerArtworkTheme`).
 ///
 /// The generated scheme follows app brightness and supplies contrasting
 /// on-colours for the artwork-derived surface.
@@ -50,6 +59,10 @@ class CoverPalette {
   static final Map<String, String> _sourceKeys = {};
   static final List<String> _cacheOrder = <String>[];
   static const int _maxEntries = 32;
+
+  /// The neutral scheme of a near-grayscale cover, keyed by its cached tonal
+  /// scheme so both leave the cache together.
+  static final Expando<ColorScheme> _neutralSchemes = Expando();
 
   static bool _isNetworkSource(String source) =>
       source.startsWith('http://') || source.startsWith('https://');
@@ -76,8 +89,21 @@ class CoverPalette {
   }
 
   /// Cached scheme for [source], or null when it has not been resolved yet.
-  static ColorScheme? peek(String source, Brightness brightness) =>
-      _cache[_sourceKeys['$source|${brightness.name}']];
+  ///
+  /// With [neutralGrayscale], a near-grayscale cover ([isNearGrayscaleCover])
+  /// gets a monochrome scheme instead of a tinted one. Material surfaces opt
+  /// in; Mornye derives its own neutral shading from [sourceColor].
+  static ColorScheme? peek(
+    String source,
+    Brightness brightness, {
+    bool neutralGrayscale = false,
+  }) {
+    final scheme = _cache[_sourceKeys['$source|${brightness.name}']];
+    return neutralGrayscale ? _neutralFor(scheme) : scheme;
+  }
+
+  static ColorScheme? _neutralFor(ColorScheme? scheme) =>
+      scheme == null ? null : _neutralSchemes[scheme] ?? scheme;
 
   /// Average cover colour before Material's accent selection or tonal mapping.
   /// Near-monochrome covers stay neutral instead of acquiring a seed hue.
@@ -85,8 +111,19 @@ class CoverPalette {
       _sourceColors[_sourceKeys['$source|${brightness.name}']];
 
   /// Resolves the scheme for [source] (a network URL or a local file path).
-  /// Returns null when the image cannot be decoded.
+  /// Returns null when the image cannot be decoded. [neutralGrayscale] works
+  /// as in [peek] and shares the same palette job.
   static Future<ColorScheme?> resolve(
+    String source,
+    Brightness brightness, {
+    String? cacheKey,
+    bool neutralGrayscale = false,
+  }) {
+    final scheme = _resolveTonal(source, brightness, cacheKey: cacheKey);
+    return neutralGrayscale ? scheme.then(_neutralFor) : scheme;
+  }
+
+  static Future<ColorScheme?> _resolveTonal(
     String source,
     Brightness brightness, {
     String? cacheKey,
@@ -159,7 +196,16 @@ class CoverPalette {
       );
       final scheme = await _schemeFromSample(sample, brightness);
       final sourceColor = await _sampleSourceColor(sample);
-      if (sourceColor != null) _sourceColors[key] = sourceColor;
+      if (sourceColor != null) {
+        _sourceColors[key] = sourceColor;
+        if (isNearGrayscaleCover(sourceColor)) {
+          _neutralSchemes[scheme] = ColorScheme.fromSeed(
+            seedColor: sourceColor,
+            brightness: brightness,
+            dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+          );
+        }
+      }
       _cache[key] = scheme;
       _cacheOrder.add(key);
       while (_cacheOrder.length > _maxEntries) {
@@ -405,6 +451,7 @@ class _CoverPaletteBuilderState extends State<CoverPaletteBuilder> {
   ColorScheme? _scheme;
   String? _resolvedSource;
   Brightness? _resolvedBrightness;
+  bool? _resolvedNeutral;
   int _resolveGeneration = 0;
 
   @override
@@ -424,21 +471,37 @@ class _CoverPaletteBuilderState extends State<CoverPaletteBuilder> {
   void _maybeResolve() {
     final source = widget.imageSource;
     final brightness = Theme.of(context).brightness;
+    // Material headers give black and white covers a neutral scheme. Mornye
+    // keeps the tonal one and shades neutral covers from the source colour.
+    final neutral = !context.isMornye;
     if (source == null || source.isEmpty) {
       _resolveGeneration++;
       _resolvedSource = null;
       _resolvedBrightness = null;
+      _resolvedNeutral = null;
       _scheme = null;
       return;
     }
     final requestGeneration = ++_resolveGeneration;
-    if (_resolvedSource != source || _resolvedBrightness != brightness) {
+    if (_resolvedSource != source ||
+        _resolvedBrightness != brightness ||
+        _resolvedNeutral != neutral) {
       _resolvedSource = source;
       _resolvedBrightness = brightness;
-      _scheme = CoverPalette.peek(source, brightness);
+      _resolvedNeutral = neutral;
+      _scheme = CoverPalette.peek(
+        source,
+        brightness,
+        neutralGrayscale: neutral,
+      );
     }
 
-    CoverPalette.resolve(source, brightness).then((scheme) {
+    final resolved = CoverPalette.resolve(
+      source,
+      brightness,
+      neutralGrayscale: neutral,
+    );
+    resolved.then((scheme) {
       if (!mounted) return;
       if (_resolveGeneration != requestGeneration) {
         return;
