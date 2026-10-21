@@ -32,8 +32,7 @@ const _mornyeLyricFontSize = 34.0;
 
 /// Material lyric sizes on desktop, where the lyrics panel is far wider than
 /// a phone. Null keeps the text theme's size (phones and tablets).
-double? _materialLyricFontSize({required bool active}) =>
-    isDesktopPlatform ? (active ? 32 : 30) : null;
+double? get _materialLyricFontSize => isDesktopPlatform ? 32 : null;
 double get _materialBackgroundLyricFontSize => isDesktopPlatform ? 24 : 18;
 const mornyeLyricsContentInset = 28.0 + MornyePlayerSlider.horizontalInset;
 
@@ -533,7 +532,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
   }
 
   void _measureMornyeLines(BuildContext context, double width) {
-    final style = _mornyeLyricStyle(context);
+    final style = _primaryLyricStyle(context);
     final scaler = MediaQuery.textScalerOf(context);
     final direction = Directionality.of(context);
     final locale = Localizations.maybeLocaleOf(context);
@@ -575,7 +574,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
       }
       painter.text = TextSpan(
         text: line.text,
-        style: _mornyeLyricStyle(context, background: line.isBackground),
+        style: _primaryLyricStyle(context, background: line.isBackground),
       );
       painter.layout(maxWidth: width);
       final padding = _linePadding(index).vertical;
@@ -595,7 +594,7 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
           pronunciationHeight = 6 + painter.height;
           final aligned = LyricPronunciationLayout.measure(
             line: line,
-            primaryStyle: _mornyeLyricStyle(
+            primaryStyle: _primaryLyricStyle(
               context,
               background: line.isBackground,
             ),
@@ -1100,24 +1099,10 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                 content = Text(
                   line.text,
                   textAlign: textAlign,
-                  style:
-                      (mornye || isActive
-                              ? Theme.of(context).textTheme.headlineSmall
-                              : Theme.of(context).textTheme.titleLarge)
-                          ?.copyWith(
-                            height: context.tokens.lyricsLineHeight,
-                            fontSize: line.isBackground
-                                ? (mornye
-                                      ? _mornyeLyricFontSize * 0.68
-                                      : _materialBackgroundLyricFontSize)
-                                : mornye
-                                ? _mornyeLyricFontSize
-                                : _materialLyricFontSize(active: isActive),
-                            fontWeight: mornye || isActive
-                                ? FontWeight.bold
-                                : FontWeight.w500,
-                            color: color,
-                          ),
+                  style: _primaryLyricStyle(
+                    context,
+                    background: line.isBackground,
+                  ).copyWith(color: color),
                 );
                 content = _withLyricSupplements(
                   context,
@@ -1200,6 +1185,8 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                             widget.onLongPressLine!(line);
                           },
                     child: AnimatedScale(
+                      // Focus changes paint scale, never font metrics or
+                      // wrapping shared by the plain and word-timed line.
                       scale: isActive ? 1.0 : 0.96,
                       alignment: !mornye
                           ? Alignment.center

@@ -31,11 +31,17 @@ Iterable<(String, TextStyle, List<LyricWord>, bool)> _lyricSupplements(
   }
 }
 
-TextStyle _mornyeLyricStyle(BuildContext context, {bool background = false}) =>
-    (Theme.of(context).textTheme.headlineSmall ?? const TextStyle()).copyWith(
-      fontSize: _mornyeLyricFontSize * (background ? 0.68 : 1),
-      height: context.tokens.lyricsLineHeight,
-      fontWeight: FontWeight.bold,
+TextStyle _primaryLyricStyle(BuildContext context, {bool background = false}) =>
+    DefaultTextStyle.of(context).style.merge(
+      (Theme.of(context).textTheme.headlineSmall ?? const TextStyle()).copyWith(
+        fontSize: context.isMornye
+            ? _mornyeLyricFontSize * (background ? 0.68 : 1)
+            : background
+            ? _materialBackgroundLyricFontSize
+            : _materialLyricFontSize,
+        height: context.tokens.lyricsLineHeight,
+        fontWeight: FontWeight.bold,
+      ),
     );
 
 TextAlign _lyricTextAlign(BuildContext context, LyricLine line) {
@@ -106,7 +112,7 @@ Widget _withLyricSupplements(
       line.romanization?.trim().isNotEmpty != true) {
     return withSupplements(primary);
   }
-  final primaryStyle = _mornyeLyricStyle(
+  final primaryStyle = _primaryLyricStyle(
     context,
     background: line.isBackground,
   );

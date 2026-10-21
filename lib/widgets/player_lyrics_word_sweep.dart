@@ -260,16 +260,8 @@ class _WordHighlightedLyricLineState
 
   @override
   Widget build(BuildContext context) {
-    final style = context.isMornye
-        ? _mornyeLyricStyle(context, background: widget.line.isBackground)
-        : (Theme.of(context).textTheme.headlineSmall ?? const TextStyle())
-              .copyWith(
-                fontSize: widget.line.isBackground
-                    ? _materialBackgroundLyricFontSize
-                    : _materialLyricFontSize(active: true),
-                height: context.tokens.lyricsLineHeight,
-                fontWeight: FontWeight.bold,
-              );
+    final style =
+        _primaryLyricStyle(context, background: widget.line.isBackground);
     final primary = widget.line.hasWordTiming
         ? _buildTimedText(widget.line.text, widget.line.words, style)
         : Text(
