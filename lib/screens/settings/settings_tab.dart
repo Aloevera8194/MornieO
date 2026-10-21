@@ -17,6 +17,7 @@ import 'package:mornye/screens/settings/donate_page.dart';
 import 'package:mornye/screens/settings/download_settings_page.dart';
 import 'package:mornye/screens/settings/extensions_page.dart';
 import 'package:mornye/screens/settings/files_settings_page.dart';
+import 'package:mornye/screens/settings/keyboard_shortcuts_page.dart';
 import 'package:mornye/screens/settings/library_settings_page.dart';
 import 'package:mornye/screens/network_storage_screen.dart';
 import 'package:mornye/screens/settings/log_screen.dart';
@@ -323,6 +324,15 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             searchEntries: searchCatalog.app,
             pageBuilder: () => const AppSettingsPage(),
           ),
+          if (isDesktopPlatform)
+            _Destination(
+              icon: Icons.keyboard_outlined,
+              iconColor: Colors.blueGrey,
+              title: l10n.settingsKeyboardShortcuts,
+              subtitle: l10n.settingsKeyboardShortcutsSubtitle,
+              keywords: const ['hotkey', 'keys', 'keybinding', 'pintasan'],
+              pageBuilder: () => const KeyboardShortcutsPage(),
+            ),
           _Destination(
             icon: Icons.storage_outlined,
             iconColor: Colors.indigo,

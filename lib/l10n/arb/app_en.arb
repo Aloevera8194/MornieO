@@ -7733,5 +7733,25 @@
   "desktopScrollForward": "Scroll forward",
   "@desktopScrollForward": {
     "description": "Tooltip of the desktop button that scrolls a horizontal shelf of albums or artists forward"
+  },
+  "settingsKeyboardShortcuts": "Keyboard Shortcuts",
+  "@settingsKeyboardShortcuts": {
+    "description": "Desktop Settings page that lists the app's keyboard shortcuts"
+  },
+  "settingsKeyboardShortcutsSubtitle": "Keys for playback, navigation and panels",
+  "@settingsKeyboardShortcutsSubtitle": {
+    "description": "Subtitle of the Keyboard Shortcuts entry in desktop Settings"
+  },
+  "desktopShortcutsNavigation": "Navigation",
+  "@desktopShortcutsNavigation": {
+    "description": "Keyboard Shortcuts section for moving between pages"
+  },
+  "desktopShortcutDismiss": "Close dialog or page",
+  "@desktopShortcutDismiss": {
+    "description": "Keyboard Shortcuts row for Escape, which leaves a text field or closes the top dialog or page"
+  },
+  "desktopShortcutToggleSidebar": "Show or hide sidebar",
+  "@desktopShortcutToggleSidebar": {
+    "description": "Keyboard Shortcuts row for the shortcut that collapses or expands the desktop sidebar"
   }
 }
