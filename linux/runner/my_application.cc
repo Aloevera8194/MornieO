@@ -1,6 +1,7 @@
 #include "my_application.h"
 
 #include <flutter_linux/flutter_linux.h>
+#include <stdlib.h>
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
 #endif
@@ -13,6 +14,42 @@ struct _MyApplication {
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+
+// Only the deb installs a desktop entry for mornye://, so the browser cannot
+// hand an extension callback back to a zip or AppImage copy. Points the
+// per-user handler at this copy unless the current one already starts it.
+static void register_url_scheme() {
+  // An AppImage runs from a new mount on every launch; its file stays put.
+  const gchar* appimage = g_getenv("APPIMAGE");
+  g_autofree gchar* self_path =
+      appimage != nullptr ? g_strdup(appimage)
+                          : g_file_read_link("/proc/self/exe", nullptr);
+  if (self_path == nullptr) return;
+  g_autofree gchar* self_real = realpath(self_path, nullptr);
+
+  g_autoptr(GAppInfo) current =
+      g_app_info_get_default_for_uri_scheme("mornye");
+  if (current != nullptr && self_real != nullptr) {
+    const char* executable = g_app_info_get_executable(current);
+    g_autofree gchar* found =
+        executable != nullptr ? g_find_program_in_path(executable) : nullptr;
+    g_autofree gchar* found_real =
+        found != nullptr ? realpath(found, nullptr) : nullptr;
+    if (g_strcmp0(found_real, self_real) == 0) return;
+  }
+
+  // GIO appends " %u" and writes a hidden entry plus the mimeapps default.
+  g_autofree gchar* commandline = g_shell_quote(self_path);
+  g_autoptr(GError) error = nullptr;
+  g_autoptr(GAppInfo) handler = g_app_info_create_from_commandline(
+      commandline, "Mornye", G_APP_INFO_CREATE_SUPPORTS_URIS, &error);
+  if (handler == nullptr ||
+      !g_app_info_set_as_default_for_type(handler, "x-scheme-handler/mornye",
+                                          &error)) {
+    g_warning("Could not register the mornye:// handler: %s",
+              error != nullptr ? error->message : "unknown error");
+  }
+}
 
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
@@ -29,6 +66,8 @@ static void my_application_activate(GApplication* application) {
     gtk_window_present(GTK_WINDOW(windows->data));
     return;
   }
+
+  register_url_scheme();
 
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
