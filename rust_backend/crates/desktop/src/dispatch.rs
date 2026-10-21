@@ -472,6 +472,22 @@ pub(crate) static METHODS: &[Entry] = &[
     pool("getLyricsLRC", lyrics),
     pool("getLyricsLRCWithSource", lyrics),
     pool("fetchAndSaveLyrics", lyrics),
+    pool("getLyricsFromProvider", |c, a| {
+        let request = LyricsRequest {
+            spotify_id: a.string("spotify_id", ""),
+            track: a.string("track_name", ""),
+            artist: a.string("artist_name", ""),
+            file_path: String::new(),
+            duration_ms: a.i64("duration_ms").unwrap_or(0),
+        };
+        text(
+            c.owner()?
+                .get_lyrics_from_provider(a.string("provider", ""), request, None),
+        )
+    }),
+    pool("getEnabledLyricsProviders", |c, _| {
+        text(c.owner()?.get_enabled_lyrics_providers_json())
+    }),
     pool("runPostProcessingV2", |c, a| {
         let manager = c.owner()?;
         let ffmpeg = c.rt.config.ffmpeg_path.clone();

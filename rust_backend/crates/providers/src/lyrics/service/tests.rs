@@ -453,3 +453,68 @@ fn shutdown_flushes_cache_and_rejects_retained_mutations() {
     assert_eq!(std::fs::read(&path).unwrap(), persisted);
     assert!(!replacement.exists());
 }
+
+#[test]
+fn fetch_from_asks_only_the_chosen_provider_and_bypasses_the_cache() {
+    let asked = Arc::new(Mutex::new(Vec::new()));
+    let service = service({
+        let asked = asked.clone();
+        move |provider, _, _| {
+            asked.lock().unwrap().push(provider.to_owned());
+            Ok(lyrics(provider))
+        }
+    });
+    service
+        .set_providers(&[
+            "lrclib".into(),
+            "netease".into(),
+            "extension:example.lyrics".into(),
+        ])
+        .unwrap();
+    // The chain answers from LRCLIB and caches it. It races several
+    // providers, so only later calls are recorded.
+    assert_eq!(
+        service.fetch(request(), &|| Ok(())).unwrap().source,
+        "lrclib"
+    );
+    asked.lock().unwrap().clear();
+    assert_eq!(
+        service
+            .fetch_from(" Netease ", request(), &|| Ok(()))
+            .unwrap()
+            .source,
+        "netease"
+    );
+    assert_eq!(
+        service
+            .fetch_from("extension:example.lyrics", request(), &|| Ok(()))
+            .unwrap()
+            .source,
+        "extension:example.lyrics"
+    );
+    assert_eq!(
+        *asked.lock().unwrap(),
+        ["netease", "extension:example.lyrics"]
+    );
+    assert_eq!(
+        service.enabled_providers(),
+        ["lrclib", "netease", "extension:example.lyrics"]
+    );
+}
+
+#[test]
+fn fetch_from_rejects_disabled_providers_and_honours_cancellation() {
+    let service = service(|provider, _, _| Ok(lyrics(provider)));
+    assert!(matches!(
+        service.fetch_from("netease", request(), &|| Ok(())),
+        Err(LyricsError::Other(_))
+    ));
+    assert!(matches!(
+        service.fetch_from("extension:missing", request(), &|| Ok(())),
+        Err(LyricsError::Other(_))
+    ));
+    assert!(matches!(
+        service.fetch_from("lrclib", request(), &|| Err("gone".into())),
+        Err(LyricsError::Cancelled(_))
+    ));
+}

@@ -260,6 +260,52 @@ impl LyricsService {
         flight.wait(|| self.inner.check(check))?
     }
 
+    /// Asks one enabled provider directly, for a user choosing between
+    /// providers. Skips the cache, negative results, coalescing and the
+    /// priority race, so the answer is always that provider's own.
+    pub fn fetch_from(
+        &self,
+        provider: &str,
+        mut request: SearchRequest,
+        check: &Check<'_>,
+    ) -> FetchResult {
+        self.inner.check(check)?;
+        let extensions = self.inner.fetcher.extensions();
+        let configured = {
+            let state = self.inner.state.lock().expect("lyrics service lock");
+            request.options = state.options.clone();
+            config::provider_order(&state.providers)
+        };
+        let provider = lowercase(provider.trim());
+        if !config::resolve_order(&configured, &extensions).contains(&provider) {
+            return Err(LyricsError::Other(format!(
+                "lyrics provider {provider} is not enabled"
+            )));
+        }
+        let node = self.inner.calls.node();
+        let _dependency = request
+            .caller
+            .as_ref()
+            .map(|caller| caller.wait_for(&node))
+            .transpose()
+            .map_err(LyricsError::Recursive)?;
+        request.caller = Some(node);
+        let check = || self.inner.check(check).map_err(|error| error.to_string());
+        let result = catch_unwind(AssertUnwindSafe(|| {
+            self.inner.fetcher.fetch(&provider, &request, &check)
+        }))
+        .unwrap_or_else(|_| Err(LyricsError::Other("lyrics provider panicked".into())));
+        self.inner.check(&check)?;
+        result
+    }
+
+    /// The enabled providers in priority order, including installed lyrics
+    /// extensions as `extension:<id>`.
+    pub fn enabled_providers(&self) -> Vec<String> {
+        let configured = self.providers();
+        config::resolve_order(&configured, &self.inner.fetcher.extensions())
+    }
+
     /// Cancel workers, wait for their HTTP/extension calls to unwind, then flush
     /// successful data. Native owners call this before releasing the service.
     pub fn shutdown(&self) -> Result<(), String> {

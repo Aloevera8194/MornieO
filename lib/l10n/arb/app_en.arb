@@ -4869,6 +4869,51 @@
   "@editMetadataAutoFillNoneSelected": {
     "description": "Snackbar when user taps Fetch without selecting any fields"
   },
+  "editMetadataLyricsSearch": "Find lyrics online",
+  "@editMetadataLyricsSearch": {
+    "description": "Button in the edit metadata lyrics section that searches every lyrics provider"
+  },
+  "lyricsPickerTitle": "Choose lyrics",
+  "@lyricsPickerTitle": {
+    "description": "Title of the sheet listing each lyrics provider's result"
+  },
+  "lyricsPickerNeedsTitle": "Enter a title and artist first",
+  "@lyricsPickerNeedsTitle": {
+    "description": "Snackbar when searching lyrics without a title or artist"
+  },
+  "lyricsPickerNoProviders": "No lyrics providers are enabled. Turn some on in Settings > Lyrics.",
+  "@lyricsPickerNoProviders": {
+    "description": "Shown in the lyrics picker when no provider is enabled"
+  },
+  "lyricsPickerWordSynced": "Word-synced",
+  "@lyricsPickerWordSynced": {
+    "description": "Lyrics result timed word by word"
+  },
+  "lyricsPickerSynced": "Synced",
+  "@lyricsPickerSynced": {
+    "description": "Lyrics result timed line by line"
+  },
+  "lyricsPickerPlain": "Plain text",
+  "@lyricsPickerPlain": {
+    "description": "Lyrics result without timing"
+  },
+  "lyricsPickerInstrumental": "Instrumental",
+  "@lyricsPickerInstrumental": {
+    "description": "Lyrics result that marks the track as instrumental"
+  },
+  "lyricsPickerNotFound": "No lyrics found",
+  "@lyricsPickerNotFound": {
+    "description": "A lyrics provider returned nothing for this track"
+  },
+  "lyricsPickerLineCount": "{count, plural, =1{1 line} other{{count} lines}}",
+  "@lyricsPickerLineCount": {
+    "description": "Number of lyric lines in a provider's result",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "editMetadataFieldTitle": "Title",
   "@editMetadataFieldTitle": {
     "description": "Chip label for title field in auto-fill selector"

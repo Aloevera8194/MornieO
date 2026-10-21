@@ -11,6 +11,7 @@ import 'package:mornye/widgets/app_sliver_header.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/app_alert_dialog.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/lyrics_provider_names.dart';
 import 'package:mornye/widgets/lyrics_size_setting.dart';
 
 class LyricsSettingsPage extends ConsumerWidget {
@@ -193,23 +194,6 @@ class LyricsSettingsPage extends ConsumerWidget {
     }
   }
 
-  static const _providerDisplayNames = <String, String>{
-    'lrclib': 'LRCLIB',
-    'netease': 'Netease',
-    'musixmatch': 'Musixmatch',
-    'apple_music': 'Apple Music',
-    'mornye_lyrics': 'Zarz-LRC',
-    'qqmusic': 'QQ Music',
-    'spotify': 'Spotify',
-    'deezer': 'Deezer',
-    'youtube': 'YouTube',
-    'kugou': 'Kugou',
-    'genius': 'Genius',
-    'lyricsplus': 'LyricsPlus',
-    'lrcred': 'lrc.red',
-    'betterlyrics': 'BetterLyrics',
-  };
-
   String _getLyricsProvidersSubtitle(
     BuildContext context,
     List<String> providers,
@@ -219,11 +203,7 @@ class LyricsSettingsPage extends ConsumerWidget {
     return providers
         .map(
           (provider) =>
-              _providerDisplayNames[provider] ??
-              extensionProviderNames[provider] ??
-              (provider.startsWith('extension:')
-                  ? provider.substring('extension:'.length)
-                  : provider),
+              lyricsProviderDisplayName(provider, extensionProviderNames),
         )
         .join(' > ');
   }

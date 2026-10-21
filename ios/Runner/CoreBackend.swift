@@ -820,6 +820,16 @@ final class RustCoreBackend: CoreBackend {
             }
             return nil
         case "getExtensionPendingAuth": return try current.getExtensionPendingAuthJson(extensionId: string("extension_id"))
+        case "getLyricsFromProvider":
+            let request = LyricsRequest(
+                spotifyId: string("spotify_id"),
+                track: string("track_name"),
+                artist: string("artist_name"),
+                filePath: "",
+                durationMs: (args["duration_ms"] as? NSNumber)?.int64Value ?? 0
+            )
+            return try current.getLyricsFromProvider(provider: string("provider"), request: request, lease: nil)
+        case "getEnabledLyricsProviders": return try current.getEnabledLyricsProvidersJson()
         case "completeExtensionSessionGrant":
             try completeSessionGrant(current, id: string("extension_id"), grant: string("grant"))
             return true

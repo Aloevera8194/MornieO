@@ -255,6 +255,18 @@ internal fun RustCoreBackend.dispatchApplication(method: String, arguments: Any?
         "findURLHandler" -> current.findUrlHandler(string("url")) ?: ""
         "handleURLWithExtension" -> current.handleUrlJson(string("url"))
         "getExtensionPendingAuth" -> current.getExtensionPendingAuthJson(string("extension_id")).ifEmpty { null }
+        "getLyricsFromProvider" -> current.getLyricsFromProvider(
+            string("provider"),
+            LyricsRequest(
+                string("spotify_id"),
+                string("track_name"),
+                string("artist_name"),
+                "",
+                (args["duration_ms"] as? Number)?.toLong() ?: 0L,
+            ),
+            null,
+        )
+        "getEnabledLyricsProviders" -> current.getEnabledLyricsProvidersJson()
         "completeExtensionSessionGrant" -> {
             completeSessionGrant(current, string("extension_id"), string("grant"))
             true

@@ -68,6 +68,24 @@ impl ExtensionManager {
             .map_err(ExtensionManagerError::Operation)
     }
 
+    /// One enabled provider's lyrics, for choosing between providers.
+    pub fn get_lyrics_from_provider(
+        &self,
+        provider: String,
+        request: LyricsRequest,
+        lease: Option<Arc<RequestLease>>,
+    ) -> Result<String, ExtensionManagerError> {
+        self.inner
+            .get_lyrics_from_provider(&provider, &request.into(), &|| check(&lease))
+            .map_err(ExtensionManagerError::Operation)
+    }
+
+    pub fn get_enabled_lyrics_providers_json(&self) -> Result<String, ExtensionManagerError> {
+        self.inner
+            .get_enabled_lyrics_providers_json()
+            .map_err(ExtensionManagerError::Operation)
+    }
+
     pub fn fetch_and_save_lyrics(
         &self,
         request: LyricsRequest,

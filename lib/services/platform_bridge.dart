@@ -1245,6 +1245,31 @@ class PlatformBridge {
     });
   }
 
+  /// Lyrics from one enabled provider only, in the shape of
+  /// [getLyricsLRCWithSource]. Throws when that provider has none.
+  static Future<Map<String, dynamic>> getLyricsFromProvider(
+    String provider, {
+    required String trackName,
+    required String artistName,
+    String spotifyId = '',
+    int durationMs = 0,
+  }) {
+    return _invokeMap('getLyricsFromProvider', {
+      'provider': provider,
+      'spotify_id': spotifyId,
+      'track_name': trackName,
+      'artist_name': artistName,
+      'duration_ms': durationMs,
+    });
+  }
+
+  /// The enabled lyrics providers in priority order, including installed
+  /// lyrics extensions as `extension:<id>`.
+  static Future<List<String>> getEnabledLyricsProviders() async {
+    final result = await _channel.invokeMethod('getEnabledLyricsProviders');
+    return _decodeStringListResult(result, 'getEnabledLyricsProviders');
+  }
+
   static Future<Map<String, dynamic>> embedLyricsToFile(
     String filePath,
     String lyrics,
