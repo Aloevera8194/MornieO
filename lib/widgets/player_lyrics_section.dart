@@ -48,41 +48,71 @@ class PlayerLyricsSection extends ConsumerWidget {
   }
 
   Widget _buildLyricsSection(BuildContext context, (bool, bool) visibility) {
+    // Center in the part the player's controls leave visible.
+    final covered = LyricsCoveredBottom.of(context);
     if (metadata.loading || metadata.searchingOnline) {
-      return const Center(child: AppLoadingIndicator());
+      return Padding(
+        padding: EdgeInsets.only(bottom: covered),
+        child: const Center(child: AppLoadingIndicator()),
+      );
     }
     if (metadata.lyrics.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppIcon(
-              Icons.lyrics_outlined,
-              size: 40,
-              color: colorScheme.onSurfaceVariant,
+      // Scrolls when a short screen leaves too little room above the
+      // controls, so the search button stays reachable.
+      return LayoutBuilder(
+        builder: (context, constraints) => SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: covered),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minWidth: constraints.maxWidth,
+              minHeight: constraints.hasBoundedHeight
+                  ? (constraints.maxHeight - covered).clamp(
+                      0.0,
+                      double.infinity,
+                    )
+                  : 0,
             ),
-            const SizedBox(height: 12),
-            Text(
-              metadata.onlineSearchMissed
-                  ? context.l10n.nowPlayingNoLyricsOnline
-                  : context.l10n.nowPlayingNoLyrics,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (metadata.canSearchOnline) ...[
-              const SizedBox(height: 16),
-              ExpressiveButton(
-                tonal: true,
-                onPressed: metadata.searchOnline,
-                icon: const Icon(Icons.manage_search),
-                child: Text(context.l10n.nowPlayingSearchLyricsOnline),
-              ),
-            ],
-          ],
+            child: Center(child: _noLyrics(context)),
+          ),
         ),
       );
     }
+    return _lyricsContent(context, visibility);
+  }
+
+  Widget _noLyrics(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppIcon(
+          Icons.lyrics_outlined,
+          size: 40,
+          color: colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          metadata.onlineSearchMissed
+              ? context.l10n.nowPlayingNoLyricsOnline
+              : context.l10n.nowPlayingNoLyrics,
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+        if (metadata.canSearchOnline) ...[
+          const SizedBox(height: 16),
+          ExpressiveButton(
+            tonal: true,
+            onPressed: metadata.searchOnline,
+            icon: const Icon(Icons.manage_search),
+            child: Text(context.l10n.nowPlayingSearchLyricsOnline),
+          ),
+        ],
+      ],
+    ),
+  );
+
+  Widget _lyricsContent(BuildContext context, (bool, bool) visibility) {
     if (metadata.lyrics.synced) {
       return Stack(
         fit: StackFit.expand,

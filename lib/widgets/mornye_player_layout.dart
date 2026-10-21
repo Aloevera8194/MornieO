@@ -594,7 +594,18 @@ class MornyePlayerLayout extends ConsumerWidget {
           ],
         ).createShader(bounds);
       },
-      child: child,
+      child: LayoutBuilder(
+        builder: (context, constraints) => LyricsCoveredBottom(
+          height: constraints.hasBoundedHeight
+              ? (constraints.maxHeight - visibleHeight).clamp(
+                      0.0,
+                      double.infinity,
+                    ) *
+                    (1 - reveal)
+              : 0,
+          child: child!,
+        ),
+      ),
     ),
     child: child,
   );
