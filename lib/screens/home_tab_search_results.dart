@@ -808,25 +808,32 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
         widget.mode == HomeTabMode.search ||
         _searchFocusNode.hasFocus;
 
+    final searchingLibrary = _searchingLibrary;
     return AppSearchField(
       controller: _urlController,
       samplesBackdrop: false,
       focusNode: _searchFocusNode,
-      hintText: _getSearchHint(),
+      hintText: searchingLibrary
+          ? context.l10n.librarySearchHint
+          : _getSearchHint(),
       clearTooltip: context.l10n.dialogClear,
       onClear: _clearAndRefresh,
-      prefixIcon: _SearchProviderDropdown(
-        onProviderChanged: () {
-          _lastSearchQuery = null;
-          ref.read(trackProvider.notifier).setSearchFilter(null);
-          setState(() {});
-          final text = _urlController.text.trim();
-          if (text.isNotEmpty &&
-              text.length >= _HomeTabState._minLiveSearchChars) {
-            _performSearch(text);
-          }
-        },
-      ),
+      // Filtering the library needs neither the provider picker nor the
+      // import actions.
+      prefixIcon: searchingLibrary
+          ? null
+          : _SearchProviderDropdown(
+              onProviderChanged: () {
+                _lastSearchQuery = null;
+                ref.read(trackProvider.notifier).setSearchFilter(null);
+                setState(() {});
+                final text = _urlController.text.trim();
+                if (text.isNotEmpty &&
+                    text.length >= _HomeTabState._minLiveSearchChars) {
+                  _performSearch(text);
+                }
+              },
+            ),
       suffixIcon: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -836,7 +843,7 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
               onPressed: _clearAndRefresh,
               tooltip: context.l10n.dialogClear,
             )
-          else if (showInputActions) ...[
+          else if (showInputActions && !searchingLibrary) ...[
             AppIconButton(
               icon: const Icon(Icons.file_upload_outlined),
               onPressed: _isCsvImporting
@@ -862,6 +869,13 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
 
     final text = _urlController.text.trim();
     if (text.isEmpty) return;
+
+    if (_searchingLibrary) {
+      _libraryQueryDebounce?.cancel();
+      setState(() => _libraryQuery = text);
+      _searchFocusNode.unfocus();
+      return;
+    }
 
     if (looksLikeUrlOrSpotifyUri(text)) {
       _fetchMetadata();

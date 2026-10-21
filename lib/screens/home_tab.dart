@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mornye/widgets/app_snack_bar.dart';
 import 'package:mornye/screens/track_history_snapshot.dart';
 import 'package:mornye/theme/app_tokens.dart';
+import 'package:mornye/theme/cover_palette.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/app_switch.dart';
 import 'package:mornye/widgets/app_checkbox.dart';
@@ -21,6 +23,9 @@ import 'package:mornye/widgets/app_menu_button.dart';
 import 'package:mornye/theme/mornye_icons.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/widgets/mornye_context_menu.dart';
+import 'package:mornye/widgets/app_icon.dart';
+import 'package:mornye/widgets/library_search_results.dart';
+import 'package:mornye/screens/mornye_library_screen.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/app_alert_dialog.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
@@ -125,6 +130,17 @@ class _HomeTabState extends ConsumerState<HomeTab>
   int _searchGeneration = 0;
   static const int _minLiveSearchChars = 3;
   static const Duration _liveSearchDelay = Duration(milliseconds: 800);
+
+  /// The Mornye desktop Search page can search the library instead of the
+  /// online provider, as the scope control in Music does.
+  bool get _offersLibraryScope =>
+      widget.mode == HomeTabMode.search &&
+      context.isMornye &&
+      isDesktopPlatform;
+  bool _searchesLibrary = false;
+  String _libraryQuery = '';
+  Timer? _libraryQueryDebounce;
+  bool get _searchingLibrary => _searchesLibrary && _offersLibraryScope;
 
   bool _embeddedCoverRefreshScheduled = false;
   List<Extension>? _thumbnailSizesExtensionsCache;
@@ -231,7 +247,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
   }
 
   void _fetchExploreIfNeeded() {
-    if (!_showsHome) return;
+    // The desktop Mornye Search page browses the feed too.
+    if (!_showsHome && !_offersLibraryScope) return;
     if (ref.read(settingsProvider).homeFeedProvider ==
         AppSettings.homeFeedProviderOff) {
       ref.read(exploreProvider.notifier).clear();
@@ -255,6 +272,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
     ShellNavigationService.searchRequests.removeListener(_focusSearchFromShell);
     _homeScrollController.dispose();
     _liveSearchDebounce?.cancel();
+    _libraryQueryDebounce?.cancel();
     _trackStateSub.close();
     _extensionInitSub.close();
     _homeFeedExtSub.close();
@@ -432,11 +450,23 @@ class _HomeTabState extends ConsumerState<HomeTab>
 
     if (text.isEmpty) {
       _liveSearchDebounce?.cancel();
+      _libraryQueryDebounce?.cancel();
+      _libraryQuery = '';
       _activeSearchInput = null;
       _lastSearchQuery = null;
       if (!_isResettingSearchSurface) {
         _resetSearchSurface(clearText: false);
       }
+      return;
+    }
+
+    if (_searchingLibrary) {
+      _libraryQueryDebounce?.cancel();
+      _libraryQueryDebounce = Timer(const Duration(milliseconds: 300), () {
+        if (mounted && _urlController.text.trim() == text) {
+          setState(() => _libraryQuery = text);
+        }
+      });
       return;
     }
 
@@ -836,6 +866,11 @@ class _HomeTabState extends ConsumerState<HomeTab>
         !hasHomeFeedExtension &&
         !hasExploreContent &&
         !hasResults;
+    final searchToolbar = _offersLibraryScope;
+    final showLibraryResults = _searchingLibrary && hasSearchInput;
+    // As in Music, the library scope waits for words without recents or
+    // Browse.
+    final showLibraryPrompt = _searchingLibrary && !hasSearchInput;
     final sectionMotion = AppMotion.spatial(
       context,
       const AppMotionSpec(Duration(milliseconds: 250), Curves.easeOut),
@@ -858,7 +893,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
       previous,
       next,
     ) {
-      if (!_showsSearch || previous == next) return;
+      if (!_showsSearch || _searchingLibrary || previous == next) return;
       final selectedSearchFilter = ref.read(
         trackProvider.select((s) => s.selectedSearchFilter),
       );
@@ -903,7 +938,10 @@ class _HomeTabState extends ConsumerState<HomeTab>
             controller: _homeScrollController,
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             slivers: [
-              _buildHeaderSliver(greeting: greeting),
+              if (searchToolbar)
+                _buildDesktopSearchToolbarSliver()
+              else
+                _buildHeaderSliver(greeting: greeting),
               if (_showsHome) const SliverToBoxAdapter(child: AppCrashBanner()),
               _buildHomeIntroSliver(
                 sectionMotion: sectionMotion,
@@ -913,7 +951,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 screenHeight: screenHeight,
                 showEmptyHomeState: showEmptyHomeState,
               ),
-              if (showSearchBar)
+              if (showSearchBar && !searchToolbar)
                 _buildSearchBarSliver(
                   hasResults: hasResults,
                   showExplore: showExplore,
@@ -921,13 +959,21 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 ),
               if (hasActiveSearchSurface &&
                   !showRecentAccess &&
-                  !showEmptySearchResult)
+                  !showEmptySearchResult &&
+                  !showLibraryResults)
                 _buildSearchFilterSliver(
                   colorScheme: colorScheme,
                   defaultSearchTab: defaultSearchTab,
                 ),
-              if (showRecentAccess)
+              if (showRecentAccess && !showLibraryResults && !showLibraryPrompt)
                 _buildRecentAccessSliver(colorScheme: colorScheme),
+              if (showLibraryResults) _buildLibrarySearchSliver(),
+              if (showLibraryPrompt) _buildLibraryPromptSliver(),
+              if (searchToolbar &&
+                  !hasSearchInput &&
+                  !_searchingLibrary &&
+                  !homeFeedDisabled)
+                _buildBrowseSliver(),
               _buildHomeSectionsSliver(
                 sectionMotion: sectionMotion,
                 hasResults: hasResults,
@@ -943,7 +989,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
                   !isLoading &&
                   exploreLoading)
                 _buildExploreLoadingSliver(),
-              if (_showsSearch)
+              if (_showsSearch && !showLibraryResults)
                 _buildSearchResultsSliver(
                   colorScheme: colorScheme,
                   hasActiveSearchSurface: hasActiveSearchSurface,
@@ -951,6 +997,140 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 ),
               const NavBarSliverSpacer(),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setSearchScope({required bool library}) {
+    if (_searchesLibrary == library) return;
+    final text = _urlController.text.trim();
+    _liveSearchDebounce?.cancel();
+    _libraryQueryDebounce?.cancel();
+    setState(() {
+      _searchesLibrary = library;
+      _libraryQuery = library ? text : '';
+    });
+    if (library) {
+      // Online results for the same words would only flash back later.
+      _searchGeneration++;
+      _lastSearchQuery = null;
+      _activeSearchInput = null;
+      ref.read(trackProvider.notifier).clear();
+      ref.read(trackProvider.notifier).setSearchText(text.isNotEmpty);
+    } else if (text.length >= _minLiveSearchChars &&
+        !looksLikeUrlOrSpotifyUri(text)) {
+      _performSearch(text);
+    }
+  }
+
+  /// Music on the Mac keeps its search field centered in the toolbar, with
+  /// the scope control at the trailing edge.
+  Widget _buildDesktopSearchToolbarSliver() {
+    final extensions = ref.watch(extensionProvider.select((s) => s.extensions));
+    final providerId = HomeSearchProviderPolicy.resolveProvider(
+      ref.watch(settingsProvider.select((s) => s.searchProvider)),
+      extensions,
+    );
+    final online =
+        extensions
+            .where((e) => e.id == providerId && e.enabled)
+            .firstOrNull
+            ?.displayName ??
+        context.l10n.librarySourceOnline;
+    const scopeWidth = 260.0;
+    const gap = 16.0;
+    final scope = SizedBox(
+      width: scopeWidth,
+      child: MornyeSegmentedControl(
+        key: const ValueKey('search-scope'),
+        labels: [online, context.l10n.navLibrary],
+        selectedIndex: _searchesLibrary ? 1 : 0,
+        onChanged: (index) => _setSearchScope(library: index == 1),
+      ),
+    );
+    return SliverAppBar(
+      pinned: true,
+      automaticallyImplyLeading: false,
+      toolbarHeight: 88,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      titleSpacing: 0,
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          final width = constraints.maxWidth - 2 * 24;
+          final centeredField = math.min(480.0, width - 2 * (scopeWidth + gap));
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: centeredField >= 280
+                ? Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(width: centeredField, child: _buildSearchBar()),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: scope,
+                      ),
+                    ],
+                  )
+                // A narrow window has no room to center the field.
+                : Row(
+                    children: [
+                      Expanded(child: _buildSearchBar()),
+                      const SizedBox(width: gap),
+                      scope,
+                    ],
+                  ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLibraryPromptSliver() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SliverFillRemaining(
+      hasScrollBody: false,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppIcon(
+                Icons.search,
+                size: 64,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                context.l10n.searchLibraryPrompt,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLibrarySearchSliver() {
+    return LibrarySearchResults(
+      query: _libraryQuery,
+      shelves: true,
+      onOpenArtist: (artist) => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => Scaffold(
+            body: MornyeLibraryScreen(
+              page: MornyeLibraryPage.albums,
+              artist: artist,
+              onOpenSection: (_) {},
+            ),
           ),
         ),
       ),

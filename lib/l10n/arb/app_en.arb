@@ -310,6 +310,18 @@
   "@homeRecent": {
     "description": "Section header for recent searches"
   },
+  "searchRecentlySearched": "Recently Searched",
+  "@searchRecentlySearched": {
+    "description": "Section header for recent searches on the desktop Search page"
+  },
+  "searchLibraryPrompt": "Search Your Library",
+  "@searchLibraryPrompt": {
+    "description": "Shown on the desktop Search page when the Library scope has no search words yet"
+  },
+  "searchBrowse": "Browse",
+  "@searchBrowse": {
+    "description": "Section header for home feed tiles on the desktop Search page"
+  },
   "historyFilterAll": "All",
   "@historyFilterAll": {
     "description": "Filter chip - show all items"

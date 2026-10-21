@@ -36,10 +36,16 @@ class LibrarySearchResults extends ConsumerStatefulWidget {
     super.key,
     required this.query,
     required this.onOpenArtist,
+    this.shelves = false,
   });
 
   final String query;
   final ValueChanged<String> onOpenArtist;
+
+  /// Groups the overview as Music on the Mac does: artists, albums and
+  /// playlists in rows of artwork that scroll sideways, songs as rows, and
+  /// no filter chips until a section header opens one kind.
+  final bool shelves;
 
   @override
   ConsumerState<LibrarySearchResults> createState() =>
@@ -429,37 +435,176 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final slivers = <Widget>[
-      SliverToBoxAdapter(
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Row(
-            spacing: 8,
-            children: [
-              for (final kind in [null, ...LibrarySearchKind.values])
-                AppChoiceChip(
-                  label: Text(
-                    kind == null ? context.l10n.historyFilterAll : _label(kind),
+  Widget _shelfHeader(LibrarySearchKind kind) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 20, 20, 8),
+      child: Align(
+        alignment: AlignmentDirectional.centerStart,
+        child: Semantics(
+          header: true,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: () => _select(kind),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _label(kind),
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                  selected: _kind == kind,
-                  singleChoice: true,
-                  onSelected: (_) => _select(kind),
-                ),
-            ],
+                  Icon(
+                    Icons.chevron_right,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _shelf(LibrarySearchKind kind, List<LibrarySearchHit> hits) {
+    final artist = kind == LibrarySearchKind.artists;
+    final size = artist ? 160.0 : 180.0;
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final scaler = MediaQuery.textScalerOf(context);
+    final textHeight =
+        scaler.scale(textTheme.bodyLarge?.fontSize ?? 17) * 1.3 +
+        (artist ? 0 : scaler.scale(textTheme.bodyMedium?.fontSize ?? 15) * 1.3);
+    final icon = switch (kind) {
+      LibrarySearchKind.artists => Icons.person_outline,
+      LibrarySearchKind.playlists => Icons.queue_music,
+      _ => Icons.album_outlined,
+    };
+    Widget fallback(BuildContext context) => ColoredBox(
+      color: colorScheme.surfaceContainerHighest,
+      child: Center(child: Icon(icon, size: size * 0.3)),
+    );
+    return SizedBox(
+      height: size + 8 + textHeight + 16,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+        itemCount: hits.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 20),
+        itemBuilder: (context, index) {
+          final hit = hits[index];
+          return SizedBox(
+            key: ValueKey('${hit.kind.name}:${hit.source}:${hit.id}'),
+            width: size,
+            child: GestureDetector(
+              onSecondaryTapUp: (details) =>
+                  _showHitMenu(hit, details.globalPosition),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: _selecting ? null : () => _open(hit),
+                child: Column(
+                  crossAxisAlignment: artist
+                      ? CrossAxisAlignment.center
+                      : CrossAxisAlignment.start,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        artist ? size / 2 : 8,
+                      ),
+                      child: SizedBox.square(
+                        dimension: size,
+                        child: hit.cover?.isNotEmpty == true
+                            ? LocalOrNetworkCoverImage(
+                                url: hit.cover!,
+                                placeholder: fallback,
+                              )
+                            : fallback(context),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      hit.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: artist ? TextAlign.center : TextAlign.start,
+                      style: textTheme.bodyLarge,
+                    ),
+                    if (!artist)
+                      Text(
+                        kind == LibrarySearchKind.albums
+                            ? hit.artist
+                            : context.l10n.queueTrackCount(hit.trackCount),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final shelves = widget.shelves && _kind == null;
+    final slivers = <Widget>[
+      if (!shelves)
+        SliverToBoxAdapter(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Row(
+              spacing: 8,
+              children: [
+                for (final kind in [null, ...LibrarySearchKind.values])
+                  AppChoiceChip(
+                    label: Text(
+                      kind == null
+                          ? context.l10n.historyFilterAll
+                          : _label(kind),
+                    ),
+                    selected: _kind == kind,
+                    singleChoice: true,
+                    onSelected: (_) => _select(kind),
+                  ),
+              ],
+            ),
+          ),
+        ),
     ];
     var hasResults = false;
     var loading = false;
     var failed = false;
     final visibleSongs = <LibrarySearchHit>[];
-    for (final kind in _kind == null ? LibrarySearchKind.values : [_kind!]) {
+    final kinds = _kind != null
+        ? [_kind!]
+        : shelves
+        ? const [
+            LibrarySearchKind.artists,
+            LibrarySearchKind.albums,
+            LibrarySearchKind.songs,
+            LibrarySearchKind.playlists,
+          ]
+        : LibrarySearchKind.values;
+    for (final kind in kinds) {
+      final shelf = shelves && kind != LibrarySearchKind.songs;
       for (var page = 0; page < (_kind == null ? 1 : _pages); page++) {
-        final pageSize = _kind == null ? 5 : 40;
+        final pageSize = _kind != null
+            ? 40
+            : !shelves
+            ? 5
+            : shelf
+            ? 20
+            : 8;
         final request = (
           query: widget.query,
           kind: kind,
@@ -475,7 +620,9 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
         }
         if (hits.isNotEmpty) {
           hasResults = true;
-          if (page == 0) {
+          if (page == 0 && shelves) {
+            slivers.add(SliverToBoxAdapter(child: _shelfHeader(kind)));
+          } else if (page == 0) {
             slivers.add(
               SliverToBoxAdapter(
                 child: ListTile(
@@ -492,10 +639,14 @@ class _LibrarySearchResultsState extends ConsumerState<LibrarySearchResults> {
             );
           }
           slivers.add(
-            SliverList.builder(
-              itemCount: hits.length.clamp(0, pageSize),
-              itemBuilder: (context, index) => _row(hits[index]),
-            ),
+            shelf
+                ? SliverToBoxAdapter(
+                    child: _shelf(kind, hits.take(pageSize).toList()),
+                  )
+                : SliverList.builder(
+                    itemCount: hits.length.clamp(0, pageSize),
+                    itemBuilder: (context, index) => _row(hits[index]),
+                  ),
           );
           if (_kind != null && page == _pages - 1 && hits.length > pageSize) {
             slivers.add(
