@@ -27,6 +27,7 @@ class ExpressivePlaybackTransport extends StatefulWidget {
     this.leading,
     this.trailing,
     this.compact = false,
+    this.fill = false,
   });
 
   final ColorScheme colorScheme;
@@ -43,6 +44,10 @@ class ExpressivePlaybackTransport extends StatefulWidget {
   final Widget? leading;
   final Widget? trailing;
   final bool compact;
+
+  /// Stretches the group, in its resting proportions, so the row spans the
+  /// full width and [leading] and [trailing] line up with its ends.
+  final bool fill;
 
   @override
   State<ExpressivePlaybackTransport> createState() =>
@@ -87,6 +92,9 @@ class _ExpressivePlaybackTransportState
             restingWidths.first * available / groupWidth,
           );
           widths = [side, math.max(_minTarget, available - 2 * side), side];
+        } else if (constraints.hasBoundedWidth && widget.fill) {
+          final scale = available / groupWidth;
+          widths = [for (final width in restingWidths) width * scale];
         }
         final pressed = _pressed;
         if (pressed != null) {

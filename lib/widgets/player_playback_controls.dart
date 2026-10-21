@@ -172,6 +172,8 @@ class PlayerPlaybackControls extends ConsumerWidget {
               playing: isPlaying,
               loading: isLoading,
               compact: compact,
+              // Shuffle and repeat line up with the timeline's ends.
+              fill: edgeAligned,
               playTooltip: isPlaying
                   ? context.l10n.actionPause
                   : context.l10n.tooltipPlay,
