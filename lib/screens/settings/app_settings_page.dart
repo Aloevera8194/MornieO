@@ -220,6 +220,10 @@ class AppSettingsPage extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) async {
+    // The dialog sits on the root navigator, while this page may live in a
+    // tab or settings detail navigator: popping through the page context
+    // closed the page and left the blocking dialog up.
+    final dialogNavigator = Navigator.of(context, rootNavigator: true);
     showAppDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -240,8 +244,8 @@ class AppSettingsPage extends ConsumerWidget {
       final removed = await ref
           .read(downloadHistoryProvider.notifier)
           .cleanupOrphanedDownloads();
+      dialogNavigator.pop();
       if (context.mounted) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -253,8 +257,8 @@ class AppSettingsPage extends ConsumerWidget {
         );
       }
     } catch (e) {
+      dialogNavigator.pop();
       if (context.mounted) {
-        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(context.l10n.snackbarError(context.friendlyError(e))),
