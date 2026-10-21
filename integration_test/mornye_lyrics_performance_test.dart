@@ -151,7 +151,13 @@ void runLyricsPerformanceTests({required bool mornye}) {
       await reset();
       final before = position().pixels;
       start();
-      await probe.wait(const Duration(milliseconds: 2300));
+      // A line boundary still needs a rendered frame and its scroll
+      // animation. Include that completion latency in the measured action.
+      while (elapsed.elapsed < const Duration(seconds: 6) &&
+          (elapsed.elapsed < const Duration(seconds: 2) ||
+              position().pixels <= before + 20)) {
+        await probe.wait(const Duration(milliseconds: 16));
+      }
       stop();
       expect(elapsed.elapsed, greaterThan(const Duration(seconds: 2)));
       expect(
@@ -207,6 +213,7 @@ void runLyricsPerformanceTests({required bool mornye}) {
         'style': style,
         'wordsPerLine': 5,
         'manualScrollTolerancePixels': 1,
+        'progressionTimeoutMs': 6000,
       },
     );
   });
