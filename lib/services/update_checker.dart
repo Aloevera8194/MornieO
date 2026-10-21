@@ -238,8 +238,11 @@ class UpdateChecker {
            },
        _supportedAbis = supportedAbis;
 
-  static const String _allReleasesApiUrl =
-      'https://api.github.com/repos/${AppInfo.githubRepo}/releases';
+  /// Android updates come from the main repository; desktop packages are
+  /// released in their own.
+  String get _releaseRepo => _host.os == UpdateHost.android.os
+      ? AppInfo.githubRepo
+      : AppInfo.desktopGithubRepo;
 
   /// Installed versions this many stable releases (or more) behind must
   /// update before continuing to use the app.
@@ -250,10 +253,17 @@ class UpdateChecker {
   static const String _cachedBodyKey = 'update_checker_releases_json';
   static const String _cachedAtKey = 'update_checker_releases_fetched_at';
   static const String _cachedEtagKey = 'update_checker_releases_etag';
+  static const String _cachedRepoKey = 'update_checker_releases_repo';
 
   Future<({String body, bool verified})?> _fetchReleasesBody() async {
     final prefs = await SharedPreferences.getInstance();
-    var cachedBody = prefs.getString(_cachedBodyKey);
+    final repo = _releaseRepo;
+    // A list saved before the desktop repository split (no repo recorded) is
+    // the main repository's.
+    final cachedRepo = prefs.getString(_cachedRepoKey) ?? AppInfo.githubRepo;
+    var cachedBody = cachedRepo == repo
+        ? prefs.getString(_cachedBodyKey)
+        : null;
     if (cachedBody != null) {
       try {
         _parseReleases(cachedBody);
@@ -266,7 +276,7 @@ class UpdateChecker {
     final cachedEtag = prefs.getString(_cachedEtagKey);
     try {
       final response = await (_client?.get ?? http.get)(
-        Uri.parse('$_allReleasesApiUrl?per_page=30'),
+        Uri.parse('https://api.github.com/repos/$repo/releases?per_page=30'),
         headers: {
           'Accept': 'application/vnd.github.v3+json',
           'Cache-Control': 'no-cache',
@@ -289,6 +299,7 @@ class UpdateChecker {
       // Invalid responses must not overwrite a usable offline snapshot.
       _parseReleases(response.body);
       await prefs.setString(_cachedBodyKey, response.body);
+      await prefs.setString(_cachedRepoKey, repo);
       final etag = response.headers['etag'];
       if (etag != null) {
         await prefs.setString(_cachedEtagKey, etag);
@@ -378,7 +389,8 @@ class UpdateChecker {
 
       final body = releaseData['body'] as String? ?? 'No changelog available';
       final htmlUrl =
-          releaseData['html_url'] as String? ?? '${AppInfo.githubUrl}/releases';
+          releaseData['html_url'] as String? ??
+          'https://github.com/$_releaseRepo/releases';
       final publishedAt =
           DateTime.tryParse(releaseData['published_at'] as String? ?? '') ??
           DateTime.now();

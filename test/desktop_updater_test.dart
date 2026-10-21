@@ -217,6 +217,56 @@ void main() {
       ),
     );
 
+    test(
+      'desktop reads the desktop repository, Android the main one',
+      () async {
+        final requested = <Uri>[];
+        UpdateChecker recording(UpdateHost host) => UpdateChecker(
+          installedVersion: '5.2.1',
+          host: host,
+          client: MockClient((request) async {
+            requested.add(request.url);
+            return http.Response('[]', 200);
+          }),
+        );
+        await recording(_appImageHost).checkForUpdate();
+        await recording(UpdateHost.android).checkForUpdate();
+        expect(requested.map((url) => url.path), [
+          '/repos/mornyeapp/Mornye-Desktop/releases',
+          '/repos/mornyeapp/Mornye/releases',
+        ]);
+      },
+    );
+
+    test(
+      'a main repository list saved before the split is not reused',
+      () async {
+        // Saved by an earlier desktop build, which read the main repository.
+        SharedPreferences.setMockInitialValues({
+          'update_checker_releases_json': jsonEncode([release()]),
+          'update_checker_releases_etag': '"main"',
+        });
+        final headers = <Map<String, String>>[];
+        final offline = UpdateChecker(
+          installedVersion: '5.2.1',
+          host: _appImageHost,
+          client: MockClient((request) async {
+            headers.add(request.headers);
+            throw http.ClientException('Offline');
+          }),
+        );
+        expect(await offline.checkForUpdate(), isNull);
+        expect(headers.single.containsKey('If-None-Match'), isFalse);
+
+        // A list fetched from the desktop repository is reused offline.
+        await checker(_appImageHost).checkForUpdate();
+        expect(
+          (await offline.checkForUpdate())?.assetName,
+          'Mornye-$_version-linux-x86_64.AppImage',
+        );
+      },
+    );
+
     test('an AppImage gets its package, checksums and target path', () async {
       final update = await checker(_appImageHost).checkForUpdate();
       expect(update?.installKind, UpdateInstallKind.linuxAppImage);
