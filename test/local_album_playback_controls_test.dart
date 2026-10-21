@@ -59,6 +59,14 @@ class _Playback extends PlaybackController {
   }
 }
 
+/// The current row's equalizer glyph loops while playing, so this settles
+/// with bounded pumps instead of waiting for an idle frame.
+Future<void> _settle(WidgetTester tester) async {
+  for (var i = 0; i < 20; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
 void main() {
   for (final mornye in [false, true]) {
     testWidgets(
@@ -125,7 +133,7 @@ void main() {
         container = ProviderScope.containerOf(
           tester.element(find.byType(LocalAlbumScreen)),
         );
-        await tester.pumpAndSettle();
+        await _settle(tester);
         final header = find.byType(AlbumPlayActions);
         Finder row(int number) => find.byWidgetPredicate(
           (widget) =>
@@ -139,7 +147,7 @@ void main() {
         await tester.tap(
           find.descendant(of: header, matching: find.text('Play')),
         );
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(playback._started, ['1']);
         expect(
           find.descendant(of: header, matching: find.text('Pause')),
@@ -161,7 +169,7 @@ void main() {
         await tester.tap(
           find.descendant(of: header, matching: find.text('Pause')),
         );
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(player._toggles, [true]);
         expect(
           find.descendant(of: header, matching: find.text('Play')),
@@ -174,7 +182,7 @@ void main() {
 
         await tester.ensureVisible(rowButton(1));
         await tester.tap(rowButton(1));
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(player._toggles, [true, false]);
         expect(playback._started, ['1']);
         expect(
@@ -184,7 +192,7 @@ void main() {
 
         await tester.ensureVisible(rowButton(2));
         await tester.tap(rowButton(2));
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(playback._started, ['1', '2']);
         expect(
           find.descendant(of: row(1), matching: findAppIcon(playIcon)),
@@ -195,20 +203,20 @@ void main() {
           findsOneWidget,
         );
         await tester.tap(rowButton(2));
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(player._toggles, [true, false, true]);
         expect(playback._started, ['1', '2']);
 
         // A queue started from a playlist uses its file path as the media ID.
         media.add(MediaItem(id: tracks.first.filePath, title: 'Song 1'));
         emitPlaying(true);
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(
           find.descendant(of: row(1), matching: findAppIcon(pauseIcon)),
           findsOneWidget,
         );
         await tester.tap(rowButton(1));
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(player._toggles.last, isTrue);
         expect(playback._started, ['1', '2']);
 
@@ -221,7 +229,7 @@ void main() {
           ),
         );
         emitPlaying(true);
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(
           find.descendant(of: header, matching: find.text('Play')),
           findsOneWidget,
@@ -231,7 +239,7 @@ void main() {
         await tester.tap(
           find.descendant(of: header, matching: find.text('Play')),
         );
-        await tester.pumpAndSettle();
+        await _settle(tester);
         expect(playback._started, ['1', '2', '1']);
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox.shrink());
