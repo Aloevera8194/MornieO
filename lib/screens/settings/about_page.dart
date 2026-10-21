@@ -283,7 +283,10 @@ class _AppHeaderCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final cardColor = isDark
+    // Material sits on the settings group tier beside the groups below.
+    final cardColor = !context.isMornye
+        ? settingsGroupColor(context)
+        : isDark
         ? Color.alphaBlend(
             Colors.white.withValues(alpha: 0.08),
             colorScheme.surface,
@@ -587,7 +590,9 @@ class _TranslatorsSection extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final cardColor = isDark
+    final cardColor = !context.isMornye
+        ? settingsGroupColor(context)
+        : isDark
         ? Color.alphaBlend(
             Colors.white.withValues(alpha: 0.08),
             colorScheme.surface,

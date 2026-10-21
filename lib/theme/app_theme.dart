@@ -62,6 +62,8 @@ class AppTheme {
       switchTheme: _switchTheme(scheme),
       chipTheme: _chipTheme(scheme),
       popupMenuTheme: _popupMenuTheme(scheme),
+      menuTheme: _menuTheme(scheme),
+      menuButtonTheme: _menuButtonTheme,
       tabBarTheme: _tabBarTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
       extensions: <ThemeExtension<dynamic>>[
@@ -107,6 +109,8 @@ class AppTheme {
       switchTheme: _switchTheme(scheme),
       chipTheme: _chipTheme(scheme),
       popupMenuTheme: _popupMenuTheme(scheme),
+      menuTheme: _menuTheme(scheme),
+      menuButtonTheme: _menuButtonTheme,
       tabBarTheme: _tabBarTheme(scheme),
       dividerTheme: _dividerTheme(scheme),
       extensions: <ThemeExtension<dynamic>>[
@@ -257,7 +261,9 @@ class AppTheme {
     bool isAmoled = false,
   }) => NavigationBarThemeData(
     elevation: 0,
-    backgroundColor: isAmoled ? Colors.black : scheme.surfaceContainer,
+    // Navigation keeps its container tier on AMOLED too, so the bar stays
+    // apart from the black page.
+    backgroundColor: scheme.surfaceContainer,
     indicatorColor: scheme.secondaryContainer,
     surfaceTintColor: isAmoled ? Colors.transparent : scheme.surfaceTint,
     labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
@@ -302,10 +308,11 @@ class AppTheme {
     }),
   );
 
-  // Expressive menus: a rounded tonal container lifted above the content.
+  // Every menu wears the M3 Expressive standard menu skin, as M3EMenuPopup
+  // does: the low container tier, the control radius and a level 2 lift.
   static PopupMenuThemeData _popupMenuTheme(ColorScheme scheme) =>
       PopupMenuThemeData(
-        color: scheme.surfaceContainer,
+        color: scheme.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         elevation: 3,
         shape: RoundedRectangleBorder(
@@ -313,6 +320,30 @@ class AppTheme {
         ),
         menuPadding: const EdgeInsets.symmetric(vertical: 8),
       );
+
+  // Anchored menus share the popup skin; items sit 4dp in from the edge with
+  // rounded corners.
+  static MenuThemeData _menuTheme(ColorScheme scheme) => MenuThemeData(
+    style: MenuStyle(
+      backgroundColor: WidgetStatePropertyAll(scheme.surfaceContainerLow),
+      surfaceTintColor: const WidgetStatePropertyAll(Colors.transparent),
+      elevation: const WidgetStatePropertyAll(3),
+      padding: const WidgetStatePropertyAll(EdgeInsets.all(4)),
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(_tokens.radiusControl),
+        ),
+      ),
+    ),
+  );
+
+  static final MenuButtonThemeData _menuButtonTheme = MenuButtonThemeData(
+    style: MenuItemButton.styleFrom(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(_tokens.radiusCover),
+      ),
+    ),
+  );
 
   // Expressive tabs: a label-width indicator with rounded top corners.
   static TabBarThemeData _tabBarTheme(ColorScheme scheme) => TabBarThemeData(

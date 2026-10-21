@@ -127,16 +127,20 @@ class DynamicColorWrapper extends ConsumerWidget {
     );
   }
 
-  /// Apply AMOLED colors - pure black background with adjusted surface colors
+  /// Apply AMOLED colors: a pure black page with a neutral container ladder.
+  ///
+  /// The tiers keep the M3 dark tone steps around the container (low -2,
+  /// high +5, highest +10), anchored near tone 7 so the lowest raised tier,
+  /// used by menus, still reads against black where shadows do not show.
   ColorScheme _applyAmoledColors(ColorScheme scheme) {
     return scheme.copyWith(
       surface: Colors.black,
       onSurface: Colors.white,
       surfaceContainerLowest: Colors.black,
-      surfaceContainerLow: const Color(0xFF0A0A0A),
-      surfaceContainer: const Color(0xFF121212),
-      surfaceContainerHigh: const Color(0xFF1A1A1A),
-      surfaceContainerHighest: const Color(0xFF222222),
+      surfaceContainerLow: const Color(0xFF111111),
+      surfaceContainer: const Color(0xFF161616),
+      surfaceContainerHigh: const Color(0xFF1F1F1F),
+      surfaceContainerHighest: const Color(0xFF2A2A2A),
       inverseSurface: Colors.white,
       onInverseSurface: Colors.black,
     );

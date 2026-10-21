@@ -1186,16 +1186,11 @@ class HomeSearchSkeleton extends StatelessWidget {
         ),
       );
     });
-    // Material uses the result groups' own section tone; Mornye's glass
+    // Material uses the result groups' own container tier; Mornye's glass
     // results keep a faint neutral wash.
     final groupColor = mornye
         ? colorScheme.surfaceContainerHighest.withValues(alpha: 0.3)
-        : Theme.of(context).brightness == Brightness.dark
-        ? Color.alphaBlend(
-            Colors.white.withValues(alpha: 0.08),
-            colorScheme.surface,
-          )
-        : colorScheme.surfaceContainerHighest;
+        : colorScheme.surfaceContainer;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

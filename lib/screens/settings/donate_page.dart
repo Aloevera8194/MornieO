@@ -13,6 +13,21 @@ import 'package:mornye/widgets/app_progress_indicator.dart';
 import 'package:mornye/widgets/donate_icons.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
 
+/// Fill of the donate cards. Material puts them on the settings group tier;
+/// Mornye keeps the tone it blends over its surface.
+Color _donateCardColor(BuildContext context) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+  if (!context.isMornye) return colorScheme.surfaceContainer;
+  final isDark = theme.brightness == Brightness.dark;
+  return Color.alphaBlend(
+    (isDark ? Colors.white : Colors.black).withValues(
+      alpha: isDark ? 0.08 : 0.04,
+    ),
+    colorScheme.surface,
+  );
+}
+
 class DonatePage extends StatefulWidget {
   final AppRemoteConfigService? remoteConfigService;
 
@@ -119,13 +134,7 @@ class _MonthlyDonationGoalCard extends StatelessWidget {
     if (RegExp(r'^\d{4}-(0[1-9]|1[0-2])$').hasMatch(period)) {
       period = DateFormat.yMMMM(locale).format(DateTime.parse('$period-01'));
     }
-    final isDark = theme.brightness == Brightness.dark;
-    final cardColor = Color.alphaBlend(
-      (isDark ? Colors.white : Colors.black).withValues(
-        alpha: isDark ? 0.08 : 0.04,
-      ),
-      colorScheme.surface,
-    );
+    final cardColor = _donateCardColor(context);
 
     return AppContentCard(
       elevation: 0,
@@ -252,16 +261,7 @@ class _DonateLinksCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark
-        ? Color.alphaBlend(
-            Colors.white.withValues(alpha: 0.08),
-            colorScheme.surface,
-          )
-        : Color.alphaBlend(
-            Colors.black.withValues(alpha: 0.04),
-            colorScheme.surface,
-          );
+    final cardColor = _donateCardColor(context);
 
     return AppContentCard(
       elevation: 0,
@@ -329,17 +329,11 @@ class _RecentSupportersCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     return AppContentCard(
       elevation: 0,
       mornyeSurface: false,
-      color: Color.alphaBlend(
-        (isDark ? Colors.white : Colors.black).withValues(
-          alpha: isDark ? 0.08 : 0.04,
-        ),
-        colorScheme.surface,
-      ),
+      color: _donateCardColor(context),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
