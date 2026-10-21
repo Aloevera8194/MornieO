@@ -200,6 +200,58 @@ void main() {
     );
   }
 
+  testWidgets('the word sweep keeps moving behind another app window', (
+    tester,
+  ) async {
+    final playback = StreamController<PlaybackState>.broadcast();
+    final preview = ValueNotifier<Duration?>(null);
+    addTearDown(playback.close);
+    addTearDown(preview.dispose);
+    addTearDown(
+      () => tester.binding.handleAppLifecycleStateChanged(
+        AppLifecycleState.resumed,
+      ),
+    );
+    final theme = MornyeTheme.build(Brightness.dark);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          playbackStateProvider.overrideWith((ref) => playback.stream),
+        ],
+        child: MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: SyncedLyricsView(
+              lyrics: _lyrics,
+              seekPreview: preview,
+              colorScheme: theme.colorScheme,
+              isActive: true,
+              showPronunciation: false,
+              showTranslation: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    playback.add(
+      PlaybackState(
+        playing: true,
+        processingState: AudioProcessingState.ready,
+        updatePosition: const Duration(seconds: 2),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    // Focus moves to another app's window; no position report follows.
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+    await tester.pump();
+    final before = await _pixels(tester);
+    await tester.pump(const Duration(seconds: 3));
+    expect(await _pixels(tester), isNot(orderedEquals(before)));
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   for (final hiddenByLifecycle in [false, true]) {
     testWidgets(
       'hidden lyrics suspend their timeline and resume the latest position ($hiddenByLifecycle)',

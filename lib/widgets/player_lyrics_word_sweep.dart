@@ -43,11 +43,15 @@ class _WordHighlightedLyricLineState
   bool _hasSubscribed = false;
   Duration _visualEnd = Duration.zero;
 
+  // An inactive app is still on screen, as in [SyncedLyricsView]: the sweep
+  // keeps pace with the lines behind another app's window.
   bool get _visible =>
       widget.animate &&
       _tickerEnabled &&
-      (WidgetsBinding.instance.lifecycleState == null ||
-          WidgetsBinding.instance.lifecycleState == AppLifecycleState.resumed);
+      switch (WidgetsBinding.instance.lifecycleState) {
+        null || AppLifecycleState.resumed || AppLifecycleState.inactive => true,
+        _ => false,
+      };
 
   bool get _advancing =>
       _visible && _playing && !_loading && widget.seekPreview.value == null;
