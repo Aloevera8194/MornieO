@@ -54,6 +54,11 @@ class PlaybackController extends Notifier<PlaybackState> {
     String album = '',
     String coverUrl = '',
     Track? track,
+    Duration? duration,
+    int? bitDepth,
+    int? sampleRate,
+    int? bitrate,
+    String? format,
     bool? explicit,
   }) async {
     if (isCueVirtualPath(path)) {
@@ -72,9 +77,15 @@ class PlaybackController extends Notifier<PlaybackState> {
               artist: artist,
               album: album,
               artUri: _normalizeArtUri(coverUrl),
-              duration: (track != null && track.duration > 0)
-                  ? Duration(seconds: track.duration)
-                  : null,
+              duration:
+                  duration ??
+                  ((track != null && track.duration > 0)
+                      ? Duration(seconds: track.duration)
+                      : null),
+              bitDepth: bitDepth,
+              sampleRate: sampleRate,
+              bitrate: bitrate,
+              format: format,
               explicit: explicit ?? track?.isExplicit ?? false,
             ),
           );

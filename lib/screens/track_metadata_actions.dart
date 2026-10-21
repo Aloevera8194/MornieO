@@ -200,6 +200,7 @@ extension _TrackMetadataFileActions on _TrackMetadataScreenState {
           normalizeOptionalString(_embeddedCoverPreviewPath) ??
           normalizeOptionalString(_coverUrl) ??
           '';
+      final durationSeconds = duration;
       await ref
           .read(playbackProvider.notifier)
           .playLocalPath(
@@ -208,6 +209,13 @@ extension _TrackMetadataFileActions on _TrackMetadataScreenState {
             artist: artistName,
             album: albumName,
             coverUrl: playbackCover,
+            duration: durationSeconds != null && durationSeconds > 0
+                ? Duration(seconds: durationSeconds)
+                : null,
+            bitDepth: bitDepth,
+            sampleRate: sampleRate,
+            bitrate: _audioBitrate,
+            format: _storedAudioFormat,
             explicit: isExplicit,
           );
     } catch (e) {
