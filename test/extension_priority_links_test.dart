@@ -115,17 +115,17 @@ void main() {
             of: target,
             matching: find.byType(SettingsItem),
           );
-          expect(settingsItem, mornye ? findsOneWidget : findsNothing);
-          if (mornye) {
-            final opacity = find.ancestor(
-              of: settingsItem,
-              matching: find.byType(Opacity),
-            );
-            expect(
-              tester.widget<Opacity>(opacity.first).opacity,
-              available ? 1 : 0.5,
-            );
-          }
+          // Both styles use the standard row, so the link lines up with the
+          // other rows of its group.
+          expect(settingsItem, findsOneWidget);
+          final opacity = find.ancestor(
+            of: settingsItem,
+            matching: find.byType(Opacity),
+          );
+          expect(
+            tester.widget<Opacity>(opacity.first).opacity,
+            available ? 1 : 0.5,
+          );
           await tester.tap(find.text(title));
           await tester.pumpAndSettle();
           expect(

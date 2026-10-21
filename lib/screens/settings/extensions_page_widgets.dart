@@ -105,64 +105,17 @@ class _ExtensionPriorityLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    if (context.isMornye) {
-      return Opacity(
-        opacity: enabled ? 1 : 0.5,
-        child: SettingsItem(
-          icon: icon,
-          title: title,
-          subtitle: subtitle,
-          onTap: enabled ? onTap : null,
-        ),
-      );
-    }
-
-    final content = InkWell(
-      onTap: enabled ? onTap : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            AppIcon(
-              icon,
-              color: enabled
-                  ? colorScheme.onSurfaceVariant
-                  : colorScheme.outline,
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: enabled ? null : colorScheme.outline,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            AppIcon(
-              Icons.chevron_right,
-              color: enabled
-                  ? colorScheme.onSurfaceVariant
-                  : colorScheme.outline,
-            ),
-          ],
-        ),
+    // The standard row keeps these links in line with the other settings
+    // rows of the group in both styles.
+    return Opacity(
+      opacity: enabled ? 1 : 0.5,
+      child: SettingsItem(
+        icon: icon,
+        title: title,
+        subtitle: subtitle,
+        onTap: enabled ? onTap : null,
       ),
     );
-    return SettingsSearchTarget(label: title, child: content);
   }
 }
 
@@ -254,7 +207,6 @@ class _SearchProviderSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final extState = ref.watch(extensionProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     final searchProviders = extState.extensions
         .where((e) => e.enabled && e.hasCustomSearch)
@@ -274,87 +226,23 @@ class _SearchProviderSelector extends ConsumerWidget {
       currentProviderName = ext?.displayName ?? resolvedProviderId;
     }
 
-    if (context.isMornye) {
-      return Opacity(
-        opacity: hasAnyProvider ? 1 : 0.5,
-        child: SettingsItem(
-          icon: Icons.manage_search,
-          title: context.l10n.extensionsSearchProvider,
-          subtitle: hasAnyProvider
-              ? currentProviderName
-              : context.l10n.extensionsNoCustomSearch,
-          onTap: hasAnyProvider
-              ? () => _showSearchProviderPicker(
-                  context,
-                  ref,
-                  settings,
-                  searchProviders,
-                )
-              : null,
-        ),
-      );
-    }
-
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InkWell(
-          onTap: !hasAnyProvider
-              ? null
-              : () => _showSearchProviderPicker(
-                  context,
-                  ref,
-                  settings,
-                  searchProviders,
-                ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                AppIcon(
-                  Icons.manage_search,
-                  color: !hasAnyProvider
-                      ? colorScheme.outline
-                      : colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.extensionsSearchProvider,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: !hasAnyProvider ? colorScheme.outline : null,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        !hasAnyProvider
-                            ? context.l10n.extensionsNoCustomSearch
-                            : currentProviderName,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AppIcon(
-                  Icons.chevron_right,
-                  color: !hasAnyProvider
-                      ? colorScheme.outline
-                      : colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-    return SettingsSearchTarget(
-      label: context.l10n.extensionsSearchProvider,
-      child: content,
+    return Opacity(
+      opacity: hasAnyProvider ? 1 : 0.5,
+      child: SettingsItem(
+        icon: Icons.manage_search,
+        title: context.l10n.extensionsSearchProvider,
+        subtitle: hasAnyProvider
+            ? currentProviderName
+            : context.l10n.extensionsNoCustomSearch,
+        onTap: hasAnyProvider
+            ? () => _showSearchProviderPicker(
+                context,
+                ref,
+                settings,
+                searchProviders,
+              )
+            : null,
+      ),
     );
   }
 
@@ -412,7 +300,6 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final extState = ref.watch(extensionProvider);
-    final colorScheme = Theme.of(context).colorScheme;
 
     final homeFeedProviders = extState.extensions
         .where((e) => e.enabled && e.hasHomeFeed)
@@ -433,75 +320,19 @@ class _HomeFeedProviderSelector extends ConsumerWidget {
       currentProviderName = ext?.displayName ?? settings.homeFeedProvider!;
     }
 
-    if (context.isMornye) {
-      return SettingsItem(
-        icon: Icons.explore_outlined,
-        title: context.l10n.extensionsHomeFeedProvider,
-        subtitle: !hasAnyProvider && !homeFeedDisabled
-            ? context.l10n.extensionsNoHomeFeedExtensions
-            : currentProviderName,
-        showDivider: false,
-        onTap: () => _showHomeFeedProviderPicker(
-          context,
-          ref,
-          settings,
-          homeFeedProviders,
-        ),
-      );
-    }
-
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        InkWell(
-          onTap: () => _showHomeFeedProviderPicker(
-            context,
-            ref,
-            settings,
-            homeFeedProviders,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                AppIcon(
-                  Icons.explore_outlined,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.l10n.extensionsHomeFeedProvider,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        !hasAnyProvider && !homeFeedDisabled
-                            ? context.l10n.extensionsNoHomeFeedExtensions
-                            : currentProviderName,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                AppIcon(
-                  Icons.chevron_right,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-    return SettingsSearchTarget(
-      label: context.l10n.extensionsHomeFeedProvider,
-      child: content,
+    return SettingsItem(
+      icon: Icons.explore_outlined,
+      title: context.l10n.extensionsHomeFeedProvider,
+      subtitle: !hasAnyProvider && !homeFeedDisabled
+          ? context.l10n.extensionsNoHomeFeedExtensions
+          : currentProviderName,
+      showDivider: false,
+      onTap: () => _showHomeFeedProviderPicker(
+        context,
+        ref,
+        settings,
+        homeFeedProviders,
+      ),
     );
   }
 
