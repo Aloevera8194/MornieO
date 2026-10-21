@@ -14,6 +14,7 @@ import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/providers/runtime_profile_provider.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/lyrics_parser.dart';
 import 'package:mornye/utils/lyrics_timeline.dart';
 import 'package:mornye/utils/synced_lyrics_scroll.dart';
@@ -28,6 +29,12 @@ part 'player_lyrics_line_style.dart';
 part 'player_lyrics_word_sweep.dart';
 
 const _mornyeLyricFontSize = 34.0;
+
+/// Material lyric sizes on desktop, where the lyrics panel is far wider than
+/// a phone. Null keeps the text theme's size (phones and tablets).
+double? _materialLyricFontSize({required bool active}) =>
+    isDesktopPlatform ? (active ? 32 : 30) : null;
+double get _materialBackgroundLyricFontSize => isDesktopPlatform ? 24 : 18;
 const mornyeLyricsContentInset = 28.0 + MornyePlayerSlider.horizontalInset;
 
 class SyncedLyricsView extends ConsumerStatefulWidget {
@@ -1054,10 +1061,12 @@ class _SyncedLyricsViewState extends ConsumerState<SyncedLyricsView>
                           ?.copyWith(
                             height: context.tokens.lyricsLineHeight,
                             fontSize: line.isBackground
-                                ? (mornye ? _mornyeLyricFontSize * 0.68 : 18)
+                                ? (mornye
+                                      ? _mornyeLyricFontSize * 0.68
+                                      : _materialBackgroundLyricFontSize)
                                 : mornye
                                 ? _mornyeLyricFontSize
-                                : null,
+                                : _materialLyricFontSize(active: isActive),
                             fontWeight: mornye || isActive
                                 ? FontWeight.bold
                                 : FontWeight.w500,

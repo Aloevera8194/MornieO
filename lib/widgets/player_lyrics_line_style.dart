@@ -16,6 +16,8 @@ Iterable<(String, TextStyle, List<LyricWord>, bool)> _lyricSupplements(
         fontSize:
             (context.isMornye
                 ? (translation ? 18.0 : 22.0)
+                : isDesktopPlatform
+                ? (translation ? 18.0 : 20.0)
                 : (translation ? 14.0 : 16.0)) *
             (line.isBackground ? 0.8 : 1),
         height: 1.35,

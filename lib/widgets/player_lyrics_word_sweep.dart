@@ -260,7 +260,9 @@ class _WordHighlightedLyricLineState
         ? _mornyeLyricStyle(context, background: widget.line.isBackground)
         : (Theme.of(context).textTheme.headlineSmall ?? const TextStyle())
               .copyWith(
-                fontSize: widget.line.isBackground ? 18 : null,
+                fontSize: widget.line.isBackground
+                    ? _materialBackgroundLyricFontSize
+                    : _materialLyricFontSize(active: true),
                 height: context.tokens.lyricsLineHeight,
                 fontWeight: FontWeight.bold,
               );
