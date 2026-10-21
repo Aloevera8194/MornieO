@@ -96,20 +96,18 @@ class _ExpressivePlaybackTransportState
           final scale = available / groupWidth;
           widths = [for (final width in restingWidths) width * scale];
         }
-        // The room the slots may take: the layout's, or the narrow phone
-        // minimum when that runs wider.
-        final room = math.max(available, widths.reduce((a, b) => a + b));
+        final factors = [1.0, 1.0, 1.0];
         final pressed = _pressed;
         if (pressed != null) {
           // Neighbours give up exactly what the pressed button gains.
-          final growth = widths[pressed] * _squishRatio;
+          final growth = restingWidths[pressed] * _squishRatio;
           final neighbours = [
             pressed - 1,
             pressed + 1,
           ].where((index) => index >= 0 && index < widths.length).toList();
-          widths[pressed] += growth;
+          factors[pressed] += _squishRatio;
           for (final index in neighbours) {
-            widths[index] -= growth / neighbours.length;
+            factors[index] -= growth / neighbours.length / restingWidths[index];
           }
         }
         final scheme = widget.colorScheme;
@@ -147,19 +145,20 @@ class _ExpressivePlaybackTransportState
             onPressed: widget.onNext,
           ),
         ];
-        // One spring moves all three slots, so a press keeps their sum. When
-        // the springs run wider than the room (a narrowing panel, or an
-        // overshoot as it widens) the slots scale down together instead of
-        // pushing the side actions out of the row.
+        // Spring only the press proportions. Resizing follows the parent
+        // directly instead of restarting a width spring on every frame.
         return TweenAnimationBuilder<_SlotWidths>(
-          tween: _SlotWidthsTween(end: (widths[0], widths[1], widths[2])),
+          tween: _SlotWidthsTween(end: (factors[0], factors[1], factors[2])),
           duration: _pressSpring.duration,
           curve: _pressSpring,
           builder: (context, slots, _) {
-            var (previous, play, next) = slots;
+            var previous = widths[0] * slots.$1;
+            var play = widths[1] * slots.$2;
+            var next = widths[2] * slots.$3;
             final total = previous + play + next;
-            if (constraints.hasBoundedWidth && total > room) {
-              final scale = room / total;
+            final restingTotal = widths.reduce((a, b) => a + b);
+            if (total > 0 && total != restingTotal) {
+              final scale = restingTotal / total;
               previous *= scale;
               play *= scale;
               next *= scale;
@@ -254,7 +253,7 @@ class _ExpressivePlaybackTransportState
   }
 }
 
-/// The widths of the previous, play-pause and next slots.
+/// Relative widths of the previous, play-pause and next slots while pressed.
 typedef _SlotWidths = (double, double, double);
 
 class _SlotWidthsTween extends Tween<_SlotWidths> {

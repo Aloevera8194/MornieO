@@ -69,22 +69,45 @@ void main() {
     }
   });
 
-  testWidgets('a wider row springs the buttons to their new widths', (
+  testWidgets('resizing follows the parent without a second width animation', (
     tester,
   ) async {
     await pumpTransport(tester, width: 300, fill: true);
     final play = find.byTooltip('Play');
-    final narrow = tester.getSize(play).width;
-    await pumpTransport(tester, width: 600, fill: true, settle: false);
-    await tester.pump(const Duration(milliseconds: 16));
-    final growing = tester.getSize(play).width;
-    await tester.pumpAndSettle();
-    final wide = tester.getSize(play).width;
-    expect(growing, greaterThan(narrow));
-    expect(growing, lessThan(wide));
-    expect(rectOf(tester, 'trailing').right, moreOrLessEquals(600));
+    for (final width in [432.0, 480.0, 520.0, 600.0, 432.0]) {
+      await pumpTransport(tester, width: width, fill: true, settle: false);
+      await tester.pump(const Duration(milliseconds: 16));
+      final expectedPlayWidth = (width - 128) * 104 / 240;
+      expect(tester.getSize(play).width, moreOrLessEquals(expectedPlayWidth));
+      expect(rectOf(tester, 'trailing').right, moreOrLessEquals(width));
+      expect(tester.binding.transientCallbackCount, 0);
+    }
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'a resize during a press keeps the row within its current width',
+    (tester) async {
+      await pumpTransport(tester, width: 432, fill: true);
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.byTooltip('Play')),
+      );
+      await tester.pump(const Duration(milliseconds: 32));
+      for (final width in [600.0, 480.0, 360.0, 432.0]) {
+        await pumpTransport(tester, width: width, fill: true, settle: false);
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(rectOf(tester, 'leading').left, moreOrLessEquals(0));
+        expect(rectOf(tester, 'trailing').right, moreOrLessEquals(width));
+        expect(tester.takeException(), isNull);
+      }
+      await gesture.up();
+      await tester.pumpAndSettle();
+      expect(
+        tester.getSize(find.byTooltip('Play')).width,
+        moreOrLessEquals((432 - 128) * 104 / 240),
+      );
+    },
+  );
 
   testWidgets('a press widens the button inside the row', (tester) async {
     await pumpTransport(tester, width: 432, fill: true);
