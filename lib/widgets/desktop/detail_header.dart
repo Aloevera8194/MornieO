@@ -63,7 +63,8 @@ List<Widget> desktopDetailHeaderSlivers(
 }) {
   final theme = Theme.of(context);
   final mornye = context.isMornye;
-  final inset = wideListInset(context) + context.tokens.gapSm;
+  // Lines the artwork up with the description and track table below.
+  final inset = wideListInset(context) + 20;
   final more = moreMenu == null ? null : _MoreButton(groups: moreMenu);
   final trailing = [...?appBarActions, ?more];
 
