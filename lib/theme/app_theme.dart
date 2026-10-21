@@ -11,6 +11,12 @@ class AppTheme {
   /// Shared surfaces use one radius scale; actions use round Material shapes.
   static const AppTokens _tokens = AppTokens.standard;
 
+  /// The bundled variable face; its wght, wdth and ROND axes stay variable.
+  static const String bundledFontFamily = 'Google Sans Flex';
+
+  /// Full ROND for the Expressive brand roles of [bundledFontFamily].
+  static const double brandRoundness = 100;
+
   // Override Flutter's default page transitions. Recent Flutter defaults the
   // Android route transition to PredictiveBackPageTransitionsBuilder, whose
   // gesture detector mis-routes the predictive-back gesture to a nested
@@ -40,6 +46,8 @@ class AppTheme {
           seedColor: seedColor ?? defaultSeedColor,
           brightness: Brightness.light,
         );
+    final family = fontFamily ?? (useSystemFont ? null : bundledFontFamily);
+    final textTheme = _expressiveTextTheme(family);
 
     return ThemeData(
       useMaterial3: true,
@@ -69,7 +77,9 @@ class AppTheme {
       extensions: <ThemeExtension<dynamic>>[
         isDesktopPlatform ? AppTokens.desktop : AppTokens.standard,
       ],
-      fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
+      fontFamily: family,
+      textTheme: textTheme,
+      primaryTextTheme: textTheme,
     );
   }
 
@@ -86,6 +96,8 @@ class AppTheme {
           seedColor: seedColor ?? defaultSeedColor,
           brightness: Brightness.dark,
         );
+    final family = fontFamily ?? (useSystemFont ? null : bundledFontFamily);
+    final textTheme = _expressiveTextTheme(family);
 
     return ThemeData(
       useMaterial3: true,
@@ -116,7 +128,34 @@ class AppTheme {
       extensions: <ThemeExtension<dynamic>>[
         isDesktopPlatform ? AppTokens.desktop : AppTokens.standard,
       ],
-      fontFamily: fontFamily ?? (useSystemFont ? null : 'Google Sans Flex'),
+      fontFamily: family,
+      textTheme: textTheme,
+      primaryTextTheme: textTheme,
+    );
+  }
+
+  // Display, headline and title roles are the Expressive brand roles, so they
+  // take Google Sans Flex's rounded terminals. Body and label roles carry long
+  // reading text and small UI labels, where the default cut terminals stay
+  // crisper; they keep ROND 0, the M3 Expressive brand and plain split.
+  // Only ROND is set: with no wght entry the engine still takes the weight
+  // from fontWeight, so a later copyWith(fontWeight: ...) keeps working.
+  // Imported and system fonts get no axes.
+  static TextTheme? _expressiveTextTheme(String? family) {
+    if (family != bundledFontFamily) return null;
+    const rounded = TextStyle(
+      fontVariations: [FontVariation('ROND', brandRoundness)],
+    );
+    return const TextTheme(
+      displayLarge: rounded,
+      displayMedium: rounded,
+      displaySmall: rounded,
+      headlineLarge: rounded,
+      headlineMedium: rounded,
+      headlineSmall: rounded,
+      titleLarge: rounded,
+      titleMedium: rounded,
+      titleSmall: rounded,
     );
   }
 
