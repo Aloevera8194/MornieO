@@ -353,10 +353,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               context,
               context.l10n.queueTrackCount(totalTrackCount),
               [
-                if (rootLibrary && !_isSelectionMode) _buildSortButton(context),
-                if (!_isSelectionMode) _buildFilterButton(context),
                 if (rootLibrary && !_isSelectionMode)
-                  _buildViewModeButton(context, historyViewMode),
+                  ..._buildLibraryTools(context, viewMode: historyViewMode)
+                else if (!_isSelectionMode)
+                  _buildFilterButton(context),
                 // The root Library creates playlists from the Playlists page.
                 if (!rootLibrary &&
                     !_isSelectionMode &&
@@ -382,8 +382,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               context,
               context.l10n.queueAlbumCount(totalAlbumCount),
               [
-                if (rootLibrary) _buildSortButton(context),
-                _buildFilterButton(context),
+                if (rootLibrary)
+                  ..._buildLibraryTools(context)
+                else
+                  _buildFilterButton(context),
               ],
             ),
           ),
@@ -755,10 +757,10 @@ extension _QueueTabFilterWidgets on _QueueTabState {
               context,
               context.l10n.queueTrackCount(totalTrackCount),
               [
-                if (rootLibrary && !_isSelectionMode) _buildSortButton(context),
-                if (!_isSelectionMode) _buildFilterButton(context),
                 if (rootLibrary && !_isSelectionMode)
-                  _buildViewModeButton(context, historyViewMode),
+                  ..._buildLibraryTools(context, viewMode: historyViewMode)
+                else if (!_isSelectionMode)
+                  _buildFilterButton(context),
                 // The root Library creates playlists from the Playlists page.
                 if (!rootLibrary &&
                     !_isSelectionMode &&
@@ -1047,17 +1049,35 @@ extension _QueueTabFilterWidgets on _QueueTabState {
         icon = Icons.history;
     }
 
+    if (context.isMornye) {
+      return EmptyState(
+        icon: icon,
+        title: message,
+        message: subtitle,
+        // Every empty branch here means "you have not downloaded anything of
+        // this kind yet", so the way forward is always search.
+        action: ExpressiveButton(
+          onPressed: () => ShellNavigationService.requestTab(ShellTab.home),
+          icon: const Icon(Icons.search),
+          child: Text(context.l10n.navHome),
+        ),
+      );
+    }
+
+    // Material names the next step in the copy. Home already sits in the
+    // navigation bar, so only creating the first playlist, which the empty
+    // Playlists page does not otherwise offer, gets a button.
     return EmptyState(
       icon: icon,
       title: message,
       message: subtitle,
-      // Every empty branch here means "you have not downloaded anything of
-      // this kind yet", so the way forward is always search.
-      action: ExpressiveButton(
-        onPressed: () => ShellNavigationService.requestTab(ShellTab.home),
-        icon: const Icon(Icons.search),
-        child: Text(context.l10n.navHome),
-      ),
+      action: filterMode == 'playlists'
+          ? ExpressiveButton(
+              onPressed: () => _showCreatePlaylistDialog(context),
+              icon: const Icon(Icons.add),
+              child: Text(context.l10n.collectionCreatePlaylist),
+            )
+          : null,
     );
   }
 
