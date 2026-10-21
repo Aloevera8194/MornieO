@@ -96,6 +96,9 @@ class _ExpressivePlaybackTransportState
           final scale = available / groupWidth;
           widths = [for (final width in restingWidths) width * scale];
         }
+        // The room the slots may take: the layout's, or the narrow phone
+        // minimum when that runs wider.
+        final room = math.max(available, widths.reduce((a, b) => a + b));
         final pressed = _pressed;
         if (pressed != null) {
           // Neighbours give up exactly what the pressed button gains.
@@ -113,88 +116,89 @@ class _ExpressivePlaybackTransportState
         final playIcon = widget.loading
             ? AppLoadingIndicator(color: scheme.onSurfaceVariant)
             : null;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (widget.leading case final leading?) ...[
-              leading,
-              const SizedBox(width: _gap),
-            ],
-            _slot(
-              index: 0,
-              width: widths[0],
-              height: height,
-              child: _button(
-                tooltip: widget.previousTooltip,
-                icon: const AppIcon(Icons.skip_previous),
-                iconSize: compact ? 28 : 32,
-                round: false,
-                background: scheme.secondaryContainer,
-                foreground: scheme.onSecondaryContainer,
-                onPressed: widget.onPrevious,
-              ),
-            ),
-            const SizedBox(width: _gap),
-            _slot(
-              index: 1,
-              width: widths[1],
-              height: height,
-              child: _button(
-                tooltip: widget.playTooltip,
-                icon: playIcon ?? const AppIcon(Icons.play_arrow),
-                selectedIcon: playIcon ?? const AppIcon(Icons.pause),
-                selected: widget.playing,
-                iconSize: compact ? 32 : 40,
-                round: true,
-                background: scheme.primary,
-                foreground: scheme.onPrimary,
-                onPressed: widget.loading ? null : widget.onPlayPause,
-              ),
-            ),
-            const SizedBox(width: _gap),
-            _slot(
-              index: 2,
-              width: widths[2],
-              height: height,
-              child: _button(
-                tooltip: widget.nextTooltip,
-                icon: const AppIcon(Icons.skip_next),
-                iconSize: compact ? 28 : 32,
-                round: false,
-                background: scheme.secondaryContainer,
-                foreground: scheme.onSecondaryContainer,
-                onPressed: widget.onNext,
-              ),
-            ),
-            if (widget.trailing case final trailing?) ...[
-              const SizedBox(width: _gap),
-              trailing,
-            ],
-          ],
+        final buttons = [
+          _button(
+            tooltip: widget.previousTooltip,
+            icon: const AppIcon(Icons.skip_previous),
+            iconSize: compact ? 28 : 32,
+            round: false,
+            background: scheme.secondaryContainer,
+            foreground: scheme.onSecondaryContainer,
+            onPressed: widget.onPrevious,
+          ),
+          _button(
+            tooltip: widget.playTooltip,
+            icon: playIcon ?? const AppIcon(Icons.play_arrow),
+            selectedIcon: playIcon ?? const AppIcon(Icons.pause),
+            selected: widget.playing,
+            iconSize: compact ? 32 : 40,
+            round: true,
+            background: scheme.primary,
+            foreground: scheme.onPrimary,
+            onPressed: widget.loading ? null : widget.onPlayPause,
+          ),
+          _button(
+            tooltip: widget.nextTooltip,
+            icon: const AppIcon(Icons.skip_next),
+            iconSize: compact ? 28 : 32,
+            round: false,
+            background: scheme.secondaryContainer,
+            foreground: scheme.onSecondaryContainer,
+            onPressed: widget.onNext,
+          ),
+        ];
+        // One spring moves all three slots, so a press keeps their sum. When
+        // the springs run wider than the room (a narrowing panel, or an
+        // overshoot as it widens) the slots scale down together instead of
+        // pushing the side actions out of the row.
+        return TweenAnimationBuilder<_SlotWidths>(
+          tween: _SlotWidthsTween(end: (widths[0], widths[1], widths[2])),
+          duration: _pressSpring.duration,
+          curve: _pressSpring,
+          builder: (context, slots, _) {
+            var (previous, play, next) = slots;
+            final total = previous + play + next;
+            if (constraints.hasBoundedWidth && total > room) {
+              final scale = room / total;
+              previous *= scale;
+              play *= scale;
+              next *= scale;
+            }
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (widget.leading case final leading?) ...[
+                  leading,
+                  const SizedBox(width: _gap),
+                ],
+                _slot(0, previous, height, buttons[0]),
+                const SizedBox(width: _gap),
+                _slot(1, play, height, buttons[1]),
+                const SizedBox(width: _gap),
+                _slot(2, next, height, buttons[2]),
+                if (widget.trailing case final trailing?) ...[
+                  const SizedBox(width: _gap),
+                  trailing,
+                ],
+              ],
+            );
+          },
         );
       },
     );
   }
 
-  Widget _slot({
-    required int index,
-    required double width,
-    required double height,
-    required Widget child,
-  }) => Listener(
-    onPointerDown: (_) => _press(index),
-    onPointerUp: (_) => _press(null),
-    onPointerCancel: (_) => _press(null),
-    // One curve for every slot keeps the summed width constant mid-flight.
-    child: TweenAnimationBuilder<double>(
-      tween: Tween(end: width),
-      duration: _pressSpring.duration,
-      curve: _pressSpring,
-      builder: (context, width, child) =>
-          SizedBox(width: math.max(0, width), height: height, child: child),
-      child: child,
-    ),
-  );
+  Widget _slot(int index, double width, double height, Widget child) =>
+      Listener(
+        onPointerDown: (_) => _press(index),
+        onPointerUp: (_) => _press(null),
+        onPointerCancel: (_) => _press(null),
+        child: SizedBox(
+          width: math.max(0, width),
+          height: height,
+          child: child,
+        ),
+      );
 
   Widget _button({
     required String tooltip,
@@ -247,5 +251,19 @@ class _ExpressivePlaybackTransportState
         ),
       ),
     );
+  }
+}
+
+/// The widths of the previous, play-pause and next slots.
+typedef _SlotWidths = (double, double, double);
+
+class _SlotWidthsTween extends Tween<_SlotWidths> {
+  _SlotWidthsTween({super.end});
+
+  @override
+  _SlotWidths lerp(double t) {
+    final (b0, b1, b2) = begin!;
+    final (e0, e1, e2) = end!;
+    return (b0 + (e0 - b0) * t, b1 + (e1 - b1) * t, b2 + (e2 - b2) * t);
   }
 }
