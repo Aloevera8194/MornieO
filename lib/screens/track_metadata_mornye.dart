@@ -155,7 +155,7 @@ extension _TrackMetadataMornye on _TrackMetadataScreenState {
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: adaptiveContentMaxWidth(
+                    maxWidth: _trackMetadataContentMaxWidth(
                       MediaQuery.sizeOf(context).width,
                     ),
                   ),

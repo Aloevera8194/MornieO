@@ -5,6 +5,18 @@ const _trackMetadataHeroScheme = ColorScheme.dark(
   onSurface: Colors.white,
   onSurfaceVariant: Colors.white70,
 );
+
+/// Content width, inside the page padding, at which the cards split into two
+/// columns of about 470 or more each.
+const double _trackMetadataTwoColumnMinWidth = 960;
+
+/// The content width for a window [width]: the reading width on phones and
+/// small windows, wide enough for the two columns once they fit.
+double _trackMetadataContentMaxWidth(double width) =>
+    width >= _trackMetadataTwoColumnMinWidth + 32
+    ? math.min(width, desktopMaterialContentMaxWidth)
+    : adaptiveContentMaxWidth(width);
+
 final ImageFilter _trackMetadataBackdropBlur = ImageFilter.blur(
   sigmaX: 32,
   sigmaY: 32,
@@ -69,53 +81,75 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
       child: Padding(
         key: currentKey,
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_fileAccessMessage(context) case final message?
-                when !context.isMornye)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(
-                  message,
-                  style: TextStyle(color: colorScheme.error),
-                ),
-              ),
-            _buildMetadataCard(context, colorScheme, _fileSize),
-
-            const SizedBox(height: 16),
-
-            _buildFileInfoCard(context, colorScheme, _fileExists, _fileSize),
-
-            const SizedBox(height: 16),
-
-            _buildLyricsCard(context, colorScheme),
-
-            if (_fileExists) ...[
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final details = [
+              _buildMetadataCard(context, colorScheme, _fileSize),
               const SizedBox(height: 16),
-              AudioAnalysisCard(
-                filePath: _filePath,
-                codecHint: _storedAudioFormat,
-              ),
-              if (HiResCheckCard.isCandidate(
-                _filePath,
-                _storedAudioFormat,
-              )) ...[
+              _buildFileInfoCard(context, colorScheme, _fileExists, _fileSize),
+            ];
+            final media = [
+              _buildLyricsCard(context, colorScheme),
+              if (_fileExists) ...[
                 const SizedBox(height: 16),
-                HiResCheckCard(
+                AudioAnalysisCard(
                   filePath: _filePath,
-                  formatHint: _storedAudioFormat,
+                  codecHint: _storedAudioFormat,
+                  exportName: _buildSaveBaseName(),
                 ),
+                if (HiResCheckCard.isCandidate(
+                  _filePath,
+                  _storedAudioFormat,
+                )) ...[
+                  const SizedBox(height: 16),
+                  HiResCheckCard(
+                    filePath: _filePath,
+                    formatHint: _storedAudioFormat,
+                  ),
+                ],
               ],
-            ],
+            ];
+            Widget column(List<Widget> children) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            );
+            final twoColumns =
+                constraints.maxWidth >= _trackMetadataTwoColumnMinWidth;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (_fileAccessMessage(context) case final message?
+                    when !context.isMornye)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      message,
+                      style: TextStyle(color: colorScheme.error),
+                    ),
+                  ),
+                // Wide windows put the tags and file facts beside lyrics and
+                // analysis instead of one long column of stretched rows.
+                if (twoColumns)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(child: column(details)),
+                      const SizedBox(width: 16),
+                      Expanded(child: column(media)),
+                    ],
+                  )
+                else
+                  column([...details, const SizedBox(height: 16), ...media]),
 
-            if (!context.isMornye) ...[
-              const SizedBox(height: 24),
-              _buildActionButtons(context, ref, colorScheme, _fileExists),
-            ],
+                if (!context.isMornye) ...[
+                  const SizedBox(height: 24),
+                  _buildActionButtons(context, ref, colorScheme, _fileExists),
+                ],
 
-            const SizedBox(height: 32),
-          ],
+                const SizedBox(height: 32),
+              ],
+            );
+          },
         ),
       ),
     );

@@ -131,7 +131,16 @@ void main() {
             of: find.text('Fresh online lyrics'),
             matching: find.byType(Scrollbar),
           );
-          expect(tester.getSize(lyricsBox).width, greaterThan(600));
+          final titleRow = find
+              .ancestor(
+                of: find.text('Lyrics').last,
+                matching: find.byType(Row),
+              )
+              .first;
+          expect(
+            tester.getSize(lyricsBox).width,
+            moreOrLessEquals(tester.getSize(titleRow).width, epsilon: 1),
+          );
           await tester.ensureVisible(find.text('Embed Lyrics'));
           await tester.tap(find.text('Embed Lyrics'));
           // Allow real filesystem cleanup after the mocked native boundary.

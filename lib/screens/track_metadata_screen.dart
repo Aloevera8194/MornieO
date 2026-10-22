@@ -791,7 +791,7 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
               child: Center(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
-                    maxWidth: adaptiveContentMaxWidth(
+                    maxWidth: _trackMetadataContentMaxWidth(
                       MediaQuery.sizeOf(context).width,
                     ),
                   ),
