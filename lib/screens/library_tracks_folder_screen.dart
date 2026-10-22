@@ -761,11 +761,13 @@ class _LibraryTracksFolderScreenState
               ],
             )
           : null,
+      // Play is the one wide action, between Download All and Shuffle.
       actions: entries.isNotEmpty
           ? ExpressiveButtonGroup(
-              flexible: const {0, 2},
+              flexible: const {1},
               spacing: 8,
               children: [
+                _buildDownloadAllCenterButton(entries),
                 _buildPlayAllCenterButton(entries),
                 HeaderCircleButton(
                   key: const ValueKey('collection-shuffle'),
@@ -776,7 +778,6 @@ class _LibraryTracksFolderScreenState
                     entries.map((e) => e.track).toList(growable: false),
                   ),
                 ),
-                _buildDownloadAllCenterButton(entries),
               ],
             )
           : null,
@@ -838,9 +839,11 @@ class _LibraryTracksFolderScreenState
 
   Widget _buildDownloadAllCenterButton(List<CollectionTrackEntry> entries) {
     final tracks = entries.map((e) => e.track).toList(growable: false);
-    return HeaderFilledButton(
+    return HeaderCircleButton(
+      key: const ValueKey('collection-download-all'),
       icon: Icons.download_rounded,
-      label: context.l10n.downloadAllCount(tracks.length),
+      tooltip: context.l10n.downloadAllCount(tracks.length),
+      tonal: true,
       onPressed: tracks.isEmpty ? null : () => _confirmDownloadAll(tracks),
     );
   }

@@ -565,11 +565,16 @@ void main() {
         tester.getCenter(find.byTooltip('رجوع').first).dx,
         greaterThan(width / 2),
       );
-      // Play leads the header actions from the right.
-      final play = tester.getCenter(find.byType(HeaderFilledButton).first);
+      // Download All, Play and Shuffle run from the right, and only Play
+      // carries a label.
+      final download = tester.getCenter(
+        find.byKey(const ValueKey('collection-download-all')),
+      );
+      final play = tester.getCenter(find.byType(HeaderFilledButton));
       final shuffle = tester.getCenter(
         find.byKey(const ValueKey('collection-shuffle')),
       );
+      expect(download.dx, greaterThan(play.dx));
       expect(play.dx, greaterThan(shuffle.dx));
       expect(tester.takeException(), isNull);
     });
