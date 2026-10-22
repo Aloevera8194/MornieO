@@ -1020,26 +1020,33 @@ extension _ArtistScreenSections on _ArtistScreenState {
           onNotification: _onAlbumsScroll,
           child: SizedBox(
             height: sectionHeight,
-            child: DesktopScrollArrows(
-              builder: (context, controller) => ListView.builder(
-                controller: controller,
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: albums.length,
-                itemBuilder: (context, index) {
-                  final album = albums[index];
-                  return KeyedSubtree(
-                    key: ValueKey(album.id),
-                    child: _buildAlbumCard(
-                      context,
-                      album,
-                      colorScheme,
-                      tileSize: tileSize,
-                      sectionHeight: sectionHeight,
-                      showTypeBadge: showTypeBadge,
-                    ),
-                  );
-                },
+            child: DesktopListScope(
+              onSelectAll: () => selectAll(
+                (_albums ?? const <ArtistAlbum>[]).map((album) => album.id),
+              ),
+              onClearSelection: showsSelectionBar ? exitSelectionMode : null,
+              child: DesktopScrollArrows(
+                builder: (context, controller) => ListView.builder(
+                  controller: controller,
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: albums.length,
+                  itemBuilder: (context, index) {
+                    final album = albums[index];
+                    return KeyedSubtree(
+                      key: ValueKey(album.id),
+                      child: _buildAlbumCard(
+                        context,
+                        album,
+                        colorScheme,
+                        sectionAlbums: albums,
+                        tileSize: tileSize,
+                        sectionHeight: sectionHeight,
+                        showTypeBadge: showTypeBadge,
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -1052,6 +1059,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
     BuildContext context,
     ArtistAlbum album,
     ColorScheme colorScheme, {
+    required List<ArtistAlbum> sectionAlbums,
     required double tileSize,
     required double sectionHeight,
     bool showTypeBadge = false,
@@ -1067,6 +1075,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
         context,
         album,
         colorScheme,
+        sectionAlbums: sectionAlbums,
         isSelected: isSelected,
         tileSize: tileSize,
         sectionHeight: sectionHeight,
@@ -1102,6 +1111,12 @@ extension _ArtistScreenSections on _ArtistScreenState {
                 _navigateToAlbum(album);
               },
             ),
+          if (!showsSelectionBar)
+            ContextMenuAction(
+              icon: Icons.checklist,
+              label: l10n.discographySelectAlbums,
+              onSelected: () => enterSelectionMode(album.id),
+            ),
           ContextMenuAction(
             icon: Icons.playlist_add,
             label: l10n.collectionAddToPlaylist,
@@ -1131,6 +1146,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
     BuildContext context,
     ArtistAlbum album,
     ColorScheme colorScheme, {
+    required List<ArtistAlbum> sectionAlbums,
     required bool isSelected,
     required double tileSize,
     required double sectionHeight,
@@ -1139,12 +1155,24 @@ extension _ArtistScreenSections on _ArtistScreenState {
     return Semantics(
       button: true,
       selected: isSelectionMode && isSelected,
-      label: isSelectionMode
+      label: showsSelectionBar
           ? context.l10n.a11ySelectAlbum(album.name)
           : context.l10n.a11yOpenAlbum(album.name),
       child: GestureDetector(
         onTap: () {
-          if (isSelectionMode) {
+          final kind = isDesktopPlatform
+              ? desktopClickKind()
+              : DesktopClick.replace;
+          if (isDesktopPlatform &&
+              (isSelectionMode || kind != DesktopClick.replace)) {
+            applyDesktopClick(
+              album.id,
+              kind == DesktopClick.replace ? DesktopClick.toggle : kind,
+              kind == DesktopClick.extend
+                  ? sectionAlbums.map((album) => album.id).toList()
+                  : const [],
+            );
+          } else if (isSelectionMode) {
             toggleSelection(album.id);
           } else {
             _navigateToAlbum(album);
@@ -1205,7 +1233,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
                               ),
                       ),
                     ),
-                    if (isSelectionMode)
+                    if (isSelected || showsSelectionBar)
                       Positioned.fill(
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
@@ -1223,7 +1251,7 @@ extension _ArtistScreenSections on _ArtistScreenState {
                           ),
                         ),
                       ),
-                    if (isSelectionMode)
+                    if (showsSelectionBar)
                       PositionedDirectional(
                         top: 8,
                         end: 8,

@@ -58,6 +58,7 @@ import 'package:mornye/widgets/expressive_button_group.dart';
 import 'package:mornye/widgets/expressive_icon_button.dart';
 import 'package:mornye/widgets/desktop/context_menu.dart';
 import 'package:mornye/widgets/desktop/desktop_scroll_arrows.dart';
+import 'package:mornye/widgets/desktop/desktop_selection.dart';
 import 'package:mornye/widgets/desktop/detail_header.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/theme/app_motion.dart';
@@ -716,6 +717,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                             ),
                           if (releases.isNotEmpty)
                             SliverToBoxAdapter(
+                              key: const ValueKey('artist-releases'),
                               child: _buildAlbumSection(
                                 context,
                                 context.l10n.artistReleases,
@@ -725,6 +727,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                             ),
                           if (albumsOnly.isNotEmpty)
                             SliverToBoxAdapter(
+                              key: const ValueKey('artist-albums'),
                               child: _buildAlbumSection(
                                 context,
                                 context.l10n.artistAlbums,
@@ -734,6 +737,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                             ),
                           if (singles.isNotEmpty)
                             SliverToBoxAdapter(
+                              key: const ValueKey('artist-singles'),
                               child: _buildAlbumSection(
                                 context,
                                 context.l10n.artistSingles,
@@ -744,6 +748,7 @@ class _ArtistScreenState extends ConsumerState<ArtistScreen>
                             ),
                           if (compilations.isNotEmpty)
                             SliverToBoxAdapter(
+                              key: const ValueKey('artist-compilations'),
                               child: _buildAlbumSection(
                                 context,
                                 context.l10n.artistCompilations,
