@@ -140,7 +140,9 @@ class _DesktopMiniPlayerState extends ConsumerState<DesktopMiniPlayer> {
               ColoredBox(color: colorScheme.surfaceContainer),
             // Behind the content, so empty space and text drag the window
             // while the controls keep their clicks.
-            const Positioned.fill(child: DesktopWindowDragArea()),
+            const Positioned.fill(
+              child: DesktopWindowDragArea(frameless: true),
+            ),
             ValueListenableBuilder<bool>(
               valueListenable: desktopMiniPlayerLyrics,
               builder: (context, lyrics, _) => ClipRect(

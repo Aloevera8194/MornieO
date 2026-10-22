@@ -2,9 +2,12 @@
 #define RUNNER_FLUTTER_WINDOW_H_
 
 #include <flutter/dart_project.h>
+#include <flutter/encodable_value.h>
 #include <flutter/flutter_view_controller.h>
+#include <flutter/method_channel.h>
 
 #include <memory>
+#include <optional>
 
 #include "win32_window.h"
 
@@ -22,9 +25,37 @@ class FlutterWindow : public Win32Window {
                          LPARAM const lparam) noexcept override;
 
  private:
+  // Answers the window channel (lib/widgets/desktop/desktop_window.dart).
+  void HandleWindowCall(
+      const flutter::MethodCall<flutter::EncodableValue>& call,
+      std::unique_ptr<flutter::MethodResult<flutter::EncodableValue>> result);
+
+  // Turns the window into a small frameless panel of |width| x |height|
+  // logical pixels that stays above other windows, or resizes the panel
+  // when it already shows. It keeps its top-left corner when it resizes
+  // and opens where it last sat (first at the top right of the screen).
+  bool OpenMiniPlayer(double width, double height);
+
+  // Returns the window to the frame, size and place it had before.
+  void CloseMiniPlayer();
+
+  // Moves the window with the mouse, as dragging a title bar does.
+  void StartDrag();
+
   flutter::DartProject project_;
 
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
+
+  std::unique_ptr<flutter::MethodChannel<flutter::EncodableValue>>
+      window_channel_;
+
+  // Whether the window shows the mini player, and what it restores.
+  bool mini_player_ = false;
+  WINDOWPLACEMENT mini_player_restore_placement_ = {};
+  LONG_PTR mini_player_restore_style_ = 0;
+
+  // Where the mini player last sat, by its top-left corner.
+  std::optional<POINT> mini_player_origin_;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

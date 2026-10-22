@@ -53,9 +53,10 @@ void listenDesktopWindowFullScreen() {
   }());
 }
 
-/// Whether the window can turn into the mini player. Only the macOS runner
-/// implements it.
-bool get desktopMiniPlayerSupported => desktopTitleBarInContent;
+/// Whether the window can turn into the mini player. Every desktop runner
+/// implements it: `MainFlutterWindow.swift` on macOS, `flutter_window.cpp`
+/// on Windows and `my_application.cc` on Linux.
+bool get desktopMiniPlayerSupported => isDesktopPlatform;
 
 /// Shrinks the window into the floating mini player panel of [size], or
 /// resizes the panel. Returns false when the window cannot, such as in full
@@ -81,7 +82,7 @@ Future<void> _invokeWindow(String method) async {
   try {
     await _windowChannel.invokeMethod<void>(method);
   } on MissingPluginException {
-    // Only the macOS runner draws content under its title bar.
+    // A runner without the window channel.
   } on PlatformException {
     // The window may close while the call is in flight.
   }
@@ -90,15 +91,21 @@ Future<void> _invokeWindow(String method) async {
 /// Part of the title bar row: dragging it moves the window and, with
 /// [zoomOnDoubleClick], a double click zooms it like a native title bar.
 /// Widgets inside or behind it keep their clicks. Without a title bar in
-/// the content ([desktopTitleBarInContent]) it only shows [child].
+/// the content ([desktopTitleBarInContent]) it only shows [child], unless
+/// the window has no frame at all ([frameless]).
 class DesktopWindowDragArea extends StatefulWidget {
   const DesktopWindowDragArea({
     super.key,
     this.child,
     this.zoomOnDoubleClick = false,
+    this.frameless = false,
   });
 
   final Widget? child;
+
+  /// The window has no frame to drag (the mini player), so the area moves
+  /// it on every desktop platform.
+  final bool frameless;
 
   /// Zooms (or minimizes, per the system setting) on a double click. Leave
   /// it off where buttons share the area, so their clicks never wait for a
@@ -136,7 +143,9 @@ class _DesktopWindowDragAreaState extends State<DesktopWindowDragArea> {
   @override
   Widget build(BuildContext context) {
     final child = widget.child;
-    if (!desktopTitleBarInContent) return child ?? const SizedBox.shrink();
+    if (!desktopTitleBarInContent && !widget.frameless) {
+      return child ?? const SizedBox.shrink();
+    }
     Widget area = GestureDetector(
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) => unawaited(_invokeWindow('startDrag')),

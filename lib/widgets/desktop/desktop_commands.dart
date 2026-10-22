@@ -105,11 +105,14 @@ SingleActivator? desktopCommandShortcut(
             )
           : null,
     DesktopCommand.refresh => _primary(LogicalKeyboardKey.keyR, target),
-    // Music's "Switch to MiniPlayer". Only the macOS window can shrink.
-    DesktopCommand.miniPlayer =>
-      target == TargetPlatform.macOS
-          ? _primary(LogicalKeyboardKey.keyM, target, alt: true)
-          : null,
+    // Music's "Switch to MiniPlayer" on macOS. Ctrl+Alt elsewhere is AltGr
+    // on many keyboard layouts, so Windows and Linux add Shift instead.
+    DesktopCommand.miniPlayer => _primary(
+      LogicalKeyboardKey.keyM,
+      target,
+      alt: _usesCommandKey(target),
+      shift: !_usesCommandKey(target),
+    ),
     DesktopCommand.dismiss => const SingleActivator(LogicalKeyboardKey.escape),
   };
 }

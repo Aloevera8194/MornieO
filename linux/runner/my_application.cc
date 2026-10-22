@@ -1,19 +1,195 @@
 #include "my_application.h"
 
 #include <flutter_linux/flutter_linux.h>
+#include <math.h>
 #include <stdlib.h>
+#include <string.h>
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
 
+// Smallest window, in logical pixels, that the desktop layouts support.
+static constexpr gint kMinimumWidth = 800;
+static constexpr gint kMinimumHeight = 600;
+
+// Gap, in logical pixels, between a new mini player and the screen corner.
+static constexpr gint kMiniPlayerScreenInset = 16;
+
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
+
+  GtkWindow* window;
+  // Answers lib/widgets/desktop/desktop_window.dart.
+  FlMethodChannel* window_channel;
+
+  // Whether the window shows the mini player, and what it restores.
+  gboolean mini_player;
+  gint restore_x;
+  gint restore_y;
+  gint restore_width;
+  gint restore_height;
+  gboolean restore_maximized;
+
+  // Where the mini player last sat, by its top-left corner.
+  gboolean has_mini_player_origin;
+  gint mini_player_x;
+  gint mini_player_y;
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+
+static void set_minimum_size(GtkWindow* window, gint width, gint height) {
+  GdkGeometry geometry = {};
+  geometry.min_width = width;
+  geometry.min_height = height;
+  gtk_window_set_geometry_hints(window, nullptr, &geometry, GDK_HINT_MIN_SIZE);
+}
+
+// Turns the window into a small undecorated panel of |width| x |height| that
+// stays above other windows, or resizes the panel when it already shows. It
+// keeps its top-left corner when it resizes and opens where it last sat
+// (first at the top right of the screen). Wayland compositors decide the
+// position and stacking themselves, so there it only shrinks.
+static gboolean open_mini_player(MyApplication* self, gdouble width,
+                                 gdouble height) {
+  GtkWindow* window = self->window;
+  if (window == nullptr) return FALSE;
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+  if (gdk_window != nullptr &&
+      (gdk_window_get_state(gdk_window) & GDK_WINDOW_STATE_FULLSCREEN)) {
+    return FALSE;
+  }
+  const gint panel_width = static_cast<gint>(lround(width));
+  const gint panel_height = static_cast<gint>(lround(height));
+
+  gint x = 0;
+  gint y = 0;
+  const gboolean opening = !self->mini_player;
+  if (opening) {
+    self->restore_maximized = gtk_window_is_maximized(window);
+    if (self->restore_maximized) {
+      // The maximized size is not a size to come back to.
+      self->restore_width = 1280;
+      self->restore_height = 800;
+      gtk_window_unmaximize(window);
+    } else {
+      gtk_window_get_size(window, &self->restore_width,
+                          &self->restore_height);
+    }
+    gtk_window_get_position(window, &self->restore_x, &self->restore_y);
+    self->mini_player = TRUE;
+    gtk_window_set_decorated(window, FALSE);
+    gtk_window_set_keep_above(window, TRUE);
+  }
+  set_minimum_size(window, panel_width, panel_height);
+  gtk_window_resize(window, panel_width, panel_height);
+
+  gboolean has_origin = TRUE;
+  if (!opening) {
+    gtk_window_get_position(window, &x, &y);
+  } else if (self->has_mini_player_origin) {
+    x = self->mini_player_x;
+    y = self->mini_player_y;
+  } else {
+    has_origin = FALSE;
+  }
+
+  // Keep the whole panel on the screen it opens on.
+  GdkDisplay* display = gtk_widget_get_display(GTK_WIDGET(window));
+  GdkMonitor* monitor =
+      has_origin ? gdk_display_get_monitor_at_point(display, x, y)
+      : gdk_window != nullptr
+          ? gdk_display_get_monitor_at_window(display, gdk_window)
+          : gdk_display_get_primary_monitor(display);
+  if (monitor == nullptr) monitor = gdk_display_get_monitor(display, 0);
+  if (monitor != nullptr) {
+    GdkRectangle work;
+    gdk_monitor_get_workarea(monitor, &work);
+    if (!has_origin) {
+      x = work.x + work.width - panel_width - kMiniPlayerScreenInset;
+      y = work.y + kMiniPlayerScreenInset;
+    }
+    x = CLAMP(x, work.x, MAX(work.x, work.x + work.width - panel_width));
+    y = CLAMP(y, work.y, MAX(work.y, work.y + work.height - panel_height));
+  }
+  gtk_window_move(window, x, y);
+  return TRUE;
+}
+
+// Returns the window to the decorations, size and place it had before.
+static void close_mini_player(MyApplication* self) {
+  GtkWindow* window = self->window;
+  if (!self->mini_player || window == nullptr) return;
+  gtk_window_get_position(window, &self->mini_player_x, &self->mini_player_y);
+  self->has_mini_player_origin = TRUE;
+  self->mini_player = FALSE;
+  gtk_window_set_keep_above(window, FALSE);
+  gtk_window_set_decorated(window, TRUE);
+  set_minimum_size(window, kMinimumWidth, kMinimumHeight);
+  gtk_window_resize(window, self->restore_width, self->restore_height);
+  gtk_window_move(window, self->restore_x, self->restore_y);
+  if (self->restore_maximized) gtk_window_maximize(window);
+}
+
+// Moves the window with the pointer, as dragging a title bar does.
+static void start_window_drag(MyApplication* self) {
+  GtkWindow* window = self->window;
+  if (window == nullptr) return;
+  GdkSeat* seat =
+      gdk_display_get_default_seat(gtk_widget_get_display(GTK_WIDGET(window)));
+  GdkDevice* pointer = seat != nullptr ? gdk_seat_get_pointer(seat) : nullptr;
+  if (pointer == nullptr) return;
+  gint root_x = 0;
+  gint root_y = 0;
+  gdk_device_get_position(pointer, nullptr, &root_x, &root_y);
+  gtk_window_begin_move_drag(window, GDK_BUTTON_PRIMARY, root_x, root_y,
+                             GDK_CURRENT_TIME);
+}
+
+static gdouble number_argument(FlValue* arguments, const gchar* key,
+                               gdouble fallback) {
+  if (arguments == nullptr ||
+      fl_value_get_type(arguments) != FL_VALUE_TYPE_MAP) {
+    return fallback;
+  }
+  FlValue* value = fl_value_lookup_string(arguments, key);
+  if (value == nullptr) return fallback;
+  switch (fl_value_get_type(value)) {
+    case FL_VALUE_TYPE_FLOAT:
+      return fl_value_get_float(value);
+    case FL_VALUE_TYPE_INT:
+      return static_cast<gdouble>(fl_value_get_int(value));
+    default:
+      return fallback;
+  }
+}
+
+static void window_method_call_cb(FlMethodChannel* channel,
+                                  FlMethodCall* method_call,
+                                  gpointer user_data) {
+  MyApplication* self = MY_APPLICATION(user_data);
+  const gchar* method = fl_method_call_get_name(method_call);
+  FlValue* arguments = fl_method_call_get_args(method_call);
+  g_autoptr(FlMethodResponse) response = nullptr;
+  if (strcmp(method, "openMiniPlayer") == 0) {
+    g_autoptr(FlValue) opened = fl_value_new_bool(open_mini_player(
+        self, number_argument(arguments, "width", 360),
+        number_argument(arguments, "height", 140)));
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(opened));
+  } else if (strcmp(method, "closeMiniPlayer") == 0) {
+    close_mini_player(self);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
+  } else if (strcmp(method, "startDrag") == 0) {
+    start_window_drag(self);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
+  } else {
+    response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
+  }
+  fl_method_call_respond(method_call, response, nullptr);
+}
 
 // Only the deb installs a desktop entry for mornye://, so the browser cannot
 // hand an extension callback back to a zip or AppImage copy. Points the
@@ -98,10 +274,7 @@ static void my_application_activate(GApplication* application) {
   }
 
   gtk_window_set_default_size(window, 1280, 800);
-  GdkGeometry geometry = {};
-  geometry.min_width = 800;
-  geometry.min_height = 600;
-  gtk_window_set_geometry_hints(window, nullptr, &geometry, GDK_HINT_MIN_SIZE);
+  set_minimum_size(window, kMinimumWidth, kMinimumHeight);
 
   g_autofree gchar* executable = g_file_read_link("/proc/self/exe", nullptr);
   if (executable != nullptr) {
@@ -129,6 +302,14 @@ static void my_application_activate(GApplication* application) {
   gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+
+  self->window = window;
+  g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
+  self->window_channel = fl_method_channel_new(
+      fl_engine_get_binary_messenger(fl_view_get_engine(view)),
+      "com.zarz.mornye/window", FL_METHOD_CODEC(codec));
+  fl_method_channel_set_method_call_handler(
+      self->window_channel, window_method_call_cb, self, nullptr);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }
@@ -177,6 +358,8 @@ static void my_application_shutdown(GApplication* application) {
 static void my_application_dispose(GObject* object) {
   MyApplication* self = MY_APPLICATION(object);
   g_clear_pointer(&self->dart_entrypoint_arguments, g_strfreev);
+  g_clear_object(&self->window_channel);
+  self->window = nullptr;
   G_OBJECT_CLASS(my_application_parent_class)->dispose(object);
 }
 

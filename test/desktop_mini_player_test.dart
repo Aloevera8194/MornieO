@@ -107,25 +107,71 @@ void main() {
     expect(desktopMiniPlayerOpen.value, isFalse);
   });
 
-  test('does nothing where the window cannot shrink', () async {
-    debugDesktopTitleBarInContentOverride = false;
+  test('does nothing outside the desktop app', () async {
+    debugDesktopPlatformOverride = false;
     await setDesktopMiniPlayer(open: true);
     expect(desktopMiniPlayerOpen.value, isFalse);
     expect(calls, isEmpty);
   });
 
-  test('has the Music shortcut on macOS only', () {
-    final shortcut = desktopCommandShortcut(
+  test('shrinks the framed Windows and Linux window too', () async {
+    debugDesktopTitleBarInContentOverride = false;
+    await setDesktopMiniPlayer(open: true);
+    expect(desktopMiniPlayerOpen.value, isTrue);
+    expect(calls.single.method, 'openMiniPlayer');
+  });
+
+  test('has the Music shortcut on macOS and Ctrl+Shift+M elsewhere', () {
+    final mac = desktopCommandShortcut(
       DesktopCommand.miniPlayer,
       TargetPlatform.macOS,
     )!;
-    expect(shortcut.trigger, LogicalKeyboardKey.keyM);
-    expect((shortcut.meta, shortcut.alt), (true, true));
-    expect((shortcut.control, shortcut.shift), (false, false));
-    expect(
-      desktopCommandShortcut(DesktopCommand.miniPlayer, TargetPlatform.windows),
-      isNull,
+    expect(mac.trigger, LogicalKeyboardKey.keyM);
+    expect((mac.meta, mac.alt), (true, true));
+    expect((mac.control, mac.shift), (false, false));
+    for (final platform in [TargetPlatform.windows, TargetPlatform.linux]) {
+      final shortcut = desktopCommandShortcut(
+        DesktopCommand.miniPlayer,
+        platform,
+      )!;
+      expect(shortcut.trigger, LogicalKeyboardKey.keyM);
+      expect((shortcut.control, shortcut.shift), (true, true));
+      expect((shortcut.meta, shortcut.alt), (false, false));
+    }
+  });
+
+  testWidgets('the panel moves a window without a title bar row', (
+    tester,
+  ) async {
+    debugDesktopTitleBarInContentOverride = false;
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: Stack(
+          children: [
+            Positioned.fill(child: DesktopWindowDragArea(frameless: true)),
+          ],
+        ),
+      ),
     );
+    await tester.drag(find.byType(DesktopWindowDragArea), const Offset(40, 0));
+    expect(calls.map((call) => call.method), contains('startDrag'));
+
+    calls.clear();
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DesktopWindowDragArea(child: SizedBox.expand()),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.drag(find.byType(DesktopWindowDragArea), const Offset(40, 0));
+    expect(calls, isEmpty);
   });
 
   testWidgets('word-timed TTML lines advance while playing', (tester) async {
