@@ -50,6 +50,13 @@ add_subdirectory("runner")
 
 include(flutter/generated_plugins.cmake)
 
+# permission_handler_windows still includes <experimental/coroutine>, which
+# MSVC 14.5x rejects unless its deprecation is silenced.
+if(TARGET permission_handler_windows_plugin)
+  target_compile_definitions(permission_handler_windows_plugin PRIVATE
+    "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNING")
+endif()
+
 
 # === Installation ===
 # Support files are copied into place next to the executable, so that it can

@@ -63,6 +63,9 @@ install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../LICENSE"
   "${CMAKE_CURRENT_SOURCE_DIR}/../SOURCE.txt"
   DESTINATION "$<TARGET_FILE_DIR:${BINARY_NAME}>/licenses/${PROJECT_NAME}"
   COMPONENT Runtime)
-install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../../../assets/licenses/lgpl-3.0.txt"
+# Flutter adds this plugin through windows/flutter/ephemeral/.plugin_symlinks,
+# so a path relative to this file does not reach the app. CMAKE_SOURCE_DIR is
+# the app's windows/ folder.
+install(FILES "${CMAKE_SOURCE_DIR}/../assets/licenses/lgpl-3.0.txt"
   DESTINATION "$<TARGET_FILE_DIR:${BINARY_NAME}>/licenses/${PROJECT_NAME}"
   COMPONENT Runtime)
