@@ -147,6 +147,173 @@ fn changed_flac_tags_match_full_rewrite_and_preserve_audio() {
     }
 }
 
+fn flac_id3_prefix(version: u8, footer: bool, padding: usize) -> Vec<u8> {
+    let mut header = b"ID3".to_vec();
+    header.extend([version, 0, if footer { 0x10 } else { 0 }]);
+    header.extend([21, 14, 7, 0].map(|shift| (padding >> shift) as u8 & 0x7f));
+    let mut prefix = header.clone();
+    prefix.resize(10 + padding, 0);
+    if footer {
+        header[..3].copy_from_slice(b"3DI");
+        prefix.extend(header);
+    }
+    prefix
+}
+
+#[test]
+fn id3_prefixed_flac_writers_preserve_prefix_audio_and_unedited_metadata() {
+    let (flac, audio_start, _) = editable_flac();
+    for (version, footer) in [(2, false), (3, false), (4, false), (4, true)] {
+        let prefix = flac_id3_prefix(version, footer, 131);
+        let input = [&prefix[..], &flac].concat();
+        for writer in ["edit", "rewrite", "embed"] {
+            for cover in [None, Some(b"replacement cover".as_slice())] {
+                let fields = Fields::from([
+                    ("title".into(), "Changed title".into()),
+                    ("lyrics".into(), "[00:00.00]Example lyrics".into()),
+                    ("replaygain_track_gain".into(), "-3.00 dB".into()),
+                ]);
+                let write = |input: &[u8]| {
+                    let mut source = Cursor::new(input);
+                    let mut output = Vec::new();
+                    match writer {
+                        "edit" => {
+                            assert!(
+                                rewrite_flac_tags_if_changed(
+                                    &mut source,
+                                    &mut output,
+                                    &fields,
+                                    cover,
+                                    &|| Ok(()),
+                                )
+                                .unwrap()
+                            );
+                        }
+                        "rewrite" => rewrite_audio_tags(
+                            &mut source,
+                            &mut output,
+                            "flac",
+                            &fields,
+                            cover,
+                            &|| Ok(()),
+                        )
+                        .unwrap(),
+                        _ => {
+                            let canonical = fields
+                                .iter()
+                                .map(|(key, value)| (key.to_uppercase(), value.clone()))
+                                .collect();
+                            embed_flac_metadata(
+                                &mut source,
+                                &mut output,
+                                &canonical,
+                                "",
+                                cover,
+                                &|| Ok(()),
+                            )
+                            .unwrap();
+                        }
+                    }
+                    output
+                };
+                let output = write(&input);
+                assert_eq!(output, [&prefix[..], &write(&flac)].concat());
+                assert!(output.ends_with(&flac[audio_start..]));
+                assert!(output.windows(15).any(|bytes| bytes == b"CUSTOM=preserve"));
+                let tags =
+                    crate::tags::read_audio_tags(&mut Cursor::new(&output), "flac", &|| Ok(()))
+                        .unwrap();
+                assert_eq!(tags.title, "Changed title");
+                assert_eq!(tags.lyrics, "[00:00.00]Example lyrics");
+                assert_eq!(tags.replay_gain_track_gain, "-3.00 dB");
+                let picture =
+                    crate::tags::extract_cover(&mut Cursor::new(&output), "flac", &|| Ok(()))
+                        .unwrap();
+                assert_eq!(picture.data, cover.unwrap_or(b"original cover"));
+            }
+        }
+    }
+}
+
+#[test]
+fn unchanged_id3_prefixed_flac_skips_large_prefix_and_audio() {
+    let (flac, audio_start, fields) = editable_flac();
+    let prefix = flac_id3_prefix(4, true, 2 * 1024 * 1024);
+    let bytes_read = Rc::new(Cell::new(0));
+    let mut source = CountingReader {
+        data: Cursor::new([prefix, flac].concat()),
+        bytes_read: bytes_read.clone(),
+    };
+    let mut output = Vec::new();
+    assert!(
+        !rewrite_flac_tags_if_changed(&mut source, &mut output, &fields, None, &|| Ok(()),)
+            .unwrap()
+    );
+    assert!(output.is_empty());
+    // Only the ID3 header is read; its body and footer are skipped.
+    assert_eq!(bytes_read.get(), 10 + audio_start * 2 + 2);
+}
+
+#[test]
+fn invalid_id3_prefixed_flac_never_writes_output() {
+    let (flac, audio_start, fields) = editable_flac();
+    let prefix = flac_id3_prefix(4, true, 131);
+    let valid = [&prefix[..], &flac].concat();
+    let mut bad_size = valid.clone();
+    bad_size[6] = 0x80;
+    let mut wrong_container = valid.clone();
+    wrong_container[prefix.len()..prefix.len() + 4].copy_from_slice(b"OggS");
+    let mut bad_sync = valid.clone();
+    bad_sync[prefix.len() + audio_start] = 0;
+    for invalid in [
+        bad_size,
+        wrong_container,
+        bad_sync,
+        valid[..6].to_vec(),
+        valid[..prefix.len() - 1].to_vec(),
+        valid[..prefix.len() + 3].to_vec(),
+        valid[..prefix.len() + audio_start + 1].to_vec(),
+    ] {
+        let mut output = Vec::new();
+        assert!(
+            rewrite_flac_tags_if_changed(
+                &mut Cursor::new(invalid),
+                &mut output,
+                &fields,
+                None,
+                &|| Ok(()),
+            )
+            .is_err()
+        );
+        assert!(output.is_empty());
+    }
+}
+
+#[test]
+fn id3_prefixed_flac_observes_cancellation_after_reading_prefix_header() {
+    let (flac, _, fields) = editable_flac();
+    let prefix = flac_id3_prefix(3, false, 131);
+    let bytes_read = Rc::new(Cell::new(0));
+    let mut source = CountingReader {
+        data: Cursor::new([prefix, flac].concat()),
+        bytes_read: bytes_read.clone(),
+    };
+    let mut output = Vec::new();
+    assert_eq!(
+        rewrite_flac_tags_if_changed(&mut source, &mut output, &fields, None, &|| {
+            if bytes_read.get() >= 10 {
+                Err("cancelled".into())
+            } else {
+                Ok(())
+            }
+        },)
+        .unwrap_err(),
+        "cancelled"
+    );
+    assert_eq!(bytes_read.get(), 10);
+    assert!(output.is_empty());
+}
+
 #[test]
 fn unchanged_flac_still_validates_frames_and_observes_cancellation() {
     let (input, audio_start, fields) = editable_flac();
