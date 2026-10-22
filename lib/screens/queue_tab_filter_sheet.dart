@@ -218,7 +218,7 @@ extension _QueueTabFilterSheet on _QueueTabState {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      for (final mode in _librarySortModes)
+                      for (final mode in _availableLibrarySortModes)
                         AppChoiceChip(
                           label: Text(_sortLabel(context, mode)),
                           selected: tempSortMode == mode,

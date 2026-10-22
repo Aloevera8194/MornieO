@@ -6,6 +6,7 @@ import 'package:mornye/utils/audio_format_utils.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/services/history_database.dart';
 import 'package:mornye/services/library_queue_store.dart';
+import 'package:mornye/services/library_file_sizes.dart';
 import 'package:mornye/services/library_cleanup.dart';
 import 'package:mornye/services/library_search.dart';
 import 'package:mornye/services/library_database_models.dart';
@@ -42,6 +43,7 @@ class LibraryDatabase {
   static final sqlite.SingleFlightInitializer<Database> _database =
       sqlite.SingleFlightInitializer<Database>();
   bool _historyAttached = false;
+  LibraryFileSizes? _fileSizes;
   late final LibraryIngestionStore _ingestion = LibraryIngestionStore(
     openDatabase: () => database,
     ensureHistoryAttached: _ensureHistoryAttached,
@@ -427,9 +429,15 @@ class LibraryDatabase {
     return (await getQueueTrackPageResult(request)).rows;
   }
 
-  Future<LibraryQueueStore> _queueStore() async {
+  Future<LibraryQueueStore> _queueStore([QueueLibraryDbQuery? request]) async {
     final db = await database;
     await _ensureHistoryAttached(db);
+    if (request != null && isLibrarySizeSort(request.sortMode)) {
+      await (_fileSizes ??= LibraryFileSizes(db)).refresh(
+        includeLocal: request.includeLocal && request.source != 'downloaded',
+        includeHistory: request.source != 'local',
+      );
+    }
     return LibraryQueueStore(
       db,
       historyFts: HistoryDatabase.instance.searchFtsAvailable,
@@ -439,7 +447,7 @@ class LibraryDatabase {
 
   Future<QueueLibraryDbPage> getQueueTrackPageResult(
     QueueLibraryDbQuery request,
-  ) async => (await _queueStore()).trackPage(request);
+  ) async => (await _queueStore(request)).trackPage(request);
 
   Future<QueueLibraryCounts> getQueueCounts(
     QueueLibraryDbQuery request,
@@ -454,7 +462,7 @@ class LibraryDatabase {
 
   Future<QueueLibraryDbPage> getQueueAlbumPageResult(
     QueueLibraryDbQuery request,
-  ) async => (await _queueStore()).albumPage(request);
+  ) async => (await _queueStore(request)).albumPage(request);
 
   /// Album artists across downloaded and scanned music, excluding duplicate paths.
   Future<List<Map<String, dynamic>>> getQueueArtistPage(
@@ -873,6 +881,7 @@ class LibraryDatabase {
     await db.close();
     _database.reset();
     _historyAttached = false;
+    _fileSizes = null;
     _searchFtsAvailable = null;
   }
 

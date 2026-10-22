@@ -75,8 +75,10 @@ class _Queue extends DownloadQueueNotifier {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  final queries = <String>[];
 
   setUp(() {
+    queries.clear();
     SharedPreferences.setMockInitialValues({});
     final previousFactory = databaseFactoryOrNull;
     databaseFactory = databaseFactorySqflitePlugin;
@@ -103,6 +105,7 @@ void main() {
         throw PlatformException(code: 'sqlite_error', message: 'no fts5');
       }
       if (call.method != 'query') return null;
+      queries.add(sql);
       if (sql.toLowerCase().contains('pragma user_version')) {
         return {
           'columns': ['user_version'],
@@ -245,6 +248,44 @@ void main() {
     // tied to the button.
     expect(tester.getRect(oldest).top, greaterThanOrEqualTo(sortRect.bottom));
   });
+
+  for (final desktop in [false, true]) {
+    for (final mornye in [false, true]) {
+      testWidgets('size sort applies from the Library menu '
+          '(desktop: $desktop, Mornye: $mornye)', (tester) async {
+        await pumpLibrary(tester, desktop: desktop, mornye: mornye);
+        final l10n = l10nOf(tester);
+        await tester.tap(
+          find
+              .text(
+                mornye ? l10n.libraryFilterTitle : l10n.libraryFilterSortLatest,
+              )
+              .hitTestable(),
+        );
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        if (mornye) {
+          await tester.ensureVisible(
+            find.text(l10n.libraryFilterSortSizeLargest),
+          );
+        }
+        expect(find.text(l10n.libraryFilterSortSizeLargest), findsOneWidget);
+        expect(find.text(l10n.libraryFilterSortSizeSmallest), findsOneWidget);
+        await tester.tap(find.text(l10n.libraryFilterSortSizeLargest));
+        if (mornye) {
+          await tester.ensureVisible(find.text(l10n.libraryFilterApply));
+          await tester.tap(find.text(l10n.libraryFilterApply));
+        }
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        expect(queries.any((sql) => sql.contains('sort_size DESC')), isTrue);
+        expect(find.text(l10n.libraryFilterSortSizeSmallest), findsNothing);
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
 
   testWidgets('the view tool switches the Library to the grid', (tester) async {
     await pumpLibrary(tester);

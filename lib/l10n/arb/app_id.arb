@@ -3145,6 +3145,14 @@
   "@libraryFilterSortOldest": {
     "description": "Sort option - oldest first"
   },
+  "libraryFilterSortSizeLargest": "Ukuran (Terbesar dahulu)",
+  "@libraryFilterSortSizeLargest": {
+    "description": "Library sort option - largest files first"
+  },
+  "libraryFilterSortSizeSmallest": "Ukuran (Terkecil dahulu)",
+  "@libraryFilterSortSizeSmallest": {
+    "description": "Library sort option - smallest files first"
+  },
   "libraryFilterSortAlbumAsc": "Album (A-Z)",
   "@libraryFilterSortAlbumAsc": {
     "description": "Sort option - album ascending"

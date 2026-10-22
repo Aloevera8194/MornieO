@@ -44,6 +44,8 @@ const _dateSorts = {'latest', 'oldest'};
 const _librarySortModes = [
   'latest',
   'oldest',
+  'size-desc',
+  'size-asc',
   'a-z',
   'z-a',
   'artist-asc',
@@ -57,10 +59,20 @@ const _librarySortModes = [
 ];
 
 extension _QueueTabSections on _QueueTabState {
+  Iterable<String> get _availableLibrarySortModes {
+    final mode =
+        widget.librarySection ?? ref.read(settingsProvider).historyFilterMode;
+    return mode == 'playlists'
+        ? _librarySortModes.where((sort) => !sort.startsWith('size-'))
+        : _librarySortModes;
+  }
+
   String _sortLabel(BuildContext context, String mode) {
     final l10n = context.l10n;
     return switch (mode) {
       'oldest' => l10n.libraryFilterSortOldest,
+      'size-desc' => l10n.libraryFilterSortSizeLargest,
+      'size-asc' => l10n.libraryFilterSortSizeSmallest,
       'a-z' => l10n.searchSortTitleAZ,
       'z-a' => l10n.searchSortTitleZA,
       'artist-asc' => l10n.searchSortArtistAZ,
@@ -200,7 +212,7 @@ extension _QueueTabSections on _QueueTabState {
       position: position,
       groups: [
         [
-          for (final mode in _librarySortModes)
+          for (final mode in _availableLibrarySortModes)
             ContextMenuAction(
               icon: switch (mode) {
                 'a-z' || 'z-a' => Icons.sort_by_alpha,
@@ -208,6 +220,7 @@ extension _QueueTabSections on _QueueTabState {
                 'album-asc' || 'album-desc' => Icons.album_outlined,
                 'release-newest' || 'release-oldest' => Icons.event_outlined,
                 'genre-asc' || 'genre-desc' => Icons.category_outlined,
+                'size-desc' || 'size-asc' => Icons.storage_outlined,
                 _ => Icons.schedule,
               },
               label: _sortLabel(context, mode),
@@ -308,7 +321,7 @@ extension _QueueTabSections on _QueueTabState {
           padding: EdgeInsets.only(bottom: sheetContext.tokens.gapLg),
           child: SettingsGroup(
             children: [
-              for (final mode in _librarySortModes)
+              for (final mode in _availableLibrarySortModes)
                 if (sheetContext.isMornye)
                   SettingsItem(
                     title: _sortLabel(sheetContext, mode),
@@ -319,7 +332,7 @@ extension _QueueTabSections on _QueueTabState {
                             color: Theme.of(sheetContext).colorScheme.primary,
                           )
                         : const SizedBox.shrink(),
-                    showDivider: mode != _librarySortModes.last,
+                    showDivider: mode != _availableLibrarySortModes.last,
                     onTap: () => Navigator.pop(sheetContext, mode),
                   )
                 else

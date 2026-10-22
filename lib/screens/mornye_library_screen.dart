@@ -187,6 +187,18 @@ class _MornyeLibraryScreenState extends ConsumerState<MornyeLibraryScreen> {
     final options = [
       ('a-z', context.l10n.searchSortTitleAZ, Icons.sort_by_alpha),
       ('latest', context.l10n.libraryRecentlyAdded, Icons.schedule),
+      if (!_artists) ...[
+        (
+          'size-desc',
+          context.l10n.libraryFilterSortSizeLargest,
+          Icons.storage_outlined,
+        ),
+        (
+          'size-asc',
+          context.l10n.libraryFilterSortSizeSmallest,
+          Icons.storage_outlined,
+        ),
+      ],
     ];
     final selected =
         await (_chooseFromMenu(buttonContext, options, _sort) ??

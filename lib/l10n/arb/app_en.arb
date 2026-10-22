@@ -3180,6 +3180,14 @@
   "@libraryFilterSortOldest": {
     "description": "Sort option - oldest first"
   },
+  "libraryFilterSortSizeLargest": "Size (Largest first)",
+  "@libraryFilterSortSizeLargest": {
+    "description": "Library sort option - largest files first"
+  },
+  "libraryFilterSortSizeSmallest": "Size (Smallest first)",
+  "@libraryFilterSortSizeSmallest": {
+    "description": "Library sort option - smallest files first"
+  },
   "libraryFilterSortAlbumAsc": "Album (A-Z)",
   "@libraryFilterSortAlbumAsc": {
     "description": "Sort option - album ascending"

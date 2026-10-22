@@ -392,6 +392,9 @@ class _QueueTabState extends ConsumerState<QueueTab> {
 
   void _onFilterPageChanged(int index) {
     if (widget.librarySection != null) return;
+    if (_modeForPage(index) == 'playlists' && _sortMode.startsWith('size-')) {
+      setState(() => _sortMode = 'latest');
+    }
     HapticFeedback.selectionClick();
     ref
         .read(settingsProvider.notifier)
