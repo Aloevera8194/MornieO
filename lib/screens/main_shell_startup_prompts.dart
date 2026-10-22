@@ -91,22 +91,6 @@ extension _MainShellStartupPrompts on _MainShellState {
     }
   }
 
-  Future<void> _checkUpgradeIntro() async {
-    try {
-      final preferences = await SharedPreferences.getInstance();
-      if (!mounted || !UpgradeIntroService.shouldShow(preferences)) return;
-      await Navigator.of(context, rootNavigator: true).push<void>(
-        MaterialPageRoute(
-          builder: (_) => const UpgradeIntroScreen(),
-          fullscreenDialog: true,
-        ),
-      );
-      await UpgradeIntroService.markSeen(preferences);
-    } catch (error) {
-      _log.w('Could not present upgrade introduction: $error');
-    }
-  }
-
   Future<bool> _checkForUpdates() async {
     if (_hasCheckedUpdate) return false;
     _hasCheckedUpdate = true;

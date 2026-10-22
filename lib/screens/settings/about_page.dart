@@ -11,7 +11,6 @@ import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/settings_group.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
-import 'package:mornye/screens/upgrade_intro_screen.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -39,24 +38,6 @@ class AboutPage extends StatelessWidget {
               ),
             ),
 
-            SliverToBoxAdapter(
-              child: SettingsGroup(
-                children: [
-                  SettingsItem(
-                    icon: Icons.new_releases,
-                    title: context.l10n.rebrandTourReplay,
-                    showDivider: false,
-                    onTap: () =>
-                        Navigator.of(context, rootNavigator: true).push<void>(
-                          MaterialPageRoute(
-                            builder: (_) => const UpgradeIntroScreen(),
-                            fullscreenDialog: true,
-                          ),
-                        ),
-                  ),
-                ],
-              ),
-            ),
             SliverToBoxAdapter(
               child: SettingsSectionHeader(
                 title: context.l10n.aboutContributors,
