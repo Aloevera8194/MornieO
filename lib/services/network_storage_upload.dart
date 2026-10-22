@@ -289,8 +289,13 @@ extension NetworkStorageUpload on NetworkStorageService {
           progress: (sent) => progress(sent, length),
         );
         checkpoint();
-        if ((await smb.stat()).size != length) {
-          throw StateError('Network upload size mismatch');
+        final reportedLength = (await smb.stat()).size;
+        if (reportedLength != length &&
+            !await smb.matchesFile(file, length, checkpoint: checkpoint)) {
+          throw StateError(
+            'Network upload size mismatch '
+            '(SMB: expected $length bytes, reported $reportedLength bytes)',
+          );
         }
         final destination = networkTarget(
           c,
