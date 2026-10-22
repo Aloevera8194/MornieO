@@ -2,7 +2,9 @@
 
 use super::{AudioMetadata, CoverArt, file::ObservedReader, read_container_format, read_tags};
 use crate::lyrics::lrc::has_usable_content;
-use crate::media::{mp3_quality, ogg_quality, probe_mp4_quality, probe_quality, riff_quality};
+use crate::media::{
+    adts_quality, mp3_quality, ogg_quality, probe_mp4_quality, probe_quality, riff_quality,
+};
 use serde_json::{Value, json};
 use std::io::{Read, Seek, SeekFrom};
 use std::path::Path;
@@ -156,7 +158,7 @@ fn read(
     if !tagged
         && !matches!(
             format,
-            "mp3" | "m4a" | "mp4" | "aac" | "wav" | "aiff" | "aif" | "aifc"
+            "mp3" | "m4a" | "mp4" | "aac" | "adts" | "wav" | "aiff" | "aif" | "aifc"
         )
     {
         return Ok(result);
@@ -170,6 +172,7 @@ fn read(
         "flac" => probe_quality(file, &|| Ok(())),
         "m4a" | "mp4" | "aac" => probe_mp4_quality(file, &|| Ok(())),
         "mp3" => mp3_quality(file, size as i64),
+        "adts" => adts_quality(file, size as i64),
         "ogg" | "opus" => ogg_quality(file, size as i64, path),
         "wav" | "aiff" | "aif" | "aifc" => riff_quality(file, size as i64, format != "wav"),
         _ => return Ok(result),
@@ -177,7 +180,7 @@ fn read(
     if let Ok(quality) = quality {
         let readable_without_tags = quality.sample_rate > 0
             && match format {
-                "mp3" => quality.bitrate > 0,
+                "mp3" | "adts" => quality.bitrate > 0,
                 "m4a" | "mp4" | "aac" => !quality.codec.is_empty(),
                 _ => false,
             };
@@ -201,7 +204,7 @@ fn read(
                     / (quality.total_samples as f64 / quality.sample_rate as f64)
                     / 1000.0) as i64
             }
-            "mp3" | "ogg" | "opus" => quality.bitrate / 1000,
+            "mp3" | "adts" | "ogg" | "opus" => quality.bitrate / 1000,
             "m4a" | "mp4" | "aac" => {
                 let mapped = match quality.codec.trim().to_lowercase().as_str() {
                     "flac" => "flac",

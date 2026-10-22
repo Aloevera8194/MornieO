@@ -100,7 +100,10 @@ impl Backend {
                         metadata = Some(tags);
                         cover.ok_or_else(|| "no cover art found in file".into())
                     } else {
-                        extract_cover(file, format, check)
+                        // The cover cache files .aac under its MP4 reader; the
+                        // container check also recognizes raw ADTS.
+                        let aac = library_extension(path, hint) == "aac";
+                        extract_cover(file, if aac { "aac" } else { format }, check)
                     }
                 },
                 check,

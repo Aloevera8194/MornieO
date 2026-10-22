@@ -4,7 +4,7 @@ mod audio;
 pub mod hires;
 pub(crate) mod mp4;
 
-pub(crate) use audio::{mp3_quality, ogg_quality, riff_quality};
+pub(crate) use audio::{adts_quality, is_adts_frame, mp3_quality, ogg_quality, riff_quality};
 
 use serde::Serialize;
 use std::io::{Read, Seek, SeekFrom};
@@ -31,7 +31,18 @@ pub fn probe_quality(
 ) -> Result<AudioQuality, String> {
     check()?;
     file.seek(SeekFrom::Start(0)).map_err(|e| e.to_string())?;
-    let marker = read_go::<4>(file).map_err(|e| format!("failed to read marker: {e}"))?;
+    let mut marker = read_go::<4>(file).map_err(|e| format!("failed to read marker: {e}"))?;
+    if &marker[..3] == b"ID3" {
+        // Some taggers put an ID3v2 tag in front of the FLAC stream.
+        let mut header = [0; 10];
+        header[..4].copy_from_slice(&marker);
+        header[4..].copy_from_slice(&read_go::<6>(file)?);
+        if let Some(length) = crate::tags::v2_tag_length(&header) {
+            file.seek(SeekFrom::Start(length))
+                .map_err(|e| e.to_string())?;
+            marker = read_go::<4>(file).map_err(|e| format!("failed to read marker: {e}"))?;
+        }
+    }
     if &marker == b"fLaC" {
         let header = read_go::<4>(file).map_err(|e| format!("failed to read header: {e}"))?;
         if header[0] & 0x7f != 0 {
@@ -70,14 +81,25 @@ fn flac_quality(info: &[u8; 34]) -> AudioQuality {
     }
 }
 
-// Go's marker/STREAMINFO reader accepts a short successful Read and leaves the
-// rest of its zero-initialized buffer untouched. Preserve that legacy behavior.
+// Go's marker/STREAMINFO reader accepts a file that ends inside the buffer and
+// leaves the rest zero-initialized. Preserve that for truncated files, but keep
+// reading after a short read: a provider or FUSE descriptor may return fewer
+// bytes than asked while more follow, and zeros would then be real quality.
 fn read_go<const N: usize>(file: &mut impl Read) -> Result<[u8; N], String> {
     let mut bytes = [0; N];
-    match file.read(&mut bytes) {
-        Ok(0) => Err("EOF".into()),
-        Ok(_) => Ok(bytes),
-        Err(error) => Err(error.to_string()),
+    let mut length = 0;
+    while length < N {
+        match file.read(&mut bytes[length..]) {
+            Ok(0) => break,
+            Ok(count) => length += count,
+            Err(error) if error.kind() == std::io::ErrorKind::Interrupted => {}
+            Err(error) => return Err(error.to_string()),
+        }
+    }
+    if length == 0 {
+        Err("EOF".into())
+    } else {
+        Ok(bytes)
     }
 }
 

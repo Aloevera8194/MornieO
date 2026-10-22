@@ -125,6 +125,40 @@ class SafMetadataReadPolicyTest {
         assertEquals(1, copies)
     }
 
+    @Test fun retryWaitsAfterTheCopyAndRecoversATransientFailure() {
+        val events = mutableListOf<String>()
+        var failures = 0
+        val result = readSafMetadataWithFallback(
+            directRead = {
+                events.add("direct")
+                if (events.size == 1) throw java.io.IOException("EIO") else "tags"
+            },
+            fallbackRead = { events.add("copy"); throw java.io.IOException("EIO") },
+            retryDirectOnFailure = true,
+            onFailure = { failures++ },
+            waitBeforeRetry = { events.add("wait") },
+        )
+        assertEquals("tags", result)
+        assertEquals(listOf("direct", "copy", "wait", "direct"), events)
+        assertEquals(0, failures)
+    }
+
+    @Test fun readsThatSucceedOrDoNotRetryNeverWait() {
+        var waits = 0
+        assertEquals("tags", readSafMetadataWithFallback(
+            directRead = { "tags" },
+            fallbackRead = { error("copy") },
+            retryDirectOnFailure = true,
+            waitBeforeRetry = { waits++ },
+        ))
+        assertNull(readSafMetadataWithFallback<String>(
+            directRead = { null },
+            fallbackRead = { null },
+            waitBeforeRetry = { waits++ },
+        ))
+        assertEquals(0, waits)
+    }
+
     @Test fun validCopiedTagsDoNotTriggerAnotherRemoteRead() {
         var reads = 0
         val tags = mapOf<String, Any>("trackName" to "Song", "albumName" to "Album")
