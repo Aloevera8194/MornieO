@@ -778,15 +778,15 @@ class _HomeTabState extends ConsumerState<HomeTab>
     final hasExploreContent =
         _showsHome &&
         ref.watch(exploreProvider.select((s) => s.sections.isNotEmpty));
-    final exploreLoading =
-        _showsHome && ref.watch(exploreProvider.select((s) => s.isLoading));
-    final hasHomeFeedExtension =
+    final explorePending =
         _showsHome &&
         ref.watch(
-          extensionProvider.select(
-            (s) => s.extensions.any((e) => e.enabled && e.hasHomeFeed),
+          exploreProvider.select(
+            (s) => s.isLoading || (s.lastFetched == null && s.error == null),
           ),
         );
+    final hasHomeFeedExtension =
+        _showsHome && ref.watch(homeFeedExtensionProvider) != null;
     final homeFeedDisabled =
         _showsHome &&
         ref.watch(
@@ -857,6 +857,18 @@ class _HomeTabState extends ConsumerState<HomeTab>
         !homeFeedDisabled &&
         (hasHomeFeedExtension || hasExploreContent) &&
         hasExploreContent;
+    // Unknown extensions and an unresolved first feed are loading states,
+    // not evidence that Home should mount its local-only fallback.
+    final showExploreLoading =
+        _showsHome &&
+        !hasActualResults &&
+        !isLoading &&
+        !hasActiveSearchSurface &&
+        !showRecentAccess &&
+        !homeFeedDisabled &&
+        !hasExploreContent &&
+        (isSearchProviderLoading || (hasHomeFeedExtension && explorePending));
+    final showFeedSurface = showExplore || showExploreLoading;
     // Only a surface with a search field asks for a search provider. The
     // Mornye Home browses without one, so it never stops at this prompt.
     final showEmptyHomeState =
@@ -876,7 +888,8 @@ class _HomeTabState extends ConsumerState<HomeTab>
       const AppMotionSpec(Duration(milliseconds: 250), Curves.easeOut),
     );
     // Without a feed, Home gathers the player, shortcuts and Library shelves.
-    final showHomeSections = _showsHome && !showExplore && !showEmptyHomeState;
+    final showHomeSections =
+        _showsHome && !showFeedSurface && !showEmptyHomeState;
     // The Material Home also greets in its header. A feed brings its own
     // greeting, and the Mornye style keeps its navigation title.
     final greetsInHeader = showHomeSections && !context.isMornye;
@@ -946,7 +959,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
               _buildHomeIntroSliver(
                 sectionMotion: sectionMotion,
                 hasResults: hasResults,
-                showExplore: showExplore,
+                showExplore: showFeedSurface,
                 colorScheme: colorScheme,
                 screenHeight: screenHeight,
                 showEmptyHomeState: showEmptyHomeState,
@@ -954,7 +967,7 @@ class _HomeTabState extends ConsumerState<HomeTab>
               if (showSearchBar && !searchToolbar)
                 _buildSearchBarSliver(
                   hasResults: hasResults,
-                  showExplore: showExplore,
+                  showExplore: showFeedSurface,
                   greetsInHeader: greetsInHeader,
                 ),
               if (hasActiveSearchSurface &&
@@ -978,17 +991,11 @@ class _HomeTabState extends ConsumerState<HomeTab>
                 sectionMotion: sectionMotion,
                 hasResults: hasResults,
                 showRecentAccess: showRecentAccess,
-                showExplore: showExplore,
+                showExplore: showFeedSurface,
                 showEmptyHomeState: showEmptyHomeState,
               ),
               if (showExplore) _buildExploreSliver(colorScheme: colorScheme),
-              if (_showsHome &&
-                  hasHomeFeedExtension &&
-                  !homeFeedDisabled &&
-                  !hasActualResults &&
-                  !isLoading &&
-                  exploreLoading)
-                _buildExploreLoadingSliver(),
+              if (showExploreLoading) _buildExploreLoadingSliver(),
               if (_showsSearch && !showLibraryResults)
                 _buildSearchResultsSliver(
                   colorScheme: colorScheme,

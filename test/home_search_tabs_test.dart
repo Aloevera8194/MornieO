@@ -16,12 +16,144 @@ import 'package:mornye/screens/home_tab.dart';
 import 'package:mornye/services/library_search.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/app_theme.dart';
+import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/widgets/app_search_field.dart';
 import 'package:mornye/widgets/lazy_tab_view.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/widgets/mornye_context_menu.dart';
 
 void main() {
+  for (final desktop in [false, true]) {
+    for (final mornye in [false, true]) {
+      testWidgets('Home keeps its feed layout through slow startup '
+          '(desktop: $desktop, Mornye: $mornye)', (tester) async {
+        debugDesktopPlatformOverride = desktop;
+        addTearDown(() => debugDesktopPlatformOverride = null);
+        tester.view.physicalSize = desktop
+            ? const Size(1280, 800)
+            : const Size(430, 932);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final extensions = _StartupExtensions();
+        final explore = _StartupExplore();
+        await _pumpStartupHome(tester, extensions, explore, mornye: mornye);
+
+        expect(find.text('Shortcuts'), findsNothing);
+        expect(find.byType(ShimmerLoading), findsOneWidget);
+        final searchRect = mornye
+            ? null
+            : tester.getRect(find.byType(TextField));
+        await tester.pump(const Duration(seconds: 3));
+        expect(find.text('Shortcuts'), findsNothing);
+
+        extensions.update(
+          const ExtensionState(
+            extensions: [_feedExtension],
+            isInitialized: true,
+          ),
+        );
+        await tester.pump();
+        await tester.pump(const Duration(seconds: 3));
+        expect(find.text('Shortcuts'), findsNothing);
+        expect(find.byType(ShimmerLoading), findsOneWidget);
+
+        explore.update(
+          const ExploreState(
+            sections: [
+              ExploreSection(
+                uri: 'example:featured',
+                title: 'Featured albums',
+                items: [],
+              ),
+            ],
+          ),
+        );
+        await tester.pump();
+        expect(find.text('Featured albums'), findsOneWidget);
+        expect(find.text('Shortcuts'), findsNothing);
+        expect(find.byType(ShimmerLoading), findsNothing);
+        if (searchRect != null) {
+          expect(tester.getRect(find.byType(TextField)), searchRect);
+        }
+        expect(tester.takeException(), isNull);
+      });
+    }
+  }
+
+  for (final result in [
+    'no extensions',
+    'initialization error',
+    'feed error',
+    'empty feed',
+  ]) {
+    testWidgets('Home leaves startup loading after $result', (tester) async {
+      final extensions = _StartupExtensions();
+      final explore = _StartupExplore();
+      await _pumpStartupHome(tester, extensions, explore);
+      expect(find.byType(ShimmerLoading), findsOneWidget);
+      extensions.update(
+        ExtensionState(
+          isInitialized: result != 'initialization error',
+          error: result == 'initialization error'
+              ? 'Unable to initialize'
+              : null,
+          extensions: result == 'feed error' || result == 'empty feed'
+              ? const [_feedExtension]
+              : const [],
+        ),
+      );
+      explore.update(
+        ExploreState(
+          error: result == 'feed error' ? 'Offline' : null,
+          lastFetched: result == 'empty feed' ? DateTime(2026, 10, 22) : null,
+        ),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(find.byType(ShimmerLoading), findsNothing);
+      expect(find.text('Shortcuts'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('Home with its feed disabled shows local sections immediately', (
+    tester,
+  ) async {
+    await _pumpStartupHome(
+      tester,
+      _StartupExtensions(),
+      _StartupExplore(),
+      feedDisabled: true,
+    );
+    expect(find.text('Shortcuts'), findsOneWidget);
+    expect(find.byType(ShimmerLoading), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('Home can show restored feed content before extensions finish', (
+    tester,
+  ) async {
+    final explore = _StartupExplore();
+    await _pumpStartupHome(tester, _StartupExtensions(), explore);
+    explore.update(
+      const ExploreState(
+        sections: [
+          ExploreSection(
+            uri: 'example:cached',
+            title: 'Cached albums',
+            items: [],
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Cached albums'), findsOneWidget);
+    expect(find.text('Shortcuts'), findsNothing);
+    expect(find.byType(ShimmerLoading), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
+
   for (final (size, layout) in [
     for (final layout in ['shelf', 'featured', 'quick-pick', 'quick-pick-menu'])
       (const Size(430, 932), layout),
@@ -558,6 +690,71 @@ class _Settings extends SettingsNotifier {
   @override
   AppSettings build() =>
       const AppSettings(searchProvider: 'example', hasSearchedBefore: true);
+}
+
+const _feedExtension = Extension(
+  id: 'example',
+  name: 'example',
+  displayName: 'Example',
+  version: '1.0.0',
+  description: '',
+  enabled: true,
+  status: 'loaded',
+  capabilities: {'homeFeed': true},
+  searchBehavior: SearchBehavior(enabled: true),
+);
+
+Future<void> _pumpStartupHome(
+  WidgetTester tester,
+  _StartupExtensions extensions,
+  _StartupExplore explore, {
+  bool mornye = true,
+  bool feedDisabled = false,
+}) => tester.pumpWidget(
+  ProviderScope(
+    overrides: [
+      settingsProvider.overrideWith(() => _StartupSettings(feedDisabled)),
+      extensionProvider.overrideWith(() => extensions),
+      exploreProvider.overrideWith(() => explore),
+      downloadHistoryProvider.overrideWith(_History.new),
+      recentAccessProvider.overrideWith(_Recent.new),
+      trackProvider.overrideWith(_Search.new),
+    ],
+    child: MaterialApp(
+      theme: mornye ? MornyeTheme.build(Brightness.dark) : AppTheme.dark(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: HomeTab(mode: mornye ? HomeTabMode.browse : HomeTabMode.combined),
+    ),
+  ),
+);
+
+class _StartupSettings extends _Settings {
+  _StartupSettings(this.feedDisabled);
+
+  final bool feedDisabled;
+
+  @override
+  AppSettings build() => super.build().copyWith(
+    homeFeedProvider: feedDisabled ? AppSettings.homeFeedProviderOff : null,
+  );
+}
+
+class _StartupExtensions extends ExtensionNotifier {
+  @override
+  ExtensionState build() => const ExtensionState();
+
+  void update(ExtensionState next) => state = next;
+}
+
+class _StartupExplore extends ExploreNotifier {
+  @override
+  ExploreState build() => const ExploreState();
+
+  void update(ExploreState next) => state = next;
+
+  @override
+  Future<void> fetchHomeFeed({bool forceRefresh = false}) async {}
 }
 
 class _Extensions extends ExtensionNotifier {
