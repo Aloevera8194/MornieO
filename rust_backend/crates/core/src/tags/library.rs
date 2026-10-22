@@ -149,12 +149,14 @@ fn read(
     }
     if let Ok(metadata) = metadata {
         apply_tags(&mut result, metadata, format, path, hint)?;
+    } else if let Err(error) = metadata {
+        result["metadataReadError"] = error.into();
     }
-    // MP4 and RIFF probe quality independently of whether tags are present.
+    // Missing ID3 or MP4 tags do not mean the audio stream is unreadable.
     if !tagged
         && !matches!(
             format,
-            "m4a" | "mp4" | "aac" | "wav" | "aiff" | "aif" | "aifc"
+            "mp3" | "m4a" | "mp4" | "aac" | "wav" | "aiff" | "aif" | "aifc"
         )
     {
         return Ok(result);
@@ -173,6 +175,17 @@ fn read(
         _ => return Ok(result),
     };
     if let Ok(quality) = quality {
+        let readable_without_tags = quality.sample_rate > 0
+            && match format {
+                "mp3" => quality.bitrate > 0,
+                "m4a" | "mp4" | "aac" => !quality.codec.is_empty(),
+                _ => false,
+            };
+        if !tagged && readable_without_tags {
+            // Use the real display name and unknown artist/album, never the
+            // staged filename or cache directory used by a SAF fallback.
+            apply_tags(&mut result, AudioMetadata::default(), format, path, hint)?;
+        }
         for (key, value) in [
             ("bitDepth", quality.bit_depth),
             ("sampleRate", quality.sample_rate),
@@ -228,6 +241,7 @@ fn apply_tags(
         .as_object_mut()
         .unwrap()
         .remove("metadataFromFilename");
+    result.as_object_mut().unwrap().remove("metadataReadError");
     result["trackName"] = if tags.title.is_empty() {
         filename(if hint.is_empty() { path } else { hint }).into()
     } else {

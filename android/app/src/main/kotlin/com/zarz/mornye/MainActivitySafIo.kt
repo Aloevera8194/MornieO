@@ -265,7 +265,12 @@ internal fun Context.readAudioMetadataFromUri(
     acceptRead = {
         val fromFilename = it.optBoolean("metadataFromFilename", false)
         if (fromFilename) {
-            throw IOException("Audio tags unreadable; only filename-derived metadata available")
+            val detail = it.optString("metadataReadError", "").trim()
+            throw IOException(if (detail.isEmpty()) {
+                "Audio tags unreadable; only filename-derived metadata available"
+            } else {
+                "Audio metadata read failed: $detail"
+            })
         }
         !fromFilename
     },

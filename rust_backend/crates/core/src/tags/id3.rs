@@ -75,7 +75,7 @@ pub(super) fn read(reader: &mut (impl Read + Seek)) -> Result<AudioMetadata, Str
             }
         }
     }
-    if metadata.title.is_empty() && metadata.artist.is_empty() {
+    if metadata == AudioMetadata::default() {
         Err("no ID3 tags found".into())
     } else {
         Ok(metadata)
