@@ -14,6 +14,7 @@ import 'package:mornye/providers/local_library_provider.dart';
 import 'package:mornye/services/library_database.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/duplicate_review_sheet.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/settings_group.dart';
@@ -922,6 +923,7 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
           ),
 
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          const NavBarSliverSpacer(),
         ],
       ),
     );

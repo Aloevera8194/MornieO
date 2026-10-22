@@ -10,6 +10,7 @@ import 'package:mornye/services/music_player_service.dart'
 import 'package:mornye/screens/listening_statistics_screen.dart';
 import 'package:mornye/screens/equalizer_screen.dart';
 import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/widgets/app_alert_dialog.dart';
 import 'package:mornye/widgets/app_icon.dart';
@@ -500,6 +501,7 @@ class _PlaybackSettingsPageState extends ConsumerState<PlaybackSettingsPage> {
             ),
           ),
           const SliverToBoxAdapter(child: SizedBox(height: 32)),
+          const NavBarSliverSpacer(),
         ],
       ),
     );

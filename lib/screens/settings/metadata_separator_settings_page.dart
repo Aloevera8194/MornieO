@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/models/metadata_separators.dart';
 import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/app_bottom_sheet.dart';
 import 'package:mornye/widgets/app_content_card.dart';
 import 'package:mornye/widgets/app_text_field.dart';
@@ -70,6 +71,7 @@ class MetadataSeparatorSettingsPage extends ConsumerWidget {
               ],
             ),
           ),
+          const NavBarSliverSpacer(),
         ],
       ),
     );

@@ -21,6 +21,7 @@ import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/utils/desktop_folders.dart';
 import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/utils/file_access.dart';
 import 'package:mornye/utils/saf_download_tree.dart';
 import 'package:mornye/widgets/settings_group.dart';
@@ -415,6 +416,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
             ],
 
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            const NavBarSliverSpacer(),
           ],
         ),
       ),
