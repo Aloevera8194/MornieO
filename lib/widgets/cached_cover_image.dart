@@ -211,10 +211,12 @@ class LocalOrNetworkCoverImage extends StatelessWidget {
               if (fadeInDuration == Duration.zero) {
                 return ready ? child : placeholder(context);
               }
+              // The image defines the cover's size even when a track row
+              // gives its leading widget unbounded constraints.
               return Stack(
-                fit: StackFit.expand,
+                fit: StackFit.passthrough,
                 children: [
-                  placeholder(context),
+                  Positioned.fill(child: placeholder(context)),
                   AnimatedOpacity(
                     opacity: ready ? 1.0 : 0.0,
                     duration: fadeInDuration!,
