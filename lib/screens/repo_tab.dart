@@ -151,66 +151,57 @@ class _RepoTabState extends ConsumerState<RepoTab> {
               ),
 
               SliverToBoxAdapter(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: EdgeInsets.symmetric(horizontal: edge, vertical: 8),
-                  child: Row(
-                    children: [
-                      _CategoryChip(
-                        label: context.l10n.storeFilterAll,
-                        icon: Icons.apps,
-                        isSelected: selectedCategory == null,
-                        onTap: () =>
-                            ref.read(repoProvider.notifier).setCategory(null),
-                      ),
-                      const SizedBox(width: 8),
-                      _CategoryChip(
-                        label: context.l10n.storeFilterMetadata,
-                        icon: Icons.label_outline,
-                        isSelected: selectedCategory == RepoCategory.metadata,
-                        onTap: () => ref
-                            .read(repoProvider.notifier)
-                            .setCategory(RepoCategory.metadata),
-                      ),
-                      const SizedBox(width: 8),
-                      _CategoryChip(
-                        label: context.l10n.storeFilterDownload,
-                        icon: Icons.download_outlined,
-                        isSelected: selectedCategory == RepoCategory.download,
-                        onTap: () => ref
-                            .read(repoProvider.notifier)
-                            .setCategory(RepoCategory.download),
-                      ),
-                      const SizedBox(width: 8),
-                      _CategoryChip(
-                        label: context.l10n.storeFilterUtility,
-                        icon: Icons.build_outlined,
-                        isSelected: selectedCategory == RepoCategory.utility,
-                        onTap: () => ref
-                            .read(repoProvider.notifier)
-                            .setCategory(RepoCategory.utility),
-                      ),
-                      const SizedBox(width: 8),
-                      _CategoryChip(
-                        label: context.l10n.storeFilterLyrics,
-                        icon: Icons.lyrics_outlined,
-                        isSelected: selectedCategory == RepoCategory.lyrics,
-                        onTap: () => ref
-                            .read(repoProvider.notifier)
-                            .setCategory(RepoCategory.lyrics),
-                      ),
-                      const SizedBox(width: 8),
-                      _CategoryChip(
-                        label: context.l10n.storeFilterIntegration,
-                        icon: Icons.link,
-                        isSelected:
-                            selectedCategory == RepoCategory.integration,
-                        onTap: () => ref
-                            .read(repoProvider.notifier)
-                            .setCategory(RepoCategory.integration),
-                      ),
-                    ],
-                  ),
+                child: _CategoryChipRow(
+                  edge: edge,
+                  children: [
+                    _CategoryChip(
+                      label: context.l10n.storeFilterAll,
+                      icon: Icons.apps,
+                      isSelected: selectedCategory == null,
+                      onTap: () =>
+                          ref.read(repoProvider.notifier).setCategory(null),
+                    ),
+                    _CategoryChip(
+                      label: context.l10n.storeFilterMetadata,
+                      icon: Icons.label_outline,
+                      isSelected: selectedCategory == RepoCategory.metadata,
+                      onTap: () => ref
+                          .read(repoProvider.notifier)
+                          .setCategory(RepoCategory.metadata),
+                    ),
+                    _CategoryChip(
+                      label: context.l10n.storeFilterDownload,
+                      icon: Icons.download_outlined,
+                      isSelected: selectedCategory == RepoCategory.download,
+                      onTap: () => ref
+                          .read(repoProvider.notifier)
+                          .setCategory(RepoCategory.download),
+                    ),
+                    _CategoryChip(
+                      label: context.l10n.storeFilterUtility,
+                      icon: Icons.build_outlined,
+                      isSelected: selectedCategory == RepoCategory.utility,
+                      onTap: () => ref
+                          .read(repoProvider.notifier)
+                          .setCategory(RepoCategory.utility),
+                    ),
+                    _CategoryChip(
+                      label: context.l10n.storeFilterLyrics,
+                      icon: Icons.lyrics_outlined,
+                      isSelected: selectedCategory == RepoCategory.lyrics,
+                      onTap: () => ref
+                          .read(repoProvider.notifier)
+                          .setCategory(RepoCategory.lyrics),
+                    ),
+                    _CategoryChip(
+                      label: context.l10n.storeFilterIntegration,
+                      icon: Icons.link,
+                      isSelected: selectedCategory == RepoCategory.integration,
+                      onTap: () => ref
+                          .read(repoProvider.notifier)
+                          .setCategory(RepoCategory.integration),
+                    ),
+                  ],
                 ),
               ),
 
@@ -707,6 +698,31 @@ class _RepoTabState extends ConsumerState<RepoTab> {
         behavior: SnackBarBehavior.floating,
       );
     }
+  }
+}
+
+/// Category filters scroll sideways on phones. A mouse cannot swipe a clipped
+/// row, so desktop windows wrap every category onto view.
+class _CategoryChipRow extends StatelessWidget {
+  const _CategoryChipRow({required this.edge, required this.children});
+
+  final double edge;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final padding = EdgeInsets.symmetric(horizontal: edge, vertical: 8);
+    if (isDesktopPlatform) {
+      return Padding(
+        padding: padding,
+        child: Wrap(spacing: 8, runSpacing: 8, children: children),
+      );
+    }
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: padding,
+      child: Row(spacing: 8, children: children),
+    );
   }
 }
 

@@ -735,31 +735,25 @@ extension _HomeTabSearchResultsUI on _HomeTabState {
             );
     }
 
+    final chips = [
+      filterChip('all', context.l10n.historyFilterAll),
+      for (final filter in filters)
+        filterChip(
+          filter.id,
+          filter.label ?? filter.id,
+          icon: filter.icon == null ? null : _getFilterIcon(filter.icon!),
+        ),
+    ];
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16 + wideListInset(context)),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8),
-              child: filterChip('all', context.l10n.historyFilterAll),
+      // A mouse cannot swipe a clipped row, so desktop windows wrap every
+      // filter onto view.
+      child: isDesktopPlatform
+          ? Wrap(spacing: 8, runSpacing: 8, children: chips)
+          : SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(spacing: 8, children: chips),
             ),
-            ...filters.map((filter) {
-              return Padding(
-                padding: const EdgeInsetsDirectional.only(end: 8),
-                child: filterChip(
-                  filter.id,
-                  filter.label ?? filter.id,
-                  icon: filter.icon == null
-                      ? null
-                      : _getFilterIcon(filter.icon!),
-                ),
-              );
-            }),
-          ],
-        ),
-      ),
     );
   }
 
