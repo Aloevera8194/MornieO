@@ -128,6 +128,9 @@ dependency_overrides:
   # none (arm64); desktop runs the bundled ffmpeg CLI instead.
   ffmpeg_kit_flutter_new_audio:
     path: third_party/ffmpeg_kit_flutter_new_audio
+  # Upstream bundles x64 only; keep native playback on Windows ARM64.
+  media_kit_libs_windows_audio:
+    path: third_party/media_kit_libs_windows_audio
 
 hooks:
   user_defines:

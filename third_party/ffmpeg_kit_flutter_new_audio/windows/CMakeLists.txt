@@ -56,7 +56,17 @@ target_include_directories(${PLUGIN_NAME} INTERFACE
 
 target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
 
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+if(FLUTTER_TARGET_PLATFORM STREQUAL "windows-arm64" OR
+   CMAKE_GENERATOR_PLATFORM MATCHES "^(ARM64|arm64)$" OR
+   CMAKE_SYSTEM_PROCESSOR MATCHES "^(ARM64|arm64|aarch64)$")
+  # There is no upstream ARM64 bundle. The plugin reports LIBRARY_NOT_LOADED;
+  # Mornye desktop runs the separately bundled native FFmpeg executables.
+  if(NOT FFMPEGKIT_LOCAL_DIR AND NOT DEFINED ENV{FFMPEGKIT_LOCAL_DIR})
+    set(ffmpeg_kit_flutter_new_audio_bundled_libraries "" PARENT_SCOPE)
+    return()
+  endif()
+  set(FFMPEGKIT_ARCH "aarch64")
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "AMD64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
   set(FFMPEGKIT_ARCH "x86_64")
 elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "X86" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "i686")
   set(FFMPEGKIT_ARCH "i686")

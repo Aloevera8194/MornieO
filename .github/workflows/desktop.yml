@@ -7,10 +7,15 @@ on:
       - "macos/**"
       - "linux/**"
       - "windows/**"
+      - "lib/widgets/duplicate_review_sheet.dart"
+      - "test/duplicate_review_sheet_test.dart"
+      - "test/settings_bottom_inset_test.dart"
       - "rust_backend/**"
       - "third_party/**"
       - "scripts/build_rust_backend.sh"
       - "scripts/build_rust_backend_windows.ps1"
+      - "scripts/setup_flutter_windows_arm64.ps1"
+      - "scripts/check_windows_bundle.ps1"
       - "scripts/embed_rust_backend_macos.sh"
       - "scripts/fetch_desktop_ffmpeg.sh"
       - "scripts/embed_ffmpeg_macos.sh"
@@ -223,6 +228,9 @@ jobs:
 
       # linux/CMakeLists.txt installs the library and the FFmpeg tools staged
       # above into lib/ and lib/ffmpeg/.
+      - name: Test desktop duplicate review and updater
+        run: flutter test --reporter expanded test/duplicate_review_sheet_test.dart test/desktop_updater_test.dart test/settings_bottom_inset_test.dart
+
       - name: Build Linux bundle
         run: |
           flutter build linux --release --target lib/main.dart \
@@ -255,10 +263,18 @@ jobs:
           path: build/desktop/Mornye-linux-${{ matrix.flutter_arch }}.zip
 
   build-windows:
-    name: Windows app (x64)
-    # Visual Studio 2026 dropped <experimental/coroutine>, which
-    # permission_handler_windows still includes; keep the 2022 toolset.
-    runs-on: windows-2022
+    name: Windows app (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: windows-2022
+            rust_target: x86_64-pc-windows-msvc
+          - arch: arm64
+            runner: windows-11-arm
+            rust_target: aarch64-pc-windows-msvc
     # Informational until the Windows build is proven in CI. Remove this once
     # a run of this job is green.
     continue-on-error: true
@@ -274,7 +290,9 @@ jobs:
       # LLVM; the runner's MSVC toolchain is enough.
       - name: Activate pinned Rust toolchain
         working-directory: rust_backend
-        run: rustup show
+        run: |
+          rustup show
+          rustup target add ${{ matrix.rust_target }}
 
       - name: Cache Cargo registry and build output
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -284,41 +302,49 @@ jobs:
             ~/.cargo/registry/cache
             ~/.cargo/git/db
             rust_backend/target
-          key: cargo-${{ runner.os }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-${{ hashFiles('rust_backend/Cargo.lock') }}
-          restore-keys: cargo-${{ runner.os }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-
+          key: cargo-${{ runner.os }}-${{ matrix.arch }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-${{ hashFiles('rust_backend/Cargo.lock') }}
+          restore-keys: cargo-${{ runner.os }}-${{ matrix.arch }}-desktop-${{ hashFiles('rust_backend/rust-toolchain.toml') }}-
 
       # Runs the Windows-only extension sandbox and junction tests.
       - name: Test Rust core and extensions
         working-directory: rust_backend
-        run: cargo test -p mornye-extensions -p mornye-core
+        run: cargo test -p mornye-extensions -p mornye-core --target ${{ matrix.rust_target }}
 
       - name: Build Rust desktop library
-        run: ./scripts/build_rust_backend_windows.ps1
+        run: ./scripts/build_rust_backend_windows.ps1 -Target ${{ matrix.rust_target }}
 
       # Git Bash provides curl, unzip and sha256sum for the fetch script.
       - name: Fetch LGPL FFmpeg
         shell: bash
-        run: bash scripts/fetch_desktop_ffmpeg.sh windows-x64
+        run: bash scripts/fetch_desktop_ffmpeg.sh windows-${{ matrix.arch }}
 
       - name: Setup Flutter
+        if: matrix.arch == 'x64'
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
         with:
           channel: "stable"
           flutter-version-file: .fvmrc
           cache: true
 
+      - name: Setup native ARM64 Flutter
+        if: matrix.arch == 'arm64'
+        run: ./scripts/setup_flutter_windows_arm64.ps1
+
       - name: Cache pub dependencies
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~\AppData\Local\Pub\Cache
-          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
-          restore-keys: pub-${{ runner.os }}-
+          key: pub-${{ runner.os }}-${{ matrix.arch }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-${{ matrix.arch }}-
 
       - name: Get Flutter dependencies
         run: flutter pub get
 
       # windows/CMakeLists.txt installs the library built above next to
       # mornye.exe and the FFmpeg tools staged above into ffmpeg\.
+      - name: Test desktop duplicate review and updater
+        run: flutter test --reporter expanded test/duplicate_review_sheet_test.dart test/desktop_updater_test.dart test/settings_bottom_inset_test.dart
+
       - name: Build Windows app
         run: |
           $commit = git rev-parse --short=8 HEAD
@@ -327,25 +353,14 @@ jobs:
 
       - name: Verify and package Windows app
         run: |
-          $bundle = 'build\windows\x64\runner\Release'
-          $required = 'mornye.exe', 'mornye_desktop.dll', 'ffmpeg\ffmpeg.exe',
-            'ffmpeg\ffprobe.exe', 'ffmpeg\LICENSE.txt', 'ffmpeg\SOURCE.txt'
-          foreach ($file in $required) {
-            if (-not (Test-Path (Join-Path $bundle $file))) {
-              throw "Missing $file in $bundle"
-            }
-          }
-          $buildconf = & (Join-Path $bundle 'ffmpeg\ffmpeg.exe') -hide_banner -buildconf
-          if ($LASTEXITCODE -ne 0) { throw 'The bundled ffmpeg.exe does not run' }
-          if ($buildconf -match '--enable-(gpl|nonfree)') {
-            throw 'The bundled FFmpeg is GPL or nonfree.'
-          }
+          $bundle = 'build\windows\${{ matrix.arch }}\runner\Release'
+          ./scripts/check_windows_bundle.ps1 -BundleDir $bundle -Arch ${{ matrix.arch }}
           New-Item -ItemType Directory -Force build\desktop | Out-Null
-          Compress-Archive -Path "$bundle\*" -DestinationPath build\desktop\Mornye-windows-x64.zip -Force
+          Compress-Archive -Path "$bundle\*" -DestinationPath build\desktop\Mornye-windows-${{ matrix.arch }}.zip -Force
 
       - name: Upload Windows app artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: desktop-windows-x64
+          name: desktop-windows-${{ matrix.arch }}
           if-no-files-found: error
-          path: build/desktop/Mornye-windows-x64.zip
+          path: build/desktop/Mornye-windows-${{ matrix.arch }}.zip

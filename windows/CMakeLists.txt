@@ -82,12 +82,21 @@ endif()
 
 # Rust desktop backend, loaded by dart:ffi from next to the executable.
 # It is prebuilt by scripts\build_rust_backend_windows.ps1.
+if(FLUTTER_TARGET_PLATFORM STREQUAL "windows-arm64" OR
+   CMAKE_GENERATOR_PLATFORM MATCHES "^(ARM64|arm64)$")
+  set(MORNYE_WINDOWS_ARCH "arm64")
+  set(MORNYE_RUST_TARGET "aarch64-pc-windows-msvc")
+else()
+  set(MORNYE_WINDOWS_ARCH "x64")
+  set(MORNYE_RUST_TARGET "x86_64-pc-windows-msvc")
+endif()
 set(MORNYE_DESKTOP_LIBRARY
-  "${CMAKE_CURRENT_SOURCE_DIR}/../rust_backend/target/desktop/windows/mornye_desktop.dll")
+  "${CMAKE_CURRENT_SOURCE_DIR}/../rust_backend/target/desktop/windows/${MORNYE_WINDOWS_ARCH}/mornye_desktop.dll")
 if(NOT EXISTS "${MORNYE_DESKTOP_LIBRARY}")
   message(FATAL_ERROR
     "The Rust desktop backend was not built: ${MORNYE_DESKTOP_LIBRARY} "
-    "is missing. Run `pwsh scripts\\build_rust_backend_windows.ps1` from the "
+    "is missing. Run `pwsh scripts\\build_rust_backend_windows.ps1 "
+    "-Target ${MORNYE_RUST_TARGET}` from the "
     "repository root, then build again.")
 endif()
 install(FILES "${MORNYE_DESKTOP_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
@@ -97,13 +106,7 @@ install(FILES "${MORNYE_DESKTOP_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}
 # in the ffmpeg\ folder next to the executable. They are staged by
 # `bash scripts/fetch_desktop_ffmpeg.sh windows-<arch>`; without them the app
 # falls back to an ffmpeg on Path, so a missing stage is only a warning.
-if(DEFINED FLUTTER_TARGET_PLATFORM)
-  set(MORNYE_FFMPEG_TARGET "${FLUTTER_TARGET_PLATFORM}")
-elseif(CMAKE_GENERATOR_PLATFORM MATCHES "^(ARM64|arm64)$")
-  set(MORNYE_FFMPEG_TARGET "windows-arm64")
-else()
-  set(MORNYE_FFMPEG_TARGET "windows-x64")
-endif()
+set(MORNYE_FFMPEG_TARGET "windows-${MORNYE_WINDOWS_ARCH}")
 set(MORNYE_FFMPEG_DIR
   "${CMAKE_CURRENT_SOURCE_DIR}/../build/ffmpeg/${MORNYE_FFMPEG_TARGET}")
 if(EXISTS "${MORNYE_FFMPEG_DIR}/ffmpeg.exe" AND EXISTS "${MORNYE_FFMPEG_DIR}/ffprobe.exe")
