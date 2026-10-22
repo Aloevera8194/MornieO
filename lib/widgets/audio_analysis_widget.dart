@@ -1,6 +1,10 @@
 import 'dart:async';
+import 'dart:math' as math;
+import 'dart:typed_data';
 import 'dart:ui' as ui;
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as p;
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/services/audio_analysis_jobs.dart';
 import 'package:mornye/services/audio_analysis_cache.dart';
@@ -12,6 +16,7 @@ import 'package:mornye/widgets/settings_group.dart';
 import 'package:mornye/widgets/app_content_card.dart';
 import 'package:mornye/widgets/app_progress_indicator.dart';
 import 'package:mornye/widgets/app_choice_chip.dart';
+import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_icon_button.dart';
 import 'package:mornye/widgets/app_loading_indicator.dart';
 import 'package:mornye/l10n/l10n.dart';
@@ -27,7 +32,16 @@ class AudioAnalysisCard extends StatefulWidget {
   final String filePath;
   final String? codecHint;
 
-  const AudioAnalysisCard({super.key, required this.filePath, this.codecHint});
+  /// Names the saved spectrogram image, such as "Artist - Title". Without
+  /// it the name comes from [filePath].
+  final String? exportName;
+
+  const AudioAnalysisCard({
+    super.key,
+    required this.filePath,
+    this.codecHint,
+    this.exportName,
+  });
 
   @override
   State<AudioAnalysisCard> createState() => _AudioAnalysisCardState();
@@ -42,6 +56,7 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
   int _spectrogramChannel = -1;
   bool _spectrogramChannelLoading = false;
   int _spectrogramRequestId = 0;
+  bool _savingSpectrogram = false;
   String? _unsupportedCodec;
   final _runner = AudioAnalysisRunner();
 
@@ -383,6 +398,69 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
     }
   }
 
+  /// Renders the spectrogram with its axes and legend, then asks where to
+  /// save it: the save panel on desktop, the system file picker on mobile.
+  Future<void> _saveSpectrogram() async {
+    final data = _data;
+    final shown = _spectrogramImage;
+    if (data == null || shown == null || _savingSpectrogram) return;
+    final l10n = context.l10n;
+    final channel = _spectrogramChannel;
+    final baseName = audioSpectrogramExportBaseName(
+      widget.filePath,
+      exportName: widget.exportName,
+    );
+    final fileName = channel < 0
+        ? '${baseName}_spectrogram.png'
+        : '${baseName}_spectrogram_ch${channel + 1}.png';
+    // A channel switch disposes the shown image while this still renders.
+    final image = shown.clone();
+    setState(() => _savingSpectrogram = true);
+    try {
+      final bytes = await renderAudioSpectrogramPng(
+        image: image,
+        title: baseName,
+        sampleRate: data.sampleRate,
+        duration: data.duration,
+        details: [
+          '${l10n.audioAnalysisSampleRate}: ${data.sampleRate} Hz',
+          '${l10n.audioAnalysisNyquist}: '
+              '${(data.sampleRate / 2000).toStringAsFixed(1)} kHz',
+          if (channel >= 0) 'Ch ${channel + 1}',
+        ],
+      );
+      final saved = await FilePicker.saveFile(
+        fileName: fileName,
+        bytes: bytes,
+        mimeType: 'image/png',
+        dialogTitle: l10n.audioAnalysisSaveSpectrogram,
+      );
+      if (saved == null || !mounted) return;
+      final savedName = saved.scheme == 'file'
+          ? p.basename(saved.toFilePath())
+          : fileName;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.audioAnalysisSpectrogramSaved(savedName)),
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l10n.trackSaveFailed(context.friendlyError(e))),
+          ),
+        );
+    } finally {
+      image.dispose();
+      if (mounted) setState(() => _savingSpectrogram = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_isSupported) return const SizedBox.shrink();
@@ -561,6 +639,9 @@ class _AudioAnalysisCardState extends State<AudioAnalysisCard> {
             selectedChannel: _spectrogramChannel,
             channelLoading: _spectrogramChannelLoading,
             onChannelChanged: _changeSpectrogramChannel,
+            onSave: _savingSpectrogram || _spectrogramChannelLoading
+                ? null
+                : _saveSpectrogram,
           ),
         ],
       ],

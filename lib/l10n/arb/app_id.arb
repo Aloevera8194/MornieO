@@ -5102,6 +5102,19 @@
   "@audioAnalysisRescan": {
     "description": "Tooltip/label for the button that re-runs the audio analysis, discarding cached results"
   },
+  "audioAnalysisSaveSpectrogram": "Simpan Spektrogram",
+  "@audioAnalysisSaveSpectrogram": {
+    "description": "Tooltip for the spectrogram button that saves the plot, with its axes and legend, as a PNG image the user places in storage"
+  },
+  "audioAnalysisSpectrogramSaved": "Spektrogram disimpan ke {fileName}",
+  "@audioAnalysisSpectrogramSaved": {
+    "description": "Snackbar after the spectrogram image was saved",
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      }
+    }
+  },
   "downloadRedownloadFakeHiRes": "Download ulang Hi-Res palsu",
   "@downloadRedownloadFakeHiRes": {
     "description": "Setting title: automatically replace downloads that measure as fake Hi-Res"
