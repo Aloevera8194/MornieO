@@ -3,6 +3,8 @@ import 'dart:io';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:ffmpeg_kit_flutter_new_audio/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_audio/return_code.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:media_kit/media_kit.dart';
@@ -102,6 +104,110 @@ void main() {
     debugDesktopPlatformOverride = null;
     debugPlaybackEngineOverride = null;
   });
+
+  testWidgets('invalid ID3 BOM does not prevent native MP3 playback or seek', (
+    tester,
+  ) async {
+    final directory = await Directory.systemTemp.createTemp('mpv-id3-bom-');
+    final source = File('${directory.path}/source.mp3');
+    final tagged = File('${directory.path}/invalid-bom.mp3');
+    final engine = MediaKitEngine();
+    final diagnostics = <MpvLogError>[];
+    final diagnosticSubscription = engine.errors.listen(diagnostics.add);
+    final deck = MediaKitPlaybackDeck(
+      playerId: 'mpv-id3-bom-test',
+      engine: engine,
+    );
+    final failures = <Object>[];
+    final stateSubscription = deck.onPlayerStateChanged.listen(
+      (_) {},
+      onError: failures.add,
+    );
+    try {
+      final session = await FFmpegKit.executeWithArguments([
+        '-y',
+        '-f',
+        'lavfi',
+        '-i',
+        'anullsrc=r=44100:cl=stereo',
+        '-t',
+        '5',
+        '-c:a',
+        'libmp3lame',
+        '-b:a',
+        '128k',
+        '-id3v2_version',
+        '0',
+        '-write_id3v1',
+        '0',
+        source.path,
+      ]);
+      expect(
+        ReturnCode.isSuccess(await session.getReturnCode()),
+        isTrue,
+        reason: await session.getOutput(),
+      );
+      final audio = await source.readAsBytes();
+      // ID3v2.3 TIT2 declares UTF-16 but starts with AB instead of a BOM.
+      await tagged.writeAsBytes([
+        ...'ID3'.codeUnits,
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        14,
+        ...'TIT2'.codeUnits,
+        0,
+        0,
+        0,
+        4,
+        0,
+        0,
+        1,
+        0x41,
+        0x42,
+        0,
+        ...audio,
+      ]);
+      await deck.setVolume(0);
+      for (var attempt = 0; attempt < 3; attempt++) {
+        await deck.setFileSource(tagged.path);
+        expect((await deck.getDuration())!.inMilliseconds, closeTo(5000, 100));
+        await deck.resume();
+        await Future<void>.delayed(const Duration(milliseconds: 400));
+        expect(
+          (await deck.getCurrentPosition())!.inMilliseconds,
+          greaterThan(100),
+        );
+        await deck.seek(const Duration(seconds: 2));
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        expect(
+          (await deck.getCurrentPosition())!.inMilliseconds,
+          greaterThanOrEqualTo(1900),
+        );
+      }
+      expect(
+        diagnostics.where(
+          (error) => error.text.contains('Incorrect BOM value'),
+        ),
+        isNotEmpty,
+      );
+      expect(failures, isEmpty);
+      final broken = File('${directory.path}/broken.mp3');
+      await broken.writeAsString('This is not an audio file.');
+      await expectLater(
+        deck.setFileSource(broken.path),
+        throwsA(isA<MediaKitSourceException>()),
+      );
+    } finally {
+      await stateSubscription.cancel();
+      await diagnosticSubscription.cancel();
+      await deck.dispose();
+      await directory.delete(recursive: true);
+    }
+  }, skip: !Platform.isMacOS || _libmpvFolder.isEmpty);
 
   testWidgets('the media_kit deck plays, filters and scales volume', (
     tester,

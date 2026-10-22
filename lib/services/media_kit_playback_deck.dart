@@ -297,11 +297,17 @@ class MediaKitPlaybackDeck implements PlaybackDeck {
       }
       return;
     }
+    // FFmpeg can reject an ID3 text field while the audio still opens.
+    // Apply the same source-error policy during preparation and playback.
+    if (!_isSourceError(error)) {
+      _log.w('mpv ${error.prefix}: ${error.text}');
+      return;
+    }
     if (_pendingLoad != null) {
       _finishLoad('${error.prefix}: ${error.text}');
       return;
     }
-    if (!_isSourceError(error) || _state == PlaybackDeckState.stopped) {
+    if (_state == PlaybackDeckState.stopped) {
       _log.w('mpv ${error.prefix}: ${error.text}');
       return;
     }

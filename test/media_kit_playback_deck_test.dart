@@ -112,6 +112,63 @@ void main() {
     await expectLater(deck.resume(), throwsA(isA<MediaKitSourceException>()));
   });
 
+  for (final diagnostic in [
+    (prefix: 'ffmpeg', text: 'Incorrect BOM value'),
+    (prefix: 'ffmpeg/demuxer', text: 'Error reading frame TIT2, skipped'),
+    (prefix: 'ad', text: 'Error decoding frame'),
+  ]) {
+    test(
+      'recoverable ${diagnostic.prefix} error does not abort opening',
+      () async {
+        engine.openError = diagnostic;
+        final errors = <Object>[];
+        final subscription = deck.onPlayerStateChanged.listen(
+          (_) {},
+          onError: errors.add,
+        );
+        addTearDown(subscription.cancel);
+        final loaded = expectLater(
+          deck.setFileSource('/tagged.mp3'),
+          completes,
+        );
+        await Future<void>.delayed(Duration.zero);
+        engine.durationEvents.add(const Duration(seconds: 90));
+        await loaded;
+        expect(await deck.getDuration(), const Duration(seconds: 90));
+        await deck.resume();
+        expect(deck.state, PlaybackDeckState.playing);
+        expect(errors, isEmpty);
+        expect(
+          engine.calls.where((call) => call.first == 'stop'),
+          hasLength(1),
+        );
+      },
+    );
+  }
+
+  test(
+    'a fatal opening error after a tag diagnostic still rejects the source',
+    () async {
+      engine.openError = (prefix: 'ffmpeg', text: 'Incorrect BOM value');
+      final failed = expectLater(
+        deck.setFileSource('/broken.mp3'),
+        throwsA(
+          isA<MediaKitSourceException>().having(
+            (error) => error.message,
+            'fatal error',
+            contains('Failed to recognize file'),
+          ),
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+      engine.errorEvents.add((
+        prefix: 'cplayer',
+        text: 'Failed to recognize file',
+      ));
+      await failed;
+    },
+  );
+
   test(
     'volume is scaled by the in-app output volume on a cubic curve',
     () async {
