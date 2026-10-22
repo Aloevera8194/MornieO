@@ -882,6 +882,56 @@ void main() {
   );
 
   test(
+    'player metadata follows playback after restoring the last session',
+    () async {
+      final runtime = _runtime();
+      final container = ProviderContainer(
+        overrides: [musicPlayerRuntimeProvider.overrideWithValue(runtime)],
+      );
+      addTearDown(container.dispose);
+      final titles = <String?>[];
+      final subscription = container.listen(currentMediaItemProvider, (
+        _,
+        next,
+      ) {
+        if (next.hasValue) titles.add(next.value?.title);
+      });
+      addTearDown(subscription.close);
+      await container.read(currentMediaItemProvider.future);
+      final handler = await runtime.initialize();
+      const second = PlayableMedia(
+        id: 'two',
+        source: '/two.flac',
+        title: 'Two',
+        artist: 'Other',
+        duration: Duration(seconds: 60),
+      );
+      await handler.restoreSession(
+        items: [_track, second],
+        index: 0,
+        position: const Duration(seconds: 15),
+        shuffle: false,
+      );
+      await container.pump();
+      expect(titles.last, 'One');
+      final controller = container.read(musicPlayerControllerProvider);
+      await controller.next();
+      await container.pump();
+      expect(handler.playbackState.value.playing, isTrue);
+      expect(titles.last, 'Two');
+
+      await controller.playSingle(_track);
+      await container.pump();
+      expect(handler.playbackState.value.playing, isTrue);
+      expect(titles.last, 'One');
+      expect(
+        container.read(currentMediaItemProvider).value?.extras?['source'],
+        _track.source,
+      );
+    },
+  );
+
+  test(
     'pre-init events have empty values and cancellation never waits for init',
     () async {
       var calls = 0;

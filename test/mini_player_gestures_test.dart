@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -41,15 +43,22 @@ void main() {
     Future<_Controller> pumpPlayer(
       WidgetTester tester, {
       ScrollController? carousel,
+      Stream<MediaItem?>? mediaItems,
     }) async {
       final controller = _Controller();
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
             currentMediaItemProvider.overrideWithBuild(
-              (ref, notifier) => Stream.value(
-                const MediaItem(id: 'song', title: 'Song', artist: 'Artist'),
-              ),
+              (ref, notifier) =>
+                  mediaItems ??
+                  Stream.value(
+                    const MediaItem(
+                      id: 'song',
+                      title: 'Song',
+                      artist: 'Artist',
+                    ),
+                  ),
             ),
             playbackStateProvider.overrideWith((ref) => const Stream.empty()),
             musicPlayerControllerProvider.overrideWithValue(controller),
@@ -89,6 +98,88 @@ void main() {
       await tester.pumpAndSettle();
       return controller;
     }
+
+    testWidgets(
+      '${configuration.name}: mounted player follows track and metadata changes',
+      (tester) async {
+        final mediaItems = StreamController<MediaItem?>();
+        addTearDown(mediaItems.close);
+        await pumpPlayer(tester, mediaItems: mediaItems.stream);
+        final playerState = tester.state(find.byType(MiniPlayer));
+        const first = MediaItem(
+          id: 'first',
+          title: 'First',
+          artist: 'Artist A',
+        );
+        const second = MediaItem(
+          id: 'second',
+          title: 'Second',
+          artist: 'Artist B',
+        );
+        String? previousTitle;
+        String? previousArtist;
+        for (final item in [
+          first,
+          second,
+          second.copyWith(title: 'Revised', artist: 'Artist C'),
+          first,
+        ]) {
+          mediaItems.add(item);
+          await tester.pumpAndSettle();
+          expect(find.text(item.title), findsOneWidget);
+          expect(find.text(item.artist!), findsOneWidget);
+          if (previousTitle != null) {
+            expect(find.text(previousTitle), findsNothing);
+            expect(find.text(previousArtist!), findsNothing);
+          }
+          expect(tester.state(find.byType(MiniPlayer)), same(playerState));
+          expect(tester.takeException(), isNull);
+          previousTitle = item.title;
+          previousArtist = item.artist;
+        }
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
+
+    testWidgets(
+      '${configuration.name}: returning to the mini player shows the latest song',
+      (tester) async {
+        final mediaItems = StreamController<MediaItem?>();
+        addTearDown(mediaItems.close);
+        await pumpPlayer(tester, mediaItems: mediaItems.stream);
+        mediaItems.add(
+          const MediaItem(id: 'first', title: 'First', artist: 'Artist A'),
+        );
+        await tester.pumpAndSettle();
+        final playerState = tester.state(find.byType(MiniPlayer));
+        final navigator = tester.state<NavigatorState>(find.byType(Navigator));
+        unawaited(
+          navigator.push<void>(
+            MaterialPageRoute(
+              builder: (_) => const Scaffold(body: Text('Another screen')),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        mediaItems.add(
+          const MediaItem(id: 'second', title: 'Second', artist: 'Artist B'),
+        );
+        await tester.pumpAndSettle();
+        mediaItems.add(
+          const MediaItem(id: 'third', title: 'Third', artist: 'Artist C'),
+        );
+        await tester.pumpAndSettle();
+        navigator.pop();
+        await tester.pumpAndSettle();
+        expect(find.text('Third'), findsOneWidget);
+        expect(find.text('Artist C'), findsOneWidget);
+        expect(find.text('First'), findsNothing);
+        expect(find.text('Second'), findsNothing);
+        expect(tester.state(find.byType(MiniPlayer)), same(playerState));
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox.shrink());
+      },
+    );
 
     testWidgets('${configuration.name}: sideways swipes navigate and keep '
         'the paused mini player visible', (tester) async {
