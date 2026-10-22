@@ -15,6 +15,7 @@ import 'package:mornye/providers/download_queue_provider.dart';
 import 'package:mornye/providers/extension_provider.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/services/app_state_database.dart';
+import 'package:mornye/utils/logger.dart';
 
 class _Settings extends SettingsNotifier {
   _Settings(this._directory);
@@ -89,7 +90,7 @@ void main() {
       TestWidgetsFlutterBinding.ensureInitialized().defaultBinaryMessenger;
 
   test(
-    'queue notifications count attempted failures and reset on retry',
+    'queue counts failures and retries even when its summary notification fails',
     () async {
       final directory = await Directory.systemTemp.createTemp(
         'queue-failures-',
@@ -137,7 +138,15 @@ void main() {
         if (call.method == 'initialize') return true;
         if (call.method == 'show') {
           final body = (call.arguments as Map)['body'] as String?;
-          if (body != null && body.contains('downloaded,')) summaries.add(body);
+          if (body != null && body.contains('downloaded,')) {
+            summaries.add(body);
+            if (summaries.length == 1) {
+              throw PlatformException(
+                code: 'notification_unavailable',
+                message: 'Notification server unavailable',
+              );
+            }
+          }
         }
         return null;
       });
@@ -224,6 +233,12 @@ void main() {
       // Provider availability failures and cancellation have never contributed
       // to the session failure total, even though the queue retains their rows.
       expect(summaries, ['0 downloaded, 3 failed']);
+      expect(
+        LogBuffer().entries.where(
+          (entry) => entry.message.contains('Download queue processing failed'),
+        ),
+        isEmpty,
+      );
 
       finished = Completer<void>();
       await queue.retryItem('backend-failure');

@@ -14,10 +14,14 @@ import 'package:mornye/utils/string_utils.dart';
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
-  NotificationService._internal();
+  NotificationService._internal()
+    : _notifications = FlutterLocalNotificationsPlugin();
 
-  final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  @visibleForTesting
+  NotificationService.forTesting(FlutterLocalNotificationsPlugin notifications)
+    : _notifications = notifications;
+
+  final FlutterLocalNotificationsPlugin _notifications;
   bool _isInitialized = false;
   Future<void>? _initialization;
   final verificationNotifications = VerificationNotificationRouter();
@@ -171,9 +175,15 @@ class NotificationService {
         verificationNotifications.receive(response.payload);
       },
     );
-    final launch = await _notifications.getNotificationAppLaunchDetails();
-    if (launch?.didNotificationLaunchApp == true) {
-      verificationNotifications.receive(launch?.notificationResponse?.payload);
+    // Linux delivers launch responses through initialize's callback and does
+    // not implement the separate launch-details query.
+    if (defaultTargetPlatform != TargetPlatform.linux) {
+      final launch = await _notifications.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp == true) {
+        verificationNotifications.receive(
+          launch?.notificationResponse?.payload,
+        );
+      }
     }
 
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {

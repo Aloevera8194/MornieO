@@ -1819,10 +1819,14 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
     );
     final hasSessionResults = _completedInSession > 0 || _failedInSession > 0;
     if (!stoppedWhilePaused && _totalQueuedAtStart > 0 && hasSessionResults) {
-      await _notificationService.showQueueComplete(
-        completedCount: _completedInSession,
-        failedCount: _failedInSession,
-      );
+      try {
+        await _notificationService.showQueueComplete(
+          completedCount: _completedInSession,
+          failedCount: _failedInSession,
+        );
+      } catch (error) {
+        _log.w('Failed to show queue completion notification: $error');
+      }
 
       final settings = ref.read(settingsProvider);
       if (settings.autoExportFailedDownloads && _failedInSession > 0) {
@@ -1832,9 +1836,13 @@ class DownloadQueueNotifier extends Notifier<DownloadQueueState> {
         }
       }
     } else if (!stoppedWhilePaused && _totalQueuedAtStart > 0) {
-      await _notificationService.showQueueCanceled(
-        canceledCount: _totalQueuedAtStart,
-      );
+      try {
+        await _notificationService.showQueueCanceled(
+          canceledCount: _totalQueuedAtStart,
+        );
+      } catch (error) {
+        _log.w('Failed to show queue cancellation notification: $error');
+      }
     }
 
     if (stoppedWhilePaused) {
