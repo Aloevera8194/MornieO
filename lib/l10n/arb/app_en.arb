@@ -361,6 +361,30 @@
   "@downloadFolderOrganization": {
     "description": "Title of the folder organization picker bottom sheet"
   },
+  "downloadFolderTemplate": "Custom Folder Structure",
+  "@downloadFolderTemplate": {
+    "description": "Setting for editing a relative download folder template"
+  },
+  "downloadFolderTemplateDescription": "Use naming tags and / for subfolders. Saving replaces the preset album and singles layout. Empty folder names use Unknown.",
+  "@downloadFolderTemplateDescription": {
+    "description": "Help for custom download folder templates"
+  },
+  "folderOrganizationCustom": "Custom template",
+  "@folderOrganizationCustom": {
+    "description": "Folder organization mode using a user-defined template"
+  },
+  "folderTemplateInvalid": "Enter a relative folder path with supported tags. Empty folders, . and .. are not allowed.",
+  "@folderTemplateInvalid": {
+    "description": "Validation error for an invalid folder template"
+  },
+  "folderTemplatePreview": "Example folder path",
+  "@folderTemplatePreview": {
+    "description": "Label for a sample expanded folder template"
+  },
+  "folderTemplatePreviewFailed": "Preview unavailable",
+  "@folderTemplatePreviewFailed": {
+    "description": "Shown when the native folder preview could not be generated"
+  },
   "appearanceTitle": "Appearance",
   "@appearanceTitle": {
     "description": "Appearance settings page title"

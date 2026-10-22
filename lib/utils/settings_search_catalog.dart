@@ -590,6 +590,16 @@ class SettingsSearchCatalog {
           keywords: const ['organize folders', 'directory layout'],
         ),
         SettingsSearchEntry(
+          icon: Icons.folder_copy_outlined,
+          title: l10n.downloadFolderTemplate,
+          keywords: const [
+            'folder placeholders',
+            'custom path',
+            'release date',
+            'subfolders',
+          ],
+        ),
+        SettingsSearchEntry(
           icon: Icons.playlist_play_outlined,
           title: l10n.downloadCreatePlaylistSourceFolder,
           keywords: const ['playlist directory'],

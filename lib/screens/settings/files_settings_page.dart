@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
@@ -19,6 +20,7 @@ import 'package:mornye/screens/network_storage_screen.dart';
 import 'package:mornye/models/settings.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/folder_path_template.dart';
 import 'package:mornye/utils/desktop_folders.dart';
 import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/nav_bar_inset.dart';
@@ -261,6 +263,16 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                         .read(settingsProvider.notifier)
                         .setSeparateSingles(value),
                   ),
+                  SettingsItem(
+                    icon: Icons.folder_copy_outlined,
+                    title: context.l10n.downloadFolderTemplate,
+                    subtitle:
+                        !settings.separateSingles &&
+                            settings.folderOrganization == 'custom'
+                        ? settings.folderPathTemplate
+                        : context.l10n.downloadFolderTemplateDescription,
+                    onTap: () => _showFolderTemplateEditor(context, ref),
+                  ),
                   if (settings.separateSingles)
                     SettingsItem(
                       icon: Icons.folder_outlined,
@@ -442,6 +454,8 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
 
   String _getFolderOrganizationLabel(BuildContext context, String value) {
     switch (value) {
+      case 'custom':
+        return context.l10n.folderOrganizationCustom;
       case 'playlist':
         return context.l10n.folderOrganizationByPlaylist;
       case 'artist':
@@ -733,6 +747,20 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
     );
   }
 
+  void _showFolderTemplateEditor(BuildContext context, WidgetRef ref) {
+    showAppScrollableBottomSheet<void>(
+      context: context,
+      title: context.l10n.downloadFolderTemplate,
+      subtitle: context.l10n.downloadFolderTemplateDescription,
+      builder: (context, controller) => _FilenameFormatEditorSheet(
+        initialText: ref.read(settingsProvider).folderPathTemplate,
+        onSave: ref.read(settingsProvider.notifier).setFolderPathTemplate,
+        scrollController: controller,
+        folderTemplate: true,
+      ),
+    );
+  }
+
   void _showAlbumFolderStructurePicker(
     BuildContext context,
     WidgetRef ref,
@@ -850,6 +878,12 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 context.l10n.folderOrganizationByArtistAlbumSubtitle,
                 'Mornye/Artist/Album/Track.flac',
               ),
+              (
+                'custom',
+                context.l10n.folderOrganizationCustom,
+                context.l10n.downloadFolderTemplateDescription,
+                ref.read(settingsProvider).folderPathTemplate,
+              ),
             ])
               _FolderOption(
                 title: option.$2,
@@ -857,6 +891,11 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
                 example: option.$4,
                 isSelected: current == option.$1,
                 onTap: () {
+                  if (option.$1 == 'custom') {
+                    Navigator.pop(context);
+                    _showFolderTemplateEditor(this.context, ref);
+                    return;
+                  }
                   ref
                       .read(settingsProvider.notifier)
                       .setFolderOrganization(option.$1);

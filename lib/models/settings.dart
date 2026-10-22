@@ -97,6 +97,7 @@ class AppSettings {
   final String updateChannel;
   final bool hasSearchedBefore;
   final String folderOrganization;
+  final String folderPathTemplate;
   final bool createPlaylistFolder;
   final bool useAlbumArtistForFolders;
   final bool usePrimaryArtistOnly; // Strip featured artists from folder name
@@ -237,6 +238,7 @@ class AppSettings {
     this.updateChannel = 'stable',
     this.hasSearchedBefore = false,
     this.folderOrganization = 'none',
+    this.folderPathTemplate = '{artist}/{album}',
     this.createPlaylistFolder = false,
     this.useAlbumArtistForFolders = true,
     this.usePrimaryArtistOnly = false,
@@ -358,6 +360,7 @@ class AppSettings {
     String? updateChannel,
     bool? hasSearchedBefore,
     String? folderOrganization,
+    String? folderPathTemplate,
     bool? createPlaylistFolder,
     bool? useAlbumArtistForFolders,
     bool? usePrimaryArtistOnly,
@@ -476,6 +479,7 @@ class AppSettings {
       updateChannel: updateChannel ?? this.updateChannel,
       hasSearchedBefore: hasSearchedBefore ?? this.hasSearchedBefore,
       folderOrganization: folderOrganization ?? this.folderOrganization,
+      folderPathTemplate: folderPathTemplate ?? this.folderPathTemplate,
       createPlaylistFolder: createPlaylistFolder ?? this.createPlaylistFolder,
       useAlbumArtistForFolders:
           useAlbumArtistForFolders ?? this.useAlbumArtistForFolders,

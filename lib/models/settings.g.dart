@@ -83,6 +83,8 @@ AppSettings _$AppSettingsFromJson(Map<String, dynamic> json) => AppSettings(
   updateChannel: json['updateChannel'] as String? ?? 'stable',
   hasSearchedBefore: json['hasSearchedBefore'] as bool? ?? false,
   folderOrganization: json['folderOrganization'] as String? ?? 'none',
+  folderPathTemplate:
+      json['folderPathTemplate'] as String? ?? '{artist}/{album}',
   createPlaylistFolder: json['createPlaylistFolder'] as bool? ?? false,
   useAlbumArtistForFolders: json['useAlbumArtistForFolders'] as bool? ?? true,
   usePrimaryArtistOnly: json['usePrimaryArtistOnly'] as bool? ?? false,
@@ -211,6 +213,7 @@ Map<String, dynamic> _$AppSettingsToJson(
   'updateChannel': instance.updateChannel,
   'hasSearchedBefore': instance.hasSearchedBefore,
   'folderOrganization': instance.folderOrganization,
+  'folderPathTemplate': instance.folderPathTemplate,
   'createPlaylistFolder': instance.createPlaylistFolder,
   'useAlbumArtistForFolders': instance.useAlbumArtistForFolders,
   'usePrimaryArtistOnly': instance.usePrimaryArtistOnly,

@@ -89,6 +89,7 @@ class _DownloadRun {
   bool effectiveSafMode = false;
   String effectiveOutputDir = '';
   String? appOutputDir;
+  String? customFolderPath;
   String? safFileName;
   bool qualityVariantCollisionOnly = false;
   String? safBaseName;
@@ -330,6 +331,12 @@ class _DownloadRun {
   Future<void> _resolveOutputTarget() async {
     quality = item.qualityOverride ?? n.state.audioQuality;
     if (quality == 'DEFAULT') quality = n.state.audioQuality;
+    customFolderPath = await n._resolveCustomFolderPath(
+      trackToDownload,
+      item,
+      settings,
+      quality,
+    );
     final isSafMode = !isNetworkDownload && n._isSafMode(settings);
     final relativeOutputDir = isSafMode || isNetworkDownload
         ? n._buildRelativeOutputDir(
@@ -337,6 +344,7 @@ class _DownloadRun {
             settings.folderOrganization,
             separateSingles: settings.separateSingles,
             albumFolderStructure: settings.albumFolderStructure,
+            customFolderPath: customFolderPath,
             createPlaylistFolder: settings.createPlaylistFolder,
             useAlbumArtistForFolders: settings.useAlbumArtistForFolders,
             usePrimaryArtistOnly: settings.usePrimaryArtistOnly,
@@ -355,6 +363,7 @@ class _DownloadRun {
             settings.folderOrganization,
             separateSingles: settings.separateSingles,
             albumFolderStructure: settings.albumFolderStructure,
+            customFolderPath: customFolderPath,
             createPlaylistFolder: settings.createPlaylistFolder,
             useAlbumArtistForFolders: settings.useAlbumArtistForFolders,
             usePrimaryArtistOnly: settings.usePrimaryArtistOnly,
@@ -580,6 +589,7 @@ class _DownloadRun {
               settings.folderOrganization,
               separateSingles: settings.separateSingles,
               albumFolderStructure: settings.albumFolderStructure,
+              customFolderPath: customFolderPath,
               createPlaylistFolder: settings.createPlaylistFolder,
               useAlbumArtistForFolders: settings.useAlbumArtistForFolders,
               usePrimaryArtistOnly: settings.usePrimaryArtistOnly,

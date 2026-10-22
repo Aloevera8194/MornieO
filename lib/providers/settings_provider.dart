@@ -10,6 +10,7 @@ import 'package:mornye/models/metadata_separators.dart';
 import 'package:mornye/models/automix_options.dart';
 import 'package:mornye/constants/app_info.dart';
 import 'package:mornye/services/platform_bridge.dart';
+import 'package:mornye/services/folder_path_template.dart';
 import 'package:mornye/services/secure_storage_options.dart';
 import 'package:mornye/utils/artist_utils.dart';
 import 'package:mornye/utils/audio_format_utils.dart';
@@ -903,6 +904,16 @@ class SettingsNotifier extends Notifier<AppSettings> {
 
   void setFolderOrganization(String organization) {
     state = state.copyWith(folderOrganization: organization);
+    _saveSettings();
+  }
+
+  void setFolderPathTemplate(String template) {
+    if (!FolderPathTemplate.isValid(template)) return;
+    state = state.copyWith(
+      folderPathTemplate: template.trim(),
+      folderOrganization: 'custom',
+      separateSingles: false,
+    );
     _saveSettings();
   }
 

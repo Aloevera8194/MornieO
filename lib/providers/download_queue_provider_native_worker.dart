@@ -878,6 +878,12 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
       track: await _resolveDownloadAlbumCredit(sourceTrack, settings),
     );
 
+    final customFolderPath = await _resolveCustomFolderPath(
+      item.track,
+      item,
+      settings,
+      quality,
+    );
     final isSafMode = _isSafMode(settings);
     final rawOutputDir = isSafMode
         ? _buildRelativeOutputDir(
@@ -885,6 +891,7 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
             settings.folderOrganization,
             separateSingles: settings.separateSingles,
             albumFolderStructure: settings.albumFolderStructure,
+            customFolderPath: customFolderPath,
             createPlaylistFolder: settings.createPlaylistFolder,
             useAlbumArtistForFolders: settings.useAlbumArtistForFolders,
             usePrimaryArtistOnly: settings.usePrimaryArtistOnly,
@@ -897,6 +904,7 @@ extension _DownloadQueueNativeWorker on DownloadQueueNotifier {
             settings.folderOrganization,
             separateSingles: settings.separateSingles,
             albumFolderStructure: settings.albumFolderStructure,
+            customFolderPath: customFolderPath,
             createPlaylistFolder: settings.createPlaylistFolder,
             useAlbumArtistForFolders: settings.useAlbumArtistForFolders,
             usePrimaryArtistOnly: settings.usePrimaryArtistOnly,

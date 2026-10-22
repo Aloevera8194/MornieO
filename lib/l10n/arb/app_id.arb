@@ -372,6 +372,12 @@
   "@downloadFolderOrganization": {
     "description": "Title of the folder organization picker bottom sheet"
   },
+  "downloadFolderTemplate": "Struktur Folder Kustom",
+  "downloadFolderTemplateDescription": "Gunakan tag penamaan dan / untuk subfolder. Menyimpan akan mengganti susunan album dan single bawaan. Nama folder kosong memakai Unknown.",
+  "folderOrganizationCustom": "Template kustom",
+  "folderTemplateInvalid": "Masukkan path folder relatif dengan tag yang didukung. Folder kosong, . dan .. tidak diizinkan.",
+  "folderTemplatePreview": "Contoh path folder",
+  "folderTemplatePreviewFailed": "Pratinjau tidak tersedia",
   "appearanceTitle": "Tampilan",
   "@appearanceTitle": {
     "description": "Appearance settings page title"

@@ -32,6 +32,7 @@ import 'package:mornye/services/download_scheduler.dart';
 import 'package:mornye/services/source_deletion_events.dart';
 import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/services/download_request_payload.dart';
+import 'package:mornye/services/folder_path_template.dart';
 import 'package:mornye/services/download_motion_artwork_source.dart';
 import 'package:mornye/services/ffmpeg_service.dart';
 import 'package:mornye/services/hires_check_service.dart';
