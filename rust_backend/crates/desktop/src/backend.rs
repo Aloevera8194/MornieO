@@ -36,6 +36,7 @@ struct Owner {
     fallback_providers: Option<Vec<String>>,
     directory_scopes: HashMap<String, Arc<DownloadDirectoryScope>>,
     library_cover_scope: Option<Arc<DownloadDirectoryScope>>,
+    allowed_directories: Vec<String>,
 }
 
 /// One extension callback URL waiting for `processPendingExtensionCallbacks`.
@@ -97,6 +98,23 @@ impl Backend {
 
     fn files(&self) -> PathBuf {
         self.root.join("files")
+    }
+
+    fn prepare_private_files(&self) -> Result<PathBuf, CallError> {
+        let owner = self.lock();
+        let manager = owner.manager.as_ref().ok_or_else(not_initialized)?;
+        let files = self.files();
+        if files.is_dir() {
+            return Ok(files);
+        }
+        fs::create_dir_all(&files).or_fail()?;
+        // Cache clearing can unlink an open directory. Reopen the configured
+        // grants so new writes use its replacement, including on Linux.
+        manager
+            .environment()
+            .set_allowed_download_directories(owner.allowed_directories.clone())
+            .or_fail()?;
+        Ok(files)
     }
 
     fn files_aliases(&self) -> Vec<String> {
@@ -234,10 +252,12 @@ impl Backend {
                     "Rust backend is already initialized with different storage",
                 ));
             }
-            return manager
+            manager
                 .environment()
-                .set_allowed_download_directories(allowed)
-                .or_fail();
+                .set_allowed_download_directories(allowed.clone())
+                .or_fail()?;
+            owner.allowed_directories = allowed;
+            return Ok(());
         }
         let created = ExtensionManager::with_lyrics_settings(
             requested.sources.clone(),
@@ -252,7 +272,7 @@ impl Backend {
         let configured = (|| {
             let environment = created.environment();
             environment
-                .set_allowed_download_directories(allowed)
+                .set_allowed_download_directories(allowed.clone())
                 .or_fail()?;
             environment
                 .set_allow_private_network(owner.allow_private_network)
@@ -274,6 +294,7 @@ impl Backend {
         }
         owner.identity = Some(requested);
         owner.manager = Some(Arc::new(created));
+        owner.allowed_directories = allowed;
         Ok(())
     }
 
@@ -295,6 +316,7 @@ impl Backend {
             scope.release();
         }
         owner.identity = None;
+        owner.allowed_directories.clear();
     }
 
     pub(crate) fn initialize_repository(&self, cache_path: &str) -> Result<(), CallError> {
@@ -313,7 +335,7 @@ impl Backend {
     }
 
     pub(crate) fn set_download_directory(&self, path: &str) -> Result<(), CallError> {
-        let owner = self.lock();
+        let mut owner = self.lock();
         let (Some(manager), Some(identity)) = (&owner.manager, &owner.identity) else {
             return Err(not_initialized());
         };
@@ -323,8 +345,10 @@ impl Backend {
         }
         manager
             .environment()
-            .set_allowed_download_directories(allowed)
-            .or_fail()
+            .set_allowed_download_directories(allowed.clone())
+            .or_fail()?;
+        owner.allowed_directories = allowed;
+        Ok(())
     }
 
     pub(crate) fn acquire_download_directory(&self, path: &str) -> Result<String, CallError> {
@@ -455,7 +479,7 @@ impl Backend {
             // Application support also contains extension storage. Stage in
             // the private root instead of granting that whole directory.
             let staged = self
-                .files()
+                .prepare_private_files()?
                 .join(format!("library_scan_{}.ndjson", paths::uuid()));
             let _cleanup = RemoveOnDrop(staged.clone());
             let count = manager
@@ -505,9 +529,7 @@ impl Backend {
         prefix: &str,
         suffix: &str,
     ) -> Result<PathBuf, CallError> {
-        self.owner()?;
-        let files = self.files();
-        fs::create_dir_all(&files).or_fail()?;
+        let files = self.prepare_private_files()?;
         let file = files.join(format!("{prefix}{}{suffix}", paths::uuid()));
         fs::OpenOptions::new()
             .write(true)
@@ -578,7 +600,7 @@ impl Backend {
             .to_owned();
         self.with_library_directories(std::slice::from_ref(&folder), |manager| {
             let staged = self
-                .files()
+                .prepare_private_files()?
                 .join(format!("library_snapshot_{}.tsv", paths::uuid()));
             let _cleanup = RemoveOnDrop(staged.clone());
             if let Some(snapshot) = request["snapshot_path"]
@@ -665,4 +687,74 @@ pub(crate) fn complete_session_grant(
         .invoke_action(id.to_owned(), "completeGrant".into())
         .or_fail()?;
     require_successful_extension_action(id, "completeGrant", &response)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    fn initialized_backend(root: &Path) -> Backend {
+        let backend = Backend::new(&Config {
+            temp_dir: root.join("temp"),
+            ..Config::default()
+        });
+        let arguments = json!({
+            "extensions_dir": root.join("extensions"),
+            "data_dir": root.join("data"),
+            "master_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        });
+        backend
+            .initialize_owner(&Args::decode(arguments.to_string().as_bytes(), None).unwrap())
+            .unwrap();
+        backend
+    }
+
+    #[test]
+    fn library_scan_recovers_after_private_cache_removal() {
+        let root = tempfile::tempdir().unwrap();
+        let backend = initialized_backend(root.path());
+        let music = root.path().join("music");
+        fs::create_dir_all(&music).unwrap();
+        let output = root.path().join("scan.ndjson");
+        for clear_cache in [false, true] {
+            if clear_cache {
+                fs::remove_dir_all(backend.files()).unwrap();
+            }
+            assert_eq!(
+                backend
+                    .scan_library_folder_to_ndjson_file(
+                        music.to_str().unwrap(),
+                        output.to_str().unwrap(),
+                    )
+                    .unwrap(),
+                0,
+            );
+            assert_eq!(fs::read(&output).unwrap(), b"");
+        }
+        backend.shutdown_owner();
+    }
+
+    #[test]
+    fn cover_output_recovers_after_private_cache_removal() {
+        let root = tempfile::tempdir().unwrap();
+        let backend = initialized_backend(root.path());
+        fs::remove_dir_all(backend.files()).unwrap();
+        let output = backend
+            .create_temporary_media_file("cover_", ".jpg")
+            .unwrap();
+        let error = backend
+            .owner()
+            .unwrap()
+            .download_cover_to_file_sized(
+                "invalid-cover-url".into(),
+                output.to_string_lossy().into_owned(),
+                0,
+                None,
+            )
+            .unwrap_err()
+            .to_string();
+        assert!(error.contains("invalid URL"), "{error}");
+        backend.shutdown_owner();
+    }
 }
