@@ -1,6 +1,7 @@
 #include "flutter_window.h"
 
 #include <flutter/standard_method_codec.h>
+#include <windowsx.h>
 
 #include <algorithm>
 #include <cmath>
@@ -37,6 +38,17 @@ double NumberArgument(const flutter::EncodableValue* arguments,
     return *value;
   }
   return fallback;
+}
+
+std::string StringArgument(const flutter::EncodableValue* arguments,
+                           const char* key) {
+  if (arguments == nullptr) return {};
+  const auto* map = std::get_if<flutter::EncodableMap>(arguments);
+  if (map == nullptr) return {};
+  const auto entry = map->find(flutter::EncodableValue(key));
+  if (entry == map->end()) return {};
+  const auto* value = std::get_if<std::string>(&entry->second);
+  return value == nullptr ? std::string() : *value;
 }
 
 }  // namespace
@@ -107,12 +119,57 @@ FlutterWindow::MessageHandler(HWND hwnd, UINT const message,
   }
 
   switch (message) {
+    case WM_NCCALCSIZE:
+      if (window_mode_ == "borderless" && !mini_player_ && wparam) {
+        if (IsZoomed(hwnd)) {
+          auto* size = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
+          MONITORINFO monitor = {};
+          monitor.cbSize = sizeof(monitor);
+          if (GetMonitorInfo(
+                  MonitorFromRect(&size->rgrc[0], MONITOR_DEFAULTTONEAREST),
+                  &monitor)) {
+            size->rgrc[0] = monitor.rcWork;
+          }
+        }
+        return 0;
+      }
+      break;
+    case WM_NCHITTEST:
+      if (window_mode_ == "borderless" && !mini_player_ && !IsZoomed(hwnd)) {
+        RECT bounds;
+        GetWindowRect(hwnd, &bounds);
+        const UINT dpi = GetDpiForWindow(hwnd);
+        const int edge = MulDiv(8, dpi == 0 ? USER_DEFAULT_SCREEN_DPI : dpi,
+                                USER_DEFAULT_SCREEN_DPI);
+        const int x = GET_X_LPARAM(lparam);
+        const int y = GET_Y_LPARAM(lparam);
+        const bool left = x < bounds.left + edge;
+        const bool right = x >= bounds.right - edge;
+        const bool top = y < bounds.top + edge;
+        const bool bottom = y >= bounds.bottom - edge;
+        if (top && left) return HTTOPLEFT;
+        if (top && right) return HTTOPRIGHT;
+        if (bottom && left) return HTBOTTOMLEFT;
+        if (bottom && right) return HTBOTTOMRIGHT;
+        if (left) return HTLEFT;
+        if (right) return HTRIGHT;
+        if (top) return HTTOP;
+        if (bottom) return HTBOTTOM;
+      }
+      break;
+    case WM_DISPLAYCHANGE:
+    case WM_DPICHANGED:
+      if (window_mode_ == "fullscreen") {
+        FitFullScreen();
+        return 0;
+      }
+      break;
     case WM_FONTCHANGE:
       flutter_controller_->engine()->ReloadSystemFonts();
       break;
     case WM_GETMINMAXINFO: {
       // The mini player is far smaller than the full layouts' minimum.
-      if (mini_player_) {
+      if (mini_player_ || window_mode_ == "fullscreen") {
         break;
       }
       UINT dpi = GetDpiForWindow(hwnd);
@@ -150,6 +207,33 @@ void FlutterWindow::HandleWindowCall(
     // Answer first: the move loop runs until the mouse button is released.
     result->Success();
     StartDrag();
+  } else if (method == "getWindowMode") {
+    result->Success(flutter::EncodableValue(window_mode_));
+  } else if (method == "isFullScreen") {
+    result->Success(flutter::EncodableValue(window_mode_ == "fullscreen"));
+  } else if (method == "setWindowMode") {
+    result->Success(flutter::EncodableValue(
+        SetWindowMode(StringArgument(call.arguments(), "mode"))));
+  } else if (method == "minimizeWindow") {
+    ShowWindow(GetHandle(), SW_MINIMIZE);
+    result->Success();
+  } else if (method == "zoomWindow" || method == "titleBarDoubleClick") {
+    ZoomWindow();
+    result->Success();
+  } else if (method == "closeWindow") {
+    result->Success();
+    PostMessage(GetHandle(), WM_CLOSE, 0, 0);
+  } else if (method == "startResize") {
+    const bool from_left =
+        StringArgument(call.arguments(), "edge") == "bottomLeft";
+    result->Success();
+    if (window_mode_ == "borderless" && !mini_player_ &&
+        !IsZoomed(GetHandle())) {
+      ReleaseCapture();
+      SendMessage(GetHandle(), WM_SYSCOMMAND,
+                  SC_SIZE | (from_left ? WMSZ_BOTTOMLEFT : WMSZ_BOTTOMRIGHT),
+                  0);
+    }
   } else {
     result->NotImplemented();
   }
@@ -157,7 +241,7 @@ void FlutterWindow::HandleWindowCall(
 
 bool FlutterWindow::OpenMiniPlayer(double width, double height) {
   HWND hwnd = GetHandle();
-  if (hwnd == nullptr || IsIconic(hwnd)) {
+  if (hwnd == nullptr || IsIconic(hwnd) || window_mode_ == "fullscreen") {
     return false;
   }
   UINT dpi = GetDpiForWindow(hwnd);
@@ -236,11 +320,87 @@ void FlutterWindow::CloseMiniPlayer() {
 
 void FlutterWindow::StartDrag() {
   HWND hwnd = GetHandle();
-  if (hwnd == nullptr) {
+  if (hwnd == nullptr || window_mode_ == "fullscreen") {
     return;
   }
   // The Flutter view holds the mouse capture from the button press; hand
   // the drag to the system move loop, as a title bar would.
   ReleaseCapture();
   SendMessage(hwnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+}
+
+void FlutterWindow::NotifyWindowMode() {
+  if (window_channel_) {
+    window_channel_->InvokeMethod(
+        "windowModeChanged",
+        std::make_unique<flutter::EncodableValue>(window_mode_));
+  }
+}
+
+void FlutterWindow::FitFullScreen() {
+  const HWND hwnd = GetHandle();
+  MONITORINFO monitor = {};
+  monitor.cbSize = sizeof(monitor);
+  if (!GetMonitorInfo(MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST),
+                      &monitor))
+    return;
+  const RECT& bounds = monitor.rcMonitor;
+  SetWindowPos(hwnd, HWND_TOP, bounds.left, bounds.top,
+               bounds.right - bounds.left, bounds.bottom - bounds.top,
+               SWP_FRAMECHANGED | SWP_NOOWNERZORDER);
+}
+
+bool FlutterWindow::SetWindowMode(const std::string& mode) {
+  const HWND hwnd = GetHandle();
+  if (hwnd == nullptr || mini_player_ ||
+      (mode != "windowed" && mode != "fullscreen" && mode != "borderless")) {
+    return false;
+  }
+  if (mode == window_mode_) {
+    NotifyWindowMode();
+    return true;
+  }
+  const bool was_fullscreen = window_mode_ == "fullscreen";
+  if (window_mode_ == "windowed") {
+    windowed_style_ =
+        GetWindowLongPtr(hwnd, GWL_STYLE) & ~(WS_MAXIMIZE | WS_MINIMIZE);
+    windowed_ex_style_ = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+  }
+  if (mode == "fullscreen") {
+    fullscreen_restore_placement_.length = sizeof(WINDOWPLACEMENT);
+    GetWindowPlacement(hwnd, &fullscreen_restore_placement_);
+    if (IsZoomed(hwnd) || IsIconic(hwnd)) ShowWindow(hwnd, SW_RESTORE);
+  }
+  const bool maximized = IsZoomed(hwnd);
+  window_mode_ = mode;
+  LONG_PTR style = windowed_style_;
+  LONG_PTR ex_style = windowed_ex_style_;
+  if (mode == "fullscreen") {
+    style &= ~WS_OVERLAPPEDWINDOW;
+  } else if (mode == "borderless") {
+    style &= ~WS_CAPTION;
+  }
+  if (maximized && mode != "fullscreen") style |= WS_MAXIMIZE;
+  if (mode != "windowed") {
+    ex_style &= ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE |
+                  WS_EX_STATICEDGE);
+  }
+  SetWindowLongPtr(hwnd, GWL_STYLE, style);
+  SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_style);
+  if (mode == "fullscreen") {
+    FitFullScreen();
+  } else {
+    SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+    if (was_fullscreen)
+      SetWindowPlacement(hwnd, &fullscreen_restore_placement_);
+  }
+  NotifyWindowMode();
+  return true;
+}
+
+void FlutterWindow::ZoomWindow() {
+  if (window_mode_ != "fullscreen" && !mini_player_) {
+    ShowWindow(GetHandle(), IsZoomed(GetHandle()) ? SW_RESTORE : SW_MAXIMIZE);
+  }
 }

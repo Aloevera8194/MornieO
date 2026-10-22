@@ -12,6 +12,16 @@ class MainFlutterWindow: NSWindow {
   private static let windowControlsInset: CGFloat = 20
 
   private var windowChannel: FlutterMethodChannel?
+  private var borderless = false
+  private var windowedStyle: NSWindow.StyleMask?
+  private var fullScreenReturnMode = "windowed"
+  private var modeAfterFullScreen: String?
+  private var requestedFullScreen = false
+  private var fullScreenRestoreFrame: NSRect?
+  private var resizeMonitor: Any?
+
+  override var canBecomeKey: Bool { true }
+  override var canBecomeMain: Bool { true }
 
   /// The full window's frame and minimum size while the mini player shows.
   private var miniPlayerRestore: (frame: NSRect, minSize: NSSize)?
@@ -59,16 +69,35 @@ class MainFlutterWindow: NSWindow {
 
     // Music swaps its lyrics panel for a full-window player in full screen,
     // so the Flutter side follows the window in and out of it.
-    for (name, fullScreen) in [
-      (NSWindow.willEnterFullScreenNotification, true),
-      (NSWindow.didExitFullScreenNotification, false),
+    for name in [
+      NSWindow.willEnterFullScreenNotification,
+      NSWindow.didEnterFullScreenNotification,
+      NSWindow.didExitFullScreenNotification,
     ] {
       NotificationCenter.default.addObserver(
         forName: name,
         object: self,
         queue: .main
       ) { [weak self] _ in
-        self?.windowChannel?.invokeMethod("fullScreenChanged", arguments: fullScreen)
+        guard let self else { return }
+        if name == NSWindow.willEnterFullScreenNotification {
+          if !self.requestedFullScreen {
+            self.fullScreenReturnMode = self.borderless ? "borderless" : "windowed"
+            self.fullScreenRestoreFrame = self.frame
+          }
+          return
+        }
+        self.requestedFullScreen = false
+        if name == NSWindow.didExitFullScreenNotification {
+          self.applyBorderless(
+            (self.modeAfterFullScreen ?? self.fullScreenReturnMode) == "borderless")
+          self.modeAfterFullScreen = nil
+          if let restore = self.fullScreenRestoreFrame {
+            self.setFrame(self.constrainFrameRect(restore, to: self.screen), display: true)
+          }
+          self.fullScreenRestoreFrame = nil
+        }
+        self.notifyWindowMode()
       }
     }
 
@@ -167,6 +196,9 @@ class MainFlutterWindow: NSWindow {
   }
 
   @objc private func windowControlsNeedLayout(_ notification: Notification) {
+    if notification.name == NSWindow.didResignKeyNotification {
+      stopWindowResize()
+    }
     layoutWindowControls()
   }
 
@@ -218,6 +250,25 @@ class MainFlutterWindow: NSWindow {
         result(nil)
       case "isFullScreen":
         result(self.styleMask.contains(.fullScreen))
+      case "getWindowMode":
+        result(self.windowMode)
+      case "setWindowMode":
+        let args = call.arguments as? [String: Any]
+        result(self.setWindowMode(args?["mode"] as? String ?? ""))
+      case "minimizeWindow":
+        self.miniaturize(nil)
+        result(nil)
+      case "zoomWindow":
+        self.zoom(nil)
+        result(nil)
+      case "closeWindow":
+        result(nil)
+        self.stopWindowResize()
+        self.performClose(nil)
+      case "startResize":
+        let args = call.arguments as? [String: Any]
+        self.startWindowResize(fromLeft: args?["edge"] as? String == "bottomLeft")
+        result(nil)
       case "openMiniPlayer":
         let args = call.arguments as? [String: Any]
         let width = (args?["width"] as? NSNumber)?.doubleValue ?? 360
@@ -236,6 +287,84 @@ class MainFlutterWindow: NSWindow {
     windowChannel = channel
   }
 
+  private var windowMode: String {
+    if styleMask.contains(.fullScreen) { return "fullscreen" }
+    return borderless ? "borderless" : "windowed"
+  }
+
+  private func stopWindowResize() {
+    if let monitor = resizeMonitor { NSEvent.removeMonitor(monitor) }
+    resizeMonitor = nil
+  }
+
+  private func startWindowResize(fromLeft: Bool) {
+    guard borderless, miniPlayerRestore == nil, !styleMask.contains(.fullScreen) else { return }
+    stopWindowResize()
+    let origin = NSEvent.mouseLocation
+    let bounds = frame
+    let minimum = frameRect(forContentRect: NSRect(origin: .zero, size: contentMinSize)).size
+    resizeMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDragged, .leftMouseUp]) {
+      [weak self] event in
+      guard let self else { return event }
+      if event.type == .leftMouseUp {
+        self.stopWindowResize()
+      } else {
+        let pointer = NSEvent.mouseLocation
+        let delta = NSPoint(x: pointer.x - origin.x, y: pointer.y - origin.y)
+        let width = max(minimum.width, bounds.width + (fromLeft ? -delta.x : delta.x))
+        let height = max(minimum.height, bounds.height - delta.y)
+        let x = fromLeft ? bounds.maxX - width : bounds.minX
+        self.setFrame(
+          NSRect(x: x, y: bounds.maxY - height, width: width, height: height), display: true)
+      }
+      return event
+    }
+  }
+
+  private func notifyWindowMode() {
+    windowChannel?.invokeMethod("windowModeChanged", arguments: windowMode)
+  }
+
+  private func applyBorderless(_ enabled: Bool) {
+    guard borderless != enabled else { return }
+    let bounds = frame
+    if enabled {
+      windowedStyle = styleMask
+      styleMask = [.borderless, .resizable, .closable, .miniaturizable]
+    } else if let restore = windowedStyle {
+      styleMask = restore
+    }
+    borderless = enabled
+    setFrame(bounds, display: true)
+    layoutWindowControls()
+    makeKeyAndOrderFront(nil)
+  }
+
+  private func setWindowMode(_ mode: String) -> Bool {
+    guard miniPlayerRestore == nil,
+      ["windowed", "fullscreen", "borderless"].contains(mode)
+    else { return false }
+    if mode == windowMode {
+      notifyWindowMode()
+      return true
+    }
+    if styleMask.contains(.fullScreen) {
+      modeAfterFullScreen = mode
+      toggleFullScreen(nil)
+    } else if mode == "fullscreen" {
+      fullScreenReturnMode = borderless ? "borderless" : "windowed"
+      fullScreenRestoreFrame = frame
+      // AppKit's native fullscreen transition requires a titled window.
+      applyBorderless(false)
+      requestedFullScreen = true
+      toggleFullScreen(nil)
+    } else {
+      applyBorderless(mode == "borderless")
+      notifyWindowMode()
+    }
+    return true
+  }
+
   /// Follows the Desktop & Dock setting for double-clicking a title bar.
   private func performTitleBarDoubleClick() {
     switch UserDefaults.standard.string(forKey: "AppleActionOnDoubleClick") {
@@ -244,7 +373,11 @@ class MainFlutterWindow: NSWindow {
     case "None":
       break
     default:
-      performZoom(nil)
+      if borderless {
+        zoom(nil)
+      } else {
+        performZoom(nil)
+      }
     }
   }
 }

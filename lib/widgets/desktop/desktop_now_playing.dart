@@ -140,7 +140,7 @@ class _DesktopNowPlayingState extends ConsumerState<DesktopNowPlaying> {
               valueListenable: desktopWindowFullScreen,
               builder: (context, fullScreen, button) => PositionedDirectional(
                 top: _controlsTop,
-                start: desktopTitleBarInContent && !fullScreen
+                start: desktopTitleBarInContentFor(context) && !fullScreen
                     ? desktopWindowControlsWidth + 12
                     : 20,
                 child: button!,

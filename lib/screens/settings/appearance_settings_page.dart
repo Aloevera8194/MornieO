@@ -10,11 +10,13 @@ import 'package:mornye/models/theme_settings.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/desktop_platform.dart';
 import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/settings_group.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
 import 'package:mornye/widgets/custom_font_setting.dart';
+import 'package:mornye/widgets/desktop/desktop_window_controls.dart';
 
 part 'appearance_settings_page_widgets.dart';
 
@@ -32,6 +34,11 @@ class AppearanceSettingsPage extends ConsumerWidget {
         body: CustomScrollView(
           slivers: [
             AppSliverHeader.page(title: context.l10n.appearanceTitle),
+
+            if (isDesktopPlatform)
+              const SliverToBoxAdapter(
+                child: SettingsGroup(children: [DesktopWindowModeSetting()]),
+              ),
 
             SliverToBoxAdapter(
               child: SettingsSectionHeader(title: context.l10n.appearanceStyle),

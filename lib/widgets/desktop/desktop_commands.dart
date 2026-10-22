@@ -31,6 +31,9 @@ enum DesktopCommand {
   /// Turns the window into the floating mini player, or back.
   miniPlayer,
 
+  fullScreen,
+  borderless,
+
   /// Escape: leaves a focused text field, otherwise closes the top dialog
   /// or page.
   dismiss,
@@ -114,6 +117,19 @@ SingleActivator? desktopCommandShortcut(
       shift: !_usesCommandKey(target),
     ),
     DesktopCommand.dismiss => const SingleActivator(LogicalKeyboardKey.escape),
+    DesktopCommand.fullScreen =>
+      _usesCommandKey(target)
+          ? const SingleActivator(
+              LogicalKeyboardKey.keyF,
+              control: true,
+              meta: true,
+            )
+          : const SingleActivator(LogicalKeyboardKey.f11),
+    DesktopCommand.borderless => _primary(
+      LogicalKeyboardKey.keyB,
+      target,
+      shift: true,
+    ),
   };
 }
 

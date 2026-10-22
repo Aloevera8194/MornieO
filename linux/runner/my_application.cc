@@ -24,6 +24,8 @@ struct _MyApplication {
   GtkWindow* window;
   // Answers lib/widgets/desktop/desktop_window.dart.
   FlMethodChannel* window_channel;
+  GtkWidget* header_bar;
+  gboolean borderless;
 
   // Whether the window shows the mini player, and what it restores.
   gboolean mini_player;
@@ -32,6 +34,7 @@ struct _MyApplication {
   gint restore_width;
   gint restore_height;
   gboolean restore_maximized;
+  gboolean restore_decorated;
 
   // Where the mini player last sat, by its top-left corner.
   gboolean has_mini_player_origin;
@@ -40,6 +43,51 @@ struct _MyApplication {
 };
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
+
+static const gchar* window_mode(MyApplication* self) {
+  GdkWindow* window = gtk_widget_get_window(GTK_WIDGET(self->window));
+  if (window != nullptr &&
+      (gdk_window_get_state(window) & GDK_WINDOW_STATE_FULLSCREEN)) {
+    return "fullscreen";
+  }
+  return self->borderless ? "borderless" : "windowed";
+}
+
+static void notify_window_mode(MyApplication* self) {
+  if (self->window_channel == nullptr) return;
+  const gchar* mode = window_mode(self);
+  if (self->header_bar != nullptr) {
+    gtk_widget_set_visible(self->header_bar,
+                           !self->mini_player && !self->borderless &&
+                               strcmp(mode, "fullscreen") != 0);
+  }
+  g_autoptr(FlValue) value = fl_value_new_string(mode);
+  fl_method_channel_invoke_method(self->window_channel, "windowModeChanged",
+                                  value, nullptr, nullptr, nullptr);
+}
+
+static gboolean window_state_cb(GtkWidget* widget, GdkEventWindowState* event,
+                                gpointer user_data) {
+  MyApplication* self = MY_APPLICATION(user_data);
+  notify_window_mode(self);
+  return FALSE;
+}
+
+static gboolean set_window_mode(MyApplication* self, const gchar* mode) {
+  if (self->window == nullptr || self->mini_player || mode == nullptr)
+    return FALSE;
+  if (strcmp(mode, "fullscreen") == 0) {
+    gtk_window_fullscreen(self->window);
+  } else if (strcmp(mode, "borderless") == 0 || strcmp(mode, "windowed") == 0) {
+    self->borderless = strcmp(mode, "borderless") == 0;
+    gtk_window_unfullscreen(self->window);
+    gtk_window_set_decorated(self->window, !self->borderless);
+  } else {
+    return FALSE;
+  }
+  notify_window_mode(self);
+  return TRUE;
+}
 
 static void set_minimum_size(GtkWindow* window, gint width, gint height) {
   GdkGeometry geometry = {};
@@ -81,7 +129,9 @@ static gboolean open_mini_player(MyApplication* self, gdouble width,
     }
     gtk_window_get_position(window, &self->restore_x, &self->restore_y);
     self->mini_player = TRUE;
+    self->restore_decorated = gtk_window_get_decorated(window);
     gtk_window_set_decorated(window, FALSE);
+    if (self->header_bar != nullptr) gtk_widget_hide(self->header_bar);
     gtk_window_set_keep_above(window, TRUE);
   }
   set_minimum_size(window, panel_width, panel_height);
@@ -127,7 +177,9 @@ static void close_mini_player(MyApplication* self) {
   self->has_mini_player_origin = TRUE;
   self->mini_player = FALSE;
   gtk_window_set_keep_above(window, FALSE);
-  gtk_window_set_decorated(window, TRUE);
+  gtk_window_set_decorated(window, self->restore_decorated);
+  if (self->header_bar != nullptr && self->restore_decorated)
+    gtk_widget_show(self->header_bar);
   set_minimum_size(window, kMinimumWidth, kMinimumHeight);
   gtk_window_resize(window, self->restore_width, self->restore_height);
   gtk_window_move(window, self->restore_x, self->restore_y);
@@ -137,7 +189,7 @@ static void close_mini_player(MyApplication* self) {
 // Moves the window with the pointer, as dragging a title bar does.
 static void start_window_drag(MyApplication* self) {
   GtkWindow* window = self->window;
-  if (window == nullptr) return;
+  if (window == nullptr || strcmp(window_mode(self), "fullscreen") == 0) return;
   GdkSeat* seat =
       gdk_display_get_default_seat(gtk_widget_get_display(GTK_WIDGET(window)));
   GdkDevice* pointer = seat != nullptr ? gdk_seat_get_pointer(seat) : nullptr;
@@ -184,6 +236,63 @@ static void window_method_call_cb(FlMethodChannel* channel,
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
   } else if (strcmp(method, "startDrag") == 0) {
     start_window_drag(self);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
+  } else if (strcmp(method, "getWindowMode") == 0) {
+    g_autoptr(FlValue) value = fl_value_new_string(window_mode(self));
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
+  } else if (strcmp(method, "isFullScreen") == 0) {
+    g_autoptr(FlValue) value =
+        fl_value_new_bool(strcmp(window_mode(self), "fullscreen") == 0);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(value));
+  } else if (strcmp(method, "setWindowMode") == 0) {
+    FlValue* mode = arguments != nullptr &&
+                            fl_value_get_type(arguments) == FL_VALUE_TYPE_MAP
+                        ? fl_value_lookup_string(arguments, "mode")
+                        : nullptr;
+    g_autoptr(FlValue) accepted = fl_value_new_bool(set_window_mode(
+        self, mode != nullptr && fl_value_get_type(mode) == FL_VALUE_TYPE_STRING
+                  ? fl_value_get_string(mode)
+                  : nullptr));
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(accepted));
+  } else if (strcmp(method, "minimizeWindow") == 0) {
+    gtk_window_iconify(self->window);
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
+  } else if (strcmp(method, "zoomWindow") == 0 ||
+             strcmp(method, "titleBarDoubleClick") == 0) {
+    if (gtk_window_is_maximized(self->window)) {
+      gtk_window_unmaximize(self->window);
+    } else if (strcmp(window_mode(self), "fullscreen") != 0) {
+      gtk_window_maximize(self->window);
+    }
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
+  } else if (strcmp(method, "closeWindow") == 0) {
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
+    fl_method_call_respond(method_call, response, nullptr);
+    gtk_window_close(self->window);
+    return;
+  } else if (strcmp(method, "startResize") == 0) {
+    if (self->borderless && !self->mini_player) {
+      FlValue* edge = arguments != nullptr &&
+                              fl_value_get_type(arguments) == FL_VALUE_TYPE_MAP
+                          ? fl_value_lookup_string(arguments, "edge")
+                          : nullptr;
+      const gboolean left =
+          edge != nullptr && fl_value_get_type(edge) == FL_VALUE_TYPE_STRING &&
+          strcmp(fl_value_get_string(edge), "bottomLeft") == 0;
+      GdkSeat* seat = gdk_display_get_default_seat(
+          gtk_widget_get_display(GTK_WIDGET(self->window)));
+      GdkDevice* pointer =
+          seat != nullptr ? gdk_seat_get_pointer(seat) : nullptr;
+      if (pointer != nullptr) {
+        gint x = 0;
+        gint y = 0;
+        gdk_device_get_position(pointer, nullptr, &x, &y);
+        gtk_window_begin_resize_drag(
+            self->window,
+            left ? GDK_WINDOW_EDGE_SOUTH_WEST : GDK_WINDOW_EDGE_SOUTH_EAST,
+            GDK_BUTTON_PRIMARY, x, y, GDK_CURRENT_TIME);
+      }
+    }
     response = FL_METHOD_RESPONSE(fl_method_success_response_new(nullptr));
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
@@ -269,6 +378,7 @@ static void my_application_activate(GApplication* application) {
     gtk_header_bar_set_title(header_bar, "Mornye");
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
+    self->header_bar = GTK_WIDGET(header_bar);
   } else {
     gtk_window_set_title(window, "Mornye");
   }
@@ -304,6 +414,8 @@ static void my_application_activate(GApplication* application) {
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
   self->window = window;
+  g_signal_connect(window, "window-state-event", G_CALLBACK(window_state_cb),
+                   self);
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
   self->window_channel = fl_method_channel_new(
       fl_engine_get_binary_messenger(fl_view_get_engine(view)),

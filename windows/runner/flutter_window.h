@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <optional>
+#include <string>
 
 #include "win32_window.h"
 
@@ -42,6 +43,11 @@ class FlutterWindow : public Win32Window {
   // Moves the window with the mouse, as dragging a title bar does.
   void StartDrag();
 
+  bool SetWindowMode(const std::string& mode);
+  void NotifyWindowMode();
+  void FitFullScreen();
+  void ZoomWindow();
+
   flutter::DartProject project_;
 
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
@@ -56,6 +62,11 @@ class FlutterWindow : public Win32Window {
 
   // Where the mini player last sat, by its top-left corner.
   std::optional<POINT> mini_player_origin_;
+
+  std::string window_mode_ = "windowed";
+  LONG_PTR windowed_style_ = 0;
+  LONG_PTR windowed_ex_style_ = 0;
+  WINDOWPLACEMENT fullscreen_restore_placement_ = {};
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_

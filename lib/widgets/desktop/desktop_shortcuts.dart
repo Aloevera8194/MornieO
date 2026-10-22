@@ -19,6 +19,7 @@ import 'package:mornye/widgets/desktop/desktop_commands.dart';
 import 'package:mornye/widgets/desktop/desktop_inspector.dart';
 import 'package:mornye/widgets/desktop/desktop_player_bar.dart';
 import 'package:mornye/widgets/desktop/desktop_window.dart';
+import 'package:mornye/widgets/desktop/desktop_window_controls.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Keyboard shortcuts for desktop builds, plus the macOS menu bar that
@@ -84,7 +85,10 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
     DesktopCommand.volumeUp ||
     DesktopCommand.volumeDown => !_editingText,
     DesktopCommand.back => _canCloseTopLayer,
-    DesktopCommand.dismiss => _editingText || _canCloseTopLayer,
+    DesktopCommand.dismiss =>
+      _editingText ||
+          _canCloseTopLayer ||
+          desktopWindowMode.value != DesktopWindowMode.windowed,
     _ => true,
   };
 
@@ -114,8 +118,10 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
       case DesktopCommand.dismiss:
         if (_editingText) {
           FocusManager.instance.primaryFocus?.unfocus();
-        } else {
+        } else if (_canCloseTopLayer) {
           _closeTopLayer();
+        } else {
+          unawaited(leaveDesktopWindowMode());
         }
       case DesktopCommand.lyrics:
         toggleDesktopInspector(DesktopInspectorPanel.lyrics);
@@ -127,7 +133,19 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
         AppRefreshIndicator.refreshVisible();
       case DesktopCommand.miniPlayer:
         unawaited(toggleDesktopMiniPlayer());
+      case DesktopCommand.fullScreen:
+        unawaited(_changeWindowMode(toggleDesktopFullScreen));
+      case DesktopCommand.borderless:
+        unawaited(_changeWindowMode(toggleDesktopBorderless));
     }
+  }
+
+  Future<void> _changeWindowMode(Future<bool> Function() change) async {
+    if (desktopMiniPlayerOpen.value) {
+      await setDesktopMiniPlayer(open: false);
+      if (desktopMiniPlayerOpen.value) return;
+    }
+    await change();
   }
 
   void _selectDestination(int position) {
@@ -201,12 +219,24 @@ class _DesktopShortcutsState extends ConsumerState<DesktopShortcuts> {
         child: Focus(
           focusNode: _idleFocus,
           autofocus: true,
-          child: widget.child,
+          child: ValueListenableBuilder<bool>(
+            valueListenable: desktopMiniPlayerOpen,
+            builder: (context, mini, _) => DesktopWindowFrame(
+              showControls: !mini,
+              navigatorKey: widget.navigatorKey,
+              child: widget.child,
+            ),
+          ),
         ),
       ),
     );
     if (defaultTargetPlatform == TargetPlatform.macOS) {
-      child = _DesktopMenuBar(state: this, child: child);
+      child = ValueListenableBuilder<DesktopWindowMode>(
+        valueListenable: desktopWindowMode,
+        child: child,
+        builder: (context, _, child) =>
+            _DesktopMenuBar(state: this, child: child!),
+      );
     }
     return child;
   }
@@ -374,9 +404,18 @@ class _DesktopMenuBar extends StatelessWidget {
                 ),
                 PlatformMenuItemGroup(
                   members: [
-                    ..._provided([
-                      PlatformProvidedMenuItemType.toggleFullScreen,
-                    ]),
+                    _command(
+                      desktopWindowFullScreen.value
+                          ? l10n.desktopExitFullscreen
+                          : l10n.desktopWindowFullscreen,
+                      DesktopCommand.fullScreen,
+                    ),
+                    _command(
+                      desktopWindowMode.value == DesktopWindowMode.borderless
+                          ? l10n.desktopWindowed
+                          : l10n.desktopWindowBorderless,
+                      DesktopCommand.borderless,
+                    ),
                   ],
                 ),
               ],

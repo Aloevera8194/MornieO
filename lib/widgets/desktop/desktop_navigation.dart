@@ -286,7 +286,7 @@ class DesktopShellLayout extends StatelessWidget {
                 child: Column(
                   children: [
                     // The traffic lights sit above the rail.
-                    if (desktopTitleBarInContent)
+                    if (desktopTitleBarInContentFor(context))
                       const SizedBox(
                         height: desktopTitleBarHeight,
                         width: desktopWindowControlsWidth,
@@ -449,7 +449,7 @@ class _DesktopContentArea extends StatelessWidget {
             ),
           ],
         );
-        if (!titleBarDrag || !desktopTitleBarInContent) return pane;
+        if (!titleBarDrag || !desktopTitleBarInContentFor(context)) return pane;
         // Pages keep their clicks in the title bar row; a drag that
         // starts on it moves the window.
         return Stack(
@@ -1128,7 +1128,7 @@ class _SidebarHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) => SizedBox(
     // The panel starts [DesktopSidebar.margin] below the window top.
-    height: desktopTitleBarInContent
+    height: desktopTitleBarInContentFor(context)
         ? desktopTitleBarHeight - DesktopSidebar.margin
         : height,
     child: const DesktopWindowDragArea(
