@@ -253,11 +253,20 @@ class _MusicAutoMix {
       final incomingPosition = await incoming.getCurrentPosition();
       if (!_current(generation)) return;
       await incoming.resume();
-      final audiblePosition = await _waitForProgress(
+      var audiblePosition = await _waitForProgress(
         incoming,
         incomingPosition ?? plan.incomingStart,
         generation,
       );
+      if (audiblePosition != null && plan.beatMatched) {
+        audiblePosition = await _alignIncoming(
+          incoming,
+          handler._player,
+          plan,
+          audiblePosition,
+          generation,
+        );
+      }
       if (!_current(generation)) return;
       if (audiblePosition == null) {
         _log.w('AutoMix standby did not advance; keeping the current song');
@@ -445,6 +454,52 @@ class _MusicAutoMix {
       }
     }
     return false;
+  }
+
+  /// Puts the silent incoming deck on the outgoing song's beat grid. It was
+  /// cued on its first beat, but the start timer, platform calls and decoder
+  /// startup delay it by an unknown amount, and at 150 BPM 100 ms is already
+  /// a quarter beat. A seek takes time as well, so each retry leads the target
+  /// by the lag the previous seek left behind. Returns null when the deck
+  /// stops advancing or the transition is no longer current.
+  Future<Duration?> _alignIncoming(
+    PlaybackDeck incoming,
+    PlaybackDeck outgoing,
+    AutoMixPlan plan,
+    Duration position,
+    int generation, {
+    Duration tolerance = const Duration(milliseconds: 20),
+  }) async {
+    var current = position;
+    var lead = Duration.zero;
+    for (var attempt = 0; attempt < 3; attempt++) {
+      final before = await outgoing.getCurrentPosition();
+      final incomingPosition = await incoming.getCurrentPosition();
+      final after = await outgoing.getCurrentPosition();
+      if (!_current(generation)) return null;
+      if (before == null || incomingPosition == null || after == null) {
+        return current;
+      }
+      // The incoming reading falls between the two outgoing readings.
+      final elapsed = (before + after) ~/ 2 - plan.start;
+      final target = plan.incomingStart + elapsed * plan.rate;
+      final error = target - incomingPosition;
+      if (error.abs() <= tolerance) return incomingPosition;
+      // The first error is startup delay; later ones are what a seek lost.
+      if (attempt > 0) lead += error;
+      var destination = target + lead;
+      if (destination.isNegative) destination = Duration.zero;
+      await incoming.seek(destination);
+      if (!_current(generation)) return null;
+      final progressed = await _waitForProgress(
+        incoming,
+        destination,
+        generation,
+      );
+      if (progressed == null) return null;
+      current = progressed;
+    }
+    return current;
   }
 
   Future<Duration?> _waitForProgress(

@@ -842,6 +842,34 @@ void main() {
   );
 
   fakeTimeTest(
+    'matched transition starts the incoming song on the outgoing beat',
+    () async {
+      analyzer.matchBeats = true;
+      await prepare();
+      final incoming = native.prepared;
+      int position(String id) =>
+          native.positions[id]! + native.clocks[id]!.elapsedMilliseconds;
+      // The current song keeps playing while the next decoder starts late.
+      final startup = Completer<void>();
+      native.resumeGates[incoming] = startup;
+      native.positions['music-player'] = 55500;
+      native.clocks['music-player'] = time.stopwatch()..start();
+      await _until(
+        () => native.calls.any(
+          (call) => call.$1 == incoming && call.$2 == 'resume',
+        ),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+      startup.complete();
+      await _until(() => handler.mediaItem.value?.id == 'two');
+      // The first incoming beat (0.17 s) belongs on the outgoing beat at
+      // 55.67 s, with the next song slowed from 124 to 120 BPM.
+      final expected = 170 + (position('music-player') - 55670) * 120 / 124;
+      expect(position(incoming), closeTo(expected, 20));
+    },
+  );
+
+  fakeTimeTest(
     'Auto waits for advancing audio before fading the current song',
     () async {
       analyzer.matchBeats = true;
