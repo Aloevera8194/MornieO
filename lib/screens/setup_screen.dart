@@ -456,8 +456,9 @@ class _SetupScreenState extends ConsumerState<SetupScreen>
     final title = context.l10n.setupDownloadLocationTitle;
     final picked = await FilePicker.getDirectoryPath(
       dialogTitle: title,
-      initialDirectory:
-          _selectedDirectory ?? await resolveDesktopMusicDirectory(),
+      initialDirectory: await resolveDesktopPickerInitialDirectory(
+        _selectedDirectory,
+      ),
     );
     if (picked == null || picked.isEmpty || !mounted) return;
     setState(() {

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:path/path.dart' as p;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/models/settings.dart';
@@ -42,6 +43,12 @@ class _DirectoryPicker extends FilePickerPlatform {
   }) async {
     calls++;
     this.initialDirectory = initialDirectory;
+    if (initialDirectory != null && !Directory(initialDirectory).existsSync()) {
+      throw FileSystemException(
+        'Initial folder does not exist',
+        initialDirectory,
+      );
+    }
     return result;
   }
 }
@@ -149,6 +156,63 @@ void main() {
     });
   });
 
+  group('desktop picker initial directory', () {
+    late Directory root;
+
+    setUp(() async {
+      root = await Directory.systemTemp.createTemp('desktop-picker-dir-');
+    });
+
+    tearDown(() async {
+      await root.delete(recursive: true);
+    });
+
+    test('keeps an existing selected directory', () async {
+      final selected = await Directory(p.join(root.path, 'Albums')).create();
+      expect(
+        await resolveDesktopPickerInitialDirectory(selected.path),
+        selected.path,
+      );
+    });
+
+    test('uses the nearest existing parent without creating output', () async {
+      final music = await Directory(p.join(root.path, 'Music')).create();
+      final output = Directory(p.join(music.path, 'Mornye', 'Albums'));
+      expect(
+        await resolveDesktopPickerInitialDirectory(output.path),
+        music.path,
+      );
+      expect(await Directory(p.join(music.path, 'Mornye')).exists(), isFalse);
+    });
+
+    test('uses the parent when the saved path is now a file', () async {
+      final file = await File(p.join(root.path, 'Albums')).create();
+      expect(await resolveDesktopPickerInitialDirectory(file.path), root.path);
+    });
+
+    test('handles an unset output and a missing Music directory', () async {
+      debugDesktopMusicDirectoryOverride = p.join(root.path, 'Music');
+      for (final preferred in [null, '']) {
+        expect(
+          await resolveDesktopPickerInitialDirectory(preferred),
+          root.path,
+        );
+      }
+    });
+
+    test('leaves the native default when no Music path is available', () async {
+      debugDesktopMusicDirectoryOverride = '';
+      expect(await resolveDesktopPickerInitialDirectory(null), isNull);
+    });
+
+    test('does not pass a relative path to the native picker', () async {
+      expect(
+        await resolveDesktopPickerInitialDirectory('Music/Mornye'),
+        isNull,
+      );
+    });
+  });
+
   group('database directory', () {
     const paths = MethodChannel('plugins.flutter.io/path_provider');
     late Directory root;
@@ -197,12 +261,16 @@ void main() {
 
   group('desktop setup', () {
     final binding = TestWidgetsFlutterBinding.ensureInitialized();
+    late Directory root;
     const permissions = MethodChannel(
       'flutter.baseflow.com/permissions/methods',
     );
     var permissionCalls = 0;
 
-    setUp(() {
+    setUp(() async {
+      root = await Directory.systemTemp.createTemp('desktop-setup-dir-');
+      await Directory(p.join(root.path, 'Music')).create();
+      await Directory(p.join(root.path, 'Albums')).create();
       SharedPreferences.setMockInitialValues({});
       permissionCalls = 0;
       binding.defaultBinaryMessenger.setMockMethodCallHandler(permissions, (
@@ -213,55 +281,70 @@ void main() {
       });
     });
 
-    tearDown(() {
+    tearDown(() async {
+      debugDefaultTargetPlatformOverride = null;
       binding.defaultBinaryMessenger.setMockMethodCallHandler(
         permissions,
         null,
       );
+      await root.delete(recursive: true);
     });
 
-    testWidgets('skips permission steps and picks a plain folder', (
-      tester,
-    ) async {
-      debugDesktopPlatformOverride = true;
-      debugDefaultTargetPlatformOverride = TargetPlatform.linux;
-      debugDesktopMusicDirectoryOverride = '/home/test/Music';
-      final picker = _DirectoryPicker('/data/Albums');
-      final originalPicker = FilePickerPlatform.instance;
-      FilePickerPlatform.instance = picker;
-      addTearDown(() => FilePickerPlatform.instance = originalPicker);
-      tester.view.physicalSize = const Size(1200, 900);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
+    for (final platform in [TargetPlatform.windows, TargetPlatform.linux]) {
+      testWidgets('${platform.name} setup picks a folder before output exists', (
+        tester,
+      ) async {
+        debugDesktopPlatformOverride = true;
+        debugDefaultTargetPlatformOverride = platform;
+        final music = p.join(root.path, 'Music');
+        final output = Directory(p.join(music, desktopOutputFolderName));
+        final selected = p.join(root.path, 'Albums');
+        debugDesktopMusicDirectoryOverride = music;
+        final picker = _DirectoryPicker(selected);
+        final originalPicker = FilePickerPlatform.instance;
+        FilePickerPlatform.instance = picker;
+        addTearDown(() => FilePickerPlatform.instance = originalPicker);
+        tester.view.physicalSize = const Size(1200, 900);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [settingsProvider.overrideWith(_Settings.new)],
-          child: const MaterialApp(
-            locale: Locale('en'),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: SetupScreen(),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [settingsProvider.overrideWith(_Settings.new)],
+            child: const MaterialApp(
+              locale: Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: SetupScreen(),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('1/3'), findsOneWidget);
-      for (var step = 0; step < 2; step++) {
-        await tester.tap(find.text('Next'));
+        );
         await tester.pumpAndSettle();
-      }
-      expect(find.text('3/3'), findsOneWidget);
-      // The OS Music folder is preselected, so setup can finish at once.
-      expect(find.text('/home/test/Music/Mornye'), findsOneWidget);
+        expect(find.text('1/3'), findsOneWidget);
+        for (var step = 0; step < 2; step++) {
+          await tester.tap(find.text('Next'));
+          await tester.pumpAndSettle();
+        }
+        expect(find.text('3/3'), findsOneWidget);
+        // The default output is selected but only created on setup completion.
+        expect(find.text(output.path), findsOneWidget);
+        expect(output.existsSync(), isFalse);
 
-      await tester.tap(find.byTooltip('Change folder'));
-      await tester.pumpAndSettle();
-      expect(picker.calls, 1);
-      expect(picker.initialDirectory, '/home/test/Music/Mornye');
-      expect(find.text('/data/Albums'), findsOneWidget);
-      expect(permissionCalls, 0);
-      debugDefaultTargetPlatformOverride = null;
-    });
+        await tester.tap(find.byTooltip('Change folder'));
+        for (var frame = 0; picker.calls == 0 && frame < 30; frame++) {
+          await tester.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 10)),
+          );
+          await tester.pump();
+        }
+        await tester.pumpAndSettle();
+        expect(picker.calls, 1);
+        expect(picker.initialDirectory, music);
+        expect(find.text(selected), findsOneWidget);
+        expect(output.existsSync(), isFalse);
+        expect(permissionCalls, 0);
+        debugDefaultTargetPlatformOverride = null;
+      });
+    }
   });
 }

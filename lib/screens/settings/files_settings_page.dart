@@ -501,9 +501,7 @@ class _FilesSettingsPageState extends ConsumerState<FilesSettingsPage> {
     try {
       picked = await FilePicker.getDirectoryPath(
         dialogTitle: title,
-        initialDirectory: current.isEmpty
-            ? await resolveDesktopMusicDirectory()
-            : current,
+        initialDirectory: await resolveDesktopPickerInitialDirectory(current),
       );
     } catch (e) {
       if (context.mounted) {

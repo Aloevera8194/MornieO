@@ -85,6 +85,27 @@ Future<String?> resolveDesktopDefaultOutputDirectory({
   return context.join(music, desktopOutputFolderName);
 }
 
+/// Starts the native picker in an existing folder without creating the output.
+/// Windows rejects a missing initial directory before showing the dialog.
+Future<String?> resolveDesktopPickerInitialDirectory(String? preferred) async {
+  final path = preferred == null || preferred.isEmpty
+      ? await resolveDesktopMusicDirectory()
+      : preferred;
+  if (path == null || path.isEmpty || !p.isAbsolute(path)) return null;
+
+  var directory = Directory(path);
+  while (true) {
+    try {
+      if (await directory.exists()) return directory.path;
+    } on FileSystemException {
+      // An inaccessible folder can still have an accessible parent.
+    }
+    final parent = directory.parent;
+    if (parent.path == directory.path) return null;
+    directory = parent;
+  }
+}
+
 String? _join(p.Context context, String? root, String child) {
   if (root == null || root.isEmpty) return null;
   return context.join(root, child);
