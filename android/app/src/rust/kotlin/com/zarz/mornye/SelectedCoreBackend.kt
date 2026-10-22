@@ -35,17 +35,19 @@ internal suspend fun MainActivity.dispatchBackendApplication(call: MethodCall, r
         withContext(Dispatchers.IO) {
             when (call.method) {
                 "runNativeDataJob" -> runNativeDataJobPlatform(call.arguments, checkNotNull(jobLease))
-                "getLyricsLRC", "getLyricsLRCWithSource" -> {
+                "getLyricsLRC", "getLyricsLRCWithSource", "fetchAndSaveLyrics" -> {
                     val arguments = call.arguments as? Map<*, *> ?: emptyMap<Any, Any>()
-                    val path = arguments["file_path"] as? String ?: ""
-                    readLyricsWithSafCopy(
-                        path,
+                    readLyricsRequestWithSafCopy(
+                        call.method,
+                        arguments,
                         copyToTemp = { copyUriToTemp(coreBackend, Uri.parse(it))?.let(::File) },
-                        read = { localPath ->
-                            coreBackend.invokeApplication(call.method, arguments + ("file_path" to localPath))
+                        read = { request ->
+                            coreBackend.invokeApplication(call.method, request)
                         },
-                    ) ?: if (call.method == "getLyricsLRC") "" else {
-                        """{"lyrics":"","source":"","sync_type":"","instrumental":false}"""
+                    ) ?: when (call.method) {
+                        "getLyricsLRC" -> ""
+                        "fetchAndSaveLyrics" -> """{"success":false,"error":"Failed to access the audio document"}"""
+                        else -> """{"lyrics":"","source":"","sync_type":"","instrumental":false}"""
                     }
                 }
                 else -> coreBackend.invokeApplication(call.method, call.arguments)

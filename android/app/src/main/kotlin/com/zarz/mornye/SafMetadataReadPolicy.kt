@@ -43,3 +43,16 @@ internal fun <T> readLyricsWithSafCopy(
         temporary.delete()
     }
 }
+
+internal fun <T> readLyricsRequestWithSafCopy(
+    method: String,
+    arguments: Map<*, *>,
+    copyToTemp: (String) -> File?,
+    read: (Map<*, *>) -> T,
+): T? {
+    val fileKey = if (method == "fetchAndSaveLyrics") "audio_file_path" else "file_path"
+    val path = arguments[fileKey] as? String ?: ""
+    return readLyricsWithSafCopy(path, copyToTemp) { localPath ->
+        read(arguments + (fileKey to localPath))
+    }
+}

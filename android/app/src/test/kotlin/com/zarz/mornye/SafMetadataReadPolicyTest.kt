@@ -8,6 +8,64 @@ import org.junit.Test
 import java.io.File
 
 class SafMetadataReadPolicyTest {
+    @Test fun savingLyricsResolvesTheAudioUriAndKeepsTheOutputFile() {
+        val directory = java.nio.file.Files.createTempDirectory("lyrics-save-").toFile()
+        try {
+            val temporary = File(directory, "input.flac").also { it.writeText("audio") }
+            val output = File(directory, "Song.lrc")
+            val arguments = mapOf(
+                "audio_file_path" to "content://example.documents/song.flac",
+                "output_path" to output.absolutePath,
+                "track_name" to "Song",
+                "artist_name" to "Artist",
+            )
+            val result = readLyricsRequestWithSafCopy(
+                "fetchAndSaveLyrics",
+                arguments,
+                copyToTemp = { uri ->
+                    assertEquals(arguments["audio_file_path"], uri)
+                    temporary
+                },
+                read = { request ->
+                    assertEquals(temporary.absolutePath, request["audio_file_path"])
+                    assertEquals(output.absolutePath, request["output_path"])
+                    assertEquals("Song", request["track_name"])
+                    assertEquals("Artist", request["artist_name"])
+                    assertTrue(temporary.exists())
+                    output.writeText("[00:01.00]Saved lyrics")
+                    "saved"
+                },
+            )
+            assertEquals("saved", result)
+            assertEquals("[00:01.00]Saved lyrics", output.readText())
+            assertFalse(temporary.exists())
+            assertEquals("content://example.documents/song.flac", arguments["audio_file_path"])
+        } finally {
+            directory.deleteRecursively()
+        }
+    }
+
+    @Test fun revokedSaveInputDoesNotWriteAnOutputOrFetchAnotherSource() {
+        assertNull(readLyricsRequestWithSafCopy<String>(
+            "fetchAndSaveLyrics",
+            mapOf("audio_file_path" to "content://example.documents/revoked.flac"),
+            copyToTemp = { null },
+            read = { error("Unreadable document must not become a successful save") },
+        ))
+    }
+
+    @Test fun localAndOnlineSaveRequestsPreserveTheSourceAndOutput() {
+        for (path in listOf("/example/song.flac", "")) {
+            val request = mapOf("audio_file_path" to path, "output_path" to "/example/Song.lrc")
+            assertEquals(request, readLyricsRequestWithSafCopy(
+                "fetchAndSaveLyrics",
+                request,
+                copyToTemp = { error("Unexpected SAF copy") },
+                read = { it },
+            ))
+        }
+    }
+
     @Test fun exhaustedReadsReportTheFailureOnce() {
         val failures = mutableListOf<String?>()
         val result = readSafMetadataWithFallback<String>(
