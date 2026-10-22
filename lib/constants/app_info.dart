@@ -19,6 +19,7 @@ class AppInfo {
   }
 
   static const String appName = 'Mornye';
+  static const String license = 'LGPL-3.0-only';
   static const String copyright = '© 2026 Zarz Eleutherius';
 
   static const String mobileAuthor = 'zarzet';

@@ -187,6 +187,9 @@ flutter:
     - assets/shaders/mornye_selection_mask.frag
 
   assets:
+    - LICENSE
+    - COPYING
+    - NOTICE
     - assets/images/
     - assets/fonts/Inter-LICENSE.txt
     - assets/fonts/GoogleSansFlex-LICENSE.txt

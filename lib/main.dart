@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mornye/app.dart';
+import 'package:mornye/constants/app_info.dart';
 import 'package:mornye/models/library_database_models.dart';
 import 'package:mornye/models/settings.dart';
 import 'package:mornye/providers/download_queue_provider.dart';
@@ -65,6 +66,12 @@ void main() {
       await DesktopDiagnostics.initialize();
       await setAppOrientation();
       LicenseRegistry.addLicense(() async* {
+        yield LicenseEntryWithLineBreaks(
+          const [AppInfo.appName],
+          '${AppInfo.copyright}\n\n${AppInfo.license}\n\n'
+          '${await rootBundle.loadString('LICENSE')}\n\n'
+          '${await rootBundle.loadString('COPYING')}',
+        );
         yield LicenseEntryWithLineBreaks(const [
           'Inter',
         ], await rootBundle.loadString('assets/fonts/Inter-LICENSE.txt'));

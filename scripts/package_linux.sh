@@ -118,6 +118,7 @@ install_tree() {
     "$share/icons/hicolor/scalable/apps/$APP_ID.svg"
 
   install -Dm644 "$PROJECT_DIR/LICENSE" "$share/doc/$BINARY_NAME/copyright"
+  install -m644 "$PROJECT_DIR/COPYING" "$PROJECT_DIR/NOTICE" "$share/doc/$BINARY_NAME/"
 }
 
 # Downloads a pinned file into the tool cache and checks its digest.

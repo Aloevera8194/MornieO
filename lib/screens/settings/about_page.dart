@@ -7,6 +7,7 @@ import 'package:mornye/l10n/l10n.dart';
 import 'package:mornye/theme/mornye_icons.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
+import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/settings_group.dart';
 import 'package:mornye/widgets/app_icon.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
@@ -241,6 +242,18 @@ class AboutPage extends StatelessWidget {
                     title: context.l10n.aboutVersion,
                     subtitle:
                         'v${AppInfo.displayVersion} (build ${AppInfo.buildNumber})',
+                    showDivider: true,
+                  ),
+                  _AboutSettingsItem(
+                    icon: Icons.policy_outlined,
+                    title: MaterialLocalizations.of(context).licensesPageTitle,
+                    subtitle: AppInfo.license,
+                    onTap: () => showLicensePage(
+                      context: context,
+                      applicationName: AppInfo.appName,
+                      applicationVersion: AppInfo.displayVersion,
+                      applicationLegalese: AppInfo.copyright,
+                    ),
                     showDivider: false,
                   ),
                 ],
@@ -265,6 +278,7 @@ class AboutPage extends StatelessWidget {
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            const NavBarSliverSpacer(),
           ],
         ),
       ),
