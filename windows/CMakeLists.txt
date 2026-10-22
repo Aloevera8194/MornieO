@@ -54,7 +54,7 @@ include(flutter/generated_plugins.cmake)
 # MSVC 14.5x rejects unless its deprecation is silenced.
 if(TARGET permission_handler_windows_plugin)
   target_compile_definitions(permission_handler_windows_plugin PRIVATE
-    "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNING")
+    "_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS")
 endif()
 
 
