@@ -96,7 +96,12 @@ class ExtensionRow extends StatelessWidget {
     required this.showDivider,
     this.trailing,
     this.onTap,
+    this.trailingBelowWhenNarrow = false,
   });
+
+  /// Narrowest text column, in logical pixels at the default text size,
+  /// that keeps a wide [trailing] beside the text.
+  static const double sideBySideMinTextWidth = 360;
 
   final Widget? avatar;
 
@@ -108,10 +113,48 @@ class ExtensionRow extends StatelessWidget {
   final Widget? trailing;
   final VoidCallback? onTap;
 
+  /// [trailing] is a labelled button that would squeeze the title on a
+  /// phone or with large text, so below [sideBySideMinTextWidth] it moves
+  /// under the subtitle. The choice depends on the row width alone, so
+  /// every row of a list lays out alike whatever its button says.
+  final bool trailingBelowWhenNarrow;
+
   @override
   Widget build(BuildContext context) {
     final tokens = context.tokens;
     final colorScheme = Theme.of(context).colorScheme;
+    final trailing = this.trailing;
+
+    Widget text({Widget? below}) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        DefaultTextStyle.merge(
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500),
+          child: title,
+        ),
+        SizedBox(height: tokens.gapXs / 2),
+        subtitle,
+        if (below != null) ...[SizedBox(height: tokens.gapSm), below],
+      ],
+    );
+
+    Widget content(bool trailingBelow) => Row(
+      crossAxisAlignment: trailingBelow
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
+      children: [
+        if (avatar != null) ...[avatar!, SizedBox(width: tokens.gapLg)],
+        Expanded(child: text(below: trailingBelow ? trailing : null)),
+        if (!trailingBelow && trailing != null) ...[
+          // A button carries no gap of its own, since it may sit below.
+          if (trailingBelowWhenNarrow) SizedBox(width: tokens.gapMd),
+          trailing,
+        ],
+      ],
+    );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -123,28 +166,21 @@ class ExtensionRow extends StatelessWidget {
               horizontal: tokens.gapLg,
               vertical: tokens.gapMd,
             ),
-            child: Row(
-              children: [
-                if (avatar != null) ...[avatar!, SizedBox(width: tokens.gapLg)],
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      DefaultTextStyle.merge(
-                        style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                          fontWeight: FontWeight.w500,
-                        ),
-                        child: title,
-                      ),
-                      SizedBox(height: tokens.gapXs / 2),
-                      subtitle,
-                    ],
+            child: trailing == null || !trailingBelowWhenNarrow
+                ? content(false)
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      final textWidth =
+                          constraints.maxWidth -
+                          (avatar == null
+                              ? 0
+                              : ExtensionAvatar.size + tokens.gapLg);
+                      final minWidth = MediaQuery.textScalerOf(
+                        context,
+                      ).scale(sideBySideMinTextWidth);
+                      return content(textWidth < minWidth);
+                    },
                   ),
-                ),
-                ?trailing,
-              ],
-            ),
           ),
         ),
         if (showDivider && !settingsRowsConnected(context))

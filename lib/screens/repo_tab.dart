@@ -877,15 +877,13 @@ class _RepoListSkeleton extends StatelessWidget {
               ],
             ),
           ),
-          trailing: Padding(
-            padding: EdgeInsetsDirectional.only(start: tokens.gapMd),
-            child: ShimmerLoading(
-              surface: surface,
-              child: SkeletonBox(
-                width: 108,
-                height: tokens.minTouchTarget,
-                borderRadius: tokens.minTouchTarget / 2,
-              ),
+          trailingBelowWhenNarrow: true,
+          trailing: ShimmerLoading(
+            surface: surface,
+            child: SkeletonBox(
+              width: 108,
+              height: tokens.minTouchTarget,
+              borderRadius: tokens.minTouchTarget / 2,
             ),
           ),
         ),
@@ -1011,85 +1009,79 @@ class _ExtensionItem extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-      trailing: Padding(
-        padding: EdgeInsetsDirectional.only(start: tokens.gapMd),
-        child: isDownloading
-            ? const AppLoadingIndicator(size: 24)
-            : !context.isMornye
-            ? ExpressiveButton(
-                onPressed: extension.hasUpdate
-                    ? onUpdate
-                    : extension.isInstalled
-                    ? null
-                    : onInstall,
-                outlined: extension.isInstalled && !extension.hasUpdate,
-                tonal: extension.hasUpdate,
-                icon: extension.isInstalled && !extension.hasUpdate
-                    ? const Icon(Icons.check, size: 16)
-                    : null,
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                child: Text(
-                  extension.hasUpdate
-                      ? context.l10n.storeUpdate
-                      : extension.isInstalled
-                      ? context.l10n.storeInstalled
-                      : context.l10n.storeInstall,
-                ),
-              )
-            : extension.hasUpdate
-            ? FilledButton.tonal(
-                onPressed: onUpdate,
-                style: FilledButton.styleFrom(
-                  shape: context.isMornye ? const StadiumBorder() : null,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  minimumSize: Size(0, context.tokens.minTouchTarget),
-                ),
-                child: Text(context.l10n.storeUpdate),
-              )
-            : extension.isInstalled
-            ? OutlinedButton(
-                onPressed: null,
-                style: OutlinedButton.styleFrom(
-                  shape: context.isMornye ? const StadiumBorder() : null,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  minimumSize: Size(0, context.tokens.minTouchTarget),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      context.isMornye
-                          ? CupertinoIcons.check_mark
-                          : Icons.check,
-                      size: 16,
-                      color: colorScheme.outline,
-                    ),
-                    SizedBox(width: tokens.gapXs),
-                    Text(
-                      context.l10n.storeInstalled,
-                      style: TextStyle(color: colorScheme.outline),
-                    ),
-                  ],
-                ),
-              )
-            : FilledButton(
-                onPressed: onInstall,
-                style: FilledButton.styleFrom(
-                  shape: context.isMornye ? const StadiumBorder() : null,
-                  backgroundColor: context.isMornye
-                      ? colorScheme.primary.withValues(alpha: 0.12)
-                      : null,
-                  foregroundColor: context.isMornye
-                      ? colorScheme.primary
-                      : null,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  minimumSize: Size(0, context.tokens.minTouchTarget),
-                ),
-                child: Text(context.l10n.storeInstall),
+      trailingBelowWhenNarrow: true,
+      trailing: isDownloading
+          ? const AppLoadingIndicator(size: 24)
+          : !context.isMornye
+          ? ExpressiveButton(
+              onPressed: extension.hasUpdate
+                  ? onUpdate
+                  : extension.isInstalled
+                  ? null
+                  : onInstall,
+              outlined: extension.isInstalled && !extension.hasUpdate,
+              tonal: extension.hasUpdate,
+              icon: extension.isInstalled && !extension.hasUpdate
+                  ? const Icon(Icons.check, size: 16)
+                  : null,
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-      ),
+              child: Text(
+                extension.hasUpdate
+                    ? context.l10n.storeUpdate
+                    : extension.isInstalled
+                    ? context.l10n.storeInstalled
+                    : context.l10n.storeInstall,
+              ),
+            )
+          : extension.hasUpdate
+          ? FilledButton.tonal(
+              onPressed: onUpdate,
+              style: FilledButton.styleFrom(
+                shape: context.isMornye ? const StadiumBorder() : null,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: Size(0, context.tokens.minTouchTarget),
+              ),
+              child: Text(context.l10n.storeUpdate),
+            )
+          : extension.isInstalled
+          ? OutlinedButton(
+              onPressed: null,
+              style: OutlinedButton.styleFrom(
+                shape: context.isMornye ? const StadiumBorder() : null,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: Size(0, context.tokens.minTouchTarget),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    context.isMornye ? CupertinoIcons.check_mark : Icons.check,
+                    size: 16,
+                    color: colorScheme.outline,
+                  ),
+                  SizedBox(width: tokens.gapXs),
+                  Text(
+                    context.l10n.storeInstalled,
+                    style: TextStyle(color: colorScheme.outline),
+                  ),
+                ],
+              ),
+            )
+          : FilledButton(
+              onPressed: onInstall,
+              style: FilledButton.styleFrom(
+                shape: context.isMornye ? const StadiumBorder() : null,
+                backgroundColor: context.isMornye
+                    ? colorScheme.primary.withValues(alpha: 0.12)
+                    : null,
+                foregroundColor: context.isMornye ? colorScheme.primary : null,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: Size(0, context.tokens.minTouchTarget),
+              ),
+              child: Text(context.l10n.storeInstall),
+            ),
     );
   }
 }
