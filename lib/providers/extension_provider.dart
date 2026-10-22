@@ -68,12 +68,13 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
   Future<void> _syncDownloadDirectory(AppSettings settings) {
     _downloadDirectorySync = _downloadDirectorySync
         .then((_) async {
-          if (!PlatformBridge.supportsCoreBackend) return;
+          // The grant belongs to the extension owner, which Windows also runs.
+          if (!PlatformBridge.supportsExtensionSystem) return;
           final candidate = settings.downloadDirectory.trim();
           final path =
               settings.storageMode == 'app' &&
                   settings.downloadDirectoryBookmark.isEmpty &&
-                  candidate.startsWith('/') &&
+                  Directory(candidate).isAbsolute &&
                   await Directory(candidate).exists()
               ? candidate
               : '';
@@ -182,7 +183,7 @@ class ExtensionNotifier extends Notifier<ExtensionState> {
       // output folders are resolved by the queue and must not prevent startup.
       if (snapshot.storageMode == 'app' &&
           snapshot.downloadDirectoryBookmark.isEmpty &&
-          outputDirectory.startsWith('/')) {
+          Directory(outputDirectory).isAbsolute) {
         final directory = Directory(outputDirectory);
         if (await directory.exists()) {
           allowedDirectories.add(directory.path);
