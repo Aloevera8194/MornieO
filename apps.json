@@ -5,14 +5,14 @@
   "apps": [
     {
       "name": "Mornye",
-      "bundleIdentifier": "com.zarz.spotiflac",
+      "bundleIdentifier": "com.zarz.mornye",
       "developerName": "zarzet",
-      "version": "5.2.0",
-      "versionDate": "2026-10-19",
-      "downloadURL": "https://github.com/mornyeapp/Mornye/releases/download/v5.2.0/SpotiFLAC-v5.2.0-ios-unsigned.ipa",
+      "version": "5.2.1",
+      "versionDate": "2026-10-20",
+      "downloadURL": "https://github.com/mornyeapp/Mornye/releases/download/v5.2.1/Mornye-v5.2.1-ios-unsigned.ipa",
       "localizedDescription": "Mornye is written in Flutter and uses installable extensions for metadata and audio downloads.",
       "iconURL": "https://raw.githubusercontent.com/mornyeapp/Mornye/main/assets/images/logo.png",
-      "size": 34659653
+      "size": 34515412
     }
   ]
 }
