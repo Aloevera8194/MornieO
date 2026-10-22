@@ -1,6 +1,8 @@
 //! File capabilities granted by the native manager, never by JavaScript.
 
 mod index;
+#[cfg(windows)]
+mod windows;
 
 use cap_std::ambient_authority;
 use cap_std::fs::{Dir, File, OpenOptions};
@@ -739,7 +741,14 @@ impl StagedFile {
             &self.target,
             rustix::fs::RenameFlags::NOREPLACE,
         )?;
-        #[cfg(not(any(target_vendor = "apple", target_os = "linux", target_os = "android")))]
+        #[cfg(windows)]
+        windows::publish_new(&self.parent, &self.name, &self.target)?;
+        #[cfg(not(any(
+            target_vendor = "apple",
+            target_os = "linux",
+            target_os = "android",
+            windows
+        )))]
         {
             self.parent
                 .hard_link(&self.name, &self.parent, &self.target)?;

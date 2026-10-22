@@ -42,6 +42,7 @@ rquickjs = { workspace = true, features = ["bindgen"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { workspace = true, features = ["Win32_Storage_FileSystem"] }
+winx = "=0.36.4"
 
 [dev-dependencies]
 libc.workspace = true

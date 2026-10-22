@@ -1,6 +1,6 @@
 [workspace]
 members = ["crates/core", "crates/network", "crates/providers", "crates/extensions", "crates/mobile", "crates/desktop", "crates/bindgen"]
-exclude = ["vendor/rustix-1.1.5", "vendor/libusb1-sys-0.7.0"]
+exclude = ["vendor/rustix-1.1.5", "vendor/libusb1-sys-0.7.0", "vendor/cap-primitives-4.0.3"]
 resolver = "3"
 
 [patch.crates-io]
@@ -8,6 +8,8 @@ resolver = "3"
 # Keep all direct and transitive users on the same compatibility fix.
 rustix = { path = "vendor/rustix-1.1.5" }
 libusb1-sys = { path = "vendor/libusb1-sys-0.7.0" }
+# Preserve the UNC root when deriving Windows paths from directory handles.
+cap-primitives = { path = "vendor/cap-primitives-4.0.3" }
 
 [workspace.package]
 version = "0.1.0"

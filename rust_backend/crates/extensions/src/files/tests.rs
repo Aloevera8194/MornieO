@@ -129,6 +129,79 @@ fn exclusive_publication_preserves_racing_output_and_cleans_cancelled_stage() {
     assert_eq!(std::fs::read_dir(root.path()).unwrap().count(), 1);
 }
 
+fn check_directory_operations(root: &Path) {
+    let files = Arc::new(FileRegistry::default()).extension(root).unwrap();
+    let album = files.resolve("音乐 collection").unwrap();
+    let track = files.resolve("音乐 collection/Björk 🎵.flac").unwrap();
+    let mut stage = track.stage().unwrap();
+    stage.file.write_all(b"first download").unwrap();
+    stage.publish_new(&|| Ok(())).unwrap();
+    assert_eq!(
+        files.resolve(".").unwrap().entries().unwrap(),
+        vec![("音乐 collection".into(), true)]
+    );
+    assert_eq!(
+        album.entries().unwrap(),
+        vec![("Björk 🎵.flac".into(), false)]
+    );
+    assert_eq!(track.metadata().unwrap().len(), 14);
+
+    // A later publisher must preserve the existing completed download.
+    let mut stage = track.stage().unwrap();
+    stage.file.write_all(b"duplicate").unwrap();
+    assert_eq!(
+        stage.publish_new(&|| Ok(())).unwrap_err().kind(),
+        io::ErrorKind::AlreadyExists
+    );
+    assert_eq!(std::fs::read(&track.absolute).unwrap(), b"first download");
+
+    // Metadata updates intentionally replace the completed file through the
+    // capability rename path, which also derives a pathname from the handle.
+    let mut stage = track.stage().unwrap();
+    stage.file.write_all(b"updated tags").unwrap();
+    stage.publish(&|| Ok(())).unwrap();
+    assert_eq!(std::fs::read(&track.absolute).unwrap(), b"updated tags");
+    let renamed = files.resolve("音乐 collection/renamed.flac").unwrap();
+    track.rename_to(&renamed).unwrap();
+    assert_eq!(
+        album.entries().unwrap(),
+        vec![("renamed.flac".into(), false)]
+    );
+    renamed.remove().unwrap();
+    album.remove().unwrap();
+    assert!(files.resolve(".").unwrap().entries().unwrap().is_empty());
+}
+
+#[test]
+fn capability_directory_operations_preserve_downloads_and_leave_no_staging_files() {
+    let root = tempfile::tempdir().unwrap();
+    check_directory_operations(root.path());
+}
+
+#[cfg(windows)]
+#[test]
+fn windows_publication_supports_paths_longer_than_max_path() {
+    let root = tempfile::tempdir().unwrap();
+    let long = root.path().join("album collection\\".repeat(24));
+    check_directory_operations(&long);
+}
+
+#[cfg(windows)]
+#[test]
+#[ignore = "requires a writable SMB share in MORNYE_TEST_SMB_ROOT"]
+fn windows_network_share_directory_operations() {
+    let share = std::env::var_os("MORNYE_TEST_SMB_ROOT")
+        .expect("set MORNYE_TEST_SMB_ROOT to a writable UNC path or mapped drive");
+    let root = tempfile::Builder::new()
+        .prefix("mornye-smb-test-")
+        .tempdir_in(share)
+        .unwrap();
+    // Exercise both the supplied spelling and the verbatim path obtained
+    // from Windows, just as the desktop directory grants do.
+    check_directory_operations(root.path());
+    check_directory_operations(&std::fs::canonicalize(root.path()).unwrap());
+}
+
 #[cfg(unix)]
 #[test]
 fn stage_from_links_same_filesystem_source_and_survives_source_cleanup() {
