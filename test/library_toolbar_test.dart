@@ -13,12 +13,14 @@ import 'package:mornye/providers/download_queue_provider.dart';
 import 'package:mornye/providers/library_collections_provider.dart';
 import 'package:mornye/providers/local_library_provider.dart';
 import 'package:mornye/providers/settings_provider.dart';
+import 'package:mornye/screens/library_tracks_folder_screen.dart';
 import 'package:mornye/screens/queue_tab.dart';
 import 'package:mornye/services/history_database.dart';
 import 'package:mornye/services/library_database.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/utils/desktop_platform.dart';
+import 'package:mornye/widgets/app_search_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -64,8 +66,13 @@ class _Local extends LocalLibraryNotifier {
 }
 
 class _Collections extends LibraryCollectionsNotifier {
+  _Collections(this.playlists);
+
+  final List<UserPlaylistCollection> playlists;
+
   @override
-  LibraryCollectionsState build() => LibraryCollectionsState(isLoaded: true);
+  LibraryCollectionsState build() =>
+      LibraryCollectionsState(isLoaded: true, playlists: playlists);
 }
 
 class _Queue extends DownloadQueueNotifier {
@@ -126,25 +133,28 @@ void main() {
     bool mornye = false,
     bool reduceMotion = false,
     List<DateTime>? dates,
+    List<UserPlaylistCollection> playlists = const [],
+    bool withQueueItem = true,
   }) async {
     debugDesktopPlatformOverride = desktop;
     tester.view.physicalSize = const Size(1280, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     final queue = DownloadQueueLookup.fromItems([
-      DownloadItem(
-        id: 'completed',
-        track: const Track(
-          id: 'song',
-          name: 'Song',
-          artistName: 'Artist',
-          albumName: 'Album',
-          duration: 1000,
+      if (withQueueItem)
+        DownloadItem(
+          id: 'completed',
+          track: const Track(
+            id: 'song',
+            name: 'Song',
+            artistName: 'Artist',
+            albumName: 'Album',
+            duration: 1000,
+          ),
+          service: 'example-provider',
+          status: DownloadStatus.completed,
+          createdAt: DateTime(2026),
         ),
-        service: 'example-provider',
-        status: DownloadStatus.completed,
-        createdAt: DateTime(2026),
-      ),
     ]);
     await tester.pumpWidget(
       ProviderScope(
@@ -154,7 +164,9 @@ void main() {
             () => _History(dates ?? [DateTime(2026, 1, 10)]),
           ),
           localLibraryProvider.overrideWith(_Local.new),
-          libraryCollectionsProvider.overrideWith(_Collections.new),
+          libraryCollectionsProvider.overrideWith(
+            () => _Collections(playlists),
+          ),
           downloadQueueProvider.overrideWith(_Queue.new),
           downloadQueueLookupProvider.overrideWithValue(queue),
         ],
@@ -197,6 +209,82 @@ void main() {
       .hitTestable();
 
   for (final desktop in [false, true]) {
+    for (final trackCount in <int?>[null, 0, 143]) {
+      testWidgets(
+        'Material opens Playlists without downloaded or local songs '
+        '(desktop: $desktop, playlist tracks: $trackCount)',
+        (tester) async {
+          final now = DateTime(2026);
+          await pumpLibrary(
+            tester,
+            desktop: desktop,
+            dates: const [],
+            withQueueItem: false,
+            playlists: [
+              if (trackCount != null)
+                UserPlaylistCollection(
+                  id: 'remote-playlist',
+                  name: 'Example saved playlist',
+                  createdAt: now,
+                  updatedAt: now,
+                  tracks: [
+                    for (var i = 0; i < trackCount; i++)
+                      CollectionTrackEntry(
+                        key: 'example:$i',
+                        addedAt: now,
+                        track: Track(
+                          id: 'example:$i',
+                          name: 'Remote song $i',
+                          artistName: 'Example Artist',
+                          albumName: 'Example Album',
+                          duration: 180,
+                          source: 'example',
+                        ),
+                      ),
+                  ],
+                ),
+            ],
+          );
+          final l10n = l10nOf(tester);
+          final playlistsTab = find.descendant(
+            of: find.byType(TabBar),
+            matching: find.text(l10n.searchPlaylists),
+          );
+          expect(playlistsTab.hitTestable(), findsOneWidget);
+          await tester.tap(playlistsTab);
+          // Let the spatial spring finish before clicking inside the page.
+          for (var i = 0; i < 40; i++) {
+            await tester.pump(const Duration(milliseconds: 50));
+          }
+          expect(find.text(l10n.collectionCreatePlaylist), findsOneWidget);
+          if (trackCount != null) {
+            expect(find.byType(AppSearchField), findsOneWidget);
+            expect(find.text('Example saved playlist'), findsOneWidget);
+            expect(find.text(l10n.itemCount(trackCount)), findsOneWidget);
+            await tester.tap(find.text('Example saved playlist'));
+            for (var i = 0; i < 10; i++) {
+              await tester.pump(const Duration(milliseconds: 50));
+            }
+            expect(
+              tester
+                  .widget<LibraryTracksFolderScreen>(
+                    find.byType(LibraryTracksFolderScreen),
+                  )
+                  .playlistId,
+              'remote-playlist',
+            );
+            if (trackCount > 0) {
+              expect(find.text('Remote song 0'), findsOneWidget);
+            }
+          }
+          expect(tester.takeException(), isNull);
+        },
+        variant: TargetPlatformVariant({
+          desktop ? TargetPlatform.windows : TargetPlatform.android,
+        }),
+      );
+    }
+
     testWidgets('Material joins sort, filter and view in one connected group '
         '(desktop: $desktop)', (tester) async {
       await pumpLibrary(tester, desktop: desktop);

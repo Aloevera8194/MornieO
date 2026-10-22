@@ -759,8 +759,16 @@ class _QueueTabState extends ConsumerState<QueueTab> {
         (localLibraryEnabled && localLibraryTotalCount > 0);
     final hasActiveSearch =
         _searchQuery.isNotEmpty || _searchController.text.trim().isNotEmpty;
+    final hasCollections =
+        collectionState.playlistCount > 0 ||
+        collectionState.wishlistCount > 0 ||
+        collectionState.lovedCount > 0 ||
+        collectionState.favoriteArtistCount > 0;
     final shouldShowLibraryControls =
-        hasLibraryContent || hasAnyLibraryItems || hasActiveSearch;
+        hasLibraryContent ||
+        hasAnyLibraryItems ||
+        hasCollections ||
+        hasActiveSearch;
     final listInset = wideListInset(context);
     if (!searchingLibrary) {
       _scheduleBlankLibraryRepair(
@@ -851,9 +859,9 @@ class _QueueTabState extends ConsumerState<QueueTab> {
                     ),
                   ),
 
-                if (!searchingLibrary &&
-                    shouldShowLibraryControls &&
-                    widget.librarySection == null)
+                // Playlists can contain online tracks or be empty. Navigation
+                // must stay reachable before any songs are downloaded or scanned.
+                if (!searchingLibrary && widget.librarySection == null)
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.fromLTRB(
