@@ -168,12 +168,14 @@ class FFmpegService {
     Map<String, String>? metadata,
     String artistTagMode = artistTagModeJoined,
     bool preserveMetadata = true,
+    @visibleForTesting Future<FFmpegResult> Function(List<String>)? execute,
   }) => FFmpegMetadata.embedMetadataToM4a(
     m4aPath: m4aPath,
     coverPath: coverPath,
     metadata: metadata,
     artistTagMode: artistTagMode,
     preserveMetadata: preserveMetadata,
+    execute: execute,
   );
 
   /// Converts with metadata and cover preservation; lossless caps never upscale.
