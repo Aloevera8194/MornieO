@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/theme/app_motion.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/player_artwork_theme.dart';
 import 'package:mornye/widgets/animation_utils.dart';
 import 'package:mornye/widgets/app_content_card.dart';
 import 'package:mornye/widgets/desktop/context_menu.dart';
@@ -138,8 +141,9 @@ class TrackCard extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
 
   /// The row is the player's current track. The Material style fills it with
-  /// `primaryContainer`, rounds its ends into a pill and shows a
-  /// [NowPlayingIndicator] before [trailing]. Mornye ignores it.
+  /// `primaryContainer` of the track's artwork scheme ([PlayerArtworkTheme]),
+  /// rounds its ends into a pill and shows a [NowPlayingIndicator] before
+  /// [trailing]. Mornye ignores it.
   final bool isCurrent;
 
   /// The current track is playing, so the indicator moves.
@@ -151,6 +155,16 @@ class TrackCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (context.isMornye) return _buildCard(context);
+    // A selected current row keeps the app's selection fill, so a
+    // selection reads as one colour.
+    return _CurrentTrackArtworkTheme(
+      current: isCurrent && !isSelected,
+      child: Builder(builder: _buildCard),
+    );
+  }
+
+  Widget _buildCard(BuildContext context) {
     final tokens = context.tokens;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -346,6 +360,68 @@ class TrackCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Gives the current Material row the colour scheme of the playing track's
+/// artwork, like the mini player; other rows keep the app scheme. It stays
+/// in the tree either way, so the row's shape morph and ripple survive the
+/// switch, and it reads the player only while the row is current, so rows
+/// outside a [ProviderScope] still build.
+class _CurrentTrackArtworkTheme extends StatefulWidget {
+  const _CurrentTrackArtworkTheme({required this.current, required this.child});
+
+  final bool current;
+  final Widget child;
+
+  @override
+  State<_CurrentTrackArtworkTheme> createState() =>
+      _CurrentTrackArtworkThemeState();
+}
+
+class _CurrentTrackArtworkThemeState extends State<_CurrentTrackArtworkTheme> {
+  ProviderSubscription<String?>? _subscription;
+  String? _artUri;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _listen();
+  }
+
+  @override
+  void didUpdateWidget(_CurrentTrackArtworkTheme oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.current != widget.current) _listen();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.close();
+    super.dispose();
+  }
+
+  void _listen() {
+    if (!widget.current) {
+      _subscription?.close();
+      _subscription = null;
+      _artUri = null;
+      return;
+    }
+    if (_subscription != null) return;
+    _subscription = ProviderScope.containerOf(context, listen: false).listen(
+      currentMediaItemProvider.select((item) => item.value?.artUri?.toString()),
+      (_, artUri) {
+        if (mounted) setState(() => _artUri = artUri);
+      },
+    );
+    _artUri = _subscription!.read();
+  }
+
+  @override
+  Widget build(BuildContext context) => PlayerArtworkTheme(
+    artUri: widget.current ? _artUri : null,
+    child: widget.child,
+  );
 }
 
 /// Clips to [shape] laid out inside [inset], so a card's outer margin stays

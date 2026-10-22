@@ -6,6 +6,7 @@ import 'package:mornye/l10n/app_localizations.dart';
 import 'package:mornye/providers/music_player_provider.dart';
 import 'package:mornye/theme/app_theme.dart';
 import 'package:mornye/theme/mornye_theme.dart';
+import 'package:mornye/theme/player_artwork_theme.dart';
 import 'package:mornye/widgets/album_track_tile.dart';
 import 'package:mornye/widgets/app_content_card.dart';
 import 'package:mornye/widgets/desktop/track_table.dart';
@@ -15,17 +16,38 @@ import 'package:mornye/widgets/track_card.dart';
 /// Long enough for the effect and spatial springs to settle.
 const _settle = Duration(seconds: 1);
 
+/// Every cover has [scheme], without decoding an image.
+class _CachedPalette extends PlayerArtworkPalette {
+  const _CachedPalette(this.scheme);
+
+  final ColorScheme scheme;
+
+  @override
+  ColorScheme? peek(String source, Brightness brightness) => scheme;
+
+  @override
+  Future<ColorScheme?> resolve(String source, Brightness brightness) async =>
+      scheme;
+}
+
 Widget _app(
   Widget child, {
   bool mornye = false,
   String? currentId,
+  String? artUri,
   bool playing = true,
   bool reduceMotion = false,
 }) => ProviderScope(
   overrides: [
     currentMediaItemProvider.overrideWithBuild(
       (ref, notifier) => Stream.value(
-        currentId == null ? null : MediaItem(id: currentId, title: 'Song'),
+        currentId == null
+            ? null
+            : MediaItem(
+                id: currentId,
+                title: 'Song',
+                artUri: artUri == null ? null : Uri.parse(artUri),
+              ),
       ),
     ),
     playbackPlayingProvider.overrideWith((ref) => playing),
@@ -330,6 +352,43 @@ void main() {
       expect(rowClip(tester).clipBehavior, Clip.none);
     });
 
+    testWidgets('the current row takes the colours of the playing cover', (
+      tester,
+    ) async {
+      final cover = ColorScheme.fromSeed(seedColor: Colors.orange);
+      PlayerArtworkTheme.debugPalette = _CachedPalette(cover);
+      addTearDown(() => PlayerArtworkTheme.debugPalette = null);
+      await tester.pumpWidget(
+        _app(
+          Column(
+            children: [
+              card(current: true),
+              TrackCard(
+                leading: const SizedBox.square(dimension: 56),
+                title: 'Other',
+                isSelected: true,
+              ),
+            ],
+          ),
+          currentId: 'media',
+          artUri: 'https://example.com/cover.jpg',
+        ),
+      );
+      await _pumpFor(tester, _settle);
+
+      final surfaces = tester
+          .widgetList<AppContentCard>(find.byType(AppContentCard))
+          .toList();
+      expect(surfaces.first.color, cover.primaryContainer);
+      expect(_textStyle(tester, 'Song')?.color, cover.onPrimaryContainer);
+      // Rows that are not current keep the app scheme.
+      expect(
+        surfaces.last.color,
+        _scheme(tester, find.text('Other')).secondaryContainer,
+      );
+      expect(_scheme(tester, find.text('Other')).primary, isNot(cover.primary));
+    });
+
     testWidgets('reduced motion switches the shape in place', (tester) async {
       // The route caches its page, so the change comes from inside it.
       final current = ValueNotifier(false);
@@ -349,6 +408,9 @@ void main() {
       current.value = true;
       await tester.pump();
       expect(rowClip(tester).clipBehavior, Clip.antiAlias);
+      // The current row starts reading the player, which takes one frame
+      // to flush; after it nothing moves.
+      await tester.pump();
       expect(tester.binding.hasScheduledFrame, isFalse);
     });
 
