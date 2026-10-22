@@ -13,14 +13,21 @@ import 'package:mornye/theme/mornye_icons.dart';
 import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
 
-/// Background fill for grouped cards, matching the Settings group look.
-///
-/// Settings groups, grouped rows and app chrome share the
-/// [ColorScheme.surfaceContainer] role in both styles. The tier sits above the
-/// page, so groups stay distinct without an outline, including on AMOLED,
-/// whose container ladder starts above pure black.
-Color settingsGroupColor(BuildContext context) =>
-    Theme.of(context).colorScheme.surfaceContainer;
+/// The neutral grouped fill used in Settings, including AMOLED themes.
+Color settingsGroupColor(BuildContext context) {
+  final colorScheme = Theme.of(context).colorScheme;
+  if (context.isMornye) return colorScheme.surfaceContainer;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  return isDark
+      ? Color.alphaBlend(
+          Colors.white.withValues(alpha: 0.08),
+          colorScheme.surface,
+        )
+      : Color.alphaBlend(
+          Colors.black.withValues(alpha: 0.04),
+          colorScheme.surface,
+        );
+}
 
 /// Carries a Settings search result into its destination page.
 ///
@@ -239,14 +246,18 @@ class SettingsGroup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cardColor = settingsGroupColor(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
-    // The container tier separates the group from the page, so the Material
-    // card needs no outline, as in the expressive filled card.
     final decoration = BoxDecoration(
       color: cardColor,
       borderRadius: BorderRadius.circular(
         context.isMornye ? 28 : context.tokens.radiusCard,
       ),
+      border: context.isMornye
+          ? null
+          : Border.all(
+              color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+            ),
     );
     final child = Material(
       color: Colors.transparent,

@@ -57,11 +57,17 @@ BorderRadius? _radiusOf(ShapeBorder? shape) =>
 
 void main() {
   group('settingsGroupColor', () {
-    testWidgets('Material groups sit on the container tier', (tester) async {
+    testWidgets('Material groups keep the 5.2.1 neutral fill', (tester) async {
       for (final theme in [AppTheme.light(), AppTheme.dark()]) {
         final scheme = theme.colorScheme;
         final color = await _groupColor(tester, theme);
-        expect(color, scheme.surfaceContainer, reason: '${scheme.brightness}');
+        final expected = Color.alphaBlend(
+          scheme.brightness == Brightness.dark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.04),
+          scheme.surface,
+        );
+        expect(color, expected, reason: '${scheme.brightness}');
         expect(color, isNot(scheme.surface));
       }
     });
@@ -116,7 +122,10 @@ void main() {
       expect(scheme.brightness, Brightness.dark);
       expect(scheme.surface, Colors.black);
       expect(theme.scaffoldBackgroundColor, Colors.black);
-      expect(group, scheme.surfaceContainer);
+      expect(
+        group,
+        Color.alphaBlend(Colors.white.withValues(alpha: 0.08), Colors.black),
+      );
       // At least as far from black as the old blended group fill (#141414).
       expect(
         _contrast(group, Colors.black),
@@ -150,7 +159,7 @@ void main() {
       expect(theme.navigationBarTheme.backgroundColor, scheme.surfaceContainer);
     });
 
-    testWidgets('a reduced motion Material card needs no outline', (
+    testWidgets('a reduced motion Material card keeps the 5.2.1 outline', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -177,8 +186,14 @@ void main() {
             .first,
       );
       final decoration = card.decoration! as BoxDecoration;
-      expect(decoration.color, scheme.surfaceContainer);
-      expect(decoration.border, isNull);
+      expect(
+        decoration.color,
+        Color.alphaBlend(Colors.black.withValues(alpha: 0.04), scheme.surface),
+      );
+      expect(
+        decoration.border,
+        Border.all(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+      );
     });
   });
 
