@@ -15,8 +15,16 @@ import 'package:mornye/services/downloaded_embedded_cover_resolver.dart';
 import 'package:mornye/services/library_database.dart';
 import 'package:mornye/utils/duplicate_cleanup_policy.dart';
 import 'package:mornye/utils/file_access.dart';
+import 'package:mornye/utils/logger.dart';
 import 'package:mornye/widgets/audio_quality_badges.dart';
 import 'package:mornye/widgets/settings_group.dart';
+
+final duplicateReviewGroupsLoaderProvider =
+    Provider<Future<List<IsrcDuplicateGroup>> Function()>(
+      (ref) => LibraryDatabase.instance.findIsrcDuplicateGroups,
+    );
+
+final _log = AppLogger('DuplicateReview');
 
 /// Bottom sheet listing tracks that exist more than once (same ISRC) across
 /// download history and the local library, with keep-best and per-copy
@@ -51,7 +59,7 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
   void initState() {
     super.initState();
     _localLibraryNotifier = ref.read(localLibraryProvider.notifier);
-    _groupsFuture = LibraryDatabase.instance.findIsrcDuplicateGroups();
+    _groupsFuture = _loadGroups();
   }
 
   @override
@@ -64,8 +72,17 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
 
   void _reload() {
     setState(() {
-      _groupsFuture = LibraryDatabase.instance.findIsrcDuplicateGroups();
+      _groupsFuture = _loadGroups();
     });
+  }
+
+  Future<List<IsrcDuplicateGroup>> _loadGroups() async {
+    try {
+      return await ref.read(duplicateReviewGroupsLoaderProvider)();
+    } catch (error, stack) {
+      _log.e('Could not load duplicate copies', error, stack);
+      rethrow;
+    }
   }
 
   String _qualityLabel(IsrcDuplicateEntry entry) {
@@ -238,6 +255,27 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
             child: Center(child: AppLoadingIndicator()),
           );
         }
+        if (snapshot.hasError) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  context.friendlyError(snapshot.error!),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                ExpressiveButton(
+                  onPressed: _reload,
+                  child: Text(context.l10n.dialogRetry),
+                ),
+              ],
+            ),
+          );
+        }
         final groups = snapshot.data ?? const [];
         if (groups.isEmpty) {
           return Padding(
@@ -306,6 +344,7 @@ class _DuplicateReviewSheetState extends ConsumerState<DuplicateReviewSheet> {
   ) {
     final first = group.entries.first;
     return SettingsGroup(
+      connected: true,
       children: [
         Padding(
           padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 8, 4),
