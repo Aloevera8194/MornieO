@@ -1167,6 +1167,10 @@ class _HomeTabState extends ConsumerState<HomeTab>
   }) {
     return SliverToBoxAdapter(
       child: AnimatedSize(
+        // A provider installed offscreen replaces the empty panel without
+        // carrying its height into the compact intro on the first frame.
+        key: ValueKey(showEmptyHomeState),
+        alignment: AlignmentDirectional.topStart,
         duration: sectionMotion.duration,
         curve: sectionMotion.curve,
         child: (hasResults || showExplore || !_showsHome)

@@ -154,6 +154,65 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  for (final desktop in [false, true]) {
+    testWidgets('first search extension collapses the empty Home prompt '
+        '(desktop: $desktop)', (tester) async {
+      debugDesktopPlatformOverride = desktop;
+      addTearDown(() => debugDesktopPlatformOverride = null);
+      tester.view.physicalSize = desktop
+          ? const Size(1280, 800)
+          : const Size(430, 932);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final extensions = _StartupExtensions();
+      final homeVisible = ValueNotifier(true);
+      addTearDown(homeVisible.dispose);
+      final pages = PageController();
+      addTearDown(pages.dispose);
+      await _pumpStartupHome(
+        tester,
+        extensions,
+        _StartupExplore(),
+        mornye: false,
+        homeVisible: homeVisible,
+        pages: pages,
+      );
+      extensions.update(const ExtensionState(isInitialized: true));
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsNothing);
+
+      homeVisible.value = false;
+      pages.jumpToPage(1);
+      await tester.pump();
+      extensions.update(
+        const ExtensionState(
+          isInitialized: true,
+          extensions: [
+            Extension(
+              id: 'example',
+              name: 'example',
+              displayName: 'Example',
+              version: '1.0.0',
+              description: '',
+              enabled: true,
+              status: 'loaded',
+              searchBehavior: SearchBehavior(enabled: true),
+            ),
+          ],
+        ),
+      );
+      await tester.pumpAndSettle();
+      homeVisible.value = true;
+      pages.jumpToPage(0);
+      await tester.pump();
+
+      expect(find.text('Shortcuts'), findsOneWidget);
+      expect(tester.getTopLeft(find.byType(TextField)).dy, lessThan(300));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    });
+  }
+
   for (final (size, layout) in [
     for (final layout in ['shelf', 'featured', 'quick-pick', 'quick-pick-menu'])
       (const Size(430, 932), layout),
@@ -710,6 +769,8 @@ Future<void> _pumpStartupHome(
   _StartupExplore explore, {
   bool mornye = true,
   bool feedDisabled = false,
+  ValueNotifier<bool>? homeVisible,
+  PageController? pages,
 }) => tester.pumpWidget(
   ProviderScope(
     overrides: [
@@ -724,7 +785,24 @@ Future<void> _pumpStartupHome(
       theme: mornye ? MornyeTheme.build(Brightness.dark) : AppTheme.dark(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: HomeTab(mode: mornye ? HomeTabMode.browse : HomeTabMode.combined),
+      home: homeVisible == null
+          ? HomeTab(mode: mornye ? HomeTabMode.browse : HomeTabMode.combined)
+          : ValueListenableBuilder(
+              valueListenable: homeVisible,
+              builder: (context, visible, _) => PageView(
+                controller: pages,
+                children: [
+                  TickerMode(
+                    enabled: visible,
+                    child: HomeTab(
+                      key: const ValueKey('home'),
+                      mode: mornye ? HomeTabMode.browse : HomeTabMode.combined,
+                    ),
+                  ),
+                  const Scaffold(key: ValueKey('other')),
+                ],
+              ),
+            ),
     ),
   ),
 );
