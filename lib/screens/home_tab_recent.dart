@@ -235,23 +235,26 @@ extension _HomeTabRecentUI on _HomeTabState {
     final inset = 16 + wideListInset(context);
     return SizedBox(
       height: cardHeight + 20,
-      child: ListView.separated(
-        key: const ValueKey('recent-access-cards'),
-        scrollDirection: Axis.horizontal,
-        padding: EdgeInsets.fromLTRB(inset, 4, inset, 16),
-        itemCount: view.uniqueItems.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 16),
-        itemBuilder: (context, index) {
-          final item = view.uniqueItems[index];
-          return KeyedSubtree(
-            key: ValueKey('${item.type.name}:${item.id}'),
-            child: _buildRecentAccessCard(
-              item,
-              colorScheme,
-              view.downloadFilePathByRecentKey,
-            ),
-          );
-        },
+      child: DesktopScrollArrows(
+        builder: (context, controller) => ListView.separated(
+          key: const ValueKey('recent-access-cards'),
+          controller: controller,
+          scrollDirection: Axis.horizontal,
+          padding: EdgeInsets.fromLTRB(inset, 4, inset, 16),
+          itemCount: view.uniqueItems.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 16),
+          itemBuilder: (context, index) {
+            final item = view.uniqueItems[index];
+            return KeyedSubtree(
+              key: ValueKey('${item.type.name}:${item.id}'),
+              child: _buildRecentAccessCard(
+                item,
+                colorScheme,
+                view.downloadFilePathByRecentKey,
+              ),
+            );
+          },
+        ),
       ),
     );
   }

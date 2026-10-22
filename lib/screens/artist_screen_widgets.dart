@@ -1020,24 +1020,27 @@ extension _ArtistScreenSections on _ArtistScreenState {
           onNotification: _onAlbumsScroll,
           child: SizedBox(
             height: sectionHeight,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: albums.length,
-              itemBuilder: (context, index) {
-                final album = albums[index];
-                return KeyedSubtree(
-                  key: ValueKey(album.id),
-                  child: _buildAlbumCard(
-                    context,
-                    album,
-                    colorScheme,
-                    tileSize: tileSize,
-                    sectionHeight: sectionHeight,
-                    showTypeBadge: showTypeBadge,
-                  ),
-                );
-              },
+            child: DesktopScrollArrows(
+              builder: (context, controller) => ListView.builder(
+                controller: controller,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: albums.length,
+                itemBuilder: (context, index) {
+                  final album = albums[index];
+                  return KeyedSubtree(
+                    key: ValueKey(album.id),
+                    child: _buildAlbumCard(
+                      context,
+                      album,
+                      colorScheme,
+                      tileSize: tileSize,
+                      sectionHeight: sectionHeight,
+                      showTypeBadge: showTypeBadge,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
