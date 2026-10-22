@@ -1,4 +1,18 @@
 {
+  "trackBpm": "BPM",
+  "trackMood": "Mood",
+  "subsonicAddToLibrary": "Add server to Library",
+  "subsonicLibraryAdded": "Server added to Library",
+  "subsonicLibraryDescription": "Sync the server catalogue and artwork to Library. Music stays on your server. Rescan it in Local Library settings to update the catalogue.",
+  "subsonicAuthentication": "Authentication",
+  "subsonicToken": "Salted token",
+  "subsonicPasswordAuth": "Password",
+  "subsonicApiKey": "API key",
+  "subsonicUsername": "Username",
+  "subsonicPassword": "Password",
+  "subsonicSearch": "Search server music...",
+  "subsonicMoreAlbums": "More albums",
+  "subsonicErrorApi": "The server does not support this API version or authentication method. Check the server settings and the selected sign-in method.",
   "networkDownloadDestination": "Network download destination",
   "@networkDownloadDestination": {
     "description": "Files settings item that opens network storage to choose a folder for downloaded music"

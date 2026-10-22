@@ -14,7 +14,7 @@ extension NetworkStorageUpload on NetworkStorageService {
     }
     final c = await connection(uri.host);
     c.validate();
-    if (c.protocol == NetworkProtocol.http) {
+    if (!c.writable) {
       throw const FormatException('Downloads require SMB or WebDAV');
     }
     return (connection: c, path: networkPath(uri.pathSegments.join('/')));

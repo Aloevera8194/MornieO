@@ -13,6 +13,8 @@ import 'package:mornye/services/platform_bridge.dart';
 import 'package:mornye/utils/lyrics_metadata_helper.dart';
 import 'package:mornye/utils/logger.dart';
 
+part 'network_library_scanner_subsonic.dart';
+
 final _log = AppLogger('LocalLibrary');
 
 /// Bounded tag prefetch; only NDJSON and artwork are stored locally.
@@ -46,12 +48,14 @@ class NetworkLibraryScanner {
   final Future<Directory> Function() _supportDirectory, _temporaryDirectory;
   final Future<RandomAccessFile> Function(File) _openOutput;
   NetworkMetadataService? _activeMetadata;
+  SubsonicClient? _activeSubsonic;
   bool _running = false;
   bool _cancelled = false;
 
   /// Stop scan-owned native reads even while scan() is awaiting their result.
   Future<void> cancelPending() async {
     _cancelled = true;
+    _activeSubsonic?.close();
     await _activeMetadata?.cancelPending();
   }
 
@@ -79,6 +83,7 @@ class NetworkLibraryScanner {
       );
     } finally {
       _activeMetadata = null;
+      _activeSubsonic = null;
       _running = false;
     }
   }
@@ -97,6 +102,17 @@ class NetworkLibraryScanner {
       throw const FormatException('Invalid network library source');
     }
     final connection = await _storage.connection(uri.host);
+    if (connection.protocol == NetworkProtocol.subsonic) {
+      if (uri.pathSegments.any((segment) => segment.isNotEmpty)) {
+        throw const FormatException('Expected a Subsonic library root');
+      }
+      return _scanSubsonic(
+        connection,
+        forceFullScan: forceFullScan,
+        checkpoint: checkpoint,
+        onProgress: onProgress,
+      );
+    }
     if (connection.protocol == NetworkProtocol.http) {
       throw const FormatException('Library folders require SMB or WebDAV');
     }

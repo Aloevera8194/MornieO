@@ -66,7 +66,8 @@ void main() {
         await tester.tap(find.byTooltip('Show menu'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
-        if (protocol == NetworkProtocol.http) {
+        if (protocol == NetworkProtocol.http ||
+            protocol == NetworkProtocol.subsonic) {
           expect(find.text('Delete'), findsNothing);
         } else {
           expect(find.text('Delete'), findsWidgets);

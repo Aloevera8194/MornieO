@@ -20,6 +20,7 @@ import 'package:xml/xml.dart';
 
 part 'network_storage_upload.dart';
 part 'network_storage_delete.dart';
+part 'network_storage_subsonic.dart';
 
 typedef _SmbListingInput = ({
   List<({String name, bool directory, int size, int modifiedTime})> files,
@@ -68,7 +69,9 @@ List<NetworkEntry> _hydrateNetworkEntriesInBackground(List<dynamic> entries) =>
         ),
     ];
 
-enum NetworkProtocol { smb, webdav, http }
+enum NetworkProtocol { smb, webdav, http, subsonic }
+
+enum SubsonicAuth { saltedToken, password, apiKey }
 
 class NetworkConnection {
   const NetworkConnection({
@@ -80,10 +83,16 @@ class NetworkConnection {
     this.password = '',
     this.domain = '',
     this.trustedCertificateSha256,
+    this.subsonicAuth = SubsonicAuth.saltedToken,
+    this.apiKey = '',
   });
   final String id, name, address, username, password, domain;
   final NetworkProtocol protocol;
   final String? trustedCertificateSha256;
+  final SubsonicAuth subsonicAuth;
+  final String apiKey;
+  bool get writable =>
+      protocol == NetworkProtocol.smb || protocol == NetworkProtocol.webdav;
   Uri get root => Uri.parse(address);
   Map<String, dynamic> toJson() => {
     'id': id,
@@ -93,6 +102,10 @@ class NetworkConnection {
     'username': username,
     'password': password,
     'domain': domain,
+    if (protocol == NetworkProtocol.subsonic) ...{
+      'subsonicAuth': subsonicAuth.name,
+      'apiKey': apiKey,
+    },
     if (trustedCertificateSha256 != null)
       'trustedCertificateSha256': trustedCertificateSha256,
   };
@@ -106,6 +119,10 @@ class NetworkConnection {
         password: json['password'] as String? ?? '',
         domain: json['domain'] as String? ?? '',
         trustedCertificateSha256: json['trustedCertificateSha256'] as String?,
+        subsonicAuth: SubsonicAuth.values.byName(
+          json['subsonicAuth'] as String? ?? 'saltedToken',
+        ),
+        apiKey: json['apiKey'] as String? ?? '',
       );
 
   void validate() {
@@ -133,28 +150,31 @@ class NetworkEntry {
     this.size,
     this.modifiedTime,
     this.etag,
+    this.song,
   });
   final String path, name;
   final bool directory;
   final int? size;
   final int? modifiedTime;
   final String? etag;
-  String get extension => name.split('.').last.toLowerCase();
+  final SubsonicSong? song;
+  String get extension => song?.format ?? name.split('.').last.toLowerCase();
   bool get audio =>
       !directory &&
-      const {
-        'flac',
-        'mp3',
-        'm4a',
-        'mp4',
-        'aac',
-        'ogg',
-        'opus',
-        'wav',
-        'aiff',
-        'aif',
-        'alac',
-      }.contains(extension);
+      (song != null ||
+          const {
+            'flac',
+            'mp3',
+            'm4a',
+            'mp4',
+            'aac',
+            'ogg',
+            'opus',
+            'wav',
+            'aiff',
+            'aif',
+            'alac',
+          }.contains(extension));
 }
 
 /// Paths remain relative to the selected root, never credential-bearing URLs.
@@ -232,6 +252,8 @@ class NetworkStorageService {
           String address,
           String username,
           String password,
+          SubsonicAuth auth,
+          String apiKey,
           String? certificate,
         }),
         HttpClient
@@ -336,7 +358,9 @@ class NetworkStorageService {
             ? 445
             : target.port,
         connection.username,
-        connection.domain,
+        connection.protocol == NetworkProtocol.subsonic
+            ? connection.id
+            : connection.domain,
         target.pathSegments,
       ]);
       return 'network-file:${sha256.convert(utf8.encode(identity))}';
@@ -414,6 +438,8 @@ class NetworkStorageService {
       address: connection.address,
       username: connection.username,
       password: connection.password,
+      auth: connection.subsonicAuth,
+      apiKey: connection.apiKey,
       certificate: connection.trustedCertificateSha256,
     );
     final client =
@@ -487,7 +513,8 @@ class NetworkStorageService {
     }
     request.followRedirects = false;
     request.headers.set(HttpHeaders.acceptEncodingHeader, 'identity');
-    if (c.username.isNotEmpty || c.password.isNotEmpty) {
+    if (c.protocol != NetworkProtocol.subsonic &&
+        (c.username.isNotEmpty || c.password.isNotEmpty)) {
       request.headers.set(
         HttpHeaders.authorizationHeader,
         'Basic ${base64Encode(utf8.encode('${c.username}:${c.password}'))}',
@@ -578,6 +605,14 @@ class NetworkStorageService {
     String path = '',
   ]) async {
     c.validate();
+    if (c.protocol == NetworkProtocol.subsonic) {
+      final client = openSubsonic(c);
+      try {
+        return await client.list(path);
+      } finally {
+        client.close();
+      }
+    }
     final target = networkTarget(c, path);
     if (c.protocol == NetworkProtocol.smb) {
       if (target.pathSegments.every((s) => s.isEmpty)) {
@@ -853,7 +888,9 @@ class NetworkStorageService {
         return;
       }
       final c = await connection(route.id);
-      final target = networkTarget(c, route.path);
+      final target = c.protocol == NetworkProtocol.subsonic
+          ? _subsonicMediaTarget(c, route.path)
+          : networkTarget(c, route.path);
       final range = request.headers.value(HttpHeaders.rangeHeader);
       if (c.protocol == NetworkProtocol.smb) {
         smb = await _smb(c, target);
@@ -894,10 +931,19 @@ class NetworkStorageService {
         final response = await _request(
           client,
           c,
-          request.method,
+          c.protocol == NetworkProtocol.subsonic ? 'GET' : request.method,
           target,
           range: range,
         );
+        if (c.protocol == NetworkProtocol.subsonic &&
+            const {
+              'application/json',
+              'application/xml',
+              'text/xml',
+            }.contains(response.headers.contentType?.mimeType)) {
+          await _discardResponse(response);
+          throw const HttpException('Subsonic media unavailable');
+        }
         request.response.statusCode =
             response.statusCode >= 300 && response.statusCode < 400
             ? HttpStatus.badGateway
@@ -913,6 +959,8 @@ class NetworkStorageService {
         }
         if (request.method == 'GET') {
           await request.response.addStream(response.timeout(timeout));
+        } else if (c.protocol == NetworkProtocol.subsonic) {
+          await _discardResponse(response);
         } else {
           await response.drain<void>().timeout(timeout);
         }

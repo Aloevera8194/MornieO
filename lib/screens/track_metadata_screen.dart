@@ -353,6 +353,10 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
       final resolvedAlbumArtist = metadata['album_artist']?.toString();
       final resolvedDate = metadata['date']?.toString();
       final resolvedGenre = metadata['genre']?.toString();
+      final resolvedBpm = readPositiveInt(metadata['bpm']);
+      final resolvedMood = normalizeOptionalString(
+        metadata['mood']?.toString(),
+      );
       final resolvedQuality = _displayQualityForValues(
         format: resolvedFormat ?? _storedAudioFormat,
         bitDepth: resolvedBitDepth ?? bitDepth,
@@ -481,6 +485,8 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
               formatChanged);
 
       if ((replayGainChanged ||
+              resolvedBpm != null ||
+              resolvedMood != null ||
               resolvedBitDepth != null ||
               resolvedSampleRate != null ||
               resolvedFormat != null ||
@@ -510,6 +516,8 @@ class _TrackMetadataScreenState extends ConsumerState<TrackMetadataScreen>
           _editedMetadata = {
             ...?_editedMetadata,
             ...replayGainMetadata,
+            'bpm': ?resolvedBpm,
+            'mood': ?resolvedMood,
             // ignore: use_null_aware_elements
             if (resolvedBitDepth != null) 'bit_depth': resolvedBitDepth,
             // ignore: use_null_aware_elements

@@ -63,6 +63,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final metadata = hasTags
           ? {
+              'bpm': '120',
+              'mood': 'Calm',
               'replaygain_track_gain': ' -6.20 dB ',
               'replaygain_track_peak': '0.000000',
               'replaygain_album_gain': '0.00 dB',
@@ -130,6 +132,10 @@ void main() {
         hasTags,
       );
       for (final text in [
+        'BPM',
+        '120',
+        'Mood',
+        'Calm',
         'ReplayGain Track Gain',
         'ReplayGain Track Peak',
         'ReplayGain Album Gain',

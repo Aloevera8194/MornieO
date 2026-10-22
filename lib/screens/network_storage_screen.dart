@@ -12,6 +12,7 @@ import 'package:mornye/services/network_certificate.dart';
 import 'package:mornye/utils/adaptive_layout.dart';
 import 'package:mornye/utils/nav_bar_inset.dart';
 import 'package:mornye/widgets/app_sliver_header.dart';
+import 'package:mornye/widgets/app_search_field.dart';
 import 'package:mornye/theme/mornye_theme.dart';
 import 'package:mornye/theme/app_tokens.dart';
 import 'package:mornye/widgets/app_action_button.dart';
@@ -19,7 +20,6 @@ import 'package:mornye/widgets/app_loading_indicator.dart';
 import 'package:mornye/widgets/app_progress_indicator.dart';
 import 'package:mornye/widgets/expressive_button.dart';
 import 'package:mornye/widgets/expressive_icon_button.dart';
-import 'package:mornye/widgets/mornye_chrome.dart';
 import 'package:mornye/widgets/settings_group.dart';
 
 class NetworkStorageScreen extends ConsumerStatefulWidget {
@@ -28,10 +28,12 @@ class NetworkStorageScreen extends ConsumerStatefulWidget {
     this.connection,
     this.path = '',
     this.service,
+    this.displayName,
   });
   final NetworkConnection? connection;
   final String path;
   final NetworkStorageService? service;
+  final String? displayName;
 
   @override
   ConsumerState<NetworkStorageScreen> createState() =>
@@ -51,6 +53,22 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
   bool _added = false;
   bool _selectingDestination = false;
   int _loadGeneration = 0;
+  final _search = TextEditingController();
+  bool get _subsonic => widget.connection?.protocol == NetworkProtocol.subsonic;
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  String _entryName(NetworkEntry entry) => switch (entry.path) {
+    'subsonic/artists/' when _subsonic => context.l10n.searchArtists,
+    'subsonic/albums/' when _subsonic => context.l10n.searchAlbums,
+    _ when _subsonic && entry.path.startsWith('subsonic/albums/') =>
+      context.l10n.subsonicMoreAlbums,
+    _ => entry.song?.title ?? entry.name,
+  };
 
   Future<void> _useForDownloads() async {
     final connection = widget.connection;
@@ -152,7 +170,9 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
         final connections = await service.connections();
         if (isCurrent()) _connections = connections;
       } else {
-        final entries = await service.list(connection, widget.path);
+        final entries = _subsonic && _search.text.trim().isNotEmpty
+            ? await service.searchSubsonic(connection, _search.text)
+            : await service.list(connection, widget.path);
         if (isCurrent()) _entries = entries;
       }
     } catch (error) {
@@ -176,7 +196,11 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
     if (mounted) await _load();
   }
 
-  Future<void> _open(NetworkConnection connection, [String path = '']) async {
+  Future<void> _open(
+    NetworkConnection connection, [
+    String path = '',
+    String? displayName,
+  ]) async {
     await Navigator.of(context).push(
       _networkRoute(
         context,
@@ -184,6 +208,7 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
           connection: connection,
           path: path,
           service: service,
+          displayName: displayName,
         ),
       ),
     );
@@ -221,16 +246,31 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
           PlayableMedia(
             id: NetworkStorageService.source(connection.id, entry.path),
             source: NetworkStorageService.source(connection.id, entry.path),
-            title: entry.name.replaceFirst(RegExp(r'\.[^.]+$'), ''),
-            artist: connection.name,
+            title:
+                entry.song?.title ??
+                entry.name.replaceFirst(RegExp(r'\.[^.]+$'), ''),
+            artist: entry.song?.artist ?? connection.name,
             album:
+                entry.song?.album ??
                 widget.path.split('/').where((p) => p.isNotEmpty).lastOrNull ??
                 '',
             artUri: artwork?.toString(),
-            networkArtworkSource: cover == null
+            networkArtworkSource: entry.song?.coverPath != null
+                ? NetworkStorageService.source(
+                    connection.id,
+                    entry.song!.coverPath!,
+                  )
+                : cover == null
                 ? null
                 : NetworkStorageService.source(connection.id, cover.path),
             format: entry.extension,
+            duration: entry.song?.metadata['duration'] is int
+                ? Duration(seconds: entry.song!.metadata['duration'] as int)
+                : null,
+            bitDepth: entry.song?.metadata['bit_depth'] as int?,
+            sampleRate: entry.song?.metadata['sample_rate'] as int?,
+            bitrate: entry.song?.metadata['bitrate'] as int?,
+            explicit: entry.song?.metadata['explicit'] == true,
           ),
       ], initialIndex: tracks.indexOf(selected));
     } catch (error) {
@@ -259,7 +299,8 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
         ? context.l10n.networkStorage
         : widget.path.isEmpty
         ? connection.name
-        : widget.path.split('/').where((p) => p.isNotEmpty).last;
+        : widget.displayName ??
+              widget.path.split('/').where((p) => p.isNotEmpty).last;
     final visible = _entries.where((e) => e.directory || e.audio).toList();
     return Scaffold(
       body: CustomScrollView(
@@ -287,12 +328,27 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
             padding: EdgeInsets.symmetric(horizontal: wideListInset(context)),
             sliver: SliverMainAxisGroup(
               slivers: [
+                if (_subsonic && widget.path.isEmpty)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(context.tokens.gapLg),
+                      child: AppSearchField(
+                        controller: _search,
+                        hintText: context.l10n.subsonicSearch,
+                        clearTooltip: context.l10n.dialogClear,
+                        samplesBackdrop: false,
+                        onClear: _load,
+                        onSubmitted: (_) => _load(),
+                      ),
+                    ),
+                  ),
                 if (_loading || _starting)
                   SliverToBoxAdapter(child: _NetworkProgress()),
                 if (!_loading &&
                     !_failed &&
                     connection != null &&
-                    connection.protocol != NetworkProtocol.http)
+                    connection.protocol != NetworkProtocol.http &&
+                    (!_subsonic || widget.path.isEmpty))
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -306,41 +362,49 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
                             ),
                             label: Text(
                               _added
-                                  ? context.l10n.networkLibraryAdded
-                                  : context.l10n.networkAddToLibrary,
+                                  ? (_subsonic
+                                        ? context.l10n.subsonicLibraryAdded
+                                        : context.l10n.networkLibraryAdded)
+                                  : (_subsonic
+                                        ? context.l10n.subsonicAddToLibrary
+                                        : context.l10n.networkAddToLibrary),
                             ),
                             tonal: true,
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            context.l10n.networkLibraryDescription,
+                            _subsonic
+                                ? context.l10n.subsonicLibraryDescription
+                                : context.l10n.networkLibraryDescription,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),
-                          const SizedBox(height: 12),
-                          AppActionButton(
-                            onPressed:
-                                _selectingDestination || isDownloadDestination
-                                ? null
-                                : _useForDownloads,
-                            icon: Icon(
-                              isDownloadDestination
-                                  ? Icons.check
-                                  : Icons.download_outlined,
+                          if (connection.writable) ...[
+                            const SizedBox(height: 12),
+                            AppActionButton(
+                              onPressed:
+                                  _selectingDestination || isDownloadDestination
+                                  ? null
+                                  : _useForDownloads,
+                              icon: Icon(
+                                isDownloadDestination
+                                    ? Icons.check
+                                    : Icons.download_outlined,
+                              ),
+                              label: Text(
+                                isDownloadDestination
+                                    ? context.l10n.networkDownloadSelected
+                                    : context.l10n.networkUseForDownloads,
+                              ),
+                              tonal: true,
                             ),
-                            label: Text(
-                              isDownloadDestination
-                                  ? context.l10n.networkDownloadSelected
-                                  : context.l10n.networkUseForDownloads,
+                            const SizedBox(height: 8),
+                            Text(
+                              context.l10n.networkDownloadDescription,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
-                            tonal: true,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            context.l10n.networkDownloadDescription,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          if (_selectingDestination)
-                            const AppProgressIndicator.linear(),
+                            if (_selectingDestination)
+                              const AppProgressIndicator.linear(),
+                          ],
                           if (_adding)
                             const Padding(
                               padding: EdgeInsets.only(top: 8),
@@ -419,7 +483,7 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
                       padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
                       child: Text(
                         '${_protocolLabel(connection.protocol)} · ${connection.root.host}'
-                        '\n/${widget.path}',
+                        '${_subsonic ? '' : '\n/${widget.path}'}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -465,10 +529,13 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
                                 ? Icons.folder_outlined
                                 : Icons.music_note,
                             showIconInMornye: true,
-                            title: entry.name,
+                            title: _entryName(entry),
                             subtitle: entry.directory
                                 ? null
-                                : entry.extension.toUpperCase(),
+                                : [
+                                    if (entry.song != null) entry.song!.artist,
+                                    entry.extension.toUpperCase(),
+                                  ].join(' · '),
                             showDivider: index != visible.length - 1,
                             trailing: entry.directory
                                 ? null
@@ -483,7 +550,11 @@ class _NetworkStorageScreenState extends ConsumerState<NetworkStorageScreen> {
                             onTap: _starting
                                 ? null
                                 : () => entry.directory
-                                      ? _open(connection, entry.path)
+                                      ? _open(
+                                          connection,
+                                          entry.path,
+                                          _entryName(entry),
+                                        )
                                       : _play(entry),
                           ),
                         ),
@@ -518,6 +589,8 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
     text: widget.connection?.password,
   );
   late final _domain = TextEditingController(text: widget.connection?.domain);
+  late final _apiKey = TextEditingController(text: widget.connection?.apiKey);
+  late var _auth = widget.connection?.subsonicAuth ?? SubsonicAuth.saltedToken;
   late var _protocol = widget.connection?.protocol ?? NetworkProtocol.smb;
   late String? _trustedCertificate =
       widget.connection?.trustedCertificateSha256;
@@ -531,7 +604,14 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
 
   @override
   void dispose() {
-    for (final controller in [_name, _address, _user, _password, _domain]) {
+    for (final controller in [
+      _name,
+      _address,
+      _user,
+      _password,
+      _domain,
+      _apiKey,
+    ]) {
       controller.dispose();
     }
     super.dispose();
@@ -551,9 +631,23 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
         name: _name.text.trim(),
         address: _address.text.trim(),
         protocol: _protocol,
-        username: _user.text,
-        password: _password.text,
+        username:
+            _protocol == NetworkProtocol.subsonic &&
+                _auth == SubsonicAuth.apiKey
+            ? ''
+            : _user.text,
+        password:
+            _protocol == NetworkProtocol.subsonic &&
+                _auth == SubsonicAuth.apiKey
+            ? ''
+            : _password.text,
         domain: _domain.text.trim(),
+        subsonicAuth: _auth,
+        apiKey:
+            _protocol == NetworkProtocol.subsonic &&
+                _auth == SubsonicAuth.apiKey
+            ? _apiKey.text.trim()
+            : '',
         trustedCertificateSha256:
             Uri.tryParse(_address.text.trim())?.scheme == 'https' &&
                 Uri.parse(_address.text.trim()).origin == _trustedOrigin
@@ -722,31 +816,18 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: AbsorbPointer(
                       absorbing: _busy,
-                      child: context.isMornye
-                          ? MornyeSegmentedControl(
-                              labels: NetworkProtocol.values
-                                  .map(_protocolLabel)
-                                  .toList(),
-                              selectedIndex: _protocol.index,
-                              onChanged: (index) => setState(
-                                () => _protocol = NetworkProtocol.values[index],
-                              ),
-                            )
-                          : SettingsSegmentedChoice<NetworkProtocol>(
-                              selected: _protocol,
-                              onChanged: (protocol) =>
-                                  setState(() => _protocol = protocol),
-                              semanticLabel: context.l10n.networkProtocol,
-                              options: [
-                                for (final protocol in NetworkProtocol.values)
-                                  SettingsSegmentOption(
-                                    value: protocol,
-                                    label: protocol == NetworkProtocol.http
-                                        ? 'HTTP(S)'
-                                        : _protocolLabel(protocol),
-                                  ),
-                              ],
+                      child: SettingsChoiceGrid(
+                        children: [
+                          for (final protocol in NetworkProtocol.values)
+                            SettingsChoiceChip(
+                              label: protocol == NetworkProtocol.http
+                                  ? 'HTTP(S)'
+                                  : _protocolLabel(protocol),
+                              isSelected: _protocol == protocol,
+                              onTap: () => setState(() => _protocol = protocol),
                             ),
+                        ],
+                      ),
                     ),
                   ),
                   SettingsSectionHeader(title: context.l10n.networkServer),
@@ -763,20 +844,71 @@ class _NetworkConnectionFormState extends State<_NetworkConnectionForm> {
                         required: true,
                         hint: _protocol == NetworkProtocol.smb
                             ? 'smb://server/Music/'
+                            : _protocol == NetworkProtocol.subsonic
+                            ? 'https://server/navidrome/'
                             : 'https://server/music/',
                       ),
                       const SizedBox(height: 12),
                     ],
                   ),
-                  SettingsSectionHeader(title: context.l10n.networkCredentials),
+                  SettingsSectionHeader(
+                    title: _protocol == NetworkProtocol.subsonic
+                        ? context.l10n.subsonicAuthentication
+                        : context.l10n.networkCredentials,
+                  ),
+                  if (_protocol == NetworkProtocol.subsonic)
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: context.tokens.gapLg,
+                      ),
+                      child: AbsorbPointer(
+                        absorbing: _busy,
+                        child: SettingsChoiceGrid(
+                          children: [
+                            for (final auth in SubsonicAuth.values)
+                              SettingsChoiceChip(
+                                label: switch (auth) {
+                                  SubsonicAuth.saltedToken =>
+                                    context.l10n.subsonicToken,
+                                  SubsonicAuth.password =>
+                                    context.l10n.subsonicPasswordAuth,
+                                  SubsonicAuth.apiKey =>
+                                    context.l10n.subsonicApiKey,
+                                },
+                                isSelected: auth == _auth,
+                                onTap: () => setState(() => _auth = auth),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
                   SettingsGroup(
                     children: [
-                      _field(_user, context.l10n.networkUsername),
-                      _field(
-                        _password,
-                        context.l10n.networkPassword,
-                        secret: true,
-                      ),
+                      if (_protocol == NetworkProtocol.subsonic &&
+                          _auth == SubsonicAuth.apiKey)
+                        _field(
+                          _apiKey,
+                          context.l10n.subsonicApiKey,
+                          required: true,
+                          secret: true,
+                        )
+                      else ...[
+                        _field(
+                          _user,
+                          _protocol == NetworkProtocol.subsonic
+                              ? context.l10n.subsonicUsername
+                              : context.l10n.networkUsername,
+                          required: _protocol == NetworkProtocol.subsonic,
+                        ),
+                        _field(
+                          _password,
+                          _protocol == NetworkProtocol.subsonic
+                              ? context.l10n.subsonicPassword
+                              : context.l10n.networkPassword,
+                          secret: true,
+                          required: _protocol == NetworkProtocol.subsonic,
+                        ),
+                      ],
                       if (_protocol == NetworkProtocol.smb)
                         _field(_domain, context.l10n.networkDomain),
                       const SizedBox(height: 12),
@@ -876,6 +1008,7 @@ String _protocolLabel(NetworkProtocol protocol) => switch (protocol) {
   NetworkProtocol.smb => 'SMB',
   NetworkProtocol.webdav => 'WebDAV',
   NetworkProtocol.http => 'HTTP / HTTPS',
+  NetworkProtocol.subsonic => 'Subsonic',
 };
 
 String _networkErrorMessage(BuildContext context, NetworkStorageError error) =>
@@ -891,6 +1024,7 @@ String _networkErrorMessage(BuildContext context, NetworkStorageError error) =>
       NetworkStorageError.incompatible => context.l10n.networkErrorProtocol,
       NetworkStorageError.invalidAddress => context.l10n.networkErrorAddress,
       NetworkStorageError.certificate => context.l10n.networkErrorCertificate,
+      NetworkStorageError.serverApi => context.l10n.subsonicErrorApi,
       NetworkStorageError.unknown => context.l10n.networkConnectionError,
     };
 

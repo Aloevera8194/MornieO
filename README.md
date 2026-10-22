@@ -150,7 +150,7 @@
         <br><b>Network storage</b>
       </p>
       <p>
-        Play music from SMB, WebDAV and HTTP / HTTPS servers. HTTPS
+        Play music from SMB, WebDAV, HTTP / HTTPS and Subsonic / OpenSubsonic servers. HTTPS
         connections can trust a single approved certificate fingerprint.
       </p>
       <p></p>
@@ -296,9 +296,14 @@ in the built-in player. It can also point out duplicates.
 <summary><b>Can I play music from my NAS or home server?</b></summary>
 <br>
 
-Yes. Open **Settings > Network storage** and connect to an SMB, WebDAV or
-HTTP / HTTPS server, then browse its folders and play from it. Sign-in details
-are stored securely on your device.
+Yes. Open **Settings > Network storage** and connect to an SMB, WebDAV,
+HTTP / HTTPS or Subsonic / OpenSubsonic server. Sign-in details are stored
+securely on your device. Subsonic supports browsing artists and albums,
+searching, streaming and syncing the server catalogue to Library on mobile
+and desktop. Choose salted-token, password or API-key authentication to match
+your server, and approve its certificate fingerprint if it uses a private
+HTTPS certificate. Subsonic is a read-only source; network download folders
+still require SMB or WebDAV.
 
 </details>
 

@@ -548,6 +548,11 @@ extension _TrackMetadataCards on _TrackMetadataScreenState {
         _MetadataItem(context.l10n.trackDuration, formatClock(duration!)),
       if (audioQualityStr != null)
         _MetadataItem(context.l10n.trackAudioQuality, audioQualityStr),
+      if (_editedMetadata?['bpm'] case final int bpm when bpm > 0)
+        _MetadataItem(context.l10n.trackBpm, bpm.toString()),
+      if (normalizeOptionalString(_editedMetadata?['mood']?.toString())
+          case final String mood)
+        _MetadataItem(context.l10n.trackMood, mood),
       if (replayGainTrackGain != null)
         _MetadataItem(
           context.l10n.trackReplayGainTrackGain,

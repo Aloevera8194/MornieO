@@ -236,7 +236,7 @@ class _SettingsTabState extends ConsumerState<SettingsTab> {
             icon: Icons.dns_outlined,
             iconColor: Colors.blueGrey,
             title: l10n.networkStorage,
-            subtitle: 'SMB · WebDAV · HTTP / HTTPS',
+            subtitle: 'SMB · WebDAV · HTTP(S) · Subsonic',
             keywords: const [
               'nas',
               'server',
