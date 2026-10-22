@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mornye/models/library_scan_failure.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/services/library_cleanup.dart';
 import 'package:mornye/services/library_database.dart';
@@ -41,6 +42,9 @@ class LocalLibraryState {
   final List<LocalLibrarySource> sources;
   final String? scanningSourceId;
   final int excludedDownloadedCount;
+
+  /// Files the last scan of each source could not read, by source ID.
+  final Map<String, LibraryScanFailures> scanFailures;
   final Set<String> _trackKeySet;
   final Set<String> _isrcSet;
 
@@ -62,6 +66,7 @@ class LocalLibraryState {
     this.sources = const <LocalLibrarySource>[],
     this.scanningSourceId,
     this.excludedDownloadedCount = 0,
+    this.scanFailures = const {},
     Set<String>? trackKeySet,
     Set<String>? isrcSet,
   }) : _trackKeySet = trackKeySet ?? const <String>{},
@@ -104,6 +109,7 @@ class LocalLibraryState {
     String? scanningSourceId,
     bool clearScanningSourceId = false,
     int? excludedDownloadedCount,
+    Map<String, LibraryScanFailures>? scanFailures,
     Set<String>? trackKeySet,
     Set<String>? isrcSet,
   }) {
@@ -130,6 +136,7 @@ class LocalLibraryState {
           : scanningSourceId ?? this.scanningSourceId,
       excludedDownloadedCount:
           excludedDownloadedCount ?? this.excludedDownloadedCount,
+      scanFailures: scanFailures ?? this.scanFailures,
       trackKeySet: trackKeySet ?? _trackKeySet,
       isrcSet: isrcSet ?? _isrcSet,
     );
@@ -289,11 +296,13 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
 
         DateTime? lastScannedAt;
         var excludedDownloadedCount = 0;
+        var scanFailures = const <String, LibraryScanFailures>{};
         try {
           final prefs = await prefsFuture;
           lastScannedAt = readLocalLibraryLastScannedAt(prefs);
           excludedDownloadedCount =
               prefs.getInt(_excludedDownloadedCountKey) ?? 0;
+          scanFailures = readLocalLibraryScanFailures(prefs);
         } catch (e) {
           _log.w('Failed to load lastScannedAt: $e');
         }
@@ -308,6 +317,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
           loadedIndexVersion: state.loadedIndexVersion + 1,
           lastScannedAt: lastScannedAt,
           excludedDownloadedCount: excludedDownloadedCount,
+          scanFailures: scanFailures,
           sources: sources,
           trackKeySet: lookupIndex.matchKeys,
           isrcSet: lookupIndex.isrcs,
@@ -414,6 +424,7 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
   Future<void> removeSource(String sourceId) async {
     _sourceVersion++;
     await _db.removeSource(sourceId);
+    await _setScanFailures(sourceId, null);
     await _refreshSummaryFromStorage();
   }
 
@@ -635,12 +646,13 @@ class LocalLibraryNotifier extends Notifier<LocalLibraryState> {
       final prefs = await SharedPreferences.getInstance();
       await clearLocalLibraryLastScannedAt(prefs);
       await prefs.remove(_excludedDownloadedCountKey);
+      await writeLocalLibraryScanFailures(prefs, const {});
     } catch (e) {
       _log.w('Failed to clear lastScannedAt: $e');
     }
 
     await _refreshSummaryFromStorage();
-    state = state.copyWith(clearLastScannedAt: true);
+    state = state.copyWith(clearLastScannedAt: true, scanFailures: const {});
     _log.i('Library cleared');
   }
 

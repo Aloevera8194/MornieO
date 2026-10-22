@@ -75,6 +75,9 @@ class _Database implements LibraryDatabase {
   }
 
   @override
+  Future<int> deleteDownloadedRowsForSource(String sourceId) async => 0;
+
+  @override
   Future<void> updateSourceState(
     String sourceId, {
     bool? enabled,
@@ -488,6 +491,67 @@ void main() {
       );
     }
   }
+
+  test('a finished scan keeps the files it could not read', () async {
+    var progress = <String, Object>{
+      'is_complete': true,
+      'error_count': 3,
+      'failures': [
+        {'path': '/music/A/broken.flac', 'message': 'invalid FLAC header'},
+        {
+          'path':
+              'content://example.documents/tree/primary%3AMusic/document/'
+              'primary%3AMusic%2FB%2Fcut.mp3',
+          'message': 'Input/output error',
+        },
+      ],
+    };
+    messenger.setMockMethodCallHandler(backend, (call) async {
+      if (call.method == 'scanLibraryFolderIncremental') {
+        return '{"files":[],"totalFiles":4,"skippedCount":1}';
+      }
+      if (call.method == 'getLibraryScanProgress') return progress;
+      return null;
+    });
+
+    await library.startSourceScan('active');
+    var state = container.read(localLibraryProvider);
+    expect(state.scanErrorCount, 3);
+    final failures = state.scanFailures['active']!;
+    expect(failures.count, 3);
+    expect(failures.files.map((file) => file.fileName), [
+      'broken.flac',
+      'cut.mp3',
+    ]);
+    expect(failures.files.map((file) => file.folder), ['/music/A', 'Music/B']);
+    expect(failures.files.last.message, 'Input/output error');
+
+    await restartLibrary();
+    state = container.read(localLibraryProvider);
+    expect(state.scanFailures['active']?.files, hasLength(2));
+
+    // A clean scan forgets the old list.
+    progress = {'is_complete': true, 'error_count': 0};
+    await library.startSourceScan('active');
+    expect(container.read(localLibraryProvider).scanFailures, isEmpty);
+    await restartLibrary();
+    expect(container.read(localLibraryProvider).scanFailures, isEmpty);
+
+    // A removed folder takes its list with it.
+    progress = {
+      'is_complete': true,
+      'error_count': 1,
+      'failures': [
+        {'path': '/music/broken.flac', 'message': 'EIO'},
+      ],
+    };
+    await library.startSourceScan('active');
+    expect(container.read(localLibraryProvider).scanFailures, hasLength(1));
+    await library.removeSource('active');
+    expect(container.read(localLibraryProvider).scanFailures, isEmpty);
+    await restartLibrary();
+    expect(container.read(localLibraryProvider).scanFailures, isEmpty);
+  });
 
   test('paused scan retains reconnect work until it completes', () async {
     final active = library.startSourceScan('active');

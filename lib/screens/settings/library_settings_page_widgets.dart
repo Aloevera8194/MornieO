@@ -2,6 +2,9 @@ part of 'library_settings_page.dart';
 
 class _LibrarySourceSettingsItem extends StatelessWidget {
   final LocalLibrarySource source;
+
+  /// Files the last finished scan of [source] could not read.
+  final LibraryScanFailures? failures;
   final bool isScanning;
   final bool isFinalizing;
   final bool isPaused;
@@ -16,6 +19,7 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
 
   const _LibrarySourceSettingsItem({
     required this.source,
+    required this.failures,
     required this.isScanning,
     required this.isFinalizing,
     required this.isPaused,
@@ -52,6 +56,7 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
   Future<void> _showActions(BuildContext context) async {
     final canScan =
         enabled && source.enabled && source.available && !isScanning;
+    final hasFailures = !isScanning && failures?.files.isNotEmpty == true;
     final action = await showAppBottomSheet<String>(
       context: context,
       useRootNavigator: true,
@@ -73,6 +78,13 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
             subtitle: Text(context.l10n.libraryForceFullScanSubtitle),
             onTap: canScan ? () => Navigator.pop(context, 'full_scan') : null,
           ),
+          if (hasFailures)
+            AppSheetOption(
+              leading: const AppIcon(Icons.report_outlined),
+              title: Text(context.l10n.libraryUnreadableFilesTitle),
+              subtitle: Text(context.l10n.libraryUnreadableFilesAction),
+              onTap: () => Navigator.pop(context, 'failures'),
+            ),
           AppSheetOption(
             leading: AppIcon(
               Icons.delete_outline,
@@ -88,14 +100,64 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
         ],
       ),
     );
+    if (!context.mounted) return;
     switch (action) {
       case 'scan':
         onScan();
       case 'full_scan':
         onFullScan();
+      case 'failures':
+        await _showFailures(context, failures!);
       case 'remove':
         onRemove();
     }
+  }
+
+  Future<void> _showFailures(
+    BuildContext context,
+    LibraryScanFailures failures,
+  ) {
+    final files = failures.files;
+    final unlisted = failures.count - files.length;
+    return showAppScrollableBottomSheet<void>(
+      context: context,
+      title: context.l10n.libraryUnreadableFilesTitle,
+      subtitle: context.l10n.libraryUnreadableFilesSubtitle,
+      builder: (context, controller) => CustomScrollView(
+        controller: controller,
+        shrinkWrap: files.length <= 12,
+        slivers: [
+          SliverSettingsGroup(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: files.length,
+            itemBuilder: (context, index) {
+              final file = files[index];
+              return SettingsItem(
+                title: file.fileName,
+                subtitle: [
+                  if (file.folder.isNotEmpty) file.folder,
+                  context.friendlyError(file.message),
+                ].join('\n'),
+                showDivider: index != files.length - 1,
+              );
+            },
+          ),
+          if (unlisted > 0)
+            SliverPadding(
+              padding: const EdgeInsetsDirectional.fromSTEB(32, 12, 32, 0),
+              sliver: SliverToBoxAdapter(
+                child: Text(
+                  context.l10n.libraryUnreadableFilesMore(unlisted),
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
+    );
   }
 
   @override
@@ -146,7 +208,9 @@ class _LibrarySourceSettingsItem extends StatelessWidget {
           ?pathLine,
           details,
           if (!isScanning && source.lastScanError?.trim().isNotEmpty == true)
-            context.friendlyError(source.lastScanError!),
+            context.friendlyError(source.lastScanError!)
+          else if (!isScanning && failures != null)
+            context.l10n.libraryUnreadableFiles(failures!.count),
         ].join('\n'),
         onTap: () => _showActions(context),
         trailing: Row(

@@ -28,6 +28,18 @@ internal fun MainActivity.updateSafScanProgress(block: (MainActivity.SafScanProg
         }
     }
 
+/** How many failed documents a finished scan lists with their reason. The
+ * error count still includes the rest. */
+internal const val REPORTED_SCAN_FAILURES = 100
+
+internal fun MainActivity.recordSafScanFailure(path: String, message: String) {
+        updateSafScanProgress {
+            if (it.failures.size < REPORTED_SCAN_FAILURES) {
+                it.failures = it.failures + (path to message)
+            }
+        }
+    }
+
 internal fun MainActivity.safProgressToJson(): String {
         val snapshot = synchronized(safScanLock) { safScanProgress.copy() }
         val obj = JSONObject()
@@ -37,6 +49,12 @@ internal fun MainActivity.safProgressToJson(): String {
         obj.put("error_count", snapshot.errorCount)
         obj.put("progress_pct", snapshot.progressPct)
         obj.put("is_complete", snapshot.isComplete)
+        // Sent once complete, as the Rust scanner does, so updates stay small.
+        if (snapshot.isComplete && snapshot.failures.isNotEmpty()) {
+            obj.put("failures", JSONArray(snapshot.failures.map { (path, message) ->
+                JSONObject().put("path", path).put("message", message)
+            }))
+        }
         return obj.toString()
     }
 

@@ -172,6 +172,9 @@ class MainActivity: FlutterFragmentActivity() {
         var errorCount: Int = 0,
         var progressPct: Double = 0.0,
         var isComplete: Boolean = false,
+        /** Failed documents and why, up to [REPORTED_SCAN_FAILURES]. The list
+         * is replaced, never changed, so a snapshot can be read unlocked. */
+        var failures: List<Pair<String, String>> = emptyList(),
     )
 
     companion object {
@@ -378,6 +381,7 @@ class MainActivity: FlutterFragmentActivity() {
 
     internal fun reportLibraryScanError(path: String, operation: String, message: String) {
         android.util.Log.e("Mornye", "Library scan: $operation [$path]: $message")
+        recordSafScanFailure(path, message)
         val payload = mapOf(
             "path" to path,
             "operation" to operation,

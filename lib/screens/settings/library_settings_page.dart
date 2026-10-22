@@ -7,6 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:mornye/l10n/l10n.dart';
+import 'package:mornye/models/library_scan_failure.dart';
 import 'package:mornye/models/settings.dart';
 import 'package:mornye/providers/settings_provider.dart';
 import 'package:mornye/providers/download_history_provider.dart';
@@ -682,11 +683,13 @@ class _LibrarySettingsPageState extends ConsumerState<LibrarySettingsPage> {
                             scanned: active ? state.scannedFiles : 0,
                             total: active ? state.scanTotalFiles : 0,
                             progress: active ? state.scanProgress : 0.0,
+                            failures: state.scanFailures[source.id],
                           );
                         }),
                       );
                       return _LibrarySourceSettingsItem(
                         source: source,
+                        failures: scan.failures,
                         isScanning: scan.active,
                         isFinalizing: scan.finalizing,
                         isPaused: scan.paused,

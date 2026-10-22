@@ -326,6 +326,7 @@ extension _LocalLibraryScan on LocalLibraryNotifier {
           sourceId: activeSourceId,
           skippedDownloads: skippedDownloads,
           pruneCoverCache: true,
+          nativeScan: !effectiveFolderPath.startsWith('network://'),
           summary: () =>
               'Full scan complete: ${state.totalCount} tracks found, '
               '$skippedDownloads already in downloads, '
@@ -491,6 +492,7 @@ extension _LocalLibraryScan on LocalLibraryNotifier {
           sourceId: activeSourceId,
           skippedDownloads: skippedDownloads,
           pruneCoverCache: false,
+          nativeScan: true,
           summary: () =>
               'Incremental scan complete: ${state.totalCount} total tracks '
               '($scannedCount new/updated, $skippedCount unchanged, '
@@ -569,13 +571,27 @@ extension _LocalLibraryScan on LocalLibraryNotifier {
 
   /// Shared completion tail of a successful full or incremental scan.
   /// [summary] is evaluated after the final state update so it reads the
-  /// refreshed totals.
+  /// refreshed totals. A [nativeScan] reports which files it could not read;
+  /// a network scan only counts them.
   Future<void> _finishScan({
     required String sourceId,
     required int skippedDownloads,
     required bool pruneCoverCache,
+    required bool nativeScan,
     required String Function() summary,
   }) async {
+    final reported = nativeScan ? await _readNativeScanFailures() : null;
+    if (!ref.mounted) return;
+    final failures =
+        reported ??
+        LibraryScanFailures(count: state.scanErrorCount, files: const []);
+    // Progress polling stops before the last files finish, so the finished
+    // report has the final count.
+    if (failures.count > state.scanErrorCount) {
+      state = state.copyWith(scanErrorCount: failures.count);
+    }
+    await _setScanFailures(sourceId, failures.count > 0 ? failures : null);
+    if (!ref.mounted) return;
     final now = DateTime.now();
     _sourceVersion++;
     await _db.updateSourceState(
@@ -620,6 +636,37 @@ extension _LocalLibraryScan on LocalLibraryNotifier {
       excludedDownloadedCount: skippedDownloads,
       errorCount: state.scanErrorCount,
     );
+  }
+
+  Future<LibraryScanFailures?> _readNativeScanFailures() async {
+    try {
+      final progress = await PlatformBridge.getLibraryScanProgress();
+      if (progress['is_complete'] != true) return null;
+      return LibraryScanFailures.fromProgress(progress);
+    } catch (e) {
+      _log.w('Failed to read library scan failures: $e');
+      return null;
+    }
+  }
+
+  Future<void> _setScanFailures(
+    String sourceId,
+    LibraryScanFailures? failures,
+  ) async {
+    final current = state.scanFailures;
+    if (failures == null && !current.containsKey(sourceId)) return;
+    final next = {...current};
+    if (failures == null) {
+      next.remove(sourceId);
+    } else {
+      next[sourceId] = failures;
+    }
+    state = state.copyWith(scanFailures: next);
+    try {
+      await writeLocalLibraryScanFailures(await _prefs, next);
+    } catch (e) {
+      _log.w('Failed to save library scan failures: $e');
+    }
   }
 
   void _startProgressPolling() {
