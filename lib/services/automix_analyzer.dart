@@ -62,6 +62,60 @@ class AutoMixAnalyzer {
     _cache.clear();
   }
 
+  /// Retry nearby windows only when the first grid is uncertain. Agreement
+  /// with its tempo and phase is required before extrapolating back into the
+  /// actual transition window, so a later tempo change cannot move its cue.
+  Future<AutoMixBeatGrid?> analyzeTransition(
+    String path, {
+    double offset = 0,
+  }) async {
+    final generation = _generation;
+    final first = await analyze(path, offset: offset);
+    if (generation != _generation) return null;
+    if (first == null || first.reliable) return first;
+    if (first.bpm < 60 || first.bpm > 180 || first.confidence < 0.25) {
+      return first;
+    }
+    final attempted = <double>{offset};
+    for (final distance in [6.0, 12.0]) {
+      final nearby = offset > 0
+          ? (offset - distance).clamp(0.0, offset)
+          : distance;
+      if (!attempted.add(nearby)) continue;
+      final candidate = await analyze(path, offset: nearby);
+      if (generation != _generation) return null;
+      if (candidate == null || !candidate.reliable) continue;
+      if ((candidate.bpm / first.bpm - 1).abs() > 0.02) continue;
+      final phase = candidate.phase + nearby - offset;
+      // Check both edges. A coincident first beat with a drifting tempo must
+      // not be promoted to a reliable grid across the rest of the window.
+      double errorAt(double time) {
+        final predicted =
+            phase +
+            ((time - phase) / candidate.period).round() * candidate.period;
+        final measured =
+            first.phase +
+            ((time - first.phase) / first.period).round() * first.period;
+        final difference = predicted - measured;
+        return (difference - (difference / first.period).round() * first.period)
+            .abs();
+      }
+
+      if (errorAt(first.phase) > 0.04 ||
+          errorAt(first.beatAtOrAfter(windowSeconds - 1)) > 0.04) {
+        continue;
+      }
+      _log.d('AutoMix recovered a consistent beat grid from a nearby window');
+      return AutoMixBeatGrid(
+        bpm: candidate.bpm,
+        phase: phase,
+        confidence: candidate.confidence,
+        firstSound: first.firstSound,
+      );
+    }
+    return first;
+  }
+
   Future<AutoMixBeatGrid?> analyze(String path, {double offset = 0}) async {
     final generation = _generation;
     Directory? work;

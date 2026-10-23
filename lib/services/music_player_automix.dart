@@ -140,9 +140,12 @@ class _MusicAutoMix {
         duration,
         AutoMixAnalyzer.windowSeconds,
       );
-      final outro = await analyzer.analyze(currentPath, offset: offset);
+      final outro = await analyzer.analyzeTransition(
+        currentPath,
+        offset: offset,
+      );
       if (!_current(generation)) return;
-      final intro = await analyzer.analyze(nextPath);
+      final intro = await analyzer.analyzeTransition(nextPath);
       if (!_current(generation)) return;
       final plan = AutoMixPlan.create(
         outgoingDuration: duration,
@@ -160,12 +163,13 @@ class _MusicAutoMix {
         cacheKey: next.isContentUri ? next.source : null,
       );
       if (!_current(generation)) return;
-      if (options.hasEffects) {
+      if (options.hasEffects || plan.assisted) {
         effectTail = await renderer.render(
           currentPath,
           start: plan.start,
           duration: plan.duration,
           options: options,
+          bassHandoff: plan.assisted,
         );
         if (!_current(generation)) return;
         if (effectTail != null) {
@@ -204,6 +208,7 @@ class _MusicAutoMix {
         'AutoMix prepared (${plan.beatMatched ? 'beat matched' : 'crossfade'}, '
         'rate=${plan.rate.toStringAsFixed(3)}, '
         'fallback=${plan.fallbackReason?.name ?? 'none'}, '
+        'assisted=${plan.assisted}, '
         'outro=${_beatSummary(outro)}, intro=${_beatSummary(intro)})',
       );
       final position = await handler._player.getCurrentPosition();
@@ -223,7 +228,7 @@ class _MusicAutoMix {
   Future<void> _start(int generation) async {
     final incoming = _prepared;
     final next = _next;
-    final plan = _plan;
+    var plan = _plan;
     if (incoming == null ||
         next == null ||
         plan == null ||
@@ -259,13 +264,22 @@ class _MusicAutoMix {
         generation,
       );
       if (audiblePosition != null && plan.beatMatched) {
-        audiblePosition = await _alignIncoming(
+        final alignment = await _alignIncoming(
           incoming,
           handler._player,
           plan,
           audiblePosition,
           generation,
         );
+        audiblePosition = alignment?.position;
+        if (alignment != null && !alignment.aligned) {
+          if (!_current(generation)) return;
+          await incoming.setPlaybackRate(1);
+          plan = plan.withoutBeatMatching();
+          _log.w(
+            'AutoMix alignment could not be verified; using unstretched crossfade',
+          );
+        }
       }
       if (!_current(generation)) return;
       if (audiblePosition == null) {
@@ -297,7 +311,13 @@ class _MusicAutoMix {
               null) {
             throw StateError('Effect deck did not start');
           }
-          if (!await _alignEffect(effectDeck, original, plan, generation)) {
+          if (!await _alignEffect(
+            effectDeck,
+            original,
+            plan,
+            generation,
+            tolerance: Duration(milliseconds: plan.beatMatched ? 20 : 50),
+          )) {
             if (!_current(generation)) return;
             throw StateError('Effect deck could not be aligned');
           }
@@ -350,6 +370,19 @@ class _MusicAutoMix {
       handler._broadcastState(playerState: PlaybackDeckState.playing);
       unawaited(handler._persistSession(position: audiblePosition));
       final clock = autoMixStopwatch()..start();
+      final transition = plan;
+      final phaseLock = plan.beatMatched
+          ? AutoMixPhaseLock(
+              baseRate: plan.rate,
+              period: plan.beatPeriod.inMicroseconds / 1e6 * plan.rate,
+            )
+          : null;
+      _log.d(
+        'AutoMix started (${plan.beatMatched ? 'beat matched' : 'crossfade'}, '
+        'rate=${plan.rate.toStringAsFixed(3)}, '
+        'assisted=${plan.assisted && outgoing != original}, '
+        'fallback=${plan.fallbackReason?.name ?? 'none'})',
+      );
       _fadeTimer = Timer.periodic(const Duration(milliseconds: 40), (_) {
         if (_writing || generation != _generation) return;
         _writing = true;
@@ -357,7 +390,7 @@ class _MusicAutoMix {
           try {
             final levels = autoMixEnvelope(
               clock.elapsed,
-              plan,
+              transition,
               fadeDuration: fadeDuration,
             );
             final dry = _effectDry;
@@ -380,9 +413,34 @@ class _MusicAutoMix {
             if (generation != _generation) return;
             await incoming.setVolume(_incomingVolume * levels.incoming);
             if (generation != _generation) return;
-            if ((levels.rate - rate).abs() > 0.001 || levels.complete) {
-              await incoming.setPlaybackRate(levels.rate);
-              rate = levels.rate;
+            var targetRate = levels.rate;
+            if (phaseLock != null &&
+                clock.elapsed < fadeDuration &&
+                _outgoing != null) {
+              targetRate = phaseLock.rateAt(clock.elapsed);
+              if (phaseLock.shouldMeasure(clock.elapsed)) {
+                final error = await _phaseError(
+                  incoming,
+                  outgoing,
+                  transition,
+                  outgoingOffset: outgoing == original
+                      ? Duration.zero
+                      : transition.start,
+                );
+                if (generation != _generation) return;
+                phaseLock.observe(clock.elapsed, error);
+                targetRate = phaseLock.rateAt(clock.elapsed);
+                if (!phaseLock.trusted) {
+                  _setStatus(AutoMixStatus.crossfading);
+                  _log.w(
+                    'AutoMix phase tracking lost reliable positions; keeping the fade without further corrections',
+                  );
+                }
+              }
+            }
+            if ((targetRate - rate).abs() > 0.001 || levels.complete) {
+              await incoming.setPlaybackRate(targetRate);
+              rate = targetRate;
             }
             if (generation != _generation) return;
             if (dry != null && progress >= 1) {
@@ -462,7 +520,7 @@ class _MusicAutoMix {
   /// a quarter beat. A seek takes time as well, so each retry leads the target
   /// by the lag the previous seek left behind. Returns null when the deck
   /// stops advancing or the transition is no longer current.
-  Future<Duration?> _alignIncoming(
+  Future<({Duration position, bool aligned})?> _alignIncoming(
     PlaybackDeck incoming,
     PlaybackDeck outgoing,
     AutoMixPlan plan,
@@ -472,19 +530,31 @@ class _MusicAutoMix {
   }) async {
     var current = position;
     var lead = Duration.zero;
-    for (var attempt = 0; attempt < 3; attempt++) {
+    for (var attempt = 0; attempt <= 3; attempt++) {
       final before = await outgoing.getCurrentPosition();
       final incomingPosition = await incoming.getCurrentPosition();
       final after = await outgoing.getCurrentPosition();
       if (!_current(generation)) return null;
       if (before == null || incomingPosition == null || after == null) {
-        return current;
+        return (position: current, aligned: false);
+      }
+      if (after < before || after - before > const Duration(milliseconds: 80)) {
+        return (position: incomingPosition, aligned: false);
       }
       // The incoming reading falls between the two outgoing readings.
       final elapsed = (before + after) ~/ 2 - plan.start;
       final target = plan.incomingStart + elapsed * plan.rate;
       final error = target - incomingPosition;
-      if (error.abs() <= tolerance) return incomingPosition;
+      if (error.abs() <= tolerance) {
+        _log.d('AutoMix alignment verified: error=${error.inMilliseconds}ms');
+        return (position: incomingPosition, aligned: true);
+      }
+      if (attempt == 3) {
+        _log.w(
+          'AutoMix alignment exceeded tolerance: error=${error.inMilliseconds}ms',
+        );
+        return (position: incomingPosition, aligned: false);
+      }
       // The first error is startup delay; later ones are what a seek lost.
       if (attempt > 0) lead += error;
       var destination = target + lead;
@@ -499,7 +569,34 @@ class _MusicAutoMix {
       if (progressed == null) return null;
       current = progressed;
     }
-    return current;
+    return (position: current, aligned: false);
+  }
+
+  Future<double?> _phaseError(
+    PlaybackDeck incoming,
+    PlaybackDeck outgoing,
+    AutoMixPlan plan, {
+    Duration outgoingOffset = Duration.zero,
+  }) async {
+    try {
+      final before = await outgoing.getCurrentPosition();
+      final next = await incoming.getCurrentPosition();
+      final after = await outgoing.getCurrentPosition();
+      if (before == null ||
+          next == null ||
+          after == null ||
+          after < before ||
+          after - before > const Duration(milliseconds: 80)) {
+        return null;
+      }
+      final expected =
+          plan.incomingStart +
+          ((before + after) ~/ 2 + outgoingOffset - plan.start) * plan.rate;
+      return (next - expected).inMicroseconds / 1e6;
+    } catch (_) {
+      // A missing position report must not interrupt either audible deck.
+      return null;
+    }
   }
 
   Future<Duration?> _waitForProgress(

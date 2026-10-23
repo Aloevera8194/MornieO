@@ -19,6 +19,7 @@ import 'virtual_time.dart';
 
 class FakeEffectRenderer extends AutoMixEffectRenderer {
   final tails = <RenderedMixTail>[];
+  final bassHandoffs = <bool>[];
   bool fail = false;
 
   @override
@@ -27,7 +28,9 @@ class FakeEffectRenderer extends AutoMixEffectRenderer {
     required Duration start,
     required Duration duration,
     required AutoMixOptions options,
+    bool bassHandoff = false,
   }) async {
+    bassHandoffs.add(bassHandoff);
     if (fail) return null;
     final work = await Directory.systemTemp.createTemp('fake-mix-tail-');
     final tail = RenderedMixTail(work, '${work.path}/tail.wav');
@@ -40,6 +43,7 @@ class FakeAutoMixAnalyzer extends AutoMixAnalyzer {
   final calls = <String>[];
   Completer<AutoMixBeatGrid?>? pending;
   bool matchBeats = false;
+  double confidence = 0.9;
 
   @override
   Future<AutoMixBeatGrid?> analyze(String path, {double offset = 0}) async {
@@ -48,7 +52,7 @@ class FakeAutoMixAnalyzer extends AutoMixAnalyzer {
       return AutoMixBeatGrid(
         bpm: offset > 0 ? 120 : 124,
         phase: 0.17,
-        confidence: 0.9,
+        confidence: confidence,
         firstSound: 0.1,
       );
     }
@@ -95,7 +99,17 @@ class AudioNative {
   final resumeGates = <String, Completer<void>>{};
   final stalled = <String>{};
   final clocks = <String, Stopwatch>{};
+  final rates = <String, double>{};
+  final ignoredSeeks = <String>{};
+  final missingPositions = <String>{};
   bool emitsDuration = true;
+
+  int currentPosition(String id) =>
+      (positions[id] ?? 0) +
+      (stalled.contains(id)
+          ? 0
+          : ((clocks[id]?.elapsedMilliseconds ?? 0) * (rates[id] ?? 1))
+                .round());
 
   void install() {
     for (final name in [
@@ -136,9 +150,15 @@ class AudioNative {
             unawaited(event(id, 'audio.onPrepared', true));
             if (emitsDuration) unawaited(event(id, 'audio.onDuration', 60000));
           case 'seek':
-            positions[id] = args['position']! as int;
-            clocks[id]?.reset();
+            if (!ignoredSeeks.contains(id)) {
+              positions[id] = args['position']! as int;
+              clocks[id]?.reset();
+            }
             unawaited(event(id, 'audio.onSeekComplete'));
+          case 'setPlaybackRate':
+            positions[id] = currentPosition(id);
+            clocks[id]?.reset();
+            rates[id] = (args['playbackRate']! as num).toDouble();
           case 'resume':
             await resumeGate?.future;
             await resumeGates[id]?.future;
@@ -167,10 +187,8 @@ class AudioNative {
           case 'getDuration':
             return 60000;
           case 'getCurrentPosition':
-            return (positions[id] ?? 0) +
-                (stalled.contains(id)
-                    ? 0
-                    : clocks[id]?.elapsedMilliseconds ?? 0);
+            if (missingPositions.contains(id)) return null;
+            return currentPosition(id);
         }
         return null;
       },

@@ -25,6 +25,7 @@ import 'package:mornye/services/music_player_runtime.dart';
 import 'package:mornye/services/music_playback_deck.dart';
 import 'package:mornye/services/playback_deck.dart';
 import 'package:mornye/services/automix_analysis.dart';
+import 'package:mornye/services/automix_phase_lock.dart';
 import 'package:mornye/services/autoplay_personalization.dart';
 import 'package:mornye/services/automix_analyzer.dart';
 import 'package:mornye/models/settings.dart';
