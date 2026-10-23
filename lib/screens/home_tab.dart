@@ -181,10 +181,15 @@ class _HomeTabState extends ConsumerState<HomeTab>
     return size < heightCap ? size : heightCap;
   }
 
+  /// The square artwork of an explore card. Each card pads 6 on both sides,
+  /// so the artwork takes the width that is left rather than the full card.
+  double _exploreCoverSize(BuildContext context) =>
+      _exploreCardSize(context) - 12;
+
   double _exploreSectionHeight(BuildContext context) {
-    final cardSize = _exploreCardSize(context);
+    final coverSize = _exploreCoverSize(context);
     final textScale = effectiveTextScale(context);
-    return cardSize + 58 + ((textScale - 1) * 12);
+    return coverSize + 58 + ((textScale - 1) * 12);
   }
 
   @override

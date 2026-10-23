@@ -112,6 +112,7 @@ extension _HomeTabExploreUI on _HomeTabState {
   /// [ShimmerLoading] for the sweep effect.
   Widget _buildExploreSectionSkeleton({required bool isArtist}) {
     final cardSize = _exploreCardSize(context);
+    final coverSize = _exploreCoverSize(context);
     final inset = wideListInset(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,9 +138,9 @@ extension _HomeTabExploreUI on _HomeTabState {
                       : CrossAxisAlignment.start,
                   children: [
                     SkeletonBox(
-                      width: cardSize,
-                      height: cardSize,
-                      borderRadius: isArtist ? cardSize / 2 : 10,
+                      width: coverSize,
+                      height: coverSize,
+                      borderRadius: isArtist ? coverSize / 2 : 10,
                     ),
                     const SizedBox(height: 8),
                     SkeletonBox(
@@ -190,6 +191,7 @@ extension _HomeTabExploreUI on _HomeTabState {
     final isArtist = item.type == 'artist';
     final isTablet = MediaQuery.sizeOf(context).shortestSide >= 600;
     final cardSize = _exploreCardSize(context);
+    final coverSize = _exploreCoverSize(context);
     final iconSize = cardSize * 0.3;
 
     return Semantics(
@@ -213,24 +215,24 @@ extension _HomeTabExploreUI on _HomeTabState {
                       : '${item.artists} - ${item.name}',
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(
-                      isArtist ? cardSize / 2 : 10,
+                      isArtist ? coverSize / 2 : 10,
                     ),
                     child: item.coverUrl != null && item.coverUrl!.isNotEmpty
                         ? CachedCoverImage(
                             imageUrl: item.coverUrl!,
-                            width: cardSize,
-                            height: cardSize,
+                            width: coverSize,
+                            height: coverSize,
                             fit: BoxFit.cover,
                             placeholder: (context, url) => ShimmerLoading(
                               child: Container(
-                                width: cardSize,
-                                height: cardSize,
+                                width: coverSize,
+                                height: coverSize,
                                 color: colorScheme.surfaceContainerHighest,
                               ),
                             ),
                             errorWidget: (context, url, error) => Container(
-                              width: cardSize,
-                              height: cardSize,
+                              width: coverSize,
+                              height: coverSize,
                               color: colorScheme.surfaceContainerHighest,
                               child: Icon(
                                 _getIconForType(item.type),
@@ -240,8 +242,8 @@ extension _HomeTabExploreUI on _HomeTabState {
                             ),
                           )
                         : Container(
-                            width: cardSize,
-                            height: cardSize,
+                            width: coverSize,
+                            height: coverSize,
                             color: colorScheme.surfaceContainerHighest,
                             child: Icon(
                               _getIconForType(item.type),

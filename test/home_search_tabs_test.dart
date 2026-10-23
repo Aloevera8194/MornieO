@@ -41,6 +41,18 @@ void main() {
 
         expect(find.text('Shortcuts'), findsNothing);
         expect(find.byType(ShimmerLoading), findsOneWidget);
+        // Artwork placeholders stay square: a card's side padding narrows
+        // them, so their height must shrink with it.
+        final artwork = find
+            .byType(SkeletonBox)
+            .evaluate()
+            .map((element) => element.size!)
+            .where((size) => size.height > 40)
+            .toList();
+        expect(artwork, isNotEmpty);
+        for (final size in artwork) {
+          expect(size.width, size.height);
+        }
         final searchRect = mornye
             ? null
             : tester.getRect(find.byType(TextField));
