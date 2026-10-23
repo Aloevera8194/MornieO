@@ -48,9 +48,7 @@ void main() {
   setUpAll(() => debugDesktopPlatformOverride = true);
   tearDownAll(() => debugDesktopPlatformOverride = null);
 
-  testWidgets('the bundled ffmpeg converts and ffprobe probes', (
-    tester,
-  ) async {
+  testWidgets('the bundled ffmpeg converts and ffprobe probes', (tester) async {
     final tools = await DesktopFFmpegTools.locate();
     final bundled = p.normalize(
       p.join(p.dirname(Platform.resolvedExecutable), '..', 'Resources'),
