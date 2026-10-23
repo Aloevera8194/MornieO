@@ -81,6 +81,8 @@ class KeyboardShortcutsPage extends ConsumerWidget {
             keys(DesktopCommand.toggleSidebar),
           ),
           (l10n.desktopMenuMiniPlayer, keys(DesktopCommand.miniPlayer)),
+          (l10n.desktopWindowFullscreen, keys(DesktopCommand.fullScreen)),
+          (l10n.desktopWindowBorderless, keys(DesktopCommand.borderless)),
         ],
       ),
     ];
