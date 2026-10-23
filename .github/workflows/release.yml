@@ -140,6 +140,9 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       - name: Generate app icons
         run: dart run flutter_launcher_icons
 
@@ -300,6 +303,9 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       - name: Normalize ffmpeg plugin shell scripts (strip CRLF)
         run: |
           find "$HOME/.pub-cache/hosted" -path "*ffmpeg_kit_flutter_new_audio*/scripts/*.sh" -type f -print0 |
@@ -440,6 +446,9 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       # A stable self-signed identity keeps keychain access across updates.
       # Without the secrets the build stays ad hoc signed.
       - name: Set up the signing identity
@@ -567,6 +576,9 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       # linux/CMakeLists.txt installs the Rust library into lib/ and the
       # FFmpeg tools staged above into lib/ffmpeg/.
       - name: Build Linux bundle
@@ -678,6 +690,9 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
 
       # windows/CMakeLists.txt installs the Rust library next to mornye.exe
       # and the FFmpeg tools staged above into ffmpeg\.

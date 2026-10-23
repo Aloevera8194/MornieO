@@ -47,6 +47,8 @@ jobs:
               - 'analysis_options.yaml'
               - 'l10n.yaml'
               - '.fvmrc'
+              - 'scripts/prepare_flutter_sdk.dart'
+              - 'patches/flutter/**'
               - '.github/workflows/ci.yml'
             rust:
               - 'rust_backend/**'
@@ -66,6 +68,8 @@ jobs:
               - 'third_party/discord/*.zip.gpg'
               - 'ios/**'
               - 'scripts/build_ios.sh'
+              - 'scripts/prepare_flutter_sdk.dart'
+              - 'patches/flutter/**'
               - 'scripts/check_backend_ios.py'
               - 'scripts/test_check_backend_ios.py'
               - 'lib/**'
@@ -86,6 +90,8 @@ jobs:
               - 'android/**'
               - 'rust_backend/**'
               - 'scripts/build_android.sh'
+              - 'scripts/prepare_flutter_sdk.dart'
+              - 'patches/flutter/**'
               - 'scripts/build_rust_backend.sh'
               - 'scripts/check_backend_apk.py'
               - 'scripts/test_check_backend_apk.py'
@@ -121,11 +127,14 @@ jobs:
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: pub-${{ runner.os }}-
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       - name: Get Flutter dependencies
         run: flutter pub get
 
       - name: Check formatting
-        run: dart format --output=none --set-exit-if-changed lib test integration_test
+        run: dart format --output=none --set-exit-if-changed lib test integration_test scripts/prepare_flutter_sdk.dart
 
       - name: Analyze
         run: flutter analyze
@@ -211,6 +220,9 @@ jobs:
           flutter-version-file: .fvmrc
           cache: true
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       - name: Prepare pinned Discord SDK
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         uses: ./.github/actions/discord-sdk
@@ -258,6 +270,9 @@ jobs:
           channel: "stable"
           flutter-version-file: .fvmrc
           cache: true
+
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0

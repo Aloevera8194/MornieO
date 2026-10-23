@@ -14,11 +14,13 @@ FLUTTER_STUB = """import json, os, sys
 from pathlib import Path
 args = sys.argv[1:]
 if Path(sys.argv[0]).name == 'fvm':
-    assert args.pop(0) == 'flutter'
+    assert args.pop(0) in ('flutter', 'dart')
 with open(os.environ['BUILD_TEST_LOG'], 'a') as log:
     log.write(json.dumps({'tool': Path(sys.argv[0]).name, 'args': args,
         'sdk': os.environ.get('MORNYE_DISCORD_SDK', '1')}) + '\\n')
-if args == ['--version', '--machine']:
+if args == ['scripts/prepare_flutter_sdk.dart']:
+    sys.exit(int(os.environ.get('BUILD_TEST_PATCH_FAIL', '0')))
+elif args == ['--version', '--machine']:
     print(json.dumps({'frameworkVersion': os.environ.get('BUILD_TEST_FLUTTER_VERSION', '3.47.5')}))
 else:
     assert args[:2] == ['build', 'apk']
@@ -71,6 +73,7 @@ class AndroidBuildScriptTest(unittest.TestCase):
         git.chmod(0o755)
         self.pinned = self.project / ".fvm/flutter_sdk/bin/flutter"
         self.tool(self.pinned, FLUTTER_STUB)
+        self.tool(self.pinned.with_name("dart"), FLUTTER_STUB)
 
     def tool(self, path, source):
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -91,6 +94,9 @@ class AndroidBuildScriptTest(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         calls = self.calls()
         build = next(call for call in calls if call["args"][:2] == ["build", "apk"])
+        preparation = next(call for call in calls if call["args"] == ["scripts/prepare_flutter_sdk.dart"])
+        self.assertEqual(preparation["tool"], "dart")
+        self.assertLess(calls.index(preparation), calls.index(build))
         self.assertIn("android-arm64,android-arm", build["args"])
         self.assertIn("--verbose", build["args"])
         audits = [call["args"] for call in calls if call["tool"] == "audit"]
@@ -135,6 +141,8 @@ class AndroidBuildScriptTest(unittest.TestCase):
         result = self.run_build()
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(self.calls()[0]["tool"], "fvm")
+        preparation = next(call for call in self.calls() if call["args"] == ["scripts/prepare_flutter_sdk.dart"])
+        self.assertEqual(preparation["tool"], "fvm")
 
     def test_production_requires_full_even_with_inherited_sdk_disable(self):
         self.env["MORNYE_DISCORD_SDK"] = "0"
@@ -177,6 +185,15 @@ class AndroidBuildScriptTest(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Flutter 3.47.5 is required", result.stderr)
         self.assertEqual(len(self.calls()), 1)
+
+    def test_failed_flutter_patch_stops_before_build_or_audit(self):
+        self.env["BUILD_TEST_PATCH_FAIL"] = "1"
+        result = self.run_build()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertEqual([call["args"] for call in self.calls()], [
+            ["--version", "--machine"],
+            ["scripts/prepare_flutter_sdk.dart"],
+        ])
 
     def test_invalid_or_overridden_abis_stop_before_flutter(self):
         for abis in ("", "x86_64", "arm64-v8a,arm64-v8a", "armeabi-v7a, arm64-v8a"):

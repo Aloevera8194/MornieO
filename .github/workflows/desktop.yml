@@ -15,6 +15,10 @@ on:
       - "scripts/build_rust_backend.sh"
       - "scripts/build_rust_backend_windows.ps1"
       - "scripts/setup_flutter_windows_arm64.ps1"
+      - "scripts/prepare_flutter_sdk.dart"
+      - "patches/flutter/**"
+      - "test/flutter_sdk_patches_test.dart"
+      - "test/semantics_geometry_regression_test.dart"
       - "scripts/check_windows_bundle.ps1"
       - "scripts/embed_rust_backend_macos.sh"
       - "scripts/fetch_desktop_ffmpeg.sh"
@@ -92,6 +96,11 @@ jobs:
 
       - name: Get Flutter dependencies
         run: flutter pub get
+
+      - name: Prepare and test Flutter framework patch
+        run: |
+          dart scripts/prepare_flutter_sdk.dart
+          flutter test --no-pub test/semantics_geometry_regression_test.dart
 
       # The Xcode "Embed Rust Backend" and "Embed FFmpeg" phases embed the
       # library and the FFmpeg tools built above.
@@ -226,10 +235,13 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       # linux/CMakeLists.txt installs the library and the FFmpeg tools staged
       # above into lib/ and lib/ffmpeg/.
       - name: Test desktop duplicate review and updater
-        run: flutter test --reporter expanded test/duplicate_review_sheet_test.dart test/desktop_updater_test.dart test/settings_bottom_inset_test.dart
+        run: flutter test --reporter expanded test/duplicate_review_sheet_test.dart test/desktop_updater_test.dart test/settings_bottom_inset_test.dart test/semantics_geometry_regression_test.dart
 
       - name: Build Linux bundle
         run: |
@@ -340,10 +352,13 @@ jobs:
       - name: Get Flutter dependencies
         run: flutter pub get
 
+      - name: Prepare Flutter framework patch
+        run: dart scripts/prepare_flutter_sdk.dart
+
       # windows/CMakeLists.txt installs the library built above next to
       # mornye.exe and the FFmpeg tools staged above into ffmpeg\.
       - name: Test desktop duplicate review and updater
-        run: flutter test --reporter expanded test/duplicate_review_sheet_test.dart test/desktop_updater_test.dart test/settings_bottom_inset_test.dart
+        run: flutter test --reporter expanded test/duplicate_review_sheet_test.dart test/desktop_updater_test.dart test/settings_bottom_inset_test.dart test/semantics_geometry_regression_test.dart
 
       - name: Build Windows app
         run: |

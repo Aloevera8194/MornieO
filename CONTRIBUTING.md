@@ -47,8 +47,17 @@ exact Flutter version declared in `.fvmrc` and replace `fvm flutter` with
 
    ```bash
    fvm install
+   fvm dart scripts/prepare_flutter_sdk.dart
    fvm flutter pub get
    ```
+
+   The preparation step backports the semantics geometry fix proposed in
+   [Flutter #192724](https://github.com/flutter/flutter/pull/192724), which is
+   still a draft upstream. It changes one cache lookup in the pinned SDK and
+   is safe to run again after restoring an SDK cache. Run it once for every
+   fresh Flutter installation before testing or building on any platform.
+   Use `--check` to verify an SDK without changing it. Review or retire the
+   patch when changing `.fvmrc`; unsupported versions fail before modification.
 
 3. Install Rust with rustup, then run `(cd rust_backend && rustup show)` to
    activate the pinned toolchain. Install Clang/libclang for the native bindings
