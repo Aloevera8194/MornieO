@@ -342,9 +342,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 500));
       expect(find.text('Shell navigation').hitTestable(), findsNothing);
       final sortSheet = find.byType(AppBottomSheet);
-      final sheetHeight = tester.getSize(sortSheet).height;
-      expect(sheetHeight, lessThan(915 * 0.85));
-      expect(find.text('Genre (Z-A)').hitTestable(), findsOneWidget);
+      // Every sort no longer fits a phone: the sheet stops at its cap and
+      // scrolls, leaving the screen above it visible.
+      expect(tester.getSize(sortSheet).height, closeTo(915 * 0.85, 1));
+      expect(find.text('Latest').hitTestable(), findsWidgets);
       final sheetScroll = find.descendant(
         of: sortSheet,
         matching: find.byType(SingleChildScrollView),
@@ -367,7 +368,6 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
       expect(tester.getSize(sortSheet).height, closeTo(915 * 0.85, 1));
-      expect(tester.getSize(sortSheet).height, greaterThan(sheetHeight));
       await tester.drag(sheetScroll, const Offset(0, -200));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
