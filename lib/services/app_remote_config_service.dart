@@ -151,75 +151,17 @@ class DonateConfig {
     this.monthlyGoal,
   });
 
-  factory DonateConfig.fromJson(Map<String, dynamic> json) {
-    final monthlyGoalJson = json['monthly_goal'];
-    final methods = (json['methods'] as List<dynamic>? ?? const [])
-        .whereType<Map<Object?, Object?>>()
-        .map((value) => DonateMethod.fromJson(Map<String, dynamic>.from(value)))
-        .where((method) => method.isValid)
-        .toList(growable: false);
-
-    return DonateConfig(
-      enabled: json['enabled'] as bool? ?? true,
-      title: _readString(json['title']).isEmpty
-          ? 'Support ${AppInfo.appName}'
-          : _mobileDonationText(_readString(json['title'])),
-      message: _readString(json['message']).isEmpty
-          ? 'Optional support helps cover tools, testing devices, and hosting.'
-          : _readString(json['message']),
-      methods: methods.isEmpty ? DonateConfig.fallback().methods : methods,
-      supporters: _readStringList(
-        json['supporters'] ?? json['recent_supporters'],
-      ),
-      notices: _readStringList(json['notices']).isEmpty
-          ? DonateConfig.fallback().notices
-          : _readStringList(json['notices']),
-      monthlyGoal: monthlyGoalJson is Map
-          ? MonthlyDonationGoal.fromJson(
-              Map<String, dynamic>.from(monthlyGoalJson),
-            )
-          : null,
-    );
-  }
+  factory DonateConfig.fromJson(Map<String, dynamic> _) =>
+      DonateConfig.fallback();
 
   factory DonateConfig.fallback() {
     return const DonateConfig(
-      enabled: true,
-      title: 'Support ${AppInfo.appName}',
-      message: 'Optional support helps cover dev tools and testing devices.',
-      methods: [
-        DonateMethod(
-          id: 'kofi',
-          title: 'Ko-fi',
-          subtitle: 'ko-fi.com/zarzet',
-          url: AppInfo.kofiUrl,
-          icon: 'kofi',
-          color: 0xFFFF5E5B,
-        ),
-        DonateMethod(
-          id: 'github-sponsors',
-          title: 'GitHub Sponsors',
-          subtitle: 'github.com/sponsors/zarzet',
-          url: AppInfo.githubSponsorsUrl,
-          icon: 'github',
-          color: 0xFF2D333B,
-        ),
-        DonateMethod(
-          id: 'usdt-trc20',
-          title: 'USDT (TRC20)',
-          subtitle: 'TL7iAqjq9M8BwVMi9AtHvuAGHtdwEvsDta',
-          walletAddress: 'TL7iAqjq9M8BwVMi9AtHvuAGHtdwEvsDta',
-          icon: 'crypto',
-          color: 0xFF26A17B,
-        ),
-      ],
+      enabled: false,
+      title: '',
+      message: '',
+      methods: [],
       supporters: [],
-      notices: [
-        'Not selling early access, premium features, or paywalls',
-        'Funds go to dev tools and testing devices',
-        'Your support helps keep this project active',
-        'Supporter list can be updated from the app API',
-      ],
+      notices: [],
     );
   }
 }
@@ -396,6 +338,8 @@ class AppRemoteConfigService {
   }
 
   Future<RemoteConfigSnapshot?> fetchConfigSnapshot({String? locale}) async {
+    if (endpoint.trim().isEmpty) return null;
+
     // A default client belongs to this request; an injected client belongs to
     // its caller. Cached config and dismissal helpers need no HTTP resources.
     final client = _client ?? http.Client();

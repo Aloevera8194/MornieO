@@ -4,7 +4,7 @@ const builtInLyricsProviderNames = <String, String>{
   'netease': 'Netease',
   'musixmatch': 'Musixmatch',
   'apple_music': 'Apple Music',
-  'mornye_lyrics': 'Zarz-LRC',
+  'mornye_lyrics': 'MornieO Lyrics',
   'qqmusic': 'QQ Music',
   'spotify': 'Spotify',
   'deezer': 'Deezer',

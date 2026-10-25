@@ -123,14 +123,6 @@ class AboutPage extends StatelessWidget {
                   ),
                   _AboutSettingsItem(
                     icon: Icons.lyrics_outlined,
-                    title: 'Zarz-LRC',
-                    subtitle: context.l10n.lyricsProviderZarzLrcDesc,
-                    onTap: () =>
-                        _launchUrl('https://api.zarz.moe/apple-music/docs'),
-                    showDivider: true,
-                  ),
-                  _AboutSettingsItem(
-                    icon: Icons.lyrics_outlined,
                     title: 'Paxsenix',
                     subtitle: context.l10n.aboutPaxsenixSubtitle,
                     onTap: () => _launchUrl('https://lyrics.paxsenix.org'),
@@ -155,20 +147,6 @@ class AboutPage extends StatelessWidget {
                     showDivider: true,
                   ),
                   _AboutSettingsItem(
-                    icon: Icons.lyrics_outlined,
-                    title: context.l10n.aboutLyricsWebsite,
-                    subtitle: 'lyrics.zarz.moe',
-                    onTap: () => _launchUrl('https://lyrics.zarz.moe'),
-                    showDivider: true,
-                  ),
-                  _AboutSettingsItem(
-                    icon: Icons.monitor_heart_outlined,
-                    title: context.l10n.aboutServiceStatus,
-                    subtitle: 'status.zarz.moe',
-                    onTap: () => _launchUrl('https://status.zarz.moe'),
-                    showDivider: true,
-                  ),
-                  _AboutSettingsItem(
                     icon: Icons.bug_report_outlined,
                     title: context.l10n.aboutReportIssue,
                     subtitle: context.l10n.aboutReportIssueSubtitle,
@@ -180,31 +158,6 @@ class AboutPage extends StatelessWidget {
                     title: context.l10n.aboutFeatureRequest,
                     subtitle: context.l10n.aboutFeatureRequestSubtitle,
                     onTap: () => _launchUrl('${AppInfo.githubUrl}/issues/new'),
-                    showDivider: false,
-                  ),
-                ],
-              ),
-            ),
-
-            SliverToBoxAdapter(
-              child: SettingsSectionHeader(title: context.l10n.aboutSocial),
-            ),
-            SliverToBoxAdapter(
-              child: SettingsGroup(
-                connected: true,
-                children: [
-                  _AboutSettingsItem(
-                    icon: Icons.telegram,
-                    title: context.l10n.aboutTelegramChannel,
-                    subtitle: context.l10n.aboutTelegramChannelSubtitle,
-                    onTap: () => _launchUrl('https://t.me/mornyeupdates'),
-                    showDivider: true,
-                  ),
-                  _AboutSettingsItem(
-                    icon: Icons.forum_outlined,
-                    title: context.l10n.aboutTelegramChat,
-                    subtitle: context.l10n.aboutTelegramChatSubtitle,
-                    onTap: () => _launchUrl('https://t.me/mornyecommunity'),
                     showDivider: false,
                   ),
                 ],

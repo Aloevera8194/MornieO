@@ -257,10 +257,7 @@ class _MainShellState extends ConsumerState<MainShell>
       unawaited(ref.read(musicPlayerRuntimeProvider).restoreSession());
       _setupShareListener();
       await _checkSafMigration();
-      final updateDialogShown = await _checkForUpdates();
-      if (!updateDialogShown) {
-        await _checkAppAnnouncement();
-      }
+      // Atualizações e anúncios remotos desativados.
     });
   }
 

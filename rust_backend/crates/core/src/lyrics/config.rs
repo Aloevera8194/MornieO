@@ -116,9 +116,9 @@ pub fn available_providers() -> Vec<AvailableProvider> {
         ),
         (
             "mornye_lyrics",
-            "Zarz-LRC",
+            "MornieO Lyrics",
             false,
-            "Word-by-word Apple Music lyrics from Zarz-LRC",
+            "Word-by-word Apple Music lyrics from MornieO Lyrics",
         ),
         (
             "qqmusic",

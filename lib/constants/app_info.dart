@@ -18,21 +18,17 @@ class AppInfo {
     return desktop ?? isDesktopPlatform ? '$version (beta)' : version;
   }
 
-  static const String appName = 'Mornye';
+  static const String appName = 'MornieO';
   static const String license = 'LGPL-3.0-only';
-  static const String copyright = '© 2026 Zarz Eleutherius';
+  static const String copyright = '© 2026 MornieO contributors';
 
-  static const String mobileAuthor = 'zarzet';
+  static const String mobileAuthor = 'Aloevera8194';
 
-  static const String githubRepo = 'mornyeapp/Mornye';
+  static const String githubRepo = 'Aloevera8194/MornieO';
   static const String githubUrl = 'https://github.com/$githubRepo';
 
   /// Desktop packages are published here; the source stays in [githubRepo].
-  static const String desktopGithubRepo = 'mornyeapp/Mornye-Desktop';
-  // The server keeps the endpoint name from before the rename.
-  static const String remoteConfigApiUrl =
-      'https://api.zarz.moe/v1/spotiflac-mobile/config';
+  static const String desktopGithubRepo = 'Aloevera8194/MornieO';
+  static const String remoteConfigApiUrl = '';
 
-  static const String kofiUrl = 'https://ko-fi.com/zarzet';
-  static const String githubSponsorsUrl = 'https://github.com/sponsors/zarzet/';
 }

@@ -4304,9 +4304,9 @@
   "@lyricsProviderLyricsPlusDesc": {
     "description": "Description for LyricsPlus provider"
   },
-  "lyricsProviderZarzLrcDesc": "Lirik Apple Music per kata dari Zarz-LRC",
+  "lyricsProviderZarzLrcDesc": "Lirik Apple Music per kata dari MornieO Lyrics",
   "@lyricsProviderZarzLrcDesc": {
-    "description": "Description for the first-party Zarz-LRC provider"
+    "description": "Description for the first-party MornieO Lyrics provider"
   },
   "lyricsProviderLrcRedDesc": "Lirik Apple Music per kata, dicocokkan per rekaman",
   "@lyricsProviderLrcRedDesc": {

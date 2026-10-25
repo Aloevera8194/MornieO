@@ -322,7 +322,7 @@ class SettingsNotifier extends Notifier<AppSettings> {
           libraryQualityLabelMode: AppSettings.libraryQualityLabelBitDepthOnly,
         );
       }
-      // Migration 13: Zarz-LRC left Apple Music's Paxsenix
+      // Migration 13: MornieO Lyrics left Apple Music's Paxsenix
       // fallback chain. Untouched defaults move to the new defaults; a custom
       // order keeps the former fallback right after Apple Music.
       if (lastMigration < 13) {

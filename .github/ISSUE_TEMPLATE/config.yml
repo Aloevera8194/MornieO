@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: README
-    url: https://github.com/mornyeapp/Mornye#readme
+    url: https://github.com/Aloevera8194/MornieO#readme
     about: Check the README for setup instructions and FAQ
   - name: Extension Development Guide
-    url: https://mornye.com/docs
+    url: https://github.com/Aloevera8194/MornieO/tree/main/docs
     about: Documentation for building Mornye extensions

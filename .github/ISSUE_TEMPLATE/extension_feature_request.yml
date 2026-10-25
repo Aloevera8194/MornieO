@@ -15,7 +15,7 @@ body:
       label: Checklist
       description: Please confirm the following before submitting
       options:
-        - label: I have read the [Extension Development Guide](https://github.com/mornyeapp/Mornye/blob/main/docs/EXTENSION_DEVELOPMENT.md)
+        - label: I have read the [Extension Development Guide](https://github.com/Aloevera8194/MornieO/blob/main/docs/EXTENSION_DEVELOPMENT.md)
           required: true
         - label: I have searched existing issues and this API feature hasn't been requested yet
           required: true

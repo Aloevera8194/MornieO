@@ -245,8 +245,8 @@ pub fn format_zarz_lrc_apple(
     word_timing: bool,
 ) -> Result<String, String> {
     let payload: ApplePayload =
-        json::decode(raw).map_err(|error| format!("invalid Zarz-LRC response: {error}"))?;
-    format_apple_payload(&payload, "Zarz-LRC", multi_person, word_timing)
+        json::decode(raw).map_err(|error| format!("invalid MornieO Lyrics response: {error}"))?;
+    format_apple_payload(&payload, "MornieO Lyrics", multi_person, word_timing)
 }
 
 /// Shared by every source that exposes Apple's own line structure, either as

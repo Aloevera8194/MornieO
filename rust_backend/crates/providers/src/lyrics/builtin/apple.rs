@@ -1,4 +1,4 @@
-//! Built-in Apple Music and Zarz-LRC providers.
+//! Built-in Apple Music and MornieO Lyrics providers.
 
 use super::*;
 use crate::lyrics::http;
@@ -229,7 +229,7 @@ impl BuiltinLyricsClient {
             AppleLyricsSource::ZarzLrc => (
                 payloads::format_zarz_lrc_apple(raw, multi_person, word_timing)
                     .map_err(LyricsError::Unavailable)?,
-                "Zarz-LRC",
+                "MornieO Lyrics",
             ),
         };
         let mut lyrics = from_text(&text, name, name)?;
@@ -251,16 +251,16 @@ mod tests {
     }
 
     #[test]
-    fn zarz_lrc_lyrics_credit_never_names_the_proxy() {
-        let lyrics = LyricsResponse::from_text("[00:01.00]Example", "Zarz-LRC", "Zarz-LRC");
+    fn mornieo_lyrics_credit_never_names_the_proxy() {
+        let lyrics = LyricsResponse::from_text("[00:01.00]Example", "MornieO Lyrics", "MornieO Lyrics");
         let saved = mornye_core::lyrics::lrc::with_metadata(&lyrics, "Track", "Artist");
-        assert!(saved.contains("source: Zarz-LRC"));
+        assert!(saved.contains("source: MornieO Lyrics"));
         assert!(!saved.contains("Paxsenix"));
     }
 
     #[test]
-    #[ignore = "requires live Apple catalog and Zarz-LRC access"]
-    fn live_zarz_lrc_lyrics_works_without_paxsenix() {
+    #[ignore = "requires live Apple catalog and MornieO Lyrics access"]
+    fn live_mornieo_lyrics_works_without_paxsenix() {
         let network = NetworkService::new().unwrap();
         let client = BuiltinLyricsClient::with_endpoints(
             &network,
@@ -281,8 +281,8 @@ mod tests {
         let lyrics = client.zarz_lrc_lyrics(&request, &|| Ok(())).unwrap();
         assert!(lyrics.has_usable_text());
         assert!(lyrics.is_synced());
-        assert_eq!(lyrics.provider, "Zarz-LRC");
-        assert_eq!(lyrics.source, "Zarz-LRC");
+        assert_eq!(lyrics.provider, "MornieO Lyrics");
+        assert_eq!(lyrics.source, "MornieO Lyrics");
     }
 
     #[test]

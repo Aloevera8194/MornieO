@@ -231,7 +231,7 @@ class _LyricsProviderPriorityPageState
         );
       case 'mornye_lyrics':
         return _LyricsProviderInfo(
-          name: 'Zarz-LRC',
+          name: 'MornieO Lyrics',
           description: context.l10n.lyricsProviderZarzLrcDesc,
           icon: Icons.verified_outlined,
         );
